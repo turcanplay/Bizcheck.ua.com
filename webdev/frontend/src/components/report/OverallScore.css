@@ -1,0 +1,111 @@
+.overall-score {
+  margin-bottom: 32px;
+}
+
+.overall-score__section-bar {
+  background: var(--navy);
+  padding: 12px 20px;
+  border-left: 4px solid var(--gold);
+  margin-bottom: 24px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.overall-score__section-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.overall-score__card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 36px;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  box-shadow: var(--shadow-md);
+}
+
+.overall-score__left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.overall-score__donut {
+  display: flex;
+  justify-content: center;
+}
+
+.overall-score__zone-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 100px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.overall-score__right {
+  padding: 8px 0;
+}
+
+.overall-score__conclusion-label {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-30);
+  margin-bottom: 8px;
+}
+
+.overall-score__conclusion-headline {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.overall-score__conclusion-detail {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .overall-score__card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .overall-score__left {
+    align-items: center;
+  }
+
+  .overall-score__conclusion-headline {
+    font-size: 18px;
+  }
+}
+
+@media print {
+  .overall-score__section-bar {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

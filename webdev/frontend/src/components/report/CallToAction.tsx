@@ -1,0 +1,94 @@
+import { useState } from 'react';
+import { useLang } from '@/context/LanguageContext';
+import { API_BASE } from '@/config/api';
+import './CallToAction.css';
+
+interface CallToActionProps {
+  onRestart: () => void;
+  submissionId: number | null;
+  submissionToken?: string | null;
+}
+
+export default function CallToAction({ onRestart, submissionId, submissionToken }: CallToActionProps) {
+  const { t } = useLang();
+  const [tgLoading, setTgLoading] = useState(false);
+  const [tgError, setTgError] = useState(false);
+
+  async function handleOpenTelegram() {
+    if (!submissionId) {
+      window.open('https://t.me/CROWE_BIZCHECK_bot', '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    setTgLoading(true);
+    setTgError(false);
+
+    try {
+      const res = await fetch(`${API_BASE}/tg/link/${submissionId}`, {
+        method: 'POST',
+        headers: submissionToken ? { 'X-Submission-Token': submissionToken } : {},
+      });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+    } catch {
+      setTgError(true);
+      // Fallback — open bot without deep-link token
+      window.open('https://t.me/CROWE_BIZCHECK_bot', '_blank', 'noopener,noreferrer');
+    } finally {
+      setTgLoading(false);
+    }
+  }
+
+  return (
+    <section className="cta">
+      <div className="cta__inner">
+        {/* Telegram CTA */}
+        <div className="cta__telegram">
+          <svg className="cta__telegram-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+          </svg>
+          <p className="cta__telegram-text">{t('telegramCta')}</p>
+          {tgError && (
+            <p className="cta__telegram-error">{t('telegramError')}</p>
+          )}
+          <button
+            className="cta__telegram-btn"
+            onClick={handleOpenTelegram}
+            disabled={tgLoading}
+          >
+            {tgLoading ? (
+              <span className="cta__telegram-spinner" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+              </svg>
+            )}
+            {tgLoading ? t('telegramLoading') : t('telegramBtn')}
+          </button>
+        </div>
+
+        <div className="cta__divider" />
+
+        <h2 className="cta__title">{t('ctaTitle')}</h2>
+        <p className="cta__subtitle">{t('ctaSubtitle')}</p>
+        <p className="cta__note">{t('ctaNote')}</p>
+        <button className="cta__btn">
+          {t('ctaBtn')}
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 8h10M9 4l4 4-4 4" />
+          </svg>
+        </button>
+
+        <div className="cta__footer">
+          <div className="cta__crowe">
+            <strong>Crowe Turcan Mikhailenco</strong> · office@bizcheck.md · +373 79 027 317
+          </div>
+          <button className="cta__restart" onClick={onRestart}>
+            {t('ctaRestart')}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}

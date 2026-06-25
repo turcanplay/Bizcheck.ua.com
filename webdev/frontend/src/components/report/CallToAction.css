@@ -1,0 +1,211 @@
+.cta {
+  background: var(--navy-deep);
+  margin-top: var(--space-2xl);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+}
+
+.cta__inner {
+  padding: var(--space-3xl) var(--space-2xl);
+  text-align: center;
+}
+
+/* Telegram CTA */
+.cta__telegram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.cta__telegram-icon {
+  color: #29B6F6;
+}
+
+.cta__telegram-text {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.cta__telegram-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #29B6F6;
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s;
+}
+
+.cta__telegram-btn:hover:not(:disabled) {
+  background: #039BE5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(41, 182, 246, 0.3);
+}
+
+.cta__telegram-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.cta__telegram-error {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #ff9800;
+  margin: 0;
+}
+
+.cta__telegram-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: tg-spin 0.7s linear infinite;
+}
+
+@keyframes tg-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cta__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: var(--space-xl);
+}
+
+.cta__title {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  color: white;
+  margin: 0 0 var(--space-md);
+}
+
+.cta__subtitle {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 var(--space-md);
+  line-height: 1.6;
+}
+
+.cta__note {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--gold-light);
+  margin: 0 0 var(--space-xl);
+  line-height: 1.5;
+  font-style: normal;
+}
+
+.cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  background: var(--gold);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.cta__btn:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(253, 161, 0, 0.3);
+}
+
+.cta__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.cta__crowe {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cta__crowe strong {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.cta__restart {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: all 0.2s;
+}
+
+.cta__restart:hover {
+  color: white;
+  text-decoration-color: white;
+}
+
+@media (max-width: 640px) {
+  .cta__inner {
+    padding: var(--space-2xl) var(--space-lg);
+  }
+
+  .cta__footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media print {
+  .cta {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cta__restart {
+    display: none;
+  }
+}

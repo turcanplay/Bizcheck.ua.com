@@ -1,0 +1,309 @@
+/* ════════════════════════════════════════════
+   QuizProgress  —  sticky top bar
+════════════════════════════════════════════ */
+.qp {
+  background: var(--navy);
+  padding: 0 48px;
+  position: sticky;
+  top: 60px;
+  z-index: 90;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  /* Paint navy upward into the strip between the 60px header and this bar so
+     there is no light-grey gap — the header and progress bar read as one
+     continuous navy band. The part overlapping the header is hidden behind it
+     (header z-index 100 > 90), so this only ever fills a visible gap. */
+  box-shadow: 0 -260px 0 0 var(--navy);
+}
+
+.qp__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+/* ── Block stepper ───────────────────────── */
+.qp__steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.qp__step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.qp__step:last-child {
+  flex: 0;
+}
+
+/* dot */
+.qp__dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+  transition: border-color 0.3s, background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.qp__step--done .qp__dot {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+}
+
+.qp__step--active .qp__dot {
+  background: var(--navy-deep);
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px rgba(253,161,0,0.18);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(253,161,0,0.18); }
+  50%       { box-shadow: 0 0 0 6px rgba(253,161,0,0.08); }
+}
+
+/* connector line */
+.qp__line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 4px;
+  border-radius: 2px;
+  transition: background 0.4s;
+}
+
+.qp__line--done {
+  background: var(--gold);
+}
+
+
+/* ── Animated title ─────────────────────── */
+.qp__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  will-change: opacity, transform;
+}
+
+.qp__title--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.qp__title--out {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.qp__title-block {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.qp__title-sep {
+  color: rgba(255,255,255,0.25);
+  font-size: 14px;
+}
+
+.qp__title-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ── Question counter + bar ─────────────── */
+.qp__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* animated counter — re-mounts on key change */
+.qp__counter {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 52px;
+  animation: counter-pop 0.25s var(--ease-bounce);
+}
+
+@keyframes counter-pop {
+  0%   { opacity: 0; transform: translateY(5px) scale(0.9); }
+  60%  { transform: translateY(-2px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.qp__counter-num {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.qp__counter-slash {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.3);
+}
+
+.qp__counter-total {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+}
+
+/* progress bar */
+.qp__bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  overflow: visible;
+  position: relative;
+}
+
+.qp__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  border-radius: 100px;
+  transition: width 0.5s var(--ease-out);
+}
+
+/* moving glow dot at the tip */
+.qp__glow {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: var(--gold-light);
+  border-radius: 50%;
+  box-shadow: 0 0 8px 3px rgba(253,200,0,0.5);
+  transition: left 0.5s var(--ease-out);
+  pointer-events: none;
+}
+
+/* percentage */
+.qp__pct {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  min-width: 38px;
+  text-align: right;
+}
+
+.qp__pct-sign {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
+/* ── Mobile ─────────────────────────────── */
+@media (max-width: 768px) {
+  .qp {
+    padding: 0 20px;
+  }
+
+  .qp__dot {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .qp__title-name {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .qp {
+    padding: 0 14px;
+  }
+
+  .qp__title {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .qp__title-sep {
+    display: none;
+  }
+
+  .qp__title-name {
+    font-size: 12px;
+    width: 100%;
+  }
+
+  .qp__dot {
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  .qp {
+    padding: 0 10px;
+  }
+
+  .qp__inner {
+    padding: 12px 0 10px;
+    gap: 8px;
+  }
+
+  .qp__dot {
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+  }
+
+  .qp__counter-num {
+    font-size: 17px;
+  }
+
+  .qp__title-block {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .qp__title-name {
+    font-size: 11px;
+  }
+
+  .qp__pct {
+    font-size: 12px;
+    min-width: 32px;
+  }
+}

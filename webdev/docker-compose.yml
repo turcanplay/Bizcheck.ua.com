@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-bizzcheck}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    # DB port NOT exposed externally — only accessible inside Docker network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    expose:
+      - "4001"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 4001
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-bizzcheck}
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_in_production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change_me_in_production}
+      PII_ENCRYPTION_KEY: ${PII_ENCRYPTION_KEY:-change_me_fernet_key}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      NODE_ENV: ${NODE_ENV:-production}
+      # Anti Host-Header-Injection: only these Host values are accepted (others → 400).
+      # Blocks direct-IP probing. `backend` is the internal Docker service name the
+      # tgbot uses (http://backend:4001), so it MUST stay in the list. Override in
+      # .env if the domain changes.
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-bizcheck.md,www.bizcheck.md,backend,localhost,127.0.0.1}
+      # Base URL used to build the report download link inside report emails.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://bizcheck.md}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
+      # SMTP (Office 365) — leave SMTP_PASSWORD empty to disable email delivery.
+      SMTP_HOST: ${SMTP_HOST:-smtp.office365.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Crowe Turcan Mikhailenko}
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@bizcheck.md}
+      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.md/logo_email.png}
+      # Sales-team Telegram notification (private group with the notifier bot).
+      # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
+      SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
+      SALES_CHAT_ID: ${SALES_CHAT_ID:-}
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    # Legat doar la 127.0.0.1: reverse-proxy-ul (nginx_proxy) ajunge la container prin
+    # rețeaua Docker (webdev-frontend-1:80), NU prin host. Astfel portul nu mai e expus
+    # public (finding pentest „Port 5174 dev server открыт").
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+
+  tgbot:
+    build: ./tgbot
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
+      BACKEND_URL: http://backend:4001
+
+volumes:
+  pgdata:

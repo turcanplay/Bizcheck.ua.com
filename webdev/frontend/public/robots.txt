@@ -1,0 +1,8 @@
+# Bizcheck.md — robots.txt
+# Crawlers may index public pages.
+
+User-agent: *
+Allow: /
+
+# Sitemap location for fast discovery.
+Sitemap: https://bizcheck.md/sitemap.xml

@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════════════════
+   Report cover — navy professional style, fills full A4.
+   Capture width 780px → min-height 1103px fills the page.
+═══════════════════════════════════════════════════════ */
+
+.report-header {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 1103px;
+  background: var(--navy-deep, #082E5E);
+  color: #fff;
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.report-header__gold-line {
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold, #FDA100), var(--gold-light, #FFBA3D), var(--gold, #FDA100));
+  flex-shrink: 0;
+}
+
+/* Top: brand + title + subtitle + client row */
+.report-header__top {
+  padding: 56px 56px 32px;
+  flex-shrink: 0;
+}
+
+.report-header__inner {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.report-header__brand {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold, #FDA100);
+  margin-bottom: 18px;
+}
+
+.report-header__title {
+  font-family: var(--font-serif);
+  font-size: 56px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.report-header__subtitle {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 28px;
+  letter-spacing: 0.01em;
+}
+
+.report-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.report-header__company {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.report-header__meta-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.report-header__date {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Score overview — fills remaining vertical space */
+.report-header__scores {
+  padding: 0 56px 48px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-header__scores-inner {
+  max-width: 820px;
+  margin: 0 auto;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--radius-md, 10px);
+  padding: 32px 36px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Top row: REZULTAT GENERAL label + test name + bar */
+.report-header__total-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.report-header__total-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.report-header__test-name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.report-header__total-bar {
+  width: 220px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.report-header__total-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 1.2s var(--ease-out, ease-out);
+}
+
+.report-header__total-bar-pct {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* Central big score */
+.report-header__total-big {
+  text-align: center;
+  padding: 28px 0 20px;
+}
+
+.report-header__total-num {
+  font-family: var(--font-serif);
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+
+.report-header__total-verdict {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Legend — pushed to bottom of the inner card */
+.report-header__legend {
+  margin-top: auto;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.report-header__legend-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 14px;
+}
+
+.report-header__legend-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.report-header__legend-row {
+  display: grid;
+  grid-template-columns: 10px 100px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.report-header__legend-row:last-child {
+  border-bottom: none;
+}
+
+.report-header__legend-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.report-header__legend-range {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.report-header__legend-desc {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.45;
+}
+
+/* Bottom signature row */
+.report-header__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 56px 20px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(253, 161, 0, 0.06) 55%,
+    rgba(255, 255, 255, 0.02) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.report-header__foot-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg,
+    rgba(253, 161, 0, 0.35),
+    transparent);
+}
+
+.report-header__foot-text {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .report-header { min-height: auto; }
+  .report-header__top { padding: 32px 20px 24px; }
+  .report-header__title { font-size: 32px; }
+  .report-header__scores { padding: 0 16px 28px; }
+  .report-header__scores-inner { padding: 20px; gap: 16px; }
+  .report-header__total-row { grid-template-columns: 1fr; gap: 10px; }
+  .report-header__total-bar { width: 100%; }
+  .report-header__total-num { font-size: 56px; }
+  .report-header__total-verdict { font-size: 14px; }
+  .report-header__legend-row { grid-template-columns: 8px 80px 1fr; gap: 10px; }
+  .report-header__legend-desc { font-size: 11px; }
+}
+
+@media print {
+  .report-header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,109 @@
+.report-promo {
+  background: var(--navy, #0F1B4D);
+  color: #fff;
+  border-radius: var(--radius-md, 12px);
+  padding: 56px 56px 40px;
+  text-align: center;
+  margin-top: 28px;
+  position: relative;
+}
+
+.report-promo__title {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 30px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 20px;
+  letter-spacing: -0.01em;
+}
+
+.report-promo__subtitle {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 680px;
+  margin: 0 auto 20px;
+}
+
+.report-promo__note {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gold, #FDA100);
+  max-width: 680px;
+  margin: 0 auto 32px;
+  font-weight: 500;
+}
+
+.report-promo__contacts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 26px 0 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.report-promo__contact {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-promo__contact-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold, #FDA100);
+  margin: 0;
+}
+
+.report-promo__contact-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid var(--gold, #FDA100);
+  border-radius: 999px;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+  box-sizing: border-box;
+  letter-spacing: 0.01em;
+}
+.report-promo__contact-value:hover,
+.report-promo__contact-value:focus-visible {
+  background: var(--gold, #FDA100);
+  color: var(--navy, #0F1B4D);
+  transform: translateY(-1px);
+}
+
+.report-promo__crowe {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+  padding: 22px 0 16px;
+  margin-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.report-promo__disclaimer {
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  white-space: pre-line;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .report-promo { padding: 32px 22px 24px; }
+  .report-promo__title { font-size: 22px; }
+  .report-promo__contacts { grid-template-columns: 1fr; gap: 18px; }
+}
