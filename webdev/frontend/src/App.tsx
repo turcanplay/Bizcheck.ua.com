@@ -83,7 +83,7 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center',
           justifyContent: 'center', minHeight: '60vh', color: '#0F172A', fontSize: 15,
-          fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', padding: 24,
+          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', textAlign: 'center', padding: 24,
         }}>
           <span>Застосунок оновлено. Перезавантажуємо сторінку…</span>
           <button

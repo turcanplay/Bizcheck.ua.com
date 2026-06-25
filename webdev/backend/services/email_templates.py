@@ -9,10 +9,10 @@ No dense cards, no bullet lists, no button clutter.
 from html import escape
 from urllib.parse import quote
 
-# Brand palette — vivid where it matters, light everywhere else.
-NAVY = "#082E5E"
-GOLD = "#FDA100"
-GOLD_DARK = "#C48A00"
+# Brand palette — Crowe Indigo + Amber, light everywhere else.
+NAVY = "#011E41"       # Crowe Indigo
+GOLD = "#F5A800"       # Crowe Amber
+GOLD_DARK = "#D7761D"
 INK = "#16203A"
 MUTED = "#6B7280"
 HAIR = "#ECEEF3"        # hairline divider
@@ -20,17 +20,18 @@ BG_PAGE = "#F4F6FB"     # soft page background
 
 
 def _zone_color(score: int) -> str:
-    if score >= 80: return "#16A34A"   # green
-    if score >= 70: return "#EAB308"   # yellow
-    if score >= 65: return "#F97316"   # orange
-    return "#DC2626"                   # red
+    # Crowe accent palette: Teal → Amber → Amber-dark → Coral
+    if score >= 80: return "#05AB8C"   # teal
+    if score >= 70: return "#F5A800"   # amber
+    if score >= 65: return "#D7761D"   # amber dark
+    return "#E5376B"                   # coral
 
 
 def _zone_tint(score: int) -> str:
-    if score >= 80: return "#E9F8EF"
-    if score >= 70: return "#FCF6DD"
-    if score >= 65: return "#FDEFE2"
-    return "#FCE9E9"
+    if score >= 80: return "#E2F4F0"
+    if score >= 70: return "#FFF4D9"
+    if score >= 65: return "#FBEAD9"
+    return "#FCE7EE"
 
 
 def _zone_label(score: int, lang: str) -> str:
@@ -170,7 +171,7 @@ def render(
               <img src="{logo_url}" alt="Crowe" width="172" height="auto" style="display:block;margin:0 auto 26px;max-width:200px;width:172px;height:auto;border:0;outline:none;text-decoration:none;">
 
               <div style="color:{GOLD_DARK};font-size:11px;font-weight:800;letter-spacing:3px;margin-bottom:10px;">{eyebrow}</div>
-              <h1 style="color:{NAVY};font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:25px;font-weight:700;line-height:1.3;margin:0 0 28px;">{title_line}</h1>
+              <h1 style="color:{NAVY};font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:25px;font-weight:700;line-height:1.3;margin:0 0 28px;">{title_line}</h1>
 
               <p style="font-size:16px;font-weight:600;color:{INK};margin:0 0 6px;text-align:left;">{greeting}</p>
               <p style="font-size:14.5px;line-height:1.65;color:{MUTED};margin:0 0 30px;text-align:left;">{intro}</p>
@@ -180,7 +181,7 @@ def render(
                 <tr>
                   <td align="center" valign="middle" width="128" height="128"
                       style="width:128px;height:128px;background:{zone_tint};border:5px solid {zone_col};border-radius:64px;text-align:center;">
-                    <div style="font-family:Georgia,'Times New Roman',serif;font-size:42px;font-weight:700;color:{zone_col};line-height:1;">{score}<span style="font-size:20px;">%</span></div>
+                    <div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:42px;font-weight:700;color:{zone_col};line-height:1;">{score}<span style="font-size:20px;">%</span></div>
                     <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:{MUTED};margin-top:3px;">{score_caption}</div>
                   </td>
                 </tr>

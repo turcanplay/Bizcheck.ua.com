@@ -77,7 +77,7 @@
 .report-page__pdf-btn:hover:not(:disabled) {
   background: var(--gold);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(253, 161, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(245, 168, 0, 0.3);
 }
 
 .report-page__pdf-btn:disabled {

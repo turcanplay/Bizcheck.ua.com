@@ -1,30 +1,30 @@
 :root {
-  /* Navy palette */
-  --navy: #0B3D7A;
-  --navy-deep: #082E5E;
-  --navy-mid: #1A5BA0;
-  --navy-light: #2E6FB8;
-  --navy-pale: #E8F0FA;
+  /* Navy palette — Crowe Indigo (#011E41) + extended indigo/blue range */
+  --navy: #002E62;
+  --navy-deep: #011E41;
+  --navy-mid: #003F9F;
+  --navy-light: #0075C9;
+  --navy-pale: #E6EDF5;
 
   /* Background */
   --bg-page: #F4F6F9;
   --bg-card: #FFFFFF;
   --bg-quiz: #F4F6F9;
-  --bg-dark: #082E5E;
+  --bg-dark: #011E41;
 
-  /* Accent */
-  --gold: #FDA100;
-  --gold-dark: #D48800;
-  --gold-light: #FFBA3D;
-  --gold-pale: #FFF7E6;
+  /* Accent — Crowe Amber (#F5A800) + extended amber range */
+  --gold: #F5A800;
+  --gold-dark: #D7761D;
+  --gold-light: #FFD231;
+  --gold-pale: #FFF4D9;
 
-  /* Semantic */
-  --red: #E03E2D;
-  --red-light: #F9ECEB;
-  --green: #1E6B4A;
-  --green-light: #EBF4F0;
-  --blue-mid: #2563AB;
-  --blue-light: #EDF3FB;
+  /* Semantic — Crowe accent palette (Coral / Teal / Blue) */
+  --red: #E5376B;
+  --red-light: #FCE7EE;
+  --green: #0C7876;
+  --green-light: #E2F4F0;
+  --blue-mid: #0075C9;
+  --blue-light: #E5F1FA;
 
   /* Text */
   --ink: #1A1A2E;
@@ -40,11 +40,11 @@
   --border-light: rgba(255, 255, 255, 0.12);
 
   /* Report */
-  --report-header: #082E5E;
+  --report-header: #011E41;
 
-  /* Fonts */
-  --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Fonts — Crowe: Helvetica primary, Arial secondary (system stack, no web download) */
+  --font-serif: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   /* Spacing */
   --space-xs: 4px;
@@ -63,10 +63,10 @@
   --radius-full: 50%;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(11, 61, 122, 0.06);
-  --shadow-md: 0 4px 16px rgba(11, 61, 122, 0.08);
-  --shadow-lg: 0 8px 32px rgba(11, 61, 122, 0.1);
-  --shadow-xl: 0 16px 48px rgba(11, 61, 122, 0.14);
+  --shadow-sm: 0 1px 3px rgba(1, 30, 65, 0.06);
+  --shadow-md: 0 4px 16px rgba(1, 30, 65, 0.08);
+  --shadow-lg: 0 8px 32px rgba(1, 30, 65, 0.1);
+  --shadow-xl: 0 16px 48px rgba(1, 30, 65, 0.14);
 
   /* Transitions */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
