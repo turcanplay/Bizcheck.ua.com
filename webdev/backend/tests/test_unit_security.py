@@ -457,7 +457,7 @@ def app_with_submissions_create(monkeypatch):
             "test_id": test_id,
             "first_name": first, "last_name": last, "email": email, "phone": phone,
             "consent": consent, "status": "started",
-            "language": "ro",
+            "language": "uk",
             "submission_token": "FAKE-TOKEN-XYZ",
             "created_at": "2026-01-01T00:00:00",
         }
@@ -469,7 +469,7 @@ def app_with_submissions_create(monkeypatch):
             "test_id": None,
             "first_name": None, "last_name": None, "email": None, "phone": None,
             "consent": False, "status": "started",
-            "language": data.get("language", "ro"),
+            "language": data.get("language", "uk"),
             "created_at": "2026-01-01T00:00:00",
             # NOTE: deliberately omitting submission_token — the route layer
             # must merge it back in from the create result.
@@ -489,7 +489,7 @@ class TestSubmissionCreateResponse:
         c = app_with_submissions_create.test_client()
         r = c.post(
             "/api_crowe_bizcheck/submissions",
-            json={"language": "ro", "consent": False},
+            json={"language": "uk", "consent": False},
         )
         assert r.status_code == 201
         body = r.get_json()
@@ -521,7 +521,7 @@ def app_full_submission_flow(monkeypatch):
         token = "TOK-{:04d}-XYZ".format(sid)
         store[sid] = token
         return {
-            "id": sid, "submission_token": token, "language": "ro",
+            "id": sid, "submission_token": token, "language": "uk",
             "first_name": first, "last_name": last, "email": email, "phone": phone,
             "consent": consent, "status": "started", "created_at": "2026-01-01",
         }
@@ -529,7 +529,7 @@ def app_full_submission_flow(monkeypatch):
     def fake_update(sub_id, data):
         # NO token in this row (mirrors _SELECT_COLS).
         return {
-            "id": sub_id, "language": data.get("language", "ro"),
+            "id": sub_id, "language": data.get("language", "uk"),
             "status": data.get("status", "started"),
             "first_name": None, "last_name": None, "email": None, "phone": None,
             "consent": False, "created_at": "2026-01-01",
@@ -538,7 +538,7 @@ def app_full_submission_flow(monkeypatch):
     def fake_get_detail(sub_id):
         if sub_id not in store:
             raise ValueError("not found")
-        return {"id": sub_id, "email": "x@y.com", "language": "ro"}
+        return {"id": sub_id, "email": "x@y.com", "language": "uk"}
 
     def fake_save_pdf(sub_id, pdf_bytes):
         return None  # success no-op
@@ -570,7 +570,7 @@ class TestPdfUploadEndToEnd:
         c = app.test_client()
 
         # 1) Create — SPA receives id + token in the response body.
-        r = c.post(self.BASE, json={"language": "ro", "consent": False})
+        r = c.post(self.BASE, json={"language": "uk", "consent": False})
         assert r.status_code == 201
         sub = r.get_json()["submission"]
         sub_id, token = sub["id"], sub["submission_token"]
@@ -592,7 +592,7 @@ class TestPdfUploadEndToEnd:
     def test_pdf_upload_without_token_returns_401(self, app_full_submission_flow):
         app, _ = app_full_submission_flow
         c = app.test_client()
-        r = c.post(self.BASE, json={"language": "ro"})
+        r = c.post(self.BASE, json={"language": "uk"})
         sub_id = r.get_json()["submission"]["id"]
         # Same as before the fix: no header → no PDF saved.
         r = c.post(f"{self.BASE}/{sub_id}/pdf", json={"pdf": "x"})
@@ -616,7 +616,7 @@ class TestSalesNotify:
         # When the claim is lost (already notified), maybe_notify_sales tries to
         # edit the existing message — stub the lookup so the test never hits the DB.
         monkeypatch.setattr("models.submission.Submission.get_sales_message", staticmethod(lambda i: None))
-        monkeypatch.setattr("models.test.Test.find_by_id", staticmethod(lambda i: {"name_ro": "Bizcheck"}))
+        monkeypatch.setattr("models.test.Test.find_by_id", staticmethod(lambda i: {"name_uk": "Bizcheck"}))
         # Capture instead of spawning a real thread / hitting Telegram.
         monkeypatch.setattr(sn.threading, "Thread",
                             lambda *a, **k: type("T", (), {"start": lambda self: sent.append(k.get("args"))})())
@@ -684,7 +684,7 @@ class TestTestIdValidation:
 
     def test_integer_test_id_accepted(self, app_with_submissions_create):
         c = app_with_submissions_create.test_client()
-        r = c.post(self.BASE, json={"test_id": 5, "language": "ro"})
+        r = c.post(self.BASE, json={"test_id": 5, "language": "uk"})
         assert r.status_code == 201
 
     def test_numeric_string_test_id_accepted(self, app_with_submissions_create):
@@ -714,11 +714,11 @@ class TestNumericAndLangValidators:
 
     def test_clean_lang_whitelist(self):
         from utils.validators import clean_lang
-        assert clean_lang("ru") == "ru"
-        assert clean_lang("RO") == "ro"
-        assert clean_lang("en") == "ro"       # unknown → default
-        assert clean_lang("<script>") == "ro"
-        assert clean_lang(None) == "ro"
+        assert clean_lang("en") == "en"
+        assert clean_lang("RO") == "uk"
+        assert clean_lang("en") == "uk"       # unknown → default
+        assert clean_lang("<script>") == "uk"
+        assert clean_lang(None) == "uk"
 
 
 # ---------------------------------------------------------------------------
@@ -735,8 +735,8 @@ def app_with_public_reviews(monkeypatch):
     def fake_create_public(name, role, quote, rating, lang):
         row = {
             "id": len(saved) + 1, "name": name, "role": role,
-            "quote_ro": quote if lang == "ro" else "",
-            "quote_ru": quote if lang == "ru" else "",
+            "quote_uk": quote if lang == "uk" else "",
+            "quote_en": quote if lang == "en" else "",
             "rating": rating, "avatar_url": None, "order_index": 0,
             "is_active": True, "lang": lang, "is_user_submitted": True,
             "created_at": "2026-01-01",
@@ -759,17 +759,17 @@ class TestPublicReviewSubmit:
     def test_valid_review_is_created(self, app_with_public_reviews):
         app, saved = app_with_public_reviews
         c = app.test_client()
-        r = c.post(self.URL, json={"name": "Vlad R.", "quote": "Foarte util!", "rating": 5, "lang": "ro"})
+        r = c.post(self.URL, json={"name": "Vlad R.", "quote": "Foarte util!", "rating": 5, "lang": "uk"})
         assert r.status_code == 201
         row = r.get_json()["testimonial"]
         assert row["is_user_submitted"] is True
-        assert row["quote_ro"] == "Foarte util!" and row["quote_ru"] == ""
+        assert row["quote_uk"] == "Foarte util!" and row["quote_en"] == ""
 
     def test_review_stored_in_single_language(self, app_with_public_reviews):
         app, saved = app_with_public_reviews
         c = app.test_client()
-        c.post(self.URL, json={"name": "Ион", "quote": "Отлично", "rating": 4, "lang": "ru"})
-        assert saved[-1]["quote_ru"] == "Отлично" and saved[-1]["quote_ro"] == ""
+        c.post(self.URL, json={"name": "Ион", "quote": "Отлично", "rating": 4, "lang": "en"})
+        assert saved[-1]["quote_en"] == "Отлично" and saved[-1]["quote_uk"] == ""
 
     def test_missing_name_rejected(self, app_with_public_reviews):
         app, _ = app_with_public_reviews
@@ -788,7 +788,7 @@ class TestPublicReviewSubmit:
         c = app.test_client()
         r = c.post(self.URL, json={"name": "<b>Vlad</b>", "quote": "<script>alert(1)</script>great service", "rating": 5})
         assert r.status_code == 201
-        assert "<script>" not in saved[-1]["quote_ro"]
+        assert "<script>" not in saved[-1]["quote_uk"]
         assert "<b>" not in saved[-1]["name"]
 
     def test_forged_rating_is_clamped(self, app_with_public_reviews):
@@ -798,8 +798,8 @@ class TestPublicReviewSubmit:
         assert r.status_code == 201
         assert saved[-1]["rating"] == 5  # clamped to max
 
-    def test_unknown_lang_defaults_ro(self, app_with_public_reviews):
+    def test_unknown_lang_defaults_uk(self, app_with_public_reviews):
         app, saved = app_with_public_reviews
         c = app.test_client()
         c.post(self.URL, json={"name": "Vlad", "quote": "nice review", "rating": 5, "lang": "fr"})
-        assert saved[-1]["lang"] == "ro"
+        assert saved[-1]["lang"] == "uk"

@@ -89,7 +89,7 @@ export default function AdminTests() {
   }
 
   async function onDelete(t: AdminTest) {
-    if (!confirm(`Ștergi testul "${t.name_ro}"? Toate blocurile și întrebările legate se vor șterge.`)) return;
+    if (!confirm(`Delete test "${t.name_uk}"? All related blocks and questions will be deleted.`)) return;
     await adminApi.deleteTest(t.id);
     await load();
   }
@@ -99,26 +99,26 @@ export default function AdminTests() {
     navigator.clipboard.writeText(url).then(() => {
       // Lightweight feedback without extra deps
       // eslint-disable-next-line no-alert
-      alert(`Link copiat: ${url}`);
+      alert(`Link copied: ${url}`);
     });
   }
 
   return (
     <>
       <div className="admin-section-header">
-        <h2>🧪 Teste</h2>
-        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Adaugă Test</button>
+        <h2>🧪 Tests</h2>
+        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Add Test</button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Loading...</div>}
       {!loading && tests.length === 0 && (
-        <div className="admin-empty">Niciun test încă. Apasă „+ Adaugă Test" ca să creezi unul.</div>
+        <div className="admin-empty">No tests yet. Click "+ Add Test" to create one.</div>
       )}
 
       {!loading && tests.length > 0 && (
         <div className="admin-empty" style={{ textAlign: 'left', padding: '4px 2px 10px', opacity: 0.75 }}>
-          ⠿ Trage testele de mâner ca să le reordonezi. Cele active apar primele, cele inactive după.
+          ⠿ Drag tests by the handle to reorder. Active ones are shown first, inactive ones after.
         </div>
       )}
 
@@ -139,46 +139,46 @@ export default function AdminTests() {
                 draggable
                 onDragStart={e => onDragStart(e, t.id)}
                 onDragEnd={onDragEnd}
-                title="Trage ca să reordonezi"
-                aria-label="Trage ca să reordonezi"
+                title="Drag to reorder"
+                aria-label="Drag to reorder"
               >
                 ⠿
               </span>
               <div style={{ flex: 1, minWidth: 260 }}>
-                <div className="admin-test-card__title">{t.name_ro}</div>
-                {t.name_ru && <div className="admin-test-card__subtitle">{t.name_ru}</div>}
-                {t.description_ro && <div className="admin-test-card__desc">{t.description_ro}</div>}
+                <div className="admin-test-card__title">{t.name_uk}</div>
+                {t.name_en && <div className="admin-test-card__subtitle">{t.name_en}</div>}
+                {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
               </div>
               <div className="admin-test-card__actions">
-                <Link to={`/admin_bizcheck_md_crowe/tests/${t.slug}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Deschide</Link>
-                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setEditing(t)}>✏️ Editează</button>
-                <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(t)}>🗑 Șterge</button>
+                <Link to={`/admin_bizcheck_md_crowe/tests/${t.slug}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Open</Link>
+                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setEditing(t)}>✏️ Edit</button>
+                <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(t)}>🗑 Delete</button>
               </div>
             </div>
 
             <div className="admin-test-card__link-bar">
               <span>🔗 Link:</span>
               <code>{url}</code>
-              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => copyLink(t.slug)}>📋 Copiază</button>
-              <a href={url} target="_blank" rel="noreferrer" className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>🚀 Deschide testul</a>
+              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => copyLink(t.slug)}>📋 Copy</button>
+              <a href={url} target="_blank" rel="noreferrer" className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>🚀 Open test</a>
             </div>
 
             <div className="admin-test-card__meta">
               <span>🟢 Safe: ≥{zones.safe}%</span>
-              <span>🟡 Mediu: ≥{zones.developing}%</span>
-              <span>🟠 Scăzut: ≥{zones.warn}%</span>
+              <span>🟡 Developing: ≥{zones.developing}%</span>
+              <span>🟠 Low: ≥{zones.warn}%</span>
               {t.is_coming_soon
-                ? <span className="admin-badge admin-badge-blue">⏳ În curând</span>
+                ? <span className="admin-badge admin-badge-blue">⏳ Coming soon</span>
                 : t.is_active
-                ? <span className="admin-badge admin-badge-green">✅ Activ</span>
-                : <span className="admin-badge admin-badge-muted">⏸ Inactiv</span>}
+                ? <span className="admin-badge admin-badge-green">✅ Active</span>
+                : <span className="admin-badge admin-badge-muted">⏸ Inactive</span>}
               {t.is_paid
                 ? (
                   <span className="admin-badge admin-badge-gold">
-                    💰 {t.price != null ? `${t.price} ${t.currency}` : 'Cu plată (preț nesetat)'}
+                    💰 {t.price != null ? `${t.price} ${t.currency}` : 'Paid (price not set)'}
                   </span>
                 )
-                : <span className="admin-badge admin-badge-blue">🆓 Gratuit</span>}
+                : <span className="admin-badge admin-badge-blue">🆓 Free</span>}
               <span className="admin-badge admin-badge-muted">slug: {t.slug}</span>
             </div>
           </div>

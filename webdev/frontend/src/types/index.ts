@@ -31,10 +31,10 @@ export interface QuestionsData {
 export interface TestOption {
   id: number;
   slug: string;
-  name_ro: string;
-  name_ru: string;
-  description_ro: string;
-  description_ru: string;
+  name_uk: string;
+  name_en: string;
+  description_uk: string;
+  description_en: string;
   report_type?: 'standard' | 'premium' | 'bizcheck';
 }
 

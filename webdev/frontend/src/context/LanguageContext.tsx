@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     const saved = localStorage.getItem('bizcheck_lang');
-    return (saved === 'ro' || saved === 'ru') ? saved : 'ru';
+    return (saved === 'uk' || saved === 'en') ? saved : 'uk';
   });
 
   const setLang = useCallback((newLang: Lang) => {

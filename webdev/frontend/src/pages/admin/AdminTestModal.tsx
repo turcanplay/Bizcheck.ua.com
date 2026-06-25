@@ -9,17 +9,17 @@ interface Props {
 
 export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   const editing = !!initial;
-  const [nameRo, setNameRo] = useState(initial?.name_ro ?? '');
-  const [nameRu, setNameRu] = useState(initial?.name_ru ?? '');
-  const [descRo, setDescRo] = useState(initial?.description_ro ?? '');
-  const [descRu, setDescRu] = useState(initial?.description_ru ?? '');
+  const [nameRo, setNameRo] = useState(initial?.name_uk ?? '');
+  const [nameRu, setNameRu] = useState(initial?.name_en ?? '');
+  const [descRo, setDescRo] = useState(initial?.description_uk ?? '');
+  const [descRu, setDescRu] = useState(initial?.description_en ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [safe, setSafe] = useState(initial?.scoring_zones?.safe ?? 80);
   const [developing, setDeveloping] = useState(initial?.scoring_zones?.developing ?? 70);
   const [warn, setWarn] = useState(initial?.scoring_zones?.warn ?? 65);
   const [risk, setRisk] = useState(initial?.scoring_zones?.risk ?? 0);
-  // Three-state visibility: 'active' = vizibil + clickabil, 'coming_soon' =
-  // vizibil cu overlay 'În curând' și buton dezactivat, 'hidden' = ascuns complet în catalog.
+  // Three-state visibility: 'active' = видимий + клікабельний, 'coming_soon' =
+  // видимий з накладкою 'Незабаром' і вимкненою кнопкою, 'hidden' = повністю прихований у каталозі.
   type Visibility = 'active' | 'coming_soon' | 'hidden';
   const [visibility, setVisibility] = useState<Visibility>(
     initial == null
@@ -48,14 +48,14 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!nameRo.trim()) { setError('Titlu (RO) este obligatoriu'); return; }
+    if (!nameRo.trim()) { setError('Title (UK) is required'); return; }
     setBusy(true);
     try {
       let priceNum: number | null = null;
       if (isPaid) {
         const parsed = parseFloat(price.replace(',', '.'));
         if (!Number.isFinite(parsed) || parsed < 0) {
-          setError('Prețul trebuie să fie un număr ≥ 0 când testul este cu plată');
+          setError('Price must be a number ≥ 0 when the test is paid');
           setBusy(false);
           return;
         }
@@ -67,10 +67,10 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         .filter(Boolean)
         .slice(0, 20);
       const input: AdminTestInput = {
-        name_ro: nameRo.trim(),
-        name_ru: nameRu.trim() || undefined,
-        description_ro: descRo,
-        description_ru: descRu,
+        name_uk: nameRo.trim(),
+        name_en: nameRu.trim() || undefined,
+        description_uk: descRo,
+        description_en: descRu,
         slug: slug.trim() || undefined,
         is_active: visibility !== 'hidden',
         is_coming_soon: visibility === 'coming_soon',
@@ -99,54 +99,54 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
       <form className="admin-modal" onClick={e => e.stopPropagation()} onSubmit={onSubmit}>
-        <h3>{editing ? 'Editează Test' : 'Adaugă Test'}</h3>
+        <h3>{editing ? 'Edit Test' : 'Add Test'}</h3>
 
         <div className="admin-form-group">
-          <label>Titlu (RO) * <small style={{ color: 'var(--text2)' }}>(max 255)</small></label>
-          <input value={nameRo} maxLength={255} onChange={e => setNameRo(e.target.value)} placeholder="ex: Audit HR GDPR" autoFocus />
+          <label>Title (UK) * <small style={{ color: 'var(--text2)' }}>(max 255)</small></label>
+          <input value={nameRo} maxLength={255} onChange={e => setNameRo(e.target.value)} placeholder="e.g.: HR GDPR Audit" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Titlu (RU) <small style={{ color: 'var(--text2)' }}>(max 255)</small></label>
-          <input value={nameRu} maxLength={255} onChange={e => setNameRu(e.target.value)} placeholder="ex: Аудит HR GDPR" />
+          <label>Title (EN) <small style={{ color: 'var(--text2)' }}>(max 255)</small></label>
+          <input value={nameRu} maxLength={255} onChange={e => setNameRu(e.target.value)} placeholder="e.g.: HR GDPR Audit" />
         </div>
         <div className="admin-form-group">
-          <label>Descriere (RO)</label>
-          <textarea value={descRo} maxLength={2000} onChange={e => setDescRo(e.target.value)} placeholder="Descrierea testului..." />
+          <label>Description (UK)</label>
+          <textarea value={descRo} maxLength={2000} onChange={e => setDescRo(e.target.value)} placeholder="Test description..." />
         </div>
         <div className="admin-form-group">
-          <label>Descriere (RU)</label>
-          <textarea value={descRu} maxLength={2000} onChange={e => setDescRu(e.target.value)} placeholder="Описание теста..." />
+          <label>Description (EN)</label>
+          <textarea value={descRu} maxLength={2000} onChange={e => setDescRu(e.target.value)} placeholder="Test description..." />
         </div>
         <div className="admin-form-group">
-          <label>Slug (URL) — lăsați gol pentru auto-generare <small style={{ color: 'var(--text2)' }}>(max 64, a-z 0-9 _ -)</small></label>
+          <label>Slug (URL) — leave empty for auto-generation <small style={{ color: 'var(--text2)' }}>(max 64, a-z 0-9 _ -)</small></label>
           <input
             value={slug}
             maxLength={64}
             onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-            placeholder="ex: audit-hr-gdpr"
+            placeholder="e.g.: hr-gdpr-audit"
           />
         </div>
 
         <div className="admin-form-group">
-          <label>Ordine în catalog <small style={{ color: 'var(--text2)' }}>(0 = primul / stânga; crește spre dreapta)</small></label>
+          <label>Catalog order <small style={{ color: 'var(--text2)' }}>(0 = first / left; increases to the right)</small></label>
           <input
             type="number"
             min={0}
             value={orderIndex}
             onChange={e => setOrderIndex(Math.max(0, parseInt(e.target.value, 10) || 0))}
-            placeholder="ex: 0, 1, 2..."
+            placeholder="e.g.: 0, 1, 2..."
             style={{ width: 140 }}
           />
         </div>
 
         <div className="admin-form-group">
-          <label>Categorie <small style={{ color: 'var(--text2)' }}>(apare în filtrul catalog — ex: GDPR, Legal, Business)</small></label>
+          <label>Category <small style={{ color: 'var(--text2)' }}>(appears in the catalog filter — e.g.: GDPR, Legal, Business)</small></label>
           <input
             list="test-category-suggestions"
             value={category}
             maxLength={50}
             onChange={e => setCategory(e.target.value)}
-            placeholder="ex: GDPR"
+            placeholder="e.g.: GDPR"
           />
           <datalist id="test-category-suggestions">
             <option value="GDPR" />
@@ -157,33 +157,33 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         </div>
 
         <div className="admin-form-group">
-          <label>Bullets / caracteristici card <small style={{ color: 'var(--text2)' }}>(o linie = un bullet, max 20)</small></label>
+          <label>Card bullets / features <small style={{ color: 'var(--text2)' }}>(one line = one bullet, max 20)</small></label>
           <textarea
             value={featuresText}
             onChange={e => setFeaturesText(e.target.value)}
-            placeholder={'Ex:\n5 minute\n10 întrebări\nRezultat instant'}
+            placeholder={'e.g.:\n5 minutes\n10 questions\nInstant result'}
             style={{ minHeight: 110, fontFamily: 'inherit' }}
             maxLength={4000}
           />
         </div>
 
         <div className="admin-form-group">
-          <label style={{ fontWeight: 600 }}>Zone de scor (%)</label>
+          <label style={{ fontWeight: 600 }}>Score zones (%)</label>
           <div className="admin-zones-grid">
             <div>
-              <label style={{ fontSize: 12 }}>🟢 Risc scăzut (≥%)</label>
+              <label style={{ fontSize: 12 }}>🟢 Low risk (≥%)</label>
               <input type="number" min={0} max={100} value={safe} onChange={e => setSafe(+e.target.value)} />
             </div>
             <div>
-              <label style={{ fontSize: 12 }}>🟡 Risc moderat (≥%)</label>
+              <label style={{ fontSize: 12 }}>🟡 Moderate risk (≥%)</label>
               <input type="number" min={0} max={100} value={developing} onChange={e => setDeveloping(+e.target.value)} />
             </div>
             <div>
-              <label style={{ fontSize: 12 }}>🟠 Risc ridicat (≥%)</label>
+              <label style={{ fontSize: 12 }}>🟠 High risk (≥%)</label>
               <input type="number" min={0} max={100} value={warn} onChange={e => setWarn(+e.target.value)} />
             </div>
             <div>
-              <label style={{ fontSize: 12 }}>🔴 Risc critic (≥%)</label>
+              <label style={{ fontSize: 12 }}>🔴 Critical risk (≥%)</label>
               <input type="number" min={0} max={100} value={risk} onChange={e => setRisk(+e.target.value)} />
             </div>
           </div>
@@ -191,18 +191,18 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
 
         <div className="admin-form-group">
           <label style={{ fontWeight: 600 }}>
-            📄 Tip raport <small style={{ color: 'var(--text2)', fontWeight: 400 }}>
-              (ce primește utilizatorul la finalul testului)
+            📄 Report type <small style={{ color: 'var(--text2)', fontWeight: 400 }}>
+              (what the user receives at the end of the test)
             </small>
           </label>
           <div className="admin-report-type-grid admin-report-type-grid--3">
             {([
-              { v: 'bizcheck', icon: '🧭', title: 'Raport BizCheck',
-                desc: 'Complet — copertă navy, rezumat pe blocuri, 4 zone de risc și pagini detaliate per bloc (esența, risc, acțiune, regulatory).' },
-              { v: 'standard', icon: '📋', title: 'Raport Standard',
-                desc: 'Structură identică cu BizCheck + checklist per-întrebare (✓ corespunde normei / ✗ nu corespunde). Mai simplu, fără paginile de explicații pe bloc.' },
+              { v: 'bizcheck', icon: '🧭', title: 'BizCheck Report',
+                desc: 'Full — navy cover, per-block summary, 4 risk zones and detailed pages per block (essence, risk, action, regulatory).' },
+              { v: 'standard', icon: '📋', title: 'Standard Report',
+                desc: 'Same structure as BizCheck + per-question checklist (✓ meets the standard / ✗ does not). Simpler, without the per-block explanation pages.' },
               { v: 'premium',  icon: '💎', title: 'Premium',
-                desc: 'Doar sumar — copertă, rezumat pe blocuri, 4 zone de risc. Fără pagini detaliate.' },
+                desc: 'Summary only — cover, per-block summary, 4 risk zones. No detailed pages.' },
             ] as const).map(opt => (
               <label
                 key={opt.v}
@@ -224,15 +224,15 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         </div>
 
         <div className="admin-form-group">
-          <label style={{ fontWeight: 600 }}>Vizibilitate în catalog</label>
+          <label style={{ fontWeight: 600 }}>Catalog visibility</label>
           <div className="admin-visibility-grid">
             {([
-              { v: 'active' as const, icon: '✅', title: 'Activ',
-                desc: 'Vizibil și clickabil pentru utilizatori.' },
-              { v: 'coming_soon' as const, icon: '⏳', title: 'În curând',
-                desc: 'Vizibil cu overlay „În curând" și buton dezactivat.' },
-              { v: 'hidden' as const, icon: '🚫', title: 'Inactiv',
-                desc: 'Ascuns complet din catalogul public.' },
+              { v: 'active' as const, icon: '✅', title: 'Active',
+                desc: 'Visible and clickable for users.' },
+              { v: 'coming_soon' as const, icon: '⏳', title: 'Coming soon',
+                desc: 'Visible with a "Coming soon" overlay and a disabled button.' },
+              { v: 'hidden' as const, icon: '🚫', title: 'Inactive',
+                desc: 'Completely hidden from the public catalog.' },
             ]).map(opt => (
               <label
                 key={opt.v}
@@ -255,13 +255,13 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         <div className="admin-form-group">
           <label className="admin-checkbox-row">
             <input type="checkbox" checked={isPaid} onChange={e => setIsPaid(e.target.checked)} />
-            💰 Test cu plată (flag metadata — gate-ul efectiv e pe landing-ul extern)
+            💰 Paid test (metadata flag — the actual gate is on the external landing page)
           </label>
         </div>
 
         {isPaid && (
           <div className="admin-form-group">
-            <label>💰 Preț acces <small style={{ color: 'var(--text2)' }}>(virgulă sau punct, max 99 999 999.99)</small></label>
+            <label>💰 Access price <small style={{ color: 'var(--text2)' }}>(comma or dot, max 99 999 999.99)</small></label>
             <div style={{ display: 'flex', gap: 8 }}>
               <input
                 type="text"
@@ -269,7 +269,7 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
                 value={price}
                 maxLength={12}
                 onChange={e => setPrice(e.target.value.replace(/[^0-9.,]/g, ''))}
-                placeholder="ex: 199 sau 199.50"
+                placeholder="e.g.: 199 or 199.50"
                 style={{ flex: 1 }}
               />
               <input
@@ -287,8 +287,8 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         {error && <div className="admin-error">⚠️ {error}</div>}
 
         <div className="admin-modal-actions">
-          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Anulează</button>
-          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Salvează'}</button>
+          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
+          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Save'}</button>
         </div>
       </form>
     </div>

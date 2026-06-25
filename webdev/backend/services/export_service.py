@@ -88,13 +88,13 @@ def _collect_questions_for_blocks(blocks):
         top_level = [q for q in block_questions if not q.get("parent_question_id")]
         for q_idx, q in enumerate(top_level):
             key = f"b{b['id']}q{q['id']}"
-            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_ro'] or '')[:40]}"
+            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_uk'] or '')[:40]}"
             question_keys_ordered.append(key)
             subs = [sq for sq in block_questions if sq.get("parent_question_id") == q["id"]]
             for sq_idx, sq in enumerate(subs):
                 skey = f"b{b['id']}q{sq['id']}"
                 question_labels[skey] = (
-                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_ro'] or '')[:40]}"
+                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_uk'] or '')[:40]}"
                 )
                 question_keys_ordered.append(skey)
 

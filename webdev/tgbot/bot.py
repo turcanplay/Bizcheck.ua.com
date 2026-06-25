@@ -46,154 +46,154 @@ _PHONE_RE = re.compile(r'^\+?[\d\s\-()]{7,20}$')
 # ---------------------------------------------------------------------------
 
 _STRINGS = {
-    "ro": {
+    "uk": {
         "welcome": (
-            "Bună ziua și bine ați venit la *Bizcheck.md* — instrumentul de evaluare "
-            "al companiei Crowe Turcan Mikhailenko.\n\n"
-            "Pentru a primi raportul dumneavoastră aici, în Telegram:\n\n"
-            "• Completați chestionarul pe Bizcheck.md\n"
-            "• La final, alegeți opțiunea *Trimite în Telegram*\n"
-            "• Reveniți aici și apăsați *START* — raportul ajunge automat\n\n"
-            "Pentru întrebări sau pentru o ofertă personalizată, "
-            "ne puteți scrie oricând la *office@crowe-tm.md*."
+            "Доброго дня та ласкаво просимо до *Bizcheck.md* — інструмента діагностики "
+            "компанії Crowe Turcan Mikhailenko.\n\n"
+            "Щоб отримати ваш звіт тут, у Telegram:\n\n"
+            "• Пройдіть опитувальник на Bizcheck.md\n"
+            "• Наприкінці оберіть опцію *Надіслати в Telegram*\n"
+            "• Поверніться сюди й натисніть *START* — звіт надійде автоматично\n\n"
+            "З питань або щодо персональної пропозиції "
+            "ви можете написати нам будь-коли на *office@crowe-tm.md*."
         ),
-        "preparing": "Pregătim raportul, durează câteva secunde…",
+        "preparing": "Готуємо звіт, це триватиме кілька секунд…",
         "server_error": (
-            "Momentan serverul nostru nu răspunde. Vă rugăm să încercați din nou peste "
-            "câteva secunde. Dacă problema persistă, scrieți-ne la office@crowe-tm.md."
+            "Наразі наш сервер не відповідає. Будь ласка, спробуйте ще раз за "
+            "кілька секунд. Якщо проблема не зникає — напишіть нам на office@crowe-tm.md."
         ),
         "expired": (
-            "Link-ul de acces a expirat sau a fost deja folosit.\n\n"
-            "Reveniți la pagina raportului și apăsați din nou butonul *Trimite în Telegram*. "
-            "Dacă întâmpinați probleme, vă putem ajuta la office@crowe-tm.md."
+            "Посилання застаріло або вже було використане.\n\n"
+            "Поверніться на сторінку звіту та знову натисніть кнопку *Надіслати в Telegram*. "
+            "Якщо виникнуть труднощі — ми допоможемо: office@crowe-tm.md."
         ),
         "server_fail": (
-            "Ne pare rău, a apărut o eroare neașteptată. Reîncercați în câteva clipe. "
-            "Pentru asistență directă: office@crowe-tm.md."
+            "На жаль, сталася непередбачувана помилка. Спробуйте, будь ласка, ще раз. "
+            "Для швидкої допомоги: office@crowe-tm.md."
         ),
-        "report_header": "📊 *Raport Bizcheck.md pentru {first_name} {last_name}*\n",
-        "score_line": "Scor general: *{score}%*",
-        "blocks_header": "*Blocuri evaluate:*",
-        "pdf_footer": "Atașăm mai jos raportul complet în format PDF.",
+        "report_header": "📊 *Звіт Bizcheck.md для {first_name} {last_name}*\n",
+        "score_line": "Загальний бал: *{score}%*",
+        "blocks_header": "*Оцінені блоки:*",
+        "pdf_footer": "Нижче додаємо повний звіт у форматі PDF.",
         "pdf_caption": (
-            "Raport Bizcheck.md · Crowe Turcan Mikhailenko\n\n"
-            "Specialiștii noștri vă vor contacta în cel mai scurt timp pentru a discuta "
-            "rezultatele. Pentru întrebări suplimentare sau o ofertă personalizată — "
+            "Звіт Bizcheck.md · Crowe Turcan Mikhailenko\n\n"
+            "Наші фахівці зв’яжуться з вами найближчим часом для обговорення "
+            "результатів. З додаткових питань або щодо персональної пропозиції — "
             "office@crowe-tm.md."
         ),
         "pdf_pending": (
-            "Raportul PDF se generează încă pe site. Vă rugăm să reveniți la pagina "
-            "raportului și să apăsați din nou *Trimite în Telegram* — durează câteva "
-            "secunde după finalizarea testului.\n\n"
-            "Pentru asistență: office@crowe-tm.md."
+            "PDF-звіт ще формується на сайті. Будь ласка, поверніться на сторінку "
+            "звіту та знову натисніть *Надіслати в Telegram* — це триває кілька "
+            "секунд після завершення тесту.\n\n"
+            "Підтримка: office@crowe-tm.md."
         ),
-        "zone_high": "Risc scăzut",
-        "zone_mid":  "Risc moderat",
-        "zone_warn": "Risc ridicat",
-        "zone_low":  "Risc critic",
-        "actions_msg": "Mai puteți primi raportul pe email sau lăsa datele pentru o ofertă personalizată:",
-        "email_button": "📧 Primește raportul pe email",
-        "email_prompt": "Scrieți adresa de email unde să trimitem raportul:",
-        "email_invalid": "Adresa de email nu pare validă. Mai încercați o dată:",
-        "email_sent": "✓ Am trimis raportul pe {email}. Verificați și folderul Spam.",
-        "email_pending": "Raportul încă se pregătește. Reveniți peste câteva secunde și apăsați din nou butonul.",
-        "email_expired": "Link-ul a expirat. Reveniți la pagina raportului și retrimiteți în Telegram.",
-        "email_error": "Nu am putut trimite emailul acum. Încercați mai târziu sau scrieți la office@bizcheck.md.",
-        "lead_button": "📝 Lasă datele de contact",
-        "lead_ask_email": "Scrieți adresa dvs. de email:",
-        "lead_ask_phone": "Acum scrieți numărul de telefon (ex: +373 60 123 456):",
-        "lead_invalid_email": "Adresa de email nu pare validă. Mai încercați o dată:",
-        "lead_invalid_phone": "Numărul de telefon nu pare valid. Mai încercați (ex: +373 60 123 456):",
-        "lead_saved": "✓ Vă mulțumim! Am salvat datele, vă vom contacta în curând.",
-        "lead_expired": "Link-ul a expirat. Reveniți la pagina raportului și retrimiteți în Telegram.",
-        "lead_error": "Nu am putut salva datele acum. Încercați mai târziu sau scrieți la office@bizcheck.md.",
+        "zone_high": "Низький ризик",
+        "zone_mid":  "Помірний ризик",
+        "zone_warn": "Високий ризик",
+        "zone_low":  "Критичний ризик",
+        "actions_msg": "Ви також можете отримати звіт на email або залишити контакти для персональної пропозиції:",
+        "email_button": "📧 Отримати звіт на email",
+        "email_prompt": "Напишіть адресу email, на яку надіслати звіт:",
+        "email_invalid": "Адреса email виглядає невірною. Спробуйте ще раз:",
+        "email_sent": "✓ Ми надіслали звіт на {email}. Перевірте також теку «Спам».",
+        "email_pending": "Звіт ще готується. Поверніться за кілька секунд і натисніть кнопку знову.",
+        "email_expired": "Посилання застаріло. Поверніться на сторінку звіту та надішліть у Telegram ще раз.",
+        "email_error": "Не вдалося надіслати лист зараз. Спробуйте пізніше або напишіть на office@bizcheck.md.",
+        "lead_button": "📝 Залишити контактні дані",
+        "lead_ask_email": "Напишіть вашу адресу email:",
+        "lead_ask_phone": "Тепер напишіть номер телефону (напр.: +373 60 123 456):",
+        "lead_invalid_email": "Адреса email виглядає невірною. Спробуйте ще раз:",
+        "lead_invalid_phone": "Номер телефону виглядає невірним. Спробуйте ще раз (напр.: +373 60 123 456):",
+        "lead_saved": "✓ Дякуємо! Ми зберегли дані й зв’яжемося з вами найближчим часом.",
+        "lead_expired": "Посилання застаріло. Поверніться на сторінку звіту та надішліть у Telegram ще раз.",
+        "lead_error": "Не вдалося зберегти дані зараз. Спробуйте пізніше або напишіть на office@bizcheck.md.",
         "phone_intro": (
-            "📱 Pentru a vă putea contacta direct — chiar dacă nu aveți un nume de utilizator "
-            "Telegram — partajați numărul de telefon cu o singură atingere:"
+            "📱 Щоб ми могли зв’язатися з вами напряму — навіть якщо у вас немає імені "
+            "користувача в Telegram — поділіться номером телефону одним натисканням:"
         ),
-        "phone_share_btn": "📱 Partajează numărul meu",
-        "phone_later_btn": "Mai târziu",
-        "phone_saved": "✓ Vă mulțumim! Am salvat numărul de telefon, vă vom contacta în curând.",
-        "phone_later_ack": "Bine. Puteți lăsa datele oricând folosind butoanele de mai sus.",
-        "phone_error": "Nu am putut salva numărul acum. Încercați mai târziu sau scrieți la office@bizcheck.md.",
+        "phone_share_btn": "📱 Поділитися моїм номером",
+        "phone_later_btn": "Пізніше",
+        "phone_saved": "✓ Дякуємо! Ми зберегли номер телефону й зв’яжемося з вами найближчим часом.",
+        "phone_later_ack": "Гаразд. Ви можете залишити контакти будь-коли за допомогою кнопок вище.",
+        "phone_error": "Не вдалося зберегти номер зараз. Спробуйте пізніше або напишіть на office@bizcheck.md.",
     },
-    "ru": {
+    "en": {
         "welcome": (
-            "Здравствуйте! Добро пожаловать на *Bizcheck.md* — инструмент диагностики "
-            "от Crowe Turcan Mikhailenko.\n\n"
-            "Чтобы получить отчёт прямо здесь, в Telegram:\n\n"
-            "• Пройдите тест на сайте Bizcheck.md\n"
-            "• На последнем шаге выберите *Отправить в Telegram*\n"
-            "• Вернитесь сюда и нажмите *START* — отчёт придёт автоматически\n\n"
-            "По вопросам или для персонального предложения "
-            "напишите нам в любое время: *office@crowe-tm.md*."
+            "Hello and welcome to *Bizcheck.md* — the diagnostic tool "
+            "by Crowe Turcan Mikhailenko.\n\n"
+            "To receive your report right here in Telegram:\n\n"
+            "• Complete the questionnaire on Bizcheck.md\n"
+            "• At the last step, choose the *Send to Telegram* option\n"
+            "• Come back here and press *START* — the report arrives automatically\n\n"
+            "For questions or a personalised offer, "
+            "you can write to us anytime at *office@crowe-tm.md*."
         ),
-        "preparing": "Готовим ваш отчёт, это займёт несколько секунд…",
+        "preparing": "Preparing your report, this will take a few seconds…",
         "server_error": (
-            "Сейчас наш сервер не отвечает. Пожалуйста, попробуйте ещё раз через "
-            "несколько секунд. Если проблема не уходит — напишите нам на office@crowe-tm.md."
+            "Our server is not responding at the moment. Please try again in "
+            "a few seconds. If the problem persists, write to us at office@crowe-tm.md."
         ),
         "expired": (
-            "Ссылка устарела или уже была использована.\n\n"
-            "Вернитесь на страницу отчёта и снова нажмите *Отправить в Telegram*. "
-            "Если возникнут трудности — мы поможем: office@crowe-tm.md."
+            "The access link has expired or has already been used.\n\n"
+            "Go back to the report page and press the *Send to Telegram* button again. "
+            "If you run into trouble, we can help at office@crowe-tm.md."
         ),
         "server_fail": (
-            "К сожалению, произошла непредвиденная ошибка. Попробуйте, пожалуйста, "
-            "ещё раз. Для быстрой помощи: office@crowe-tm.md."
+            "Sorry, an unexpected error occurred. Please try again in a moment. "
+            "For direct assistance: office@crowe-tm.md."
         ),
-        "report_header": "📊 *Отчёт Bizcheck.md для {first_name} {last_name}*\n",
-        "score_line": "Общий балл: *{score}%*",
-        "blocks_header": "*Оценённые блоки:*",
-        "pdf_footer": "Ниже прилагаем полный отчёт в формате PDF.",
+        "report_header": "📊 *Bizcheck.md report for {first_name} {last_name}*\n",
+        "score_line": "Overall score: *{score}%*",
+        "blocks_header": "*Assessed blocks:*",
+        "pdf_footer": "We attach the full report in PDF format below.",
         "pdf_caption": (
-            "Отчёт Bizcheck.md · Crowe Turcan Mikhailenko\n\n"
-            "Наши специалисты свяжутся с вами в ближайшее время для обсуждения "
-            "результатов. По дополнительным вопросам или для персонального предложения — "
+            "Bizcheck.md report · Crowe Turcan Mikhailenko\n\n"
+            "Our specialists will contact you shortly to discuss the results. "
+            "For further questions or a personalised offer — "
             "office@crowe-tm.md."
         ),
         "pdf_pending": (
-            "PDF-отчёт ещё формируется на сайте. Пожалуйста, вернитесь на страницу "
-            "отчёта и снова нажмите *Отправить в Telegram* — это занимает несколько "
-            "секунд после завершения теста.\n\n"
-            "Поддержка: office@crowe-tm.md."
+            "The PDF report is still being generated on the site. Please go back to the "
+            "report page and press *Send to Telegram* again — it takes a few "
+            "seconds after you finish the test.\n\n"
+            "Support: office@crowe-tm.md."
         ),
-        "zone_high": "Низкий риск",
-        "zone_mid":  "Умеренный риск",
-        "zone_warn": "Повышенный риск",
-        "zone_low":  "Критический риск",
-        "actions_msg": "Можете получить отчёт на почту или оставить контакты для персонального предложения:",
-        "email_button": "📧 Получить отчёт на почту",
-        "email_prompt": "Напишите адрес эл. почты, куда отправить отчёт:",
-        "email_invalid": "Адрес эл. почты выглядит неверным. Попробуйте ещё раз:",
-        "email_sent": "✓ Отчёт отправлен на {email}. Проверьте также папку Спам.",
-        "email_pending": "Отчёт ещё готовится. Вернитесь через несколько секунд и нажмите кнопку снова.",
-        "email_expired": "Ссылка устарела. Вернитесь на страницу отчёта и снова отправьте в Telegram.",
-        "email_error": "Не удалось отправить письмо. Попробуйте позже или напишите на office@bizcheck.md.",
-        "lead_button": "📝 Оставить контакты",
-        "lead_ask_email": "Напишите ваш адрес эл. почты:",
-        "lead_ask_phone": "Теперь напишите номер телефона (напр.: +373 60 123 456):",
-        "lead_invalid_email": "Адрес эл. почты выглядит неверным. Попробуйте ещё раз:",
-        "lead_invalid_phone": "Номер телефона выглядит неверным. Попробуйте ещё раз (напр.: +373 60 123 456):",
-        "lead_saved": "✓ Спасибо! Мы сохранили данные и свяжемся с вами в ближайшее время.",
-        "lead_expired": "Ссылка устарела. Вернитесь на страницу отчёта и снова отправьте в Telegram.",
-        "lead_error": "Не удалось сохранить данные. Попробуйте позже или напишите на office@bizcheck.md.",
+        "zone_high": "Low risk",
+        "zone_mid":  "Moderate risk",
+        "zone_warn": "High risk",
+        "zone_low":  "Critical risk",
+        "actions_msg": "You can also receive the report by email or leave your contacts for a personalised offer:",
+        "email_button": "📧 Receive the report by email",
+        "email_prompt": "Write the email address where we should send the report:",
+        "email_invalid": "The email address doesn’t look valid. Please try again:",
+        "email_sent": "✓ We have sent the report to {email}. Please also check your Spam folder.",
+        "email_pending": "The report is still being prepared. Come back in a few seconds and press the button again.",
+        "email_expired": "The link has expired. Go back to the report page and resend to Telegram.",
+        "email_error": "We couldn’t send the email right now. Try later or write to office@bizcheck.md.",
+        "lead_button": "📝 Leave your contact details",
+        "lead_ask_email": "Write your email address:",
+        "lead_ask_phone": "Now write your phone number (e.g.: +373 60 123 456):",
+        "lead_invalid_email": "The email address doesn’t look valid. Please try again:",
+        "lead_invalid_phone": "The phone number doesn’t look valid. Please try again (e.g.: +373 60 123 456):",
+        "lead_saved": "✓ Thank you! We have saved your details and will contact you shortly.",
+        "lead_expired": "The link has expired. Go back to the report page and resend to Telegram.",
+        "lead_error": "We couldn’t save your details right now. Try later or write to office@bizcheck.md.",
         "phone_intro": (
-            "📱 Чтобы мы могли связаться с вами напрямую — даже если у вас нет имени "
-            "пользователя в Telegram — поделитесь номером телефона одним нажатием:"
+            "📱 So we can contact you directly — even if you don’t have a Telegram "
+            "username — share your phone number with a single tap:"
         ),
-        "phone_share_btn": "📱 Поделиться номером",
-        "phone_later_btn": "Позже",
-        "phone_saved": "✓ Спасибо! Мы сохранили номер телефона и свяжемся с вами в ближайшее время.",
-        "phone_later_ack": "Хорошо. Вы можете оставить контакты в любой момент с помощью кнопок выше.",
-        "phone_error": "Не удалось сохранить номер. Попробуйте позже или напишите на office@bizcheck.md.",
+        "phone_share_btn": "📱 Share my number",
+        "phone_later_btn": "Later",
+        "phone_saved": "✓ Thank you! We have saved your phone number and will contact you shortly.",
+        "phone_later_ack": "Alright. You can leave your contacts anytime using the buttons above.",
+        "phone_error": "We couldn’t save the number right now. Try later or write to office@bizcheck.md.",
     },
 }
 
 
 def _t(lang: str, key: str, **kwargs) -> str:
-    """Get a translated string, falling back to 'ro'."""
-    s = _STRINGS.get(lang, _STRINGS["ro"]).get(key, _STRINGS["ro"].get(key, key))
+    """Get a translated string, falling back to 'uk'."""
+    s = _STRINGS.get(lang, _STRINGS["uk"]).get(key, _STRINGS["uk"].get(key, key))
     return s.format(**kwargs) if kwargs else s
 
 
@@ -211,9 +211,9 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Token passed via deep-link: t.me/BizCheckBot?start=<token>
         await _send_report(update, token=context.args[0].strip())
     else:
-        # User opened the bot directly without a token — default to RO welcome
+        # User opened the bot directly without a token — default to UK welcome
         await update.message.reply_text(
-            _t("ro", "welcome"),
+            _t("uk", "welcome"),
             parse_mode="Markdown",
         )
 
@@ -236,20 +236,20 @@ async def _send_report(update: Update, token: str) -> None:
             resp = await client.get(f"{BACKEND_URL}/api_crowe_bizcheck/tg/report/{token}")
     except httpx.RequestError as exc:
         logger.error("Backend unreachable: %s", exc)
-        await status_msg.edit_text(_t("ro", "server_error"))
+        await status_msg.edit_text(_t("uk", "server_error"))
         return
 
     if resp.status_code == 404:
-        await status_msg.edit_text(_t("ro", "expired"), parse_mode="Markdown")
+        await status_msg.edit_text(_t("uk", "expired"), parse_mode="Markdown")
         return
 
     if resp.status_code != 200:
         logger.error("Backend returned %s", resp.status_code)
-        await status_msg.edit_text(_t("ro", "server_fail"))
+        await status_msg.edit_text(_t("uk", "server_fail"))
         return
 
     data        = resp.json()
-    lang        = data.get("language") or "ro"
+    lang        = data.get("language") or "uk"
     first_name  = data.get("first_name", "")
     last_name   = data.get("last_name", "")
     total_score = int(round(data.get("total_score") or 0))
@@ -270,7 +270,7 @@ async def _send_report(update: Update, token: str) -> None:
     if block_scores:
         lines.append(_t(lang, "blocks_header"))
         for b in block_scores:
-            title = b.get("title", f"Bloc {b.get('order', '')}")
+            title = b.get("title", f"Block {b.get('order', '')}")
             lines.append(f"└ {title}")
         lines.append("")
 
@@ -356,7 +356,7 @@ def _start_flow(context, flow: str, lang: str, token: str) -> str:
     Preserves the phone-share context (ctok/clng) so the request_contact reply
     keyboard offered after the report keeps working even mid-flow.
     """
-    lng = lang if lang in ("ro", "ru") else "ro"
+    lng = lang if lang in ("uk", "en") else "uk"
     ctok = context.user_data.get("ctok")
     clng = context.user_data.get("clng")
     context.user_data.clear()
@@ -398,7 +398,7 @@ async def on_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     """
     contact = update.message.contact if update.message else None
     token = context.user_data.get("ctok")
-    lang = context.user_data.get("clng", "ro")
+    lang = context.user_data.get("clng", "uk")
     if not contact or not token:
         return
     phone = (contact.phone_number or "").strip()
@@ -431,8 +431,8 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = (update.message.text or "").strip()
 
     # Dismiss the phone-share reply keyboard if the user chose "later".
-    if text in (_STRINGS["ro"]["phone_later_btn"], _STRINGS["ru"]["phone_later_btn"]):
-        lng = context.user_data.get("clng", context.user_data.get("lng", "ro"))
+    if text in (_STRINGS["uk"]["phone_later_btn"], _STRINGS["en"]["phone_later_btn"]):
+        lng = context.user_data.get("clng", context.user_data.get("lng", "uk"))
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lng, "phone_later_ack"), reply_markup=ReplyKeyboardRemove())
         return
@@ -440,7 +440,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     flow = context.user_data.get("flow")
     if not flow:
         return
-    lang = context.user_data.get("lng", "ro")
+    lang = context.user_data.get("lng", "uk")
     token = context.user_data.get("tok")
 
     # ----- flow: receive report by email (single step) -----
@@ -509,7 +509,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _zone(score: int, lang: str = "ro") -> tuple[str, str]:
+def _zone(score: int, lang: str = "uk") -> tuple[str, str]:
     if score >= 80:
         return "🟢", _t(lang, "zone_high")
     if score >= 70:
