@@ -9,7 +9,7 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ maxWidth: 560, margin: '80px auto', padding: 24, textAlign: 'center' }} data-page="checkout">
-      <Link to="/" style={{ color: '#0b3d7a', textDecoration: 'none' }}>← Назад на головну</Link>
+      <Link to="/" style={{ color: '#002E62', textDecoration: 'none' }}>← Назад на головну</Link>
       <h1 style={{ marginTop: 12 }}>💳 Безпечна оплата</h1>
       <p style={{ color: '#555' }}>
         Тип: <b>{kind}</b> · Елемент: <b>{slug}</b>

@@ -8,9 +8,9 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 1103px;
-  background: var(--navy-deep, #082E5E);
+  background: var(--navy-deep, #011E41);
   color: #fff;
-  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-family: var(--font-sans, 'Helvetica Neue', Helvetica, Arial, sans-serif);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -18,7 +18,7 @@
 
 .report-header__gold-line {
   height: 4px;
-  background: linear-gradient(90deg, var(--gold, #FDA100), var(--gold-light, #FFBA3D), var(--gold, #FDA100));
+  background: linear-gradient(90deg, var(--gold, #F5A800), var(--gold-light, #FFBA3D), var(--gold, #F5A800));
   flex-shrink: 0;
 }
 
@@ -39,7 +39,7 @@
   font-weight: 800;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--gold, #FDA100);
+  color: var(--gold, #F5A800);
   margin-bottom: 18px;
 }
 
@@ -249,7 +249,7 @@
   padding: 18px 56px 20px;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.04) 0%,
-    rgba(253, 161, 0, 0.06) 55%,
+    rgba(245, 168, 0, 0.06) 55%,
     rgba(255, 255, 255, 0.02) 100%);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
@@ -259,7 +259,7 @@
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg,
-    rgba(253, 161, 0, 0.35),
+    rgba(245, 168, 0, 0.35),
     transparent);
 }
 

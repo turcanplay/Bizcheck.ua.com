@@ -326,7 +326,7 @@ export default function Hero() {
 
           <div className="hero__trust">
             <div className="hero__avatars" aria-hidden>
-              <span className="hero__avatar" style={{ background: 'linear-gradient(135deg,#4A63FF,#2D4BFF)' }}>
+              <span className="hero__avatar" style={{ background: 'linear-gradient(135deg,#0075C9,#0075C9)' }}>
                 <svg viewBox="0 0 36 36" fill="none">
                   <circle cx="18" cy="13" r="5" fill="rgba(255,255,255,0.95)" />
                   <path d="M6 32c0-6.6 5.4-11 12-11s12 4.4 12 11" fill="rgba(255,255,255,0.95)" />
@@ -374,10 +374,10 @@ export default function Hero() {
 
           <div className="hero__badge hero__badge--purchases">
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-              <circle cx="7" cy="7" r="3" fill="#2D4BFF" />
-              <circle cx="13" cy="7" r="3" fill="#2D4BFF" opacity=".6" />
+              <circle cx="7" cy="7" r="3" fill="#0075C9" />
+              <circle cx="13" cy="7" r="3" fill="#0075C9" opacity=".6" />
               <path d="M2 17c1-3 3.5-4.5 5-4.5s4 1.5 5 4.5M9 17c1-3 3.5-4.5 5-4.5s4 1.5 5 4.5"
-                    stroke="#2D4BFF" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    stroke="#0075C9" strokeWidth="1.5" strokeLinecap="round" fill="none" />
             </svg>
             <div>
               <div className="hero__badge-num">+130</div>

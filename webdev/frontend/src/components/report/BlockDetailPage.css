@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════ */
 
 .block-detail {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #0F172A;
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@
   border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 18px;
   padding: 18px 20px;
-  box-shadow: 0 10px 28px -18px rgba(45, 75, 255, 0.22);
+  box-shadow: 0 10px 28px -18px rgba(0, 117, 201, 0.22);
 }
 
 .block-detail__score {
@@ -70,7 +70,7 @@
   letter-spacing: -0.015em;
   margin: 0;
   color: #0F172A;
-  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+  background: linear-gradient(135deg, #0075C9 0%, #B14FC5 70%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -130,8 +130,8 @@
   margin-top: 4px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(45, 75, 255, 0.06), rgba(124, 91, 255, 0.06));
-  border: 1px solid rgba(45, 75, 255, 0.12);
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(177, 79, 197, 0.06));
+  border: 1px solid rgba(0, 117, 201, 0.12);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -142,7 +142,7 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #2D4BFF;
+  color: #0075C9;
 }
 
 .block-detail__regulatory-link {

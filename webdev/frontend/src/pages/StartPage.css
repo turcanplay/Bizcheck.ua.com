@@ -26,18 +26,18 @@
 }
 
 .start-form__lang-btn--active {
-  background: var(--gold, #fda100);
+  background: var(--gold, #F5A800);
   color: #fff;
 }
 
 .start-form__lang-btn--active:hover {
-  background: var(--gold, #fda100);
+  background: var(--gold, #F5A800);
   color: #fff;
 }
 
 /* Hero */
 .start-hero {
-  background: linear-gradient(145deg, #082E5E 0%, #0B3D7A 40%, #06234A 100%);
+  background: linear-gradient(145deg, #011E41 0%, #002E62 40%, #011736 100%);
   padding: var(--space-3xl) var(--space-2xl) var(--space-3xl);
   position: relative;
 }
@@ -64,9 +64,9 @@
   padding: 8px 18px 8px 14px;
   margin-bottom: var(--space-lg);
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(253, 161, 0, 0.14), rgba(253, 161, 0, 0.06));
-  border: 1px solid rgba(253, 161, 0, 0.32);
-  color: var(--gold-light, #FDA100);
+  background: linear-gradient(135deg, rgba(245, 168, 0, 0.14), rgba(245, 168, 0, 0.06));
+  border: 1px solid rgba(245, 168, 0, 0.32);
+  color: var(--gold-light, #F5A800);
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 700;
@@ -77,13 +77,13 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold, #FDA100), #FFD27A);
-  box-shadow: 0 0 0 3px rgba(253, 161, 0, 0.22);
+  background: linear-gradient(135deg, var(--gold, #F5A800), #FFD27A);
+  box-shadow: 0 0 0 3px rgba(245, 168, 0, 0.22);
   animation: startDotPulse 2s ease-in-out infinite;
 }
 @keyframes startDotPulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(253, 161, 0, 0.22); }
-  50%      { box-shadow: 0 0 0 7px rgba(253, 161, 0, 0.05); }
+  0%, 100% { box-shadow: 0 0 0 3px rgba(245, 168, 0, 0.22); }
+  50%      { box-shadow: 0 0 0 7px rgba(245, 168, 0, 0.05); }
 }
 
 .start-hero__title {
@@ -97,7 +97,7 @@
 }
 
 .start-hero__title-accent {
-  background: linear-gradient(135deg, #FDA100 0%, #FFD27A 60%, #FFE9B6 100%);
+  background: linear-gradient(135deg, #F5A800 0%, #FFD27A 60%, #FFE9B6 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -156,10 +156,10 @@
   padding: var(--space-2xl) var(--space-2xl) var(--space-3xl);
   background: var(--bg-card);
   border-radius: 22px;
-  border: 1px solid rgba(11, 61, 122, 0.08);
+  border: 1px solid rgba(1, 30, 65, 0.08);
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.04),
-    0 30px 60px -20px rgba(11, 61, 122, 0.25);
+    0 30px 60px -20px rgba(1, 30, 65, 0.25);
   position: relative;
   top: -40px;
   overflow: hidden;
@@ -252,8 +252,8 @@
 .start-form__input:focus {
   outline: none;
   background: #fff;
-  border-color: var(--navy, #082E5E);
-  box-shadow: 0 0 0 4px rgba(11, 61, 122, 0.15);
+  border-color: var(--navy, #011E41);
+  box-shadow: 0 0 0 4px rgba(1, 30, 65, 0.15);
 }
 
 .start-form__input::placeholder {
@@ -331,7 +331,7 @@
 }
 
 .start-form__checkbox:focus-visible + .start-form__checkmark {
-  box-shadow: 0 0 0 3px rgba(11, 61, 122, 0.2);
+  box-shadow: 0 0 0 3px rgba(1, 30, 65, 0.2);
 }
 
 /* Sector grid */
@@ -361,15 +361,15 @@
 }
 
 .start-form__sector-btn:hover {
-  border-color: var(--navy-mid, #1B4F8E);
+  border-color: var(--navy-mid, #003F9F);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px -4px rgba(11, 61, 122, 0.18);
+  box-shadow: 0 4px 12px -4px rgba(1, 30, 65, 0.18);
 }
 
 .start-form__sector-btn.selected {
-  border-color: var(--navy, #082E5E);
-  background: linear-gradient(135deg, rgba(11, 61, 122, 0.08), rgba(45, 75, 255, 0.05));
-  box-shadow: 0 4px 14px -4px rgba(11, 61, 122, 0.25);
+  border-color: var(--navy, #011E41);
+  background: linear-gradient(135deg, rgba(1, 30, 65, 0.08), rgba(0, 117, 201, 0.05));
+  box-shadow: 0 4px 14px -4px rgba(1, 30, 65, 0.25);
 }
 
 .start-form__radio {
@@ -384,9 +384,9 @@
 }
 
 .start-form__sector-btn.selected .start-form__radio {
-  border-color: var(--navy, #082E5E);
-  background: linear-gradient(135deg, var(--navy, #082E5E), #1B4F8E);
-  box-shadow: 0 2px 6px -1px rgba(11, 61, 122, 0.4);
+  border-color: var(--navy, #011E41);
+  background: linear-gradient(135deg, var(--navy, #011E41), #003F9F);
+  box-shadow: 0 2px 6px -1px rgba(1, 30, 65, 0.4);
 }
 
 .start-form__sector-btn.selected .start-form__radio::after {
@@ -440,16 +440,16 @@
 }
 
 .start-form__pill:hover {
-  border-color: var(--navy-mid, #1B4F8E);
+  border-color: var(--navy-mid, #003F9F);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px -4px rgba(11, 61, 122, 0.18);
+  box-shadow: 0 4px 12px -4px rgba(1, 30, 65, 0.18);
 }
 
 .start-form__pill.selected {
   border-color: transparent;
-  background: linear-gradient(135deg, var(--navy, #082E5E) 0%, #1B4F8E 100%);
+  background: linear-gradient(135deg, var(--navy, #011E41) 0%, #003F9F 100%);
   color: #fff;
-  box-shadow: 0 6px 14px -4px rgba(11, 61, 122, 0.4);
+  box-shadow: 0 6px 14px -4px rgba(1, 30, 65, 0.4);
 }
 
 /* Notice (loading / no questions) */
@@ -463,8 +463,8 @@
 }
 
 .start-form__notice--warn {
-  background: rgba(253, 161, 0, 0.08);
-  border: 1px solid rgba(253, 161, 0, 0.25);
+  background: rgba(245, 168, 0, 0.08);
+  border: 1px solid rgba(245, 168, 0, 0.25);
   border-radius: var(--radius-sm);
   color: var(--ink-80);
 }
@@ -501,7 +501,7 @@
   gap: 10px;
   padding: 14px 30px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--navy, #082E5E) 0%, #1B4F8E 100%);
+  background: linear-gradient(135deg, var(--navy, #011E41) 0%, #003F9F 100%);
   border: none;
   color: white;
   font-family: var(--font-sans);
@@ -512,7 +512,7 @@
   cursor: pointer;
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.06),
-    0 12px 28px -10px rgba(11, 61, 122, 0.55);
+    0 12px 28px -10px rgba(1, 30, 65, 0.55);
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
@@ -520,8 +520,8 @@
   transform: translateY(-2px);
   box-shadow:
     0 1px 2px rgba(15, 23, 42, 0.06),
-    0 18px 36px -10px rgba(253, 161, 0, 0.55);
-  background: linear-gradient(135deg, var(--gold, #FDA100) 0%, #FFB942 100%);
+    0 18px 36px -10px rgba(245, 168, 0, 0.55);
+  background: linear-gradient(135deg, var(--gold, #F5A800) 0%, #FFB942 100%);
   color: #1A1A2E;
 }
 
@@ -754,15 +754,15 @@
   font-size: 16.5px;
   font-weight: 600;
   color: #0E1A33;
-  background: rgba(45, 75, 255, 0.07);
-  border: 1px solid rgba(45, 75, 255, 0.18);
+  background: rgba(0, 117, 201, 0.07);
+  border: 1px solid rgba(0, 117, 201, 0.18);
   border-radius: 12px;
   padding: 13px 18px;
   line-height: 1.45;
 }
 .start-form__hint--multi strong {
   font-weight: 800;
-  color: #2D4BFF;
+  color: #0075C9;
 }
 
 .start-form__test-grid {
