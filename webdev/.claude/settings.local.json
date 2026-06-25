@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find c:/Depozit/gitProjects/BIZZCHECK_BOT/webdev/backend -name app.py -o -name main.py -o -name create_tables*)"
+    ]
+  }
+}

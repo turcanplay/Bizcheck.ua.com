@@ -1,0 +1,149 @@
+.report-footer {
+  background: var(--navy-deep);
+  margin-top: 32px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.report-footer__gold-line {
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+}
+
+.report-footer__inner {
+  padding: 36px 40px 32px;
+  text-align: center;
+}
+
+.report-footer__title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 12px;
+}
+
+.report-footer__desc {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 8px;
+  line-height: 1.6;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.report-footer__contact-note {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: var(--gold-light);
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+/* Contact cards — each email/telegram/web is a clickable pill button */
+.report-footer__contacts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+  padding: 8px 0;
+}
+
+.report-footer__contact-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-footer__contact-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold, #FDA100);
+  margin: 0;
+}
+
+a.report-footer__contact-value,
+.report-footer__contact-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 22px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-deep, #082E5E);
+  text-decoration: none;
+  background: var(--gold, #FDA100);
+  border: 2px solid var(--gold, #FDA100);
+  border-radius: 999px;
+  box-sizing: border-box;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 8px 20px -6px rgba(253, 161, 0, 0.55);
+  transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+a.report-footer__contact-value:hover,
+.report-footer__contact-value:hover,
+a.report-footer__contact-value:focus-visible,
+.report-footer__contact-value:focus-visible {
+  background: var(--gold-light, #FFBA3D);
+  color: var(--navy-deep, #082E5E);
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 14px 28px -6px rgba(253, 161, 0, 0.7);
+}
+
+/* Bottom */
+.report-footer__bottom {
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-footer__brand {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.report-footer__brand strong {
+  font-weight: 700;
+  color: white;
+}
+
+.report-footer__legal {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.5;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.report-footer__legal p {
+  margin: 0 0 6px;
+}
+
+.report-footer__legal p:last-child {
+  margin-bottom: 0;
+}
+
+@media print {
+  .report-footer {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

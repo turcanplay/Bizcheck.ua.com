@@ -1,0 +1,136 @@
+.zone-section {
+  margin-bottom: 28px;
+}
+
+.zone-section__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+.zone-section__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--zone-color);
+  flex-shrink: 0;
+}
+
+.zone-section__title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--zone-color);
+  margin: 0;
+  flex: 1;
+}
+
+.zone-section__avg {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--zone-color);
+  white-space: nowrap;
+}
+
+.zone-section__desc-text {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+  line-height: 1.25;
+  text-align: justify;
+}
+
+.zone-section__cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.zone-section__empty {
+  padding: 18px 20px;
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px dashed rgba(15, 23, 42, 0.12);
+  color: #8B92A5;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.zone-section__card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+}
+
+.zone-section__card-left {
+  flex-shrink: 0;
+}
+
+.zone-section__card-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.zone-section__card-num {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.zone-section__card-name {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.zone-section__card-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.zone-section__card-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 1s 0.3s ease;
+}
+
+@media (max-width: 600px) {
+  .zone-section__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .zone-section__card {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .zone-section__card-name {
+    font-size: 14px;
+  }
+}
+
+@media print {
+  .zone-section__card {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,127 @@
+.site-header {
+  background: var(--navy-deep);
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity .2s ease;
+}
+.header-logo:hover { opacity: .85; }
+.header-logo:hover .header-sub { color: #FFD27A; }
+
+.crowe-logo__img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.header-sep {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.header-sub {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-right__text {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--white-35);
+  letter-spacing: 0.3px;
+}
+
+.lang-toggle {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.lang-toggle__btn {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lang-toggle__btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lang-toggle__btn--active {
+  background: var(--gold);
+  color: var(--navy-deep);
+}
+
+.lang-toggle__btn--active:hover {
+  color: var(--navy-deep);
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    padding: 0 16px;
+  }
+
+  .crowe-logo__img { height: 30px; }
+  .header-logo { gap: 12px; }
+
+  /* Keep lang toggle visible on mobile; hide only the descriptive text */
+  .header-right__text {
+    display: none;
+  }
+
+  .lang-toggle__btn {
+    padding: 5px 12px;
+    min-height: 32px;
+  }
+}
+
+@media (max-width: 390px) {
+  .site-header {
+    padding: 0 12px;
+  }
+
+  .crowe-logo__img { height: 26px; }
+  .header-logo { gap: 10px; }
+  .header-sep { height: 18px; }
+
+  .header-sub {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+}

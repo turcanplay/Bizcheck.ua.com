@@ -1,0 +1,99 @@
+.quiz-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(27, 46, 75, 0.88);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+
+.quiz-transition--visible {
+  opacity: 1;
+}
+
+.quiz-transition__card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl) var(--space-2xl);
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  transform: scale(0.9);
+  transition: transform var(--duration-slow) var(--ease-bounce);
+}
+
+.quiz-transition--visible .quiz-transition__card {
+  transform: scale(1);
+}
+
+.quiz-transition__check {
+  margin-bottom: var(--space-lg);
+  animation: check-bounce 0.6s var(--ease-bounce) 0.2s both;
+}
+
+.quiz-transition__title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 var(--space-sm);
+}
+
+.quiz-transition__block-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink-60);
+  margin-bottom: var(--space-lg);
+}
+
+.quiz-transition__donut {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+}
+
+.quiz-transition__next-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--ink-60);
+  margin-bottom: var(--space-xl);
+  line-height: 1.5;
+}
+
+.quiz-transition__next-label strong {
+  color: var(--ink);
+}
+
+.quiz-transition__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 36px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  border: none;
+  color: white;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.quiz-transition__btn:hover {
+  background: var(--gold);
+  color: white;
+}
+
+@keyframes check-bounce {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}

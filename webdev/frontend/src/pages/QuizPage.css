@@ -1,0 +1,40 @@
+.quiz-page {
+  min-height: calc(100vh - 60px);
+  background: var(--bg-quiz);
+  overflow-x: hidden;
+}
+
+.quiz-page__content {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* ── Mobile: no-scroll quiz experience ─────────────────────────────
+   Quiz fits the small-viewport height (minus 60px sticky header).
+   Progress bar sticks at top, actions at bottom, options auto-scroll
+   internally only if there are enough to overflow. */
+@media (max-width: 768px) {
+  .quiz-page {
+    height: calc(100svh - 60px);
+    min-height: calc(100svh - 60px);
+    max-height: calc(100svh - 60px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .quiz-page__content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Progress bar shrinks to natural height but doesn't flex. */
+  .quiz-page > .qp {
+    flex-shrink: 0;
+    position: relative;  /* sticky not needed inside flex-hidden parent */
+    top: auto;
+  }
+}

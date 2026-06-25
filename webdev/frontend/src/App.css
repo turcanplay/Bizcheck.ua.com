@@ -1,0 +1,34 @@
+/* Global App Styles */
+
+.app {
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+/* Print styles */
+@media print {
+  .site-header {
+    position: static;
+  }
+
+  .quiz-progress {
+    display: none !important;
+  }
+
+  .quiz-page {
+    display: none !important;
+  }
+
+  .start-page {
+    display: none !important;
+  }
+
+  .cta__restart {
+    display: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

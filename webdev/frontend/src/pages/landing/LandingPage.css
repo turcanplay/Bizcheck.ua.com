@@ -1,0 +1,44 @@
+/* Placeholder layout — will be fully restyled when Figma design arrives. */
+.landing { min-height: 100vh; display: flex; flex-direction: column; }
+
+.landing-hero {
+  padding: 80px 24px;
+  background: #0b3d7a;
+  color: #fff;
+  text-align: center;
+}
+.landing-hero__inner { max-width: 960px; margin: 0 auto; }
+.landing-hero h1 { font-size: 40px; margin-bottom: 12px; }
+.landing-hero p { opacity: .85; }
+
+.landing-tests, .landing-templates {
+  padding: 64px 24px;
+}
+.landing-tests { background: #fafafa; }
+.landing-templates { background: #fff; }
+.landing-tests h2, .landing-templates h2 {
+  font-size: 28px; margin-bottom: 24px; text-align: center;
+}
+
+.landing-tests__grid, .landing-templates__grid {
+  max-width: 1080px; margin: 0 auto;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.landing-card {
+  text-align: left; padding: 20px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  display: flex; flex-direction: column; gap: 8px;
+  font-family: inherit;
+}
+.landing-card:hover { border-color: #0b3d7a; box-shadow: 0 4px 14px rgba(11,61,122,.08); }
+.landing-card__title { font-weight: 600; font-size: 17px; }
+.landing-card__desc  { font-size: 13px; color: #555; line-height: 1.5; }
+.landing-card__meta  { font-size: 13px; font-weight: 600; color: #0b3d7a; }
+
+.landing-footer {
+  padding: 24px; background: #111; color: #bbb; text-align: center;
+  margin-top: auto;
+}
