@@ -133,7 +133,7 @@ export default function StartPage() {
                       className={`start-form__lang-btn ${lang === 'uk' ? 'start-form__lang-btn--active' : ''}`}
                       onClick={() => setLang('uk')}
                     >
-                      UK
+                      UA
                     </button>
                     <button
                       className={`start-form__lang-btn ${lang === 'en' ? 'start-form__lang-btn--active' : ''}`}
@@ -187,7 +187,7 @@ export default function StartPage() {
                       className={`start-form__lang-btn ${lang === 'uk' ? 'start-form__lang-btn--active' : ''}`}
                       onClick={() => setLang('uk')}
                     >
-                      UK
+                      UA
                     </button>
                     <button
                       className={`start-form__lang-btn ${lang === 'en' ? 'start-form__lang-btn--active' : ''}`}
