@@ -33,7 +33,7 @@ export default function AdminTemplateDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
-    if (!Number.isFinite(templateId)) { setError('ID invalid'); setLoading(false); return; }
+    if (!Number.isFinite(templateId)) { setError('Invalid ID'); setLoading(false); return; }
     setLoading(true);
     try {
       const { template } = await adminApi.getTemplate(templateId);
@@ -55,11 +55,11 @@ export default function AdminTemplateDetail() {
     try {
       for (const f of files) {
         if (f.type && f.type !== 'application/pdf') {
-          alert(`Sărit (nu e PDF): ${f.name}`);
+          alert(`Skipped (not a PDF): ${f.name}`);
           continue;
         }
         if (f.size > 20 * 1024 * 1024) {
-          alert(`Sărit (> 20 MB): ${f.name}`);
+          alert(`Skipped (> 20 MB): ${f.name}`);
           continue;
         }
         const b64 = await toBase64(f);
@@ -75,14 +75,14 @@ export default function AdminTemplateDetail() {
   }
 
   async function deleteFile(file: AdminTemplateFile) {
-    if (!confirm(`Ștergi fișierul "${file.filename}"?`)) return;
+    if (!confirm(`Delete file "${file.filename}"?`)) return;
     await adminApi.deleteTemplateFile(templateId, file.id);
     await load();
   }
 
   async function downloadSingle(file: AdminTemplateFile) {
     const res = await adminFetch(adminApi.templateFileDownloadUrl(templateId, file.id));
-    if (!res.ok) { alert('Descărcare eșuată'); return; }
+    if (!res.ok) { alert('Download failed'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -99,7 +99,7 @@ export default function AdminTemplateDetail() {
     const res = await adminFetch(adminApi.templateZipDownloadUrl(templateId));
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      alert('Descărcare eșuată: ' + (err.error || res.status));
+      alert('Download failed: ' + (err.error || res.status));
       return;
     }
     const blob = await res.blob();
@@ -113,8 +113,8 @@ export default function AdminTemplateDetail() {
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <div className="admin-empty">Se încarcă...</div>;
-  if (error || !template) return <div className="admin-error">⚠️ {error || 'Șablon negăsit'}</div>;
+  if (loading) return <div className="admin-empty">Loading...</div>;
+  if (error || !template) return <div className="admin-error">⚠️ {error || 'Template not found'}</div>;
 
   const totalSize = template.files.reduce((acc, f) => acc + f.file_size, 0);
 
@@ -122,8 +122,8 @@ export default function AdminTemplateDetail() {
     <>
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <Link to="/admin_bizcheck_md_crowe/templates" className="admin-back-link">← Înapoi la șabloane</Link>
-          <h2 style={{ margin: 0 }}>📄 {template.title_ro}</h2>
+          <Link to="/admin_bizcheck_md_crowe/templates" className="admin-back-link">← Back to templates</Link>
+          <h2 style={{ margin: 0 }}>📄 {template.title_uk}</h2>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
@@ -131,7 +131,7 @@ export default function AdminTemplateDetail() {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
-            {uploading ? '⏳ Se încarcă...' : '📤 Adaugă PDF(s)'}
+            {uploading ? '⏳ Uploading...' : '📤 Add PDF(s)'}
           </button>
           <input
             ref={fileInputRef}
@@ -142,28 +142,28 @@ export default function AdminTemplateDetail() {
             onChange={onFilesSelected}
           />
           {template.files.length > 0 && (
-            <button className="admin-btn admin-btn-ghost" onClick={downloadZip}>📦 Descarcă ZIP</button>
+            <button className="admin-btn admin-btn-ghost" onClick={downloadZip}>📦 Download ZIP</button>
           )}
         </div>
       </div>
 
       <div style={{ marginBottom: 16, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {template.is_coming_soon
-          ? <span className="admin-badge admin-badge-blue">⏳ În curând</span>
+          ? <span className="admin-badge admin-badge-blue">⏳ Coming soon</span>
           : template.is_active
-          ? <span className="admin-badge admin-badge-green">✅ Activ</span>
-          : <span className="admin-badge admin-badge-muted">⏸ Inactiv</span>}
+          ? <span className="admin-badge admin-badge-green">✅ Active</span>
+          : <span className="admin-badge admin-badge-muted">⏸ Inactive</span>}
         {template.is_paid
           ? <span className="admin-badge admin-badge-gold">
-              💰 {template.price != null ? `${template.price} ${template.currency}` : 'Cu plată (preț nesetat)'}
+              💰 {template.price != null ? `${template.price} ${template.currency}` : 'Paid (price not set)'}
             </span>
-          : <span className="admin-badge admin-badge-blue">🆓 Gratuit</span>}
-        <span className="admin-badge admin-badge-muted">{template.files.length} fișier(e) • {formatBytes(totalSize)}</span>
+          : <span className="admin-badge admin-badge-blue">🆓 Free</span>}
+        <span className="admin-badge admin-badge-muted">{template.files.length} file(s) • {formatBytes(totalSize)}</span>
       </div>
 
       {template.files.length === 0 ? (
         <div className="admin-empty">
-          Niciun PDF atașat încă. Apasă „📤 Adaugă PDF(s)" pentru a încărca unul sau mai multe fișiere.
+          No PDFs attached yet. Click "📤 Add PDF(s)" to upload one or more files.
         </div>
       ) : (
         <div className="admin-table-wrap">
@@ -171,9 +171,9 @@ export default function AdminTemplateDetail() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Fișier</th>
-                <th>Mărime</th>
-                <th>Încărcat</th>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
                 <th></th>
               </tr>
             </thead>

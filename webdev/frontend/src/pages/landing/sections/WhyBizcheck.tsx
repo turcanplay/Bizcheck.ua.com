@@ -65,24 +65,24 @@ const FEATURES: Array<{
 ];
 
 export default function WhyBizcheck() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <section className="why" data-section="why" id="why-bizcheck">
       <div className="why__header">
         <span className="why__eyebrow">
           <span className="why__eyebrow-dot" aria-hidden />
-          {t('whyTitle') === 'De ce Bizcheck?' ? 'AVANTAJE' : 'ПРЕИМУЩЕСТВА'}
+          {lang === 'uk' ? 'ПЕРЕВАГИ' : 'ADVANTAGES'}
         </span>
         <h2 className="why__title">
-          {t('whyTitle') === 'De ce Bizcheck?' ? (
-            <>De ce <span className="why__title-accent">Bizcheck</span>?</>
+          {lang === 'uk' ? (
+            <>Чому <span className="why__title-accent">Bizcheck</span>?</>
           ) : (
-            <>Почему <span className="why__title-accent">Bizcheck</span>?</>
+            <>Why <span className="why__title-accent">Bizcheck</span>?</>
           )}
         </h2>
-        <p className="why__subtitle">{t('whyTitle') === 'De ce Bizcheck?'
-          ? 'Tot ce ai nevoie pentru documente business, într-un singur loc.'
-          : 'Всё для бизнес-документов в одном месте.'}</p>
+        <p className="why__subtitle">{lang === 'uk'
+          ? 'Усе, що потрібно для бізнес-документів, в одному місці.'
+          : 'Everything you need for business documents, in one place.'}</p>
       </div>
 
       <div className="why__grid">

@@ -3,10 +3,10 @@ import { API_BASE } from '@/config/api';
 export interface PublicTest {
   id: number;
   slug: string;
-  name_ro: string;
-  name_ru: string;
-  description_ro: string;
-  description_ru: string;
+  name_uk: string;
+  name_en: string;
+  description_uk: string;
+  description_en: string;
   is_paid: boolean;
   is_active: boolean;
   is_coming_soon: boolean;
@@ -20,10 +20,10 @@ export interface PublicTest {
 export interface PublicTemplate {
   id: number;
   slug: string;
-  title_ro: string;
-  title_ru: string;
-  description_ro: string;
-  description_ru: string;
+  title_uk: string;
+  title_en: string;
+  description_uk: string;
+  description_en: string;
   is_paid: boolean;
   is_active: boolean;
   is_coming_soon: boolean;
@@ -60,8 +60,8 @@ export interface PublicTestimonial {
   id: number;
   name: string;
   role: string | null;
-  quote_ro: string;
-  quote_ru: string;
+  quote_uk: string;
+  quote_en: string;
   rating: number;
   avatar_url: string | null;
   lang?: string;
@@ -79,10 +79,10 @@ export interface TestimonialSubmission {
 
 export interface PublicFaqItem {
   id: number;
-  question_ro: string;
-  question_ru: string;
-  answer_ro: string;
-  answer_ru: string;
+  question_uk: string;
+  question_en: string;
+  answer_uk: string;
+  answer_en: string;
 }
 
 /** Editable site settings: CTA targets (test slug, '' = none) + feature flags. */

@@ -87,7 +87,7 @@ def create():
         # Fără asta, un input cu caractere speciale e expandat de bleach (ex. " → &quot;),
         # depășește VARCHAR(5) și PostgreSQL aruncă „value too long" → HTTP 500.
         lang_in = data.get("language")
-        language = lang_in if lang_in in ("ro", "ru") else "ro"
+        language = lang_in if lang_in in ("uk", "en") else "uk"
         if sub and language:
             updated = update_submission(sub["id"], {"language": language})
             if updated:
@@ -113,7 +113,7 @@ def update(sub_id):
             filtered[str_field] = clean_text(filtered[str_field], max_len=mx)
     # language: whitelist strict (coloana VARCHAR(5); doar ro/ru).
     if "language" in filtered:
-        filtered["language"] = filtered["language"] if filtered["language"] in ("ro", "ru") else "ro"
+        filtered["language"] = filtered["language"] if filtered["language"] in ("uk", "en") else "uk"
     if "first_name" in filtered and isinstance(filtered["first_name"], str):
         filtered["first_name"] = clean_optional(filtered["first_name"], max_len=30)
     if "last_name" in filtered and isinstance(filtered["last_name"], str):
@@ -329,14 +329,14 @@ def export_excel():
         top_level = [q for q in block_questions if not q.get("parent_question_id")]
         for q_idx, q in enumerate(top_level):
             key = f"b{b['id']}q{q['id']}"
-            label = f"B{b_idx+1} Q{q_idx+1}: {(q['text_ro'] or '')[:40]}"
+            label = f"B{b_idx+1} Q{q_idx+1}: {(q['text_uk'] or '')[:40]}"
             question_labels[key] = label
             question_keys_ordered.append(key)
             all_questions.append(q)
             subs_qs = [sq for sq in block_questions if sq.get("parent_question_id") == q["id"]]
             for sq_idx, sq in enumerate(subs_qs):
                 skey = f"b{b['id']}q{sq['id']}"
-                slabel = f"B{b_idx+1} Q{q_idx+1}.{sq_idx+1}: {(sq['text_ro'] or '')[:40]}"
+                slabel = f"B{b_idx+1} Q{q_idx+1}.{sq_idx+1}: {(sq['text_uk'] or '')[:40]}"
                 question_labels[skey] = slabel
                 question_keys_ordered.append(skey)
 
@@ -347,7 +347,7 @@ def export_excel():
         for a in answers:
             if q["id"] not in answer_text_map:
                 answer_text_map[q["id"]] = {}
-            answer_text_map[q["id"]][f"a{a['id']}"] = a["text_ro"]
+            answer_text_map[q["id"]][f"a{a['id']}"] = a["text_uk"]
 
     wb = openpyxl.Workbook()
     ws = wb.active

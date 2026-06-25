@@ -14,7 +14,7 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
   const totalColor = getZoneColor(getZone(report.totalScore));
   const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
   const testName = currentTest
-    ? (lang === 'ro' ? currentTest.name_ro : currentTest.name_ru)
+    ? (lang === 'uk' ? currentTest.name_uk : currentTest.name_en)
     : '';
 
   return (

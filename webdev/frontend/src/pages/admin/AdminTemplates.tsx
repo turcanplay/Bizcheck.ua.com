@@ -34,7 +34,7 @@ export default function AdminTemplates() {
   }
 
   async function onDelete(t: AdminTemplate) {
-    if (!confirm(`Ștergi șablonul "${t.title_ro}"? Toate fișierele PDF atașate se vor șterge.`)) return;
+    if (!confirm(`Delete template "${t.title_uk}"? All attached PDF files will be deleted.`)) return;
     await adminApi.deleteTemplate(t.id);
     await load();
   }
@@ -43,7 +43,7 @@ export default function AdminTemplates() {
     const res = await adminFetch(adminApi.templateZipDownloadUrl(t.id));
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      alert('Descărcare eșuată: ' + (err.error || res.status));
+      alert('Download failed: ' + (err.error || res.status));
       return;
     }
     const blob = await res.blob();
@@ -60,26 +60,26 @@ export default function AdminTemplates() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>📄 Șabloane de acte</h2>
-        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Adaugă Șablon</button>
+        <h2>📄 Document templates</h2>
+        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Add Template</button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Loading...</div>}
       {!loading && templates.length === 0 && (
-        <div className="admin-empty">Niciun șablon încă. Apasă „+ Adaugă Șablon" ca să creezi unul.</div>
+        <div className="admin-empty">No templates yet. Click "+ Add Template" to create one.</div>
       )}
 
       {templates.map(t => (
         <div className="admin-test-card" key={t.id}>
           <div className="admin-test-card__head">
             <div style={{ flex: 1, minWidth: 260 }}>
-              <div className="admin-test-card__title">📄 {t.title_ro}</div>
-              {t.title_ru && <div className="admin-test-card__subtitle">{t.title_ru}</div>}
-              {t.description_ro && <div className="admin-test-card__desc">{t.description_ro}</div>}
+              <div className="admin-test-card__title">📄 {t.title_uk}</div>
+              {t.title_en && <div className="admin-test-card__subtitle">{t.title_en}</div>}
+              {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
             </div>
             <div className="admin-test-card__actions">
-              <Link to={`/admin_bizcheck_md_crowe/templates/${t.id}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Deschide</Link>
+              <Link to={`/admin_bizcheck_md_crowe/templates/${t.id}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Open</Link>
               <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => downloadZip(t)}>📦 ZIP</button>
               <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setEditing(t)}>✏️</button>
               <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(t)}>🗑</button>
@@ -88,15 +88,15 @@ export default function AdminTemplates() {
 
           <div className="admin-test-card__meta">
             {t.is_coming_soon
-              ? <span className="admin-badge admin-badge-blue">⏳ În curând</span>
+              ? <span className="admin-badge admin-badge-blue">⏳ Coming soon</span>
               : t.is_active
-              ? <span className="admin-badge admin-badge-green">✅ Activ</span>
-              : <span className="admin-badge admin-badge-muted">⏸ Inactiv</span>}
+              ? <span className="admin-badge admin-badge-green">✅ Active</span>
+              : <span className="admin-badge admin-badge-muted">⏸ Inactive</span>}
             {t.is_paid
               ? <span className="admin-badge admin-badge-gold">
-                  💰 {t.price != null ? `${t.price} ${t.currency}` : 'Cu plată (preț nesetat)'}
+                  💰 {t.price != null ? `${t.price} ${t.currency}` : 'Paid (price not set)'}
                 </span>
-              : <span className="admin-badge admin-badge-blue">🆓 Gratuit</span>}
+              : <span className="admin-badge admin-badge-blue">🆓 Free</span>}
             <span className="admin-badge admin-badge-muted">slug: {t.slug}</span>
           </div>
         </div>

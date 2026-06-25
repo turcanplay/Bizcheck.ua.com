@@ -37,18 +37,18 @@ export default function AboutPlatform() {
 
   const title = t('aboutTitle');
   const [titleFirst, titleLast] = splitTitle(title);
-  const eyebrow = lang === 'ro' ? 'DESPRE NOI' : 'О НАС';
+  const eyebrow = lang === 'uk' ? 'ПРО НАС' : 'ABOUT US';
   const totalResources = counts?.total ?? 0;
-  const stats = lang === 'ro'
+  const stats = lang === 'uk'
     ? [
-        { value: formatCount(totalResources), label: 'Șabloane și teste' },
-        { value: '24/7', label: 'Acces online' },
-        { value: '8 min', label: 'Timp mediu per test' },
+        { value: formatCount(totalResources), label: 'Шаблони та тести' },
+        { value: '24/7', label: 'Доступ онлайн' },
+        { value: '8 хв', label: 'Середній час на тест' },
       ]
     : [
-        { value: formatCount(totalResources), label: 'Шаблонов и тестов' },
-        { value: '24/7', label: 'Онлайн-доступ' },
-        { value: '8 мин', label: 'Время на тест' },
+        { value: formatCount(totalResources), label: 'Templates and tests' },
+        { value: '24/7', label: 'Online access' },
+        { value: '8 min', label: 'Average time per test' },
       ];
 
   return (
@@ -111,12 +111,12 @@ export default function AboutPlatform() {
             </div>
             <div>
               <div className="about__visual-check-title">
-                {lang === 'ro' ? 'Verificat de juriști' : 'Проверено юристами'}
+                {lang === 'uk' ? 'Перевірено юристами' : 'Verified by lawyers'}
               </div>
               <div className="about__visual-check-sub">
-                {lang === 'ro'
-                  ? 'documente reale, create de profesioniști'
-                  : 'реальные документы от профессионалов'}
+                {lang === 'uk'
+                  ? 'реальні документи, створені професіоналами'
+                  : 'real documents created by professionals'}
               </div>
             </div>
           </div>

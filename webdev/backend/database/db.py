@@ -162,10 +162,10 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS tests (
                     id                    SERIAL       PRIMARY KEY,
                     slug                  VARCHAR(100) UNIQUE NOT NULL,
-                    name_ro               VARCHAR(255) NOT NULL,
-                    name_ru               VARCHAR(255) NOT NULL DEFAULT '',
-                    description_ro        TEXT         NOT NULL DEFAULT '',
-                    description_ru        TEXT         NOT NULL DEFAULT '',
+                    name_uk               VARCHAR(255) NOT NULL,
+                    name_en               VARCHAR(255) NOT NULL DEFAULT '',
+                    description_uk        TEXT         NOT NULL DEFAULT '',
+                    description_en        TEXT         NOT NULL DEFAULT '',
                     scoring_zones         JSONB        NOT NULL DEFAULT '{"safe": 80, "developing": 70, "warn": 65, "risk": 0}',
                     zone_recommendations  JSONB        DEFAULT NULL,
                     is_active             BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -206,8 +206,8 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS blocks (
                     id          SERIAL       PRIMARY KEY,
                     test_id     INTEGER      NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
-                    title_ro    VARCHAR(255) NOT NULL,
-                    title_ru    VARCHAR(255) NOT NULL,
+                    title_uk    VARCHAR(255) NOT NULL,
+                    title_en    VARCHAR(255) NOT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
                     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
                 );
@@ -217,14 +217,14 @@ def migrate():
                     id                 SERIAL      PRIMARY KEY,
                     block_id           INTEGER     NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
                     parent_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_ro            TEXT        NOT NULL,
-                    text_ru            TEXT        NOT NULL,
-                    note_ro            TEXT        DEFAULT NULL,
-                    note_ru            TEXT        DEFAULT NULL,
-                    purpose_ro         TEXT        DEFAULT NULL,
-                    purpose_ru         TEXT        DEFAULT NULL,
-                    example_ro         TEXT        DEFAULT NULL,
-                    example_ru         TEXT        DEFAULT NULL,
+                    text_uk            TEXT        NOT NULL,
+                    text_en            TEXT        NOT NULL,
+                    note_uk            TEXT        DEFAULT NULL,
+                    note_en            TEXT        DEFAULT NULL,
+                    purpose_uk         TEXT        DEFAULT NULL,
+                    purpose_en         TEXT        DEFAULT NULL,
+                    example_uk         TEXT        DEFAULT NULL,
+                    example_en         TEXT        DEFAULT NULL,
                     order_index        INTEGER     NOT NULL DEFAULT 0,
                     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
@@ -235,13 +235,13 @@ def migrate():
                     id               SERIAL      PRIMARY KEY,
                     question_id      INTEGER     NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
                     next_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_ro          TEXT        NOT NULL,
-                    text_ru          TEXT        NOT NULL,
+                    text_uk          TEXT        NOT NULL,
+                    text_en          TEXT        NOT NULL,
                     score            REAL        NOT NULL DEFAULT 0,
-                    explanation_ro   TEXT        DEFAULT NULL,
-                    explanation_ru   TEXT        DEFAULT NULL,
-                    risk_ro          TEXT        DEFAULT NULL,
-                    risk_ru          TEXT        DEFAULT NULL,
+                    explanation_uk   TEXT        DEFAULT NULL,
+                    explanation_en   TEXT        DEFAULT NULL,
+                    risk_uk          TEXT        DEFAULT NULL,
+                    risk_en          TEXT        DEFAULT NULL,
                     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
                 CREATE INDEX IF NOT EXISTS idx_answers_question ON answers(question_id);
@@ -270,7 +270,7 @@ def migrate():
                     company_size          VARCHAR(50)  DEFAULT NULL,
                     company_age           VARCHAR(50)  DEFAULT NULL,
                     company_revenue       VARCHAR(50)  DEFAULT NULL,
-                    language              VARCHAR(5)   DEFAULT 'ro',
+                    language              VARCHAR(5)   DEFAULT 'uk',
                     total_score           REAL         DEFAULT NULL,
                     answers_json          JSONB        DEFAULT NULL,
                     selected_answers_json JSONB        DEFAULT NULL,
@@ -329,10 +329,10 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS templates (
                     id             SERIAL        PRIMARY KEY,
                     slug           VARCHAR(100)  UNIQUE NOT NULL,
-                    title_ro       VARCHAR(255)  NOT NULL,
-                    title_ru       VARCHAR(255)  NOT NULL DEFAULT '',
-                    description_ro TEXT          NOT NULL DEFAULT '',
-                    description_ru TEXT          NOT NULL DEFAULT '',
+                    title_uk       VARCHAR(255)  NOT NULL,
+                    title_en       VARCHAR(255)  NOT NULL DEFAULT '',
+                    description_uk TEXT          NOT NULL DEFAULT '',
+                    description_en TEXT          NOT NULL DEFAULT '',
                     is_active      BOOLEAN       NOT NULL DEFAULT TRUE,
                     is_coming_soon BOOLEAN       NOT NULL DEFAULT FALSE,
                     is_paid        BOOLEAN       NOT NULL DEFAULT FALSE,
@@ -362,8 +362,8 @@ def migrate():
                     id          SERIAL       PRIMARY KEY,
                     name        VARCHAR(100) NOT NULL,
                     role        VARCHAR(150) DEFAULT NULL,
-                    quote_ro    TEXT         NOT NULL DEFAULT '',
-                    quote_ru    TEXT         NOT NULL DEFAULT '',
+                    quote_uk    TEXT         NOT NULL DEFAULT '',
+                    quote_en    TEXT         NOT NULL DEFAULT '',
                     rating      SMALLINT     NOT NULL DEFAULT 5,
                     avatar_url  VARCHAR(500) DEFAULT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
@@ -374,10 +374,10 @@ def migrate():
 
                 CREATE TABLE IF NOT EXISTS faq_items (
                     id          SERIAL      PRIMARY KEY,
-                    question_ro TEXT        NOT NULL,
-                    question_ru TEXT        NOT NULL DEFAULT '',
-                    answer_ro   TEXT        NOT NULL DEFAULT '',
-                    answer_ru   TEXT        NOT NULL DEFAULT '',
+                    question_uk TEXT        NOT NULL,
+                    question_en TEXT        NOT NULL DEFAULT '',
+                    answer_uk   TEXT        NOT NULL DEFAULT '',
+                    answer_en   TEXT        NOT NULL DEFAULT '',
                     order_index INTEGER     NOT NULL DEFAULT 0,
                     is_active   BOOLEAN     NOT NULL DEFAULT TRUE,
                     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -398,8 +398,53 @@ def migrate():
                 -- written in — public reviews live in ONE language only.
                 ALTER TABLE testimonials ALTER COLUMN rating TYPE NUMERIC(2,1) USING rating::numeric;
                 ALTER TABLE testimonials ALTER COLUMN rating SET DEFAULT 5;
-                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'ro';
+                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'uk';
                 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS is_user_submitted BOOLEAN NOT NULL DEFAULT FALSE;
+
+                -- ============================================================
+                -- Language migration: ro -> uk, ru -> en (idempotent).
+                -- Renames bilingual columns on pre-existing databases and
+                -- remaps stored language codes. Fresh databases already get
+                -- _uk/_en columns from the CREATE TABLE statements above, so
+                -- the rename loop simply finds nothing to do.
+                -- ============================================================
+                DO $$
+                DECLARE
+                    pairs TEXT[][] := ARRAY[
+                        ['tests','name_ro','name_uk'],               ['tests','name_ru','name_en'],
+                        ['tests','description_ro','description_uk'], ['tests','description_ru','description_en'],
+                        ['blocks','title_ro','title_uk'],            ['blocks','title_ru','title_en'],
+                        ['questions','text_ro','text_uk'],           ['questions','text_ru','text_en'],
+                        ['questions','note_ro','note_uk'],           ['questions','note_ru','note_en'],
+                        ['questions','purpose_ro','purpose_uk'],     ['questions','purpose_ru','purpose_en'],
+                        ['questions','example_ro','example_uk'],     ['questions','example_ru','example_en'],
+                        ['answers','text_ro','text_uk'],             ['answers','text_ru','text_en'],
+                        ['answers','explanation_ro','explanation_uk'],['answers','explanation_ru','explanation_en'],
+                        ['answers','risk_ro','risk_uk'],             ['answers','risk_ru','risk_en'],
+                        ['templates','title_ro','title_uk'],         ['templates','title_ru','title_en'],
+                        ['templates','description_ro','description_uk'],['templates','description_ru','description_en'],
+                        ['testimonials','quote_ro','quote_uk'],      ['testimonials','quote_ru','quote_en'],
+                        ['faq_items','question_ro','question_uk'],   ['faq_items','question_ru','question_en'],
+                        ['faq_items','answer_ro','answer_uk'],       ['faq_items','answer_ru','answer_en']
+                    ];
+                    i INT;
+                BEGIN
+                    FOR i IN 1 .. array_length(pairs, 1) LOOP
+                        IF EXISTS (SELECT 1 FROM information_schema.columns
+                                   WHERE table_name = pairs[i][1] AND column_name = pairs[i][2])
+                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                                   WHERE table_name = pairs[i][1] AND column_name = pairs[i][3]) THEN
+                            EXECUTE format('ALTER TABLE %I RENAME COLUMN %I TO %I',
+                                           pairs[i][1], pairs[i][2], pairs[i][3]);
+                        END IF;
+                    END LOOP;
+                END $$;
+
+                -- Remap language codes stored on existing rows.
+                UPDATE submissions  SET language = 'uk' WHERE language = 'ro';
+                UPDATE submissions  SET language = 'en' WHERE language = 'ru';
+                UPDATE testimonials SET lang     = 'uk' WHERE lang     = 'ro';
+                UPDATE testimonials SET lang     = 'en' WHERE lang     = 'ru';
             """)
 
             conn.commit()

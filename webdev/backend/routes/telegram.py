@@ -137,7 +137,7 @@ def get_report_by_token(token):
         "total_score": row["total_score"],
         "block_scores_json": row["block_scores_json"],
         "pdf_b64": pdf_b64,
-        "language": row.get("language") or "ro",
+        "language": row.get("language") or "uk",
     })
 
 

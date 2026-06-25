@@ -41,11 +41,11 @@ def _configured() -> bool:
     return bool(_env("SALES_BOT_TOKEN") and _env("SALES_CHAT_ID"))
 
 
-def _zone_label_ro(score: int) -> str:
-    if score >= 80: return "Risc scăzut"
-    if score >= 70: return "Risc moderat"
-    if score >= 65: return "Risc ridicat"
-    return "Risc critic"
+def _zone_label_uk(score: int) -> str:
+    if score >= 80: return "Низький ризик"
+    if score >= 70: return "Помірний ризик"
+    if score >= 65: return "Високий ризик"
+    return "Критичний ризик"
 
 
 def _esc(s) -> str:
@@ -63,19 +63,19 @@ def _build_caption(sub: dict, test_name: str) -> str:
     score = sub.get("total_score")
     try:
         score_int = int(round(float(score)))
-        score_line = f"{score_int}% — {_zone_label_ro(score_int)}"
+        score_line = f"{score_int}% — {_zone_label_uk(score_int)}"
     except (TypeError, ValueError):
         score_line = "—"
     date = str(sub.get("created_at") or "")[:16].replace("T", " ")
 
     return (
-        "🔔 <b>Test nou completat pe bizcheck.md</b>\n\n"
+        "🔔 <b>Новий тест пройдено на bizcheck.md</b>\n\n"
         f"👤 <b>{_esc(name)}</b>\n"
         f"📞 {_esc(phone)}\n"
         f"✉️ {_esc(email)}\n"
         f"✈️ Telegram: {tg_line}\n\n"
-        f"🧪 Test: <b>{_esc(test_name or '—')}</b>\n"
-        f"📊 Scor: <b>{score_line}</b>\n"
+        f"🧪 Тест: <b>{_esc(test_name or '—')}</b>\n"
+        f"📊 Бал: <b>{score_line}</b>\n"
         f"🗓 {_esc(date)}"
     )
 
@@ -209,7 +209,7 @@ def maybe_notify_sales(submission_id: int) -> None:
         if tid:
             t = Test.find_by_id(tid)
             if t:
-                test_name = t.get("name_ro") or t.get("name_ru") or ""
+                test_name = t.get("name_uk") or t.get("name_en") or ""
     except Exception:
         pass
 
