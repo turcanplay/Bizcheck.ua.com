@@ -299,7 +299,7 @@ export default function Hero() {
             </svg>
           </button>
           <div className="hero__lang">
-            <button className={`hero__lang-btn ${lang === 'uk' ? 'is-active' : ''}`} onClick={() => setLang('uk')}>UK</button>
+            <button className={`hero__lang-btn ${lang === 'uk' ? 'is-active' : ''}`} onClick={() => setLang('uk')}>UA</button>
             <button className={`hero__lang-btn ${lang === 'en' ? 'is-active' : ''}`} onClick={() => setLang('en')}>EN</button>
           </div>
         </div>

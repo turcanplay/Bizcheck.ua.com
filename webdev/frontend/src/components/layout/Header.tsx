@@ -32,7 +32,7 @@ export default function Header() {
             className={`lang-toggle__btn ${lang === 'uk' ? 'lang-toggle__btn--active' : ''}`}
             onClick={() => setLang('uk')}
           >
-            UK
+            UA
           </button>
           <button
             className={`lang-toggle__btn ${lang === 'en' ? 'lang-toggle__btn--active' : ''}`}
