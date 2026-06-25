@@ -5,7 +5,8 @@ description: Run or extend the live-server backend tests and the black-box secur
 
 # BizCheck — Integration & Security-Probe Tests
 
-For fast no-DB tests use `bizcheck-unit-tests` instead. This skill covers the suites that need a
+For fast no-DB tests use `bizcheck-backend-unit-tests` (or `bizcheck-frontend-unit-tests`) instead.
+This skill covers the suites that need a
 **running** backend. Reference: `documentation/backend/04-middleware-utils.md`.
 
 ## Three artifacts
@@ -37,7 +38,7 @@ For fast no-DB tests use `bizcheck-unit-tests` instead. This skill covers the su
   container: `python scripts/e2e_check.py` (see `bizcheck-deployment`).
 
 ## When to use which
-- Logic/auth/validator change → `bizcheck-unit-tests` (no server, instant feedback).
+- Logic/auth/validator change → `bizcheck-backend-unit-tests` (no server, instant feedback).
 - "Does the deployed stack actually behave?" → `test_security.py` (full HTTP) or `e2e_check.py` (smoke).
 - Pre-release hardening / pentest pass → `security_test.py` scanner.
 
