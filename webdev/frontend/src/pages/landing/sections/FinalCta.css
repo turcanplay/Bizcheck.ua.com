@@ -34,8 +34,8 @@
 }
 
 .final-cta__btn {
-  background: linear-gradient(135deg, #E03E2D 0%, #C32D1E 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #F2A302 0%, #FFB81F 100%);
+  color: #002658;
   padding: 22px 44px;
   border-radius: 999px;
   text-decoration: none;
@@ -45,17 +45,17 @@
   letter-spacing: -0.005em;
   box-shadow:
     0 2px 4px rgba(15, 23, 42, 0.06),
-    0 20px 48px -12px rgba(224, 62, 45, 0.65),
-    0 0 0 6px rgba(224, 62, 45, 0.10);
+    0 20px 48px -12px rgba(242, 163, 2, 0.65),
+    0 0 0 6px rgba(242, 163, 2, 0.10);
   transition: background .2s, transform .25s ease, box-shadow .25s ease;
 }
 .final-cta__btn:hover {
-  background: linear-gradient(135deg, #F4533F 0%, #E03E2D 100%);
+  background: linear-gradient(135deg, #FFB81F 0%, #FFD231 100%);
   transform: translateY(-3px) scale(1.02);
   box-shadow:
     0 2px 4px rgba(15, 23, 42, 0.06),
-    0 28px 56px -12px rgba(224, 62, 45, 0.75),
-    0 0 0 8px rgba(224, 62, 45, 0.14);
+    0 28px 56px -12px rgba(242, 163, 2, 0.75),
+    0 0 0 8px rgba(242, 163, 2, 0.14);
 }
 
 @media (max-width: 840px) {

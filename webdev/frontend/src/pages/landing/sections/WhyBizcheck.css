@@ -19,7 +19,7 @@
   padding: 7px 16px 7px 12px;
   margin-bottom: 20px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.08), rgba(177, 79, 197, 0.08));
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.08), rgba(0, 59, 144, 0.08));
   border: 1px solid rgba(0, 117, 201, 0.14);
   color: #0075C9;
   font-size: 11px;
@@ -31,7 +31,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0075C9, #B14FC5);
+  background: linear-gradient(135deg, #0075C9, #003B90);
   box-shadow: 0 0 0 3px rgba(0, 117, 201, 0.2);
   animation: whyDotPulse 2s ease-in-out infinite;
 }
@@ -49,7 +49,7 @@
   margin: 0 0 18px;
 }
 .why__title-accent {
-  background: linear-gradient(135deg, #0075C9 0%, #B14FC5 60%, #D89BE0 100%);
+  background: linear-gradient(135deg, #0075C9 0%, #003B90 60%, #54C0E8 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -111,9 +111,9 @@
 
 /* Accent variants */
 .why__card--blue    { --why-accent: #0075C9; --why-accent-rgb: 0, 117, 201;   --why-bg: #E5F1FA; }
-.why__card--violet  { --why-accent: #B14FC5; --why-accent-rgb: 177, 79, 197;  --why-bg: #F6E9FB; }
+.why__card--violet  { --why-accent: #003B90; --why-accent-rgb: 177, 79, 197;  --why-bg: #E5F1FA; }
 .why__card--emerald { --why-accent: #05AB8C; --why-accent-rgb: 5, 171, 140;  --why-bg: #E2F4F0; }
-.why__card--amber   { --why-accent: #F5A800; --why-accent-rgb: 245, 168, 0;  --why-bg: #FFF4D9; }
+.why__card--amber   { --why-accent: #F2A302; --why-accent-rgb: 245, 168, 0;  --why-bg: #FFF4D9; }
 
 /* --- Icon --- */
 .why__icon-wrap {

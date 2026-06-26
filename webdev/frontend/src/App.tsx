@@ -90,7 +90,7 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 22px', borderRadius: 999, border: 'none', cursor: 'pointer',
-              background: '#E03E2D', color: '#fff', fontWeight: 700, fontSize: 14,
+              background: '#003B90', color: '#fff', fontWeight: 700, fontSize: 14,
             }}
           >
             Перезавантажити

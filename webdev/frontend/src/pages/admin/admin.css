@@ -6,7 +6,7 @@
   --border: #143257;
   --text: #e4e6f0;
   --text2: #8b8fa7;
-  --accent: #F5A800;
+  --accent: #F2A302;
   --accent-hover: #FFD231;
   --green: #05AB8C;
   --red: #E5376B;
@@ -45,7 +45,7 @@
   transition: all .15s;
 }
 .admin-sidebar a:hover { color: var(--text); background: var(--surface2); }
-.admin-sidebar a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(245, 168, 0,.06); }
+.admin-sidebar a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(242, 163, 2,.06); }
 .admin-main { flex: 1; padding: 24px; overflow-x: auto; }
 
 /* Buttons */
@@ -99,7 +99,7 @@
   transition: box-shadow .15s ease, border-color .15s ease, opacity .15s ease;
 }
 .admin-test-card--dragging { opacity: .45; }
-.admin-test-card--dragover { border-color: var(--accent, #002E62); box-shadow: 0 0 0 2px var(--accent, #002E62) inset; }
+.admin-test-card--dragover { border-color: var(--accent, #003B90); box-shadow: 0 0 0 2px var(--accent, #003B90) inset; }
 .admin-test-card__drag {
   cursor: grab;
   user-select: none;
@@ -130,7 +130,7 @@
 .admin-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 .admin-badge-green { background: rgba(22,163,74,.15); color: var(--green); }
 .admin-badge-blue { background: rgba(59,130,246,.15); color: var(--blue); }
-.admin-badge-gold { background: rgba(245, 168, 0,.18); color: var(--accent); }
+.admin-badge-gold { background: rgba(242, 163, 2,.18); color: var(--accent); }
 .admin-badge-muted { background: var(--surface2); color: var(--text2); }
 
 /* Modal */
@@ -207,7 +207,7 @@
 .admin-report-type-card:hover { border-color: #54C0E8; background: #F7F9FF; }
 .admin-report-type-card.is-selected {
   border-color: #0075C9;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(177, 79, 197, 0.06));
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 59, 144, 0.06));
   box-shadow: 0 4px 14px -6px rgba(0, 117, 201, 0.35);
 }
 .admin-report-type-card input[type="radio"] {
@@ -251,7 +251,7 @@
 .admin-visibility-card:hover { border-color: #54C0E8; background: #F7F9FF; }
 .admin-visibility-card.is-selected {
   border-color: #0075C9;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(177, 79, 197, 0.06));
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 59, 144, 0.06));
   box-shadow: 0 4px 14px -6px rgba(0, 117, 201, 0.35);
 }
 .admin-visibility-card input[type="radio"] {

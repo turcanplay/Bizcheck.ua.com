@@ -70,7 +70,7 @@
   letter-spacing: -0.015em;
   margin: 0;
   color: #0F172A;
-  background: linear-gradient(135deg, #0075C9 0%, #B14FC5 70%);
+  background: linear-gradient(135deg, #0075C9 0%, #003B90 70%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -130,7 +130,7 @@
   margin-top: 4px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(177, 79, 197, 0.06));
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 59, 144, 0.06));
   border: 1px solid rgba(0, 117, 201, 0.12);
   display: flex;
   flex-direction: column;
@@ -148,7 +148,7 @@
 .block-detail__regulatory-link {
   font-size: 12px;
   font-weight: 600;
-  color: #1E3BE8;
+  color: #003171;
   text-decoration: underline;
   word-break: break-word;
   line-height: 1.4;
