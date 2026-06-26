@@ -263,7 +263,7 @@ export default function AdminTestQuestions({ testId }: Props) {
                 borderRadius: 8,
                 padding: 6,
                 transition: 'border-color .15s, background .15s',
-                background: isDropTarget ? 'rgba(245, 168, 0,.06)' : 'transparent',
+                background: isDropTarget ? 'rgba(242, 163, 2,.06)' : 'transparent',
               }}
             >
               {tops.length === 0 && (
@@ -382,10 +382,10 @@ function QuestionRow({
           marginBottom: 8,
           padding: 12,
           borderRadius: 8,
-          background: level === 1 ? 'rgba(245, 168, 0,.04)' : 'var(--bg)',
+          background: level === 1 ? 'rgba(242, 163, 2,.04)' : 'var(--bg)',
           border: isHover
             ? '2px solid var(--accent)'
-            : level === 1 ? '1px solid rgba(245, 168, 0,.35)' : '1px solid var(--border)',
+            : level === 1 ? '1px solid rgba(242, 163, 2,.35)' : '1px solid var(--border)',
           borderLeft: level === 1 ? '4px solid var(--accent)' : isHover ? '2px solid var(--accent)' : '3px solid var(--border)',
           // Don't flash opacity while dragging — causes tremor as browser repaints.
           // Instead, show a subtle ghost outline.

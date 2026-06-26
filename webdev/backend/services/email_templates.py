@@ -10,8 +10,8 @@ from html import escape
 from urllib.parse import quote
 
 # Brand palette — Crowe Indigo + Amber, light everywhere else.
-NAVY = "#011E41"       # Crowe Indigo
-GOLD = "#F5A800"       # Crowe Amber
+NAVY = "#002658"       # Crowe Indigo
+GOLD = "#F2A302"       # Crowe Amber
 GOLD_DARK = "#D7761D"
 INK = "#16203A"
 MUTED = "#6B7280"
@@ -22,7 +22,7 @@ BG_PAGE = "#F4F6FB"     # soft page background
 def _zone_color(score: int) -> str:
     # Crowe accent palette: Teal → Amber → Amber-dark → Coral
     if score >= 80: return "#05AB8C"   # teal
-    if score >= 70: return "#F5A800"   # amber
+    if score >= 70: return "#F2A302"   # amber
     if score >= 65: return "#D7761D"   # amber dark
     return "#E5376B"                   # coral
 

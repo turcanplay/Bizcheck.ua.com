@@ -18,7 +18,7 @@
   padding: 7px 16px 7px 12px;
   margin-bottom: 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.08), rgba(177, 79, 197, 0.08));
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.08), rgba(0, 59, 144, 0.08));
   border: 1px solid rgba(0, 117, 201, 0.14);
   color: #0075C9;
   font-size: 11px;
@@ -29,7 +29,7 @@
 .testimonials__eyebrow-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0075C9, #B14FC5);
+  background: linear-gradient(135deg, #0075C9, #003B90);
   box-shadow: 0 0 0 3px rgba(0, 117, 201, 0.2);
   animation: tsDotPulse 2s ease-in-out infinite;
 }
@@ -46,7 +46,7 @@
   margin: 0 0 14px;
 }
 .testimonials__title-accent {
-  background: linear-gradient(135deg, #0075C9 0%, #B14FC5 60%, #D89BE0 100%);
+  background: linear-gradient(135deg, #0075C9 0%, #003B90 60%, #54C0E8 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -152,7 +152,7 @@
 .testimonial-card__avatar {
   width: 44px; height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0075C9, #B14FC5);
+  background: linear-gradient(135deg, #0075C9, #003B90);
   display: inline-flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 700; font-size: 14px;
   overflow: hidden;

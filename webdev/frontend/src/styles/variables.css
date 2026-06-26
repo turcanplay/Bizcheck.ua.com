@@ -1,8 +1,8 @@
 :root {
-  /* Navy palette — Crowe Indigo (#011E41) + extended indigo/blue range */
-  --navy: #002E62;
-  --navy-deep: #011E41;
-  --navy-mid: #003F9F;
+  /* Blue palette — dark navy (#002658) + royal blue (#003B90) range */
+  --navy: #003B90;
+  --navy-deep: #002658;
+  --navy-mid: #003171;
   --navy-light: #0075C9;
   --navy-pale: #E6EDF5;
 
@@ -10,10 +10,10 @@
   --bg-page: #F4F6F9;
   --bg-card: #FFFFFF;
   --bg-quiz: #F4F6F9;
-  --bg-dark: #011E41;
+  --bg-dark: #002658;
 
-  /* Accent — Crowe Amber (#F5A800) + extended amber range */
-  --gold: #F5A800;
+  /* Accent — Amber (#F2A302) + extended amber range */
+  --gold: #F2A302;
   --gold-dark: #D7761D;
   --gold-light: #FFD231;
   --gold-pale: #FFF4D9;
@@ -40,7 +40,7 @@
   --border-light: rgba(255, 255, 255, 0.12);
 
   /* Report */
-  --report-header: #011E41;
+  --report-header: #002658;
 
   /* Fonts — Crowe: Helvetica primary, Arial secondary (system stack, no web download) */
   --font-serif: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -63,10 +63,10 @@
   --radius-full: 50%;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(1, 30, 65, 0.06);
-  --shadow-md: 0 4px 16px rgba(1, 30, 65, 0.08);
-  --shadow-lg: 0 8px 32px rgba(1, 30, 65, 0.1);
-  --shadow-xl: 0 16px 48px rgba(1, 30, 65, 0.14);
+  --shadow-sm: 0 1px 3px rgba(0, 38, 88, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 38, 88, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 38, 88, 0.1);
+  --shadow-xl: 0 16px 48px rgba(0, 38, 88, 0.14);
 
   /* Transitions */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);

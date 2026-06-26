@@ -3,7 +3,7 @@
 
 .landing-hero {
   padding: 80px 24px;
-  background: #002E62;
+  background: #003B90;
   color: #fff;
   text-align: center;
 }
@@ -33,10 +33,10 @@
   display: flex; flex-direction: column; gap: 8px;
   font-family: inherit;
 }
-.landing-card:hover { border-color: #002E62; box-shadow: 0 4px 14px rgba(1, 30, 65,.08); }
+.landing-card:hover { border-color: #003B90; box-shadow: 0 4px 14px rgba(0, 38, 88,.08); }
 .landing-card__title { font-weight: 600; font-size: 17px; }
 .landing-card__desc  { font-size: 13px; color: #555; line-height: 1.5; }
-.landing-card__meta  { font-size: 13px; font-weight: 600; color: #002E62; }
+.landing-card__meta  { font-size: 13px; font-weight: 600; color: #003B90; }
 
 .landing-footer {
   padding: 24px; background: #111; color: #bbb; text-align: center;
