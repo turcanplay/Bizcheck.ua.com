@@ -137,7 +137,7 @@ def get_report_by_token(token):
         "total_score": row["total_score"],
         "block_scores_json": row["block_scores_json"],
         "pdf_b64": pdf_b64,
-        "language": row.get("language") or "uk",
+        "language": row.get("language") or "ro",
     })
 
 
@@ -201,6 +201,15 @@ def save_tg_contact(token):
     try:
         from services.sales_notify import maybe_notify_sales
         maybe_notify_sales(row["id"])
+    except Exception:
+        pass
+
+    # Schedule the automatic feedback question (no-op unless enabled in admin).
+    # Fires `feedback_auto_delay_min` minutes after delivery; once per chat.
+    try:
+        from services.feedback import maybe_schedule_auto
+        lang_row = query("SELECT language FROM submissions WHERE id = %s", (row["id"],), fetch_one=True)
+        maybe_schedule_auto(tg_chat_id, (lang_row or {}).get("language") or "ru")
     except Exception:
         pass
 

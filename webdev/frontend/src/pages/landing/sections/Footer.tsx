@@ -47,6 +47,12 @@ export default function Footer() {
         </div>
 
         <div className="footer__col">
+          <div className="footer__col-title">{t('footerOfficial')}</div>
+          <a href="https://turcan.md" target="_blank" rel="noopener noreferrer" className="footer__link">{t('footerLinkTurcan')}</a>
+          <a href="https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/" target="_blank" rel="noopener noreferrer" className="footer__link">{t('footerLinkCrowe')}</a>
+        </div>
+
+        <div className="footer__col">
           <div className="footer__col-title">{t('footerContacts')}</div>
           <a href="tel:+37379027317" className="footer__link">
             <PhoneIcon /> +373 79 027 317

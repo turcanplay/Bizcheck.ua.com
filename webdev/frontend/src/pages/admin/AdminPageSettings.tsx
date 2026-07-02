@@ -2,30 +2,30 @@ import { useEffect, useState } from 'react';
 import { adminApi, type AdminTest, type SiteSettings } from '@/api/admin';
 
 /**
- * "Page settings" — admin sets which test each landing-page CTA button opens.
+ * "Setări pagină" — admin sets which test each landing-page CTA button opens.
  * Empty value = button keeps its old behavior (scrolls to the catalog).
  */
 
 const CTA_FIELDS: Array<{ key: keyof SiteSettings; label: string; hint: string }> = [
   {
     key: 'cta_hero_test',
-    label: 'Hero button — "Test your company now"',
-    hint: 'The large button at the top of the main page.',
+    label: 'Buton Hero — „Testează-ți compania acum"',
+    hint: 'Butonul mare din partea de sus a paginii principale.',
   },
   {
     key: 'cta_about_test',
-    label: '"About the platform" section button',
-    hint: 'The button in the platform presentation block.',
+    label: 'Buton secțiunea „Despre platformă"',
+    hint: 'Butonul din blocul de prezentare a platformei.',
   },
   {
     key: 'cta_final_test',
-    label: 'Final section button (Final CTA)',
-    hint: 'The large button at the end of the page, before the footer.',
+    label: 'Buton secțiunea finală (Final CTA)',
+    hint: 'Butonul mare de la finalul paginii, înainte de footer.',
   },
   {
     key: 'cta_catalog_test',
-    label: 'Catalog area button (Marketplace)',
-    hint: 'The red button at the top of the catalog section (Tests and templates).',
+    label: 'Buton zona Catalog (Marketplace)',
+    hint: 'Butonul roșu din capul secțiunii de catalog (Teste și șabloane).',
   },
 ];
 
@@ -79,20 +79,20 @@ export default function AdminPageSettings() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>⚙️ Page settings</h2>
+        <h2>⚙️ Setări pagină</h2>
         <button className="admin-btn admin-btn-accent" onClick={onSave} disabled={saving || loading}>
-          {saving ? '...' : 'Save'}
+          {saving ? '...' : 'Salvează'}
         </button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Loading...</div>}
+      {loading && <div className="admin-empty">Se încarcă...</div>}
 
       {!loading && (
         <div className="admin-test-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, margin: 0 }}>
-            Choose which test each "call to action" button on the main page leads to.
-            If you leave "— no target —", the button scrolls to the test catalog, as before.
+            Alege la ce test duce fiecare buton „call to action" de pe pagina principală.
+            Dacă lași „— fără țintă —", butonul derulează la catalogul de teste, ca înainte.
           </p>
 
           {CTA_FIELDS.map(field => (
@@ -102,12 +102,12 @@ export default function AdminPageSettings() {
                 value={settings[field.key]}
                 onChange={e => setField(field.key, e.target.value)}
               >
-                <option value="">— no target (scrolls to catalog) —</option>
+                <option value="">— fără țintă (derulează la catalog) —</option>
                 {tests.map(test => (
                   <option key={test.slug} value={test.slug}>
-                    {test.name_uk || test.slug}
-                    {test.is_paid ? ' (paid)' : ''}
-                    {!test.is_active ? ' — inactive' : ''}
+                    {test.name_ro || test.slug}
+                    {test.is_paid ? ' (cu plată)' : ''}
+                    {!test.is_active ? ' — inactiv' : ''}
                   </option>
                 ))}
               </select>
@@ -124,17 +124,17 @@ export default function AdminPageSettings() {
                 onChange={e => setField('email_delivery_enabled', e.target.checked ? '1' : '0')}
                 style={{ width: 18, height: 18 }}
               />
-              <span>Email delivery enabled (post-test page)</span>
+              <span>Livrare prin email activă (pagina de după test)</span>
             </label>
             <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
-              Disabled → the "Send by email" option appears as "Coming soon", users use Telegram.
-              Enable only after email is delivered correctly (SPF/DKIM/DMARC configured).
+              Dezactivat → opțiunea „Trimite pe email" apare ca „În curând", utilizatorii folosesc Telegram.
+              Activează doar după ce emailul ajunge corect (SPF/DKIM/DMARC configurate).
             </div>
           </div>
 
           {savedAt && (
             <div className="admin-badge admin-badge-green" style={{ alignSelf: 'flex-start' }}>
-              ✅ Saved
+              ✅ Salvat
             </div>
           )}
         </div>

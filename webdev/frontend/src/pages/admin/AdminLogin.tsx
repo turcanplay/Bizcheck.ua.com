@@ -30,7 +30,7 @@ export default function AdminLogin() {
       await adminApi.login(username, password);
       navigate('/admin_bizcheck_md_crowe', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to log in');
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setBusy(false);
     }
@@ -42,7 +42,7 @@ export default function AdminLogin() {
     <div className="admin-root">
       <div className="admin-login-wrap">
         <form className="admin-login-card" onSubmit={onSubmit}>
-          <h2>Administrator login</h2>
+          <h2>Admin Login</h2>
           <div className="admin-form-group">
             <label>Username</label>
             <input value={username} onChange={e => setUsername(e.target.value)} autoFocus />
@@ -58,7 +58,7 @@ export default function AdminLogin() {
             style={{ width: '100%', marginTop: 12 }}
             disabled={busy}
           >
-            {busy ? '...' : 'Log in'}
+            {busy ? '...' : 'Sign In'}
           </button>
         </form>
       </div>

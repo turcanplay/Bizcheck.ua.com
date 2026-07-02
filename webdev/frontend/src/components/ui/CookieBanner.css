@@ -1,4 +1,4 @@
-/* Cookie consent banner — Crowe Indigo + Amber + Helvetica title + pill buttons.
+/* Cookie consent banner — navy + gold + serif italic title + pill buttons.
  * Sticky-bottom on desktop, full-width slide-up on mobile.
  * Compact frame: ~720px max, breathing typography but tight padding.
  */
@@ -23,9 +23,9 @@
   pointer-events: auto;
   width: 100%;
   max-width: 720px;
-  background: #002658;            /* Crowe Indigo */
-  color: #FFFFFF;                 /* white on dark */
-  border: 1px solid rgba(242, 163, 2, 0.28);  /* Amber hairline */
+  background: #0E1A33;            /* navy */
+  color: #F4F1E8;                 /* warm bone */
+  border: 1px solid rgba(212, 175, 55, 0.28);  /* gold hairline */
   border-radius: 16px;
   padding: 20px 22px;
   box-shadow:
@@ -46,11 +46,12 @@
 
 .cookie-banner__title {
   margin: 0 0 6px 0;
-  font-family: var(--font-sans, 'Helvetica Neue', Helvetica, Arial, sans-serif);
-  font-weight: 700;
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 600;
   font-size: 1.18rem;
   letter-spacing: 0.01em;
-  color: #FFFFFF;
+  color: #E8DFC1;
 }
 
 .cookie-banner__desc {
@@ -63,15 +64,15 @@
 .cookie-banner__policy-link {
   display: inline-block;
   font-size: 0.8rem;
-  color: #F2A302;
+  color: #D4AF37;
   text-decoration: none;
-  border-bottom: 1px dashed rgba(242, 163, 2, 0.45);
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.45);
   padding-bottom: 1px;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 .cookie-banner__policy-link:hover {
-  color: #FFD231;
-  border-color: rgba(255, 210, 49, 0.7);
+  color: #F1C95A;
+  border-color: rgba(241, 201, 90, 0.7);
 }
 
 /* ── Categories list (only in expanded state) ── */
@@ -91,7 +92,7 @@
   gap: 14px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(242, 163, 2, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.12);
   border-radius: 12px;
 }
 
@@ -119,9 +120,9 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #F2A302;
-  background: rgba(242, 163, 2, 0.1);
-  border: 1px solid rgba(242, 163, 2, 0.3);
+  color: #D4AF37;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 999px;
   padding: 5px 11px;
 }
@@ -133,7 +134,7 @@
   width: 44px;
   height: 24px;
   border-radius: 999px;
-  background: #0A2E5A;
+  background: #2A3656;
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   cursor: pointer;
@@ -141,7 +142,7 @@
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 .cookie-toggle:focus-visible {
-  outline: 2px solid #F2A302;
+  outline: 2px solid #D4AF37;
   outline-offset: 2px;
 }
 .cookie-toggle__knob {
@@ -157,8 +158,8 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 .cookie-toggle--on {
-  background: #F2A302;
-  border-color: rgba(242, 163, 2, 0.6);
+  background: #D4AF37;
+  border-color: rgba(212, 175, 55, 0.6);
 }
 .cookie-toggle--on .cookie-toggle__knob {
   left: 22px;
@@ -189,24 +190,24 @@
 .cookie-banner__btn:active { transform: translateY(0); }
 
 .cookie-banner__btn--primary {
-  background: #F2A302;
-  color: #002658;
-  border-color: #F2A302;
-  box-shadow: 0 4px 12px -4px rgba(242, 163, 2, 0.55);
+  background: #D4AF37;
+  color: #0E1A33;
+  border-color: #D4AF37;
+  box-shadow: 0 4px 12px -4px rgba(212, 175, 55, 0.55);
 }
 .cookie-banner__btn--primary:hover {
-  background: #FFD231;
-  border-color: #FFD231;
+  background: #E5C24E;
+  border-color: #E5C24E;
 }
 
 .cookie-banner__btn--ghost {
   background: transparent;
-  color: #FFFFFF;
-  border-color: rgba(255, 255, 255, 0.32);
+  color: #E8DFC1;
+  border-color: rgba(232, 223, 193, 0.32);
 }
 .cookie-banner__btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(232, 223, 193, 0.08);
+  border-color: rgba(232, 223, 193, 0.55);
 }
 
 /* ── Mobile ── */

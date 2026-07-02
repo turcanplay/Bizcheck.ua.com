@@ -30,10 +30,10 @@ def get_all():
 def create():
     data = request.get_json(silent=True) or {}
     block_id = data.get("block_id")
-    text_uk = (data.get("text_uk") or "").strip()
-    text_en = (data.get("text_en") or "").strip()
-    note_uk = (data.get("note_uk") or "").strip() or None
-    note_en = (data.get("note_en") or "").strip() or None
+    text_ro = (data.get("text_ro") or "").strip()
+    text_ru = (data.get("text_ru") or "").strip()
+    note_ro = (data.get("note_ro") or "").strip() or None
+    note_ru = (data.get("note_ru") or "").strip() or None
     order_index = data.get("order_index", 0)
     answers_list = data.get("answers", [])
     parent_question_id = data.get("parent_question_id") or None
@@ -41,13 +41,13 @@ def create():
     errors = []
     if not block_id:
         errors.append("block_id is required")
-    if not text_uk and not text_en:
+    if not text_ro and not text_ru:
         errors.append("At least one question text (RO or RU) is required")
     if errors:
         return jsonify({"errors": errors}), 400
 
     try:
-        question = create_question(block_id, text_uk, text_en, note_uk, note_en, order_index, answers_list, parent_question_id)
+        question = create_question(block_id, text_ro, text_ru, note_ro, note_ru, order_index, answers_list, parent_question_id)
         return jsonify({"question": question}), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -60,8 +60,8 @@ def update(question_id):
     try:
         question = update_question(
             question_id, data.get("block_id"),
-            data.get("text_uk"), data.get("text_en"),
-            data.get("note_uk"), data.get("note_en"),
+            data.get("text_ro"), data.get("text_ru"),
+            data.get("note_ro"), data.get("note_ru"),
             data.get("order_index"), data.get("answers"),
             data.get("parent_question_id"),
         )

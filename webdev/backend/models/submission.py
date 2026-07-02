@@ -78,6 +78,16 @@ class Submission:
         return row["id"] if row else None
 
     @staticmethod
+    def release_sales_notification(submission_id):
+        """Undo a claim when the send ultimately failed, so a later write path
+        re-attempts instead of the lead being lost forever (the flag would
+        otherwise stay TRUE with no message ever delivered)."""
+        execute(
+            "UPDATE submissions SET sales_notified = FALSE WHERE id = %s",
+            (submission_id,),
+        )
+
+    @staticmethod
     def set_sales_message(submission_id, msg_id, is_doc):
         """Remember the Telegram message_id of the sales notification so later
         contact updates can EDIT the same message instead of sending a new one."""

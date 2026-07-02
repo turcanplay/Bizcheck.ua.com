@@ -3,6 +3,7 @@ import type { Phase, Answers, UserInfo, ReportData, Block, Question, TestOption 
 import { buildReport, calculateBlockScore } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { API_BASE } from '@/config/api';
+import { enqueueSave } from '@/utils/durableSave';
 
 interface QuizContextValue {
   blocks: Block[];
@@ -13,6 +14,7 @@ interface QuizContextValue {
   loading: boolean;
 
   tests: TestOption[];
+  testsLoaded: boolean;
   selectedTestSlug: string | null;
   selectTest: (slug: string) => void;
 
@@ -76,8 +78,8 @@ function clearSavedState() {
 
 /* ---- Bilingual API types ---- */
 interface ApiAnswer {
-  label_uk: string;
-  label_en: string;
+  label_ro: string;
+  label_ru: string;
   key: string;
   score: number;
   next_question_id: number | null;
@@ -86,32 +88,32 @@ interface ApiQuestion {
   id: string;
   db_id: number;
   parent_question_id: number | null;
-  text_uk: string;
-  text_en: string;
-  note_uk: string | null;
-  note_en: string | null;
+  text_ro: string;
+  text_ru: string;
+  note_ro: string | null;
+  note_ru: string | null;
   options: ApiAnswer[];
 }
 interface ApiBlock {
   id: number;
-  title_uk: string;
-  title_en: string;
+  title_ro: string;
+  title_ru: string;
   questions: ApiQuestion[];
 }
 
 /** Resolve bilingual API data to single-language Block[] */
-function resolveBlocks(apiBlocks: ApiBlock[], lang: 'uk' | 'en'): Block[] {
+function resolveBlocks(apiBlocks: ApiBlock[], lang: 'ro' | 'ru'): Block[] {
   return apiBlocks.map(b => ({
     id: b.id,
-    title: lang === 'uk' ? b.title_uk : b.title_en,
+    title: lang === 'ro' ? b.title_ro : b.title_ru,
     questions: b.questions.map(q => ({
       id: q.id,
       db_id: q.db_id,
       parent_question_id: q.parent_question_id,
-      text: lang === 'uk' ? q.text_uk : q.text_en,
-      note: lang === 'uk' ? q.note_uk : q.note_en,
+      text: lang === 'ro' ? q.text_ro : q.text_ru,
+      note: lang === 'ro' ? q.note_ro : q.note_ru,
       options: q.options.map(o => ({
-        label: lang === 'uk' ? o.label_uk : o.label_en,
+        label: lang === 'ro' ? o.label_ro : o.label_ru,
         key: o.key,
         score: o.score,
         next_question_id: o.next_question_id,
@@ -146,6 +148,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const [tests, setTests] = useState<TestOption[]>([]);
+  // True once the /tests fetch has settled (success OR failure). Report layout
+  // selection keys off report_type from this list — rendering before it loads
+  // would wrongly fall back to the 'bizcheck' layout. See ReportPage.
+  const [testsLoaded, setTestsLoaded] = useState(false);
   const [selectedTestSlug, setSelectedTestSlug] = useState<string | null>(saved.current?.selectedTestSlug ?? null);
 
   const [phase, setPhase] = useState<Phase>(saved.current?.phase ?? 'start');
@@ -213,6 +219,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         // No tests available
+      } finally {
+        if (!cancelled) setTestsLoaded(true);
       }
     })();
     return () => { cancelled = true; };
@@ -264,20 +272,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
    * authorize PATCH/PDF/email — without it (or with the wrong one), the request
    * is rejected even if the submission id is known.
    */
+  // Durable, fire-and-forget save. Instead of a single best-effort fetch (which
+  // silently lost data on any network flap or brief backend downtime), the write
+  // is queued in a localStorage-backed outbox that retries with backoff, flushes
+  // on reconnect / next page load, and fires a keepalive PATCH on tab close. The
+  // full answer snapshot is always replayed until the server acks (2xx), so a
+  // completed quiz's answers cannot be lost. See utils/durableSave.ts.
   const saveToBackend = useCallback(async (subId: number, payload: Record<string, unknown>) => {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (submissionTokenRef.current) {
-      headers['X-Submission-Token'] = submissionTokenRef.current;
-    }
-    try {
-      await fetch(`${API_BASE}/submissions/${subId}`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // Non-critical
-    }
+    enqueueSave(subId, submissionTokenRef.current, payload);
   }, []);
 
   const createSubmission = useCallback(async (info?: { firstName?: string; lastName?: string; email?: string; phone?: string; consent?: boolean }): Promise<number | null> => {
@@ -300,6 +302,13 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         const id = data.submission?.id;
         const token = data.submission?.submission_token ?? null;
         if (id) {
+          // Update the refs SYNCHRONOUSLY (state setters only refresh the refs
+          // on the next render). Without this, an updateSubmission() called in
+          // the same tick — e.g. StartPage saving sector/size/age/revenue right
+          // after createSubmission() — reads a stale null id/token and the
+          // PATCH is silently skipped, so those fields never reach the DB.
+          submissionIdRef.current = id;
+          submissionTokenRef.current = token;
           setSubmissionId(id);
           setSubmissionToken(token);
           return id;
@@ -530,6 +539,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         revenues,
         loading,
         tests,
+        testsLoaded,
         selectedTestSlug,
         selectTest,
         phase,

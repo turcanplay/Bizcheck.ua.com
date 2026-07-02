@@ -4,6 +4,7 @@ import { useLang } from '@/context/LanguageContext';
 import { API_BASE } from '@/config/api';
 import { publicApi } from '@/api/public';
 import { generateFullPdf } from '@/utils/pdfGenerator';
+import { enqueueSave, isPending, wasDropped, flushAndConfirm } from '@/utils/durableSave';
 import ReportHeader from '@/components/report/ReportHeader';
 import BlockGrid from '@/components/report/BlockGrid';
 import OverallScore from '@/components/report/OverallScore';
@@ -22,7 +23,7 @@ const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$/;
 const PHONE_RE = /^\+?[\d\s\-()]{7,20}$/;
 
 export default function CtaPage() {
-  const { report, restartQuiz, submissionId, submissionToken, setUserInfo, updateSubmission, userInfo, tests, selectedTestSlug, blocks, answers, selectedKeys } = useQuiz();
+  const { report, restartQuiz, submissionId, submissionToken, setUserInfo, updateSubmission, userInfo, sectors, sizes, ages, revenues, tests, selectedTestSlug, blocks, answers, selectedKeys } = useQuiz();
   const { t, lang } = useLang();
   const reportRef = useRef<HTMLDivElement>(null);
   const [pdfDone, setPdfDone] = useState(false);
@@ -35,6 +36,40 @@ export default function CtaPage() {
   // Email delivery is admin-toggleable (site setting). Off → card shows "coming soon".
   const [emailEnabled, setEmailEnabled] = useState(false);
   const pdfSavedRef = useRef(false);
+
+  // ── Save-gate: verify in the background that every answer reached the server.
+  // 'ok'     → nothing pending (default) or confirmed saved
+  // 'saving' → pending; apologising + retrying (up to 2×)
+  // 'failed' → still not confirmed after retries; non-blocking, outbox keeps trying
+  const [saveGate, setSaveGate] = useState<'ok' | 'saving' | 'failed'>('ok');
+  const saveGateRunRef = useRef(false);
+
+  useEffect(() => {
+    if (!submissionId || saveGateRunRef.current) return;
+    saveGateRunRef.current = true;
+    // Stay 'ok' only when there is nothing pending AND nothing was permanently
+    // dropped. A dropped payload (400/422) leaves the outbox empty but the data
+    // is NOT saved — treat it as a failure so recovery is offered.
+    if (!isPending(submissionId) && !wasDropped(submissionId)) return;
+
+    let cancelled = false;
+    (async () => {
+      setSaveGate('saving');
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const ok = await flushAndConfirm(submissionId);
+        if (cancelled) return;
+        if (ok) { setSaveGate('ok'); return; }
+        await new Promise(r => setTimeout(r, 1500));
+      }
+      if (cancelled) return;
+      // flushAndConfirm returns true only on a confirmed 2xx with nothing left
+      // pending (a delivered-by-background flush included). Reaching here means
+      // it never confirmed — show the honest non-blocking warning; the outbox
+      // keeps retrying in the background.
+      setSaveGate('failed');
+    })();
+    return () => { cancelled = true; };
+  }, [submissionId]);
 
   useEffect(() => {
     publicApi.getSiteSettings()
@@ -56,6 +91,43 @@ export default function CtaPage() {
   const [formConsent, setFormConsent] = useState(userInfo.consent || false);
   const [downloadDone, setDownloadDone] = useState(false);
   const [formWarn, setFormWarn] = useState('');
+
+  // ── Company-data recovery — only surfaced when the save-gate has failed.
+  // Lets the user re-confirm the company profile collected on StartPage in case
+  // it never reached the server. Pre-filled from the local userInfo snapshot.
+  const [recSectors, setRecSectors] = useState<string[]>(
+    userInfo.sector ? userInfo.sector.split(', ').filter(Boolean) : [],
+  );
+  const [recSize, setRecSize] = useState(userInfo.size || '');
+  const [recAge, setRecAge] = useState(userInfo.age || '');
+  const [recRevenue, setRecRevenue] = useState(userInfo.revenue || '');
+  const [recSaving, setRecSaving] = useState(false);
+  const [recSaved, setRecSaved] = useState(false);
+  const recSavingRef = useRef(false); // synchronous double-submit guard
+
+  function toggleRecSector(s: string) {
+    setRecSectors(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  }
+
+  async function handleSaveRecovery() {
+    if (!submissionId || recSavingRef.current) return;
+    recSavingRef.current = true;
+    setRecSaving(true);
+    try {
+      updateSubmission({
+        sector: recSectors.join(', '),
+        company_size: recSize,
+        company_age: recAge,
+        company_revenue: recRevenue,
+        status: 'in_progress',
+      });
+      const ok = await flushAndConfirm(submissionId);
+      setRecSaved(ok);
+    } finally {
+      setRecSaving(false);
+      recSavingRef.current = false;
+    }
+  }
 
   // Reveal animation: show full-screen overlay for ~2s then fade out
   const [revealExiting, setRevealExiting] = useState(false);
@@ -190,6 +262,10 @@ export default function CtaPage() {
           'Content-Type': 'application/json',
           ...(submissionToken ? { 'X-Submission-Token': submissionToken } : {}),
         };
+        // Durable backstop: if the awaited PATCH below fails silently (network
+        // flap), the outbox retries this contact snapshot until it lands.
+        enqueueSave(submissionId, submissionToken, { first_name: first, last_name: last, phone, email: em, consent: true });
+
         // 1) Persist the contact AND WAIT — /send-email reads the email from the
         //    DB, so it must be committed first (otherwise the server replies
         //    "no valid email" and never sends).
@@ -412,6 +488,26 @@ export default function CtaPage() {
       {/* ── Visible CTA ── */}
       <div className="cta-page__inner">
 
+        {/* Save-gate banner — verify answers reached the server (non-blocking). */}
+        {saveGate === 'saving' && (
+          <div className="cta-save-banner cta-save-banner--saving" role="status">
+            <span className="cta-page__status-spinner" aria-hidden />
+            <div>
+              <strong>{t('ctaSavingTitle')}</strong>
+              <p>{t('ctaSavingText')}</p>
+            </div>
+          </div>
+        )}
+        {saveGate === 'failed' && !recSaved && (
+          <div className="cta-save-banner cta-save-banner--failed" role="alert">
+            <span className="cta-save-banner__icon" aria-hidden>⚠️</span>
+            <div>
+              <strong>{t('ctaSaveFailTitle')}</strong>
+              <p>{t('ctaSaveFailText')}</p>
+            </div>
+          </div>
+        )}
+
         {/* Top hero — overall score + PDF status */}
         <div className="cta-page__score-hero">
           <div className="cta-page__score-pct" style={{ color: scoreColor }}>
@@ -581,6 +677,13 @@ export default function CtaPage() {
                 <div className="cta-frame__success-sub">
                   {t('ctaEmailSentSub', { email: emailValue })}
                 </div>
+                <div className="cta-spam-notice" role="alert">
+                  <span className="cta-spam-notice__icon" aria-hidden>📩</span>
+                  <div className="cta-spam-notice__body">
+                    <strong className="cta-spam-notice__title">{t('ctaSpamNoticeTitle')}</strong>
+                    <p className="cta-spam-notice__text">{t('ctaSpamNoticeText')}</p>
+                  </div>
+                </div>
                 <button
                   type="button"
                   className="cta-frame__resend"
@@ -632,6 +735,106 @@ export default function CtaPage() {
             {selectedMethod === 'telegram' && tgError && (
               <p className="cta-page__tg-error">{t('telegramError')}</p>
             )}
+          </div>
+        )}
+
+        {/* ── Company-data recovery — only when the save-gate failed and there
+            is company data to confirm. Delivery above stays fully usable. ── */}
+        {saveGate === 'failed' && submissionId &&
+          (userInfo.sector || userInfo.size || userInfo.age || userInfo.revenue) && (
+          <div className="cta-recovery">
+            <h3 className="cta-recovery__title">{t('ctaRecoveryTitle')}</h3>
+            <p className="cta-recovery__intro">{t('ctaRecoveryIntro')}</p>
+
+            {!recSaved && (
+              <>
+                <div className="cta-recovery__field">
+                  <span className="cta-recovery__label">{t('labelSector')}</span>
+                  <div className="start-form__sector-grid">
+                    {sectors.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={`start-form__sector-btn ${recSectors.includes(s) ? 'selected' : ''}`}
+                        onClick={() => toggleRecSector(s)}
+                      >
+                        <div className="start-form__radio" />
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="cta-recovery__field">
+                  <span className="cta-recovery__label">{t('labelSize')}</span>
+                  <div className="start-form__pill-grid">
+                    {sizes.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={`start-form__pill ${recSize === s ? 'selected' : ''}`}
+                        onClick={() => setRecSize(s)}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="cta-recovery__field">
+                  <span className="cta-recovery__label">{t('labelAge')}</span>
+                  <div className="start-form__pill-grid">
+                    {ages.map(a => (
+                      <button
+                        key={a}
+                        type="button"
+                        className={`start-form__pill ${recAge === a ? 'selected' : ''}`}
+                        onClick={() => setRecAge(a)}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="cta-recovery__field">
+                  <span className="cta-recovery__label">{t('labelRevenue')}</span>
+                  <div className="start-form__pill-grid start-form__pill-grid--three">
+                    {revenues.map(r => (
+                      <button
+                        key={r}
+                        type="button"
+                        className={`start-form__pill ${recRevenue === r ? 'selected' : ''}`}
+                        onClick={() => setRecRevenue(r)}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="cta-recovery__save"
+                  onClick={() => void handleSaveRecovery()}
+                  disabled={recSaving}
+                >
+                  {recSaving
+                    ? <span className="cta-page__status-spinner" aria-hidden />
+                    : null}
+                  {recSaving ? t('ctaRecoverySaving') : t('ctaRecoverySave')}
+                </button>
+              </>
+            )}
+
+            {recSaved && (
+              <div className="cta-recovery__ok" role="status">{t('ctaRecoverySaved')}</div>
+            )}
+
+            <p className={`cta-recovery__support${!recSaved ? ' cta-recovery__support--prominent' : ''}`}>
+              {t('ctaRecoverySupport')}{' '}
+              <a href="mailto:office@bizcheck.md" className="cta-recovery__support-link">office@bizcheck.md</a>.
+            </p>
           </div>
         )}
 

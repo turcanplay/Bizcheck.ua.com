@@ -62,8 +62,8 @@
   align-items: center;
   gap: 10px;
   padding: 14px 32px;
-  background: var(--gold);
-  color: #002658;
+  background: var(--navy);
+  color: white;
   border: none;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
@@ -75,9 +75,9 @@
 }
 
 .report-page__pdf-btn:hover:not(:disabled) {
-  background: var(--gold-light);
+  background: var(--gold);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(242, 163, 2, 0.3);
+  box-shadow: 0 4px 16px rgba(253, 161, 0, 0.3);
 }
 
 .report-page__pdf-btn:disabled {

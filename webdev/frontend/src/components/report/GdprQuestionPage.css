@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════
+   GDPR report — one question per page. Question + given
+   answer on top, then the fixed explanation (intro / risk /
+   action). Visual language mirrors the BizCheck block-detail
+   page (navy gradient titles, orange "risk" / green "action").
+═══════════════════════════════════════════════════════ */
+
+.gdpr-q {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #0F172A;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ── Question header ── */
+.gdpr-q__top {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 18px;
+  align-items: start;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 28px -18px rgba(45, 75, 255, 0.22);
+}
+
+.gdpr-q__num {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+}
+
+.gdpr-q__head-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gdpr-q__eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8B92A5;
+}
+
+.gdpr-q__question {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: #0F172A;
+}
+
+.gdpr-q__answer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.gdpr-q__answer-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.gdpr-q__answer-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.gdpr-q__answer-skip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* ── Explanation title ── */
+.gdpr-q__title {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin: 0;
+  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Sections ── */
+.gdpr-q__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gdpr-q__section-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  color: #fff;
+  display: inline-block;
+  align-self: flex-start;
+}
+.gdpr-q__section-title--risk {
+  background: linear-gradient(135deg, #F97316 0%, #DC2626 100%);
+}
+.gdpr-q__section-title--action {
+  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+}
+
+.gdpr-q__paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 0 4px;
+}
+.gdpr-q__paragraphs--intro {
+  padding-top: 2px;
+}
+
+.gdpr-q__p {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #1E293B;
+  margin: 0;
+  text-align: justify;
+}
+
+@media print {
+  .gdpr-q {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

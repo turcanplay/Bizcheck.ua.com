@@ -25,7 +25,7 @@ export default function AdminUsers() {
   const testName = (id: number | null) => {
     if (!id) return '—';
     const t = tests.find(x => x.id === id);
-    return t ? t.name_uk : `#${id}`;
+    return t ? t.name_ro : `#${id}`;
   };
 
   const filtered = useMemo(() => {
@@ -43,9 +43,9 @@ export default function AdminUsers() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>👥 Users</h2>
+        <h2>👥 Utilizatori</h2>
         <input
-          placeholder="Search by name, email, phone, TG..."
+          placeholder="Caută după nume, email, telefon, TG..."
           value={query}
           onChange={e => setQuery(e.target.value)}
           style={{
@@ -57,9 +57,9 @@ export default function AdminUsers() {
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Loading...</div>}
+      {loading && <div className="admin-empty">Se încarcă...</div>}
       {!loading && filtered.length === 0 && (
-        <div className="admin-empty">{query ? 'No results.' : 'No users yet.'}</div>
+        <div className="admin-empty">{query ? 'Niciun rezultat.' : 'Niciun utilizator încă.'}</div>
       )}
 
       {!loading && filtered.length > 0 && (
@@ -67,10 +67,10 @@ export default function AdminUsers() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>First name</th><th>Last name</th><th>Email</th><th>Phone</th>
+                <th>Prenume</th><th>Nume</th><th>Email</th><th>Telefon</th>
                 <th>Test</th><th>Sector</th>
-                <th>Status</th><th>Score</th>
-                <th>TG ID</th><th>TG Username</th><th>Date</th>
+                <th>Status</th><th>Scor</th>
+                <th>TG ID</th><th>TG Username</th><th>Data</th>
               </tr>
             </thead>
             <tbody>

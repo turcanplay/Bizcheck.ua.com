@@ -117,9 +117,9 @@ export const adminApi = {
     request<{ message: string }>(`/submissions`, { method: 'DELETE' }),
   listBlocks: (testId?: number) =>
     request<{ blocks: AdminBlock[] }>(`/blocks${testId ? `?test_id=${testId}` : ''}`),
-  createBlock: (data: { test_id: number; title_uk: string; title_en: string; order_index?: number }) =>
+  createBlock: (data: { test_id: number; title_ro: string; title_ru: string; order_index?: number }) =>
     request<{ block: AdminBlock }>('/blocks', { method: 'POST', body: JSON.stringify(data) }),
-  updateBlock: (id: number, data: Partial<{ title_uk: string; title_en: string; order_index: number }>) =>
+  updateBlock: (id: number, data: Partial<{ title_ro: string; title_ru: string; order_index: number }>) =>
     request<{ block: AdminBlock }>(`/blocks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBlock: (id: number) =>
     request<{ message: string }>(`/blocks/${id}`, { method: 'DELETE' }),
@@ -191,17 +191,74 @@ export const adminApi = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+
+  // ── Telegram feedback ──
+  // Replies we received (the only persisted data — target lists are NOT stored).
+  listFeedback: () =>
+    request<{ items: TgReply[]; count: number }>('/admin/feedback'),
+  feedbackContacts: () =>
+    request<{ contacts: TgContact[] }>('/admin/feedback/contacts'),
+  // Bulk: send the preset question to many targets at once (username/tgId/link).
+  sendFeedback: (data: { targets: string[]; lang?: 'auto' | 'ro' | 'ru' }) =>
+    request<FeedbackSendResponse>('/admin/feedback/send', {
+      method: 'POST', body: JSON.stringify(data),
+    }),
+  deleteFeedback: (id: number) =>
+    request<{ ok: boolean }>(`/admin/feedback/${id}`, { method: 'DELETE' }),
+  getFeedbackPrompt: () =>
+    request<{ ro: string; ru: string }>('/admin/feedback/prompt'),
+  updateFeedbackPrompt: (data: { ro?: string; ru?: string }) =>
+    request<{ ro: string; ru: string }>('/admin/feedback/prompt', {
+      method: 'PUT', body: JSON.stringify(data),
+    }),
+  // Automatic feedback: send the question N minutes after a report is delivered in TG.
+  getFeedbackAuto: () =>
+    request<{ enabled: boolean; delay_min: number }>('/admin/feedback/auto'),
+  updateFeedbackAuto: (data: { enabled?: boolean; delay_min?: number }) =>
+    request<{ enabled: boolean; delay_min: number }>('/admin/feedback/auto', {
+      method: 'PUT', body: JSON.stringify(data),
+    }),
 };
 
-export type ReportType = 'standard' | 'premium' | 'bizcheck';
+export interface TgReply {
+  id: number;
+  username: string;       // the @username of whoever answered
+  lang: string;
+  reply_text: string;
+  answered_at: string;
+  created_at: string;
+}
+
+export interface TgContact {
+  username: string;
+  lang: string;
+}
+
+export type FeedbackSendStatus = 'sent' | 'link' | 'invalid';
+
+export interface FeedbackSendResult {
+  target: string;
+  status: FeedbackSendStatus;
+  username?: string;
+  link?: string;
+}
+
+export interface FeedbackSendResponse {
+  results: FeedbackSendResult[];
+  sent: number;
+  links: number;
+  invalid: number;
+}
+
+export type ReportType = 'standard' | 'premium' | 'bizcheck' | 'gdpr';
 
 export interface AdminTest {
   id: number;
   slug: string;
-  name_uk: string;
-  name_en: string;
-  description_uk: string;
-  description_en: string;
+  name_ro: string;
+  name_ru: string;
+  description_ro: string;
+  description_ru: string;
   is_active: boolean;
   is_coming_soon: boolean;
   is_paid: boolean;
@@ -218,10 +275,10 @@ export interface AdminTest {
 
 export interface AdminTestInput {
   slug?: string;
-  name_uk: string;
-  name_en?: string;
-  description_uk?: string;
-  description_en?: string;
+  name_ro: string;
+  name_ru?: string;
+  description_ro?: string;
+  description_ru?: string;
   is_active?: boolean;
   is_coming_soon?: boolean;
   is_paid?: boolean;
@@ -257,8 +314,8 @@ export interface AdminSubmission {
 export interface AdminBlock {
   id: number;
   test_id: number;
-  title_uk: string;
-  title_en: string;
+  title_ro: string;
+  title_ru: string;
   order_index: number;
   created_at: string;
 }
@@ -266,42 +323,42 @@ export interface AdminBlock {
 export interface AdminAnswer {
   id: number;
   question_id: number;
-  text_uk: string;
-  text_en: string;
+  text_ro: string;
+  text_ru: string;
   score: number;
   next_question_id: number | null;
-  explanation_uk?: string | null;
-  explanation_en?: string | null;
-  risk_uk?: string | null;
-  risk_en?: string | null;
+  explanation_ro?: string | null;
+  explanation_ru?: string | null;
+  risk_ro?: string | null;
+  risk_ru?: string | null;
 }
 
 export interface AdminQuestion {
   id: number;
   block_id: number;
   parent_question_id: number | null;
-  text_uk: string;
-  text_en: string;
-  note_uk: string | null;
-  note_en: string | null;
+  text_ro: string;
+  text_ru: string;
+  note_ro: string | null;
+  note_ru: string | null;
   order_index: number;
   answers: AdminAnswer[];
   created_at: string;
 }
 
 export interface AdminAnswerInput {
-  text_uk: string;
-  text_en: string;
+  text_ro: string;
+  text_ru: string;
   score: number;
   next_question_id?: number | null;
 }
 
 export interface AdminQuestionInput {
   block_id: number;
-  text_uk: string;
-  text_en: string;
-  note_uk?: string | null;
-  note_en?: string | null;
+  text_ro: string;
+  text_ru: string;
+  note_ro?: string | null;
+  note_ru?: string | null;
   order_index?: number;
   parent_question_id?: number | null;
   answers: AdminAnswerInput[];
@@ -310,10 +367,10 @@ export interface AdminQuestionInput {
 export interface AdminTemplate {
   id: number;
   slug: string;
-  title_uk: string;
-  title_en: string;
-  description_uk: string;
-  description_en: string;
+  title_ro: string;
+  title_ru: string;
+  description_ro: string;
+  description_ru: string;
   is_active: boolean;
   is_coming_soon: boolean;
   is_paid: boolean;
@@ -327,10 +384,10 @@ export interface AdminTemplate {
 
 export interface AdminTemplateInput {
   slug?: string;
-  title_uk: string;
-  title_en?: string;
-  description_uk?: string;
-  description_en?: string;
+  title_ro: string;
+  title_ru?: string;
+  description_ro?: string;
+  description_ru?: string;
   is_active?: boolean;
   is_coming_soon?: boolean;
   is_paid?: boolean;
@@ -353,8 +410,8 @@ export interface AdminTestimonial {
   id: number;
   name: string;
   role: string | null;
-  quote_uk: string;
-  quote_en: string;
+  quote_ro: string;
+  quote_ru: string;
   rating: number;
   avatar_url: string | null;
   order_index: number;
@@ -367,8 +424,8 @@ export interface AdminTestimonial {
 export interface AdminTestimonialInput {
   name: string;
   role?: string | null;
-  quote_uk?: string;
-  quote_en?: string;
+  quote_ro?: string;
+  quote_ru?: string;
   rating?: number;
   avatar_url?: string | null;
   order_index?: number;
@@ -378,20 +435,20 @@ export interface AdminTestimonialInput {
 
 export interface AdminFaqItem {
   id: number;
-  question_uk: string;
-  question_en: string;
-  answer_uk: string;
-  answer_en: string;
+  question_ro: string;
+  question_ru: string;
+  answer_ro: string;
+  answer_ru: string;
   order_index: number;
   is_active: boolean;
   created_at: string;
 }
 
 export interface AdminFaqInput {
-  question_uk?: string;
-  question_en?: string;
-  answer_uk?: string;
-  answer_en?: string;
+  question_ro?: string;
+  question_ru?: string;
+  answer_ro?: string;
+  answer_ru?: string;
   order_index?: number;
   is_active?: boolean;
 }

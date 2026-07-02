@@ -24,19 +24,19 @@ export default function FAQ() {
       <div className="faq__header">
         <span className="faq__eyebrow">
           <span className="faq__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ДОВІДКА' : 'HELP'}
+          {lang === 'ro' ? 'AJUTOR' : 'ПОМОЩЬ'}
         </span>
         <h2 className="faq__title">
-          {lang === 'uk' ? (
-            <>Часті <span className="faq__title-accent">запитання</span></>
+          {lang === 'ro' ? (
+            <>Întrebări <span className="faq__title-accent">frecvente</span></>
           ) : (
-            <>Frequently asked <span className="faq__title-accent">questions</span></>
+            <>Частые <span className="faq__title-accent">вопросы</span></>
           )}
         </h2>
         <p className="faq__subtitle">
-          {lang === 'uk'
-            ? 'Відповіді на найпоширеніші запитання про платформу.'
-            : 'Answers to the most common questions about the platform.'}
+          {lang === 'ro'
+            ? 'Răspunsurile la cele mai întâlnite întrebări despre platformă.'
+            : 'Ответы на самые популярные вопросы о платформе.'}
         </p>
       </div>
 
@@ -44,8 +44,8 @@ export default function FAQ() {
         {items.length === 0 && <div className="faq__empty">{t('faqEmpty')}</div>}
 
         {items.map((f, i) => {
-          const question = (lang === 'uk' ? f.question_uk : f.question_en) || f.question_uk || f.question_en;
-          const answer   = (lang === 'uk' ? f.answer_uk : f.answer_en)     || f.answer_uk     || f.answer_en;
+          const question = (lang === 'ro' ? f.question_ro : f.question_ru) || f.question_ro || f.question_ru;
+          const answer   = (lang === 'ro' ? f.answer_ro : f.answer_ru)     || f.answer_ro     || f.answer_ru;
           const isOpen = openId === f.id;
           const num = String(i + 1).padStart(2, '0');
           return (

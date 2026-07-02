@@ -3,9 +3,13 @@
 Builds a structured workbook for a test's submissions and packages PDFs
 or per-user Excels as a ZIP archive.
 """
+import html
 import json
+import os
 import re
+import tempfile
 import zipfile
+from datetime import date, datetime
 from io import BytesIO
 
 import openpyxl
@@ -14,6 +18,18 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from models.block import Block
 from models.question import Question
 from models.submission import Submission
+from models.test import Test
+
+
+class ExportTooLarge(Exception):
+    """Raised when an export archive would exceed the Telegram size limit."""
+    pass
+
+
+# Cap on per-user detail sheets in a combined workbook. Past this many
+# completed users we omit the individual sheets (anti-OOM / anti-timeout);
+# the full data still lives in the summary sheets + the admin panel.
+MAX_USER_SHEETS = 300
 
 
 _HEADER_FONT = Font(bold=True, size=10)
@@ -21,11 +37,11 @@ _HEADER_FILL = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="
 _HEADER_ALIGN = Alignment(wrap_text=True, vertical="center", horizontal="center")
 _CELL_ALIGN = Alignment(wrap_text=True, vertical="top")
 _FIXED_COLS = {
-    "ID": 5, "First Name": 12, "Last Name": 12, "Email": 22,
-    "Phone": 14, "Sector": 16, "Company Size": 10, "Company Age": 10,
-    "Total Score %": 10, "Status": 10, "Consent": 8, "Date": 18,
-    "TG Chat ID": 14, "TG Username": 16, "TG First Name": 14, "TG Last Name": 14,
-    "Delivery": 12, "Language": 8,
+    "ID": 5, "Prenume": 12, "Nume": 12, "Email": 24, "Telefon": 14,
+    "Sector": 16, "Mărime companie": 15, "Vechime companie": 15, "Cifră de afaceri": 16,
+    "Status": 12, "Data": 18, "Limbă": 8, "Livrare": 12, "Consimțământ": 13,
+    "Telegram @user": 16, "Telegram nume": 16, "Telegram ChatID": 14,
+    "Scor total %": 11,
 }
 
 # Openpyxl sheet-name constraints: ≤31 chars, no / \ ? * [ ]
@@ -88,13 +104,13 @@ def _collect_questions_for_blocks(blocks):
         top_level = [q for q in block_questions if not q.get("parent_question_id")]
         for q_idx, q in enumerate(top_level):
             key = f"b{b['id']}q{q['id']}"
-            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_uk'] or '')[:40]}"
+            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_ro'] or '')[:40]}"
             question_keys_ordered.append(key)
             subs = [sq for sq in block_questions if sq.get("parent_question_id") == q["id"]]
             for sq_idx, sq in enumerate(subs):
                 skey = f"b{b['id']}q{sq['id']}"
                 question_labels[skey] = (
-                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_uk'] or '')[:40]}"
+                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_ro'] or '')[:40]}"
                 )
                 question_keys_ordered.append(skey)
 
@@ -149,25 +165,26 @@ def _summary_row(s, block_titles, question_keys_ordered):
             title = b.get("title", f"Block {b.get('id', '?')}")
             block_map[title] = round(b.get("score", 0))
 
+    tg_name = f"{s.get('tg_first_name') or ''} {s.get('tg_last_name') or ''}".strip()
     row = [
+        # ── contact / identitate ──
         s["id"], s.get("first_name") or "", s.get("last_name") or "",
         s.get("email") or "", s.get("phone") or "",
-        s.get("sector") or "", s.get("company_size") or "", s.get("company_age") or "",
+        # ── companie ──
+        s.get("sector") or "", s.get("company_size") or "",
+        s.get("company_age") or "", s.get("company_revenue") or "",
+        # ── status / meta ──
+        s.get("status", ""), str(s.get("created_at", "")),
+        s.get("language", ""), _infer_delivery(s),
+        "Da" if s.get("consent") else "Nu",
+        # ── Telegram (strâns la un loc) ──
+        s.get("tg_username", ""), tg_name, s.get("tg_chat_id", ""),
+        # ── scor total ──
         s.get("total_score", ""),
     ]
+    # scoruri pe blocuri, apoi răspunsurile la întrebări — la final
     for t in block_titles:
         row.append(block_map.get(t, ""))
-    row += [
-        s.get("status", ""),
-        "Yes" if s.get("consent") else "No",
-        str(s.get("created_at", "")),
-        s.get("language", ""),
-        _infer_delivery(s),
-        s.get("tg_chat_id", ""),
-        s.get("tg_username", ""),
-        s.get("tg_first_name", ""),
-        s.get("tg_last_name", ""),
-    ]
     for qkey in question_keys_ordered:
         score = answers_data.get(qkey)
         row.append(score if score is not None else "")
@@ -176,14 +193,13 @@ def _summary_row(s, block_titles, question_keys_ordered):
 
 def _summary_headers(block_titles, question_labels, question_keys_ordered):
     headers = [
-        "ID", "First Name", "Last Name", "Email", "Phone", "Sector",
-        "Company Size", "Company Age", "Total Score %",
+        "ID", "Prenume", "Nume", "Email", "Telefon",
+        "Sector", "Mărime companie", "Vechime companie", "Cifră de afaceri",
+        "Status", "Data", "Limbă", "Livrare", "Consimțământ",
+        "Telegram @user", "Telegram nume", "Telegram ChatID",
+        "Scor total %",
     ]
     headers += [f"{t} %" for t in block_titles]
-    headers += [
-        "Status", "Consent", "Date", "Language", "Delivery",
-        "TG Chat ID", "TG Username", "TG First Name", "TG Last Name",
-    ]
     headers += [question_labels.get(k, k) for k in question_keys_ordered]
     return headers
 
@@ -194,6 +210,34 @@ def _fill_summary_sheet(ws, subs, block_titles, question_keys_ordered, question_
     for s in subs:
         ws.append(_summary_row(s, block_titles, question_keys_ordered))
     _style_header_row(ws, headers)
+
+
+# Trimmed view for non-completed ("În proces") submissions: only contact data,
+# company info and the total score — no per-question answers, no block scores.
+_PROCESSED_HEADERS = [
+    "ID", "Prenume", "Nume", "Email", "Telefon",
+    "Sector", "Mărime companie", "Vechime companie", "Cifră de afaceri",
+    "Status", "Data", "Scor total %",
+]
+
+
+def _processed_row(s):
+    return [
+        s["id"], s.get("first_name") or "", s.get("last_name") or "",
+        s.get("email") or "", s.get("phone") or "",
+        s.get("sector") or "", s.get("company_size") or "",
+        s.get("company_age") or "", s.get("company_revenue") or "",
+        s.get("status", ""), str(s.get("created_at", "")),
+        s.get("total_score", ""),
+    ]
+
+
+def _fill_processed_sheet(ws, subs):
+    """Fill a sheet with the trimmed contact+company+score view (no answers)."""
+    ws.append(_PROCESSED_HEADERS)
+    for s in subs:
+        ws.append(_processed_row(s))
+    _style_header_row(ws, _PROCESSED_HEADERS)
 
 
 def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
@@ -210,6 +254,7 @@ def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
         ("Sector", sub.get("sector") or "—"),
         ("Mărime companie", sub.get("company_size") or "—"),
         ("Vechime companie", sub.get("company_age") or "—"),
+        ("Cifra de afaceri", sub.get("company_revenue") or "—"),
         ("Limba", sub.get("language") or "—"),
         ("Canal livrare ales", _infer_delivery(sub)),
         ("Telegram @username", sub.get("tg_username") or "—"),
@@ -257,25 +302,82 @@ def _filter_submissions_for_test(test_id):
     return subs
 
 
+def _created_date(created_at):
+    """Best-effort extraction of a ``date`` from a submission's ``created_at``.
+
+    Accepts a ``datetime``, a ``date``, or an ISO string. Returns ``None`` when
+    the value cannot be parsed (caller decides how to treat those rows).
+    """
+    if created_at is None:
+        return None
+    if isinstance(created_at, datetime):
+        return created_at.date()
+    if isinstance(created_at, date):
+        return created_at
+    try:
+        return date.fromisoformat(str(created_at)[:10])
+    except (ValueError, TypeError):
+        return None
+
+
 # ──────────────────────────────────────────────────────────────────
 # Public builders
 # ──────────────────────────────────────────────────────────────────
 
-def build_test_combined_workbook(test_id):
-    """Multi-sheet workbook: one summary sheet + one sheet per user."""
+def build_test_combined_workbook(test_id, date_from=None, date_to=None):
+    """Multi-sheet workbook: summary sheets + one sheet per completed user.
+
+    Summary sheets, in order:
+      • "Sumar"      — toți participanții (general), cu răspunsuri la întrebări
+      • "Finalizați" — doar cei care au terminat tot (status == completed)
+      • "În proces"  — cei nefinalizați (started / in_progress / abandoned),
+                       doar date de contact + companie + scor total (fără răspunsuri)
+    Then one detail sheet per *completed* user (cei în proces nu primesc foaie
+    individuală cu răspunsuri — apar doar pe foaia trimisă "În proces").
+
+    When ``date_from`` and/or ``date_to`` (``datetime.date``) are provided,
+    submissions are kept only when their ``created_at`` (as a date) falls in the
+    inclusive range. Rows whose ``created_at`` can't be parsed are INCLUDED
+    (kept) so that filtering never silently drops data.
+    """
     subs = _filter_submissions_for_test(test_id)
+
+    if date_from is not None or date_to is not None:
+        def _in_range(s):
+            d = _created_date(s.get("created_at"))
+            if d is None:
+                return True  # unparseable → keep, don't lose data
+            if date_from is not None and d < date_from:
+                return False
+            if date_to is not None and d > date_to:
+                return False
+            return True
+        subs = [s for s in subs if _in_range(s)]
+
     blocks = _get_test_blocks(test_id)
     question_keys_ordered, question_labels = _collect_questions_for_blocks(blocks)
     block_titles = _block_titles_from_subs(subs)
+
+    completed = [s for s in subs if (s.get("status") or "") == "completed"]
+    in_progress = [s for s in subs if (s.get("status") or "") != "completed"]
 
     wb = openpyxl.Workbook()
     summary = wb.active
     summary.title = "Sumar"
     _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
 
-    # One sheet per user. Name: "{id}_FirstLast" truncated to 31 chars.
-    used_names = {"Sumar"}
-    for s in subs:
+    finished_ws = wb.create_sheet(title="Finalizați")
+    _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
+
+    in_progress_ws = wb.create_sheet(title="În proces")
+    _fill_processed_sheet(in_progress_ws, in_progress)
+
+    # One sheet per completed user. Name: "{id}_FirstLast" truncated to 31 chars.
+    # Over MAX_USER_SHEETS completed users we omit the individual sheets to avoid
+    # OOM / request timeouts — the complete data still lives in the summary sheets
+    # ("Sumar" / "Finalizați" / "În proces") and in the admin panel.
+    used_names = {"Sumar", "Finalizați", "În proces"}
+    for s in completed[:MAX_USER_SHEETS]:
         raw = f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}"
         base = _safe_sheet_name(raw)
         name, i = base, 1
@@ -286,6 +388,37 @@ def build_test_combined_workbook(test_id):
         used_names.add(name)
         ws = wb.create_sheet(title=name)
         _fill_single_user_sheet(ws, s, question_keys_ordered, question_labels)
+
+    return wb
+
+
+def build_all_submissions_workbook():
+    """Global multi-sheet workbook across ALL tests (admin "Submissions" tab).
+
+    Same layout as the per-test combined workbook, minus per-user sheets
+    (the global table can hold thousands of rows):
+      • "Sumar"      — toate submisiile, cu răspunsuri la întrebări
+      • "Finalizați" — status == completed, cu răspunsuri
+      • "În proces"  — nefinalizați, doar contact + companie + scor total
+    """
+    subs = Submission.find_all()
+    blocks = Block.find_all()
+    question_keys_ordered, question_labels = _collect_questions_for_blocks(blocks)
+    block_titles = _block_titles_from_subs(subs)
+
+    completed = [s for s in subs if (s.get("status") or "") == "completed"]
+    in_progress = [s for s in subs if (s.get("status") or "") != "completed"]
+
+    wb = openpyxl.Workbook()
+    summary = wb.active
+    summary.title = "Sumar"
+    _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
+
+    finished_ws = wb.create_sheet(title="Finalizați")
+    _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
+
+    in_progress_ws = wb.create_sheet(title="În proces")
+    _fill_processed_sheet(in_progress_ws, in_progress)
 
     return wb
 
@@ -305,6 +438,124 @@ def build_single_user_workbook(submission_id):
     return wb, _safe_filename(f"{name}_{sub.get('created_at')}")
 
 
+def _fmt_score(val) -> str:
+    """Render a numeric score as 'NN%'; '—' when missing/non-numeric."""
+    if val is None or val == "":
+        return "—"
+    try:
+        return f"{round(float(val))}%"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def build_single_user_report_html(submission_id) -> tuple[str, str]:
+    """Render one submission's full report as a standalone, printable HTML page.
+
+    Works for ANY submission regardless of whether a PDF was uploaded — the
+    admin can always review the report from the data we store. All dynamic
+    values are HTML-escaped (defense-in-depth on top of write-path sanitization).
+
+    Returns (html_string, display_name).
+    """
+    sub = Submission.find_by_id(submission_id)
+    if not sub:
+        raise ValueError("Submission not found")
+    blocks = _get_test_blocks(sub.get("test_id"))
+    question_keys_ordered, question_labels = _collect_questions_for_blocks(blocks)
+
+    e = html.escape
+    name = f"{sub.get('first_name') or ''} {sub.get('last_name') or ''}".strip() or "—"
+
+    info_pairs = [
+        ("Nume complet", name),
+        ("Email", sub.get("email") or "—"),
+        ("Telefon", sub.get("phone") or "—"),
+        ("Sector", sub.get("sector") or "—"),
+        ("Mărime companie", sub.get("company_size") or "—"),
+        ("Vechime companie", sub.get("company_age") or "—"),
+        ("Cifra de afaceri", sub.get("company_revenue") or "—"),
+        ("Limba", sub.get("language") or "—"),
+        ("Canal livrare", _infer_delivery(sub)),
+        ("Telegram @username", sub.get("tg_username") or "—"),
+        ("Status", sub.get("status") or "—"),
+        ("Dată completare", str(sub.get("created_at") or "—")),
+    ]
+    info_rows = "".join(
+        f"<tr><th>{e(k)}</th><td>{e(str(v))}</td></tr>" for k, v in info_pairs
+    )
+
+    bs = _parse_json_field(sub.get("block_scores_json")) or []
+    block_rows = ""
+    if isinstance(bs, list):
+        for b in bs:
+            if not isinstance(b, dict):
+                continue
+            title = e(str(b.get("title", "—")))
+            block_rows += f"<tr><td>{title}</td><td class='num'>{_fmt_score(b.get('score'))}</td></tr>"
+    if not block_rows:
+        block_rows = "<tr><td colspan='2' class='empty'>Fără scoruri pe blocuri</td></tr>"
+
+    answers = _parse_json_field(sub.get("answers_json")) or {}
+    if not isinstance(answers, dict):
+        answers = {}
+    q_rows = ""
+    for qkey in question_keys_ordered:
+        val = answers.get(qkey)
+        val_str = "" if val is None else e(str(val))
+        q_rows += f"<tr><td>{e(question_labels.get(qkey, qkey))}</td><td class='num'>{val_str}</td></tr>"
+    if not q_rows:
+        q_rows = "<tr><td colspan='2' class='empty'>Fără răspunsuri înregistrate</td></tr>"
+
+    page = f"""<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BizCheck — Raport {e(name)}</title>
+<style>
+  :root {{ --ink:#1d2530; --muted:#6b7685; --line:#e3e8ef; --head:#0b2e4f; --accent:#0b6; }}
+  * {{ box-sizing:border-box; }}
+  body {{ font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink);
+         margin:0; padding:32px; background:#f5f7fa; }}
+  .sheet {{ max-width:860px; margin:0 auto; background:#fff; border:1px solid var(--line);
+            border-radius:10px; padding:32px 36px; }}
+  h1 {{ font-size:22px; margin:0 0 4px; color:var(--head); }}
+  .sub {{ color:var(--muted); font-size:13px; margin-bottom:24px; }}
+  h2 {{ font-size:15px; margin:28px 0 10px; color:var(--head);
+        border-bottom:2px solid var(--line); padding-bottom:6px; }}
+  table {{ width:100%; border-collapse:collapse; font-size:13px; }}
+  th, td {{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);
+           vertical-align:top; }}
+  .info th {{ width:200px; color:var(--muted); font-weight:600; }}
+  td.num {{ text-align:right; width:90px; font-variant-numeric:tabular-nums; font-weight:600; }}
+  .empty {{ color:var(--muted); font-style:italic; text-align:center; }}
+  .total {{ display:inline-block; margin-top:10px; padding:6px 14px; background:var(--head);
+            color:#fff; border-radius:6px; font-weight:700; font-size:15px; }}
+  @media print {{ body {{ background:#fff; padding:0; }} .sheet {{ border:0; }} }}
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <h1>BizCheck — Raport individual</h1>
+    <div class="sub">ID submisie #{e(str(sub.get('id', '')))}</div>
+
+    <h2>Date companie & contact</h2>
+    <table class="info">{info_rows}</table>
+
+    <h2>Scor total</h2>
+    <span class="total">{_fmt_score(sub.get('total_score'))}</span>
+
+    <h2>Scoruri per bloc</h2>
+    <table>{block_rows}</table>
+
+    <h2>Răspunsuri detaliate per întrebare</h2>
+    <table>{q_rows}</table>
+  </div>
+</body>
+</html>"""
+    return page, name
+
+
 def workbook_to_bytes(wb) -> bytes:
     out = BytesIO()
     wb.save(out)
@@ -312,22 +563,45 @@ def workbook_to_bytes(wb) -> bytes:
     return out.getvalue()
 
 
-def build_pdfs_zip_for_test(test_id) -> bytes:
-    """ZIP containing every submission's stored PDF for this test."""
+def build_pdfs_zip_for_test(test_id, max_bytes=None) -> str:
+    """ZIP every submission's stored PDF for this test, written to a temp file.
+
+    Streams to a NamedTemporaryFile on disk (not BytesIO) to keep memory flat.
+    When ``max_bytes`` is a number, the on-disk size is checked after each PDF
+    and ``ExportTooLarge`` is raised once it would be exceeded. When ``max_bytes``
+    is ``None`` (default), NO size limit is applied — streaming from disk avoids
+    OOM regardless of archive size.
+
+    Returns the filesystem PATH to the temp .zip (caller is responsible for
+    removing it once served).
+    """
     subs = _filter_submissions_for_test(test_id)
-    buf = BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        for s in subs:
-            pdf = Submission.get_pdf(s["id"])
-            if not pdf:
-                continue
-            date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
-            stem = _safe_filename(
-                f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}_{date_part}"
-            )
-            zf.writestr(f"{stem}.pdf", pdf)
-    buf.seek(0)
-    return buf.getvalue()
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+    try:
+        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
+            for s in subs:
+                pdf = Submission.get_pdf(s["id"])
+                if not pdf:
+                    continue
+                date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
+                contact = s.get("phone") or s.get("email") or ""
+                stem = _safe_filename(
+                    f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}_{contact}_{date_part}"
+                )
+                zf.writestr(f"{stem}.pdf", pdf)
+                if max_bytes is not None:
+                    tmp.flush()
+                    if os.fstat(tmp.fileno()).st_size > max_bytes:
+                        raise ExportTooLarge()
+    except BaseException:
+        tmp.close()
+        try:
+            os.remove(tmp.name)
+        except OSError:
+            pass
+        raise
+    tmp.close()
+    return tmp.name
 
 
 def build_excels_zip_for_test(test_id) -> bytes:
@@ -350,3 +624,61 @@ def build_excels_zip_for_test(test_id) -> bytes:
             zf.writestr(f"{stem}.xlsx", workbook_to_bytes(wb))
     buf.seek(0)
     return buf.getvalue()
+
+
+# ──────────────────────────────────────────────────────────────────
+# Bot picker / single-file helpers
+# ──────────────────────────────────────────────────────────────────
+
+def list_submissions_for_picker(test_id, q=None, limit=20):
+    """Most-recent submissions for a test, shaped for the bot's inline picker.
+
+    Returns at most ``limit`` dicts {"id", "label"}, newest first, optionally
+    filtered by ``q`` (case-insensitive match in first/last name or @username).
+    label = "First Last" → else "@username" → else "#<id>"; a trailing
+    "· …NNNN" (last 4 phone digits) is appended when a phone is on file.
+    """
+    subs = Submission.find_all(test_id=test_id) or []
+    subs = sorted(subs, key=lambda s: str(s.get("created_at") or ""), reverse=True)
+
+    if q:
+        needle = q.strip().lower()
+        if needle:
+            subs = [
+                s for s in subs
+                if needle in (s.get("first_name") or "").lower()
+                or needle in (s.get("last_name") or "").lower()
+                or needle in (s.get("tg_username") or "").lower()
+            ]
+
+    out = []
+    for s in subs[:limit]:
+        name = f"{s.get('first_name') or ''} {s.get('last_name') or ''}".strip()
+        if name:
+            label = name
+        elif s.get("tg_username"):
+            label = f"@{s['tg_username'].lstrip('@')}"
+        else:
+            label = f"#{s['id']}"
+        phone = s.get("phone") or ""
+        digits = re.sub(r"\D", "", phone)
+        if digits:
+            label = f"{label} · …{digits[-4:]}"
+        out.append({"id": s["id"], "label": label})
+    return out
+
+
+def single_pdf_filename(sub) -> str:
+    """Filename for a single submission's stored PDF, based on contact data."""
+    contact = sub.get("phone") or sub.get("email") or ""
+    stem = _safe_filename(
+        f"{sub['id']}_{sub.get('first_name') or ''}_{sub.get('last_name') or ''}_{contact}"
+    )
+    return stem + ".pdf"
+
+
+def export_basename(test_id, kind) -> str:
+    """Base filename (no extension) for a test export: Extras_<kind>_<test>_<date>."""
+    test = Test.find_by_id(test_id) or {}
+    name = test.get("name_ro") or test.get("name_ru") or f"Test {test_id}"
+    return f"Extras_{kind}_{_safe_filename(name)}_{date.today().isoformat()}"

@@ -65,7 +65,7 @@
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold, #F2A302);
+  color: var(--gold, #FDA100);
   margin: 0;
 }
 
@@ -79,17 +79,17 @@ a.report-footer__contact-value,
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 700;
-  color: var(--navy-deep, #002658);
+  color: var(--navy-deep, #082E5E);
   text-decoration: none;
-  background: var(--gold, #F2A302);
-  border: 2px solid var(--gold, #F2A302);
+  background: var(--gold, #FDA100);
+  border: 2px solid var(--gold, #FDA100);
   border-radius: 999px;
   box-sizing: border-box;
   letter-spacing: 0.01em;
   white-space: nowrap;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.15),
-    0 8px 20px -6px rgba(242, 163, 2, 0.55);
+    0 8px 20px -6px rgba(253, 161, 0, 0.55);
   transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
 a.report-footer__contact-value:hover,
@@ -97,11 +97,11 @@ a.report-footer__contact-value:hover,
 a.report-footer__contact-value:focus-visible,
 .report-footer__contact-value:focus-visible {
   background: var(--gold-light, #FFBA3D);
-  color: var(--navy-deep, #002658);
+  color: var(--navy-deep, #082E5E);
   transform: translateY(-2px);
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.15),
-    0 14px 28px -6px rgba(242, 163, 2, 0.7);
+    0 14px 28px -6px rgba(253, 161, 0, 0.7);
 }
 
 /* Bottom */

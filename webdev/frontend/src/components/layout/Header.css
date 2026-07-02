@@ -54,13 +54,9 @@
 .header-right__text {
   font-family: var(--font-sans);
   font-size: 12px;
-  font-weight: 600;
-  color: var(--navy-deep);
+  font-weight: 400;
+  color: var(--white-35);
   letter-spacing: 0.3px;
-  background: var(--gold);
-  padding: 6px 14px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 
 .lang-toggle {

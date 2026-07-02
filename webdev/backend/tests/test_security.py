@@ -192,7 +192,7 @@ class TestSubmissionTokenGate:
         import requests
         r = requests.patch(
             url(f"{API}/submissions/{test_submission['id']}"),
-            json={"language": "uk"},
+            json={"language": "ro"},
             headers={"X-Submission-Token": test_submission["submission_token"]},
         )
         assert r.status_code == 200
@@ -203,7 +203,7 @@ class TestSubmissionTokenGate:
         r = requests.patch(
             url(f"{API}/submissions/{test_submission['id']}"),
             json={
-                "language": "uk",
+                "language": "ro",
                 # All of these should be silently dropped by the whitelist.
                 "tg_token": "stolen",
                 "id": 99999,

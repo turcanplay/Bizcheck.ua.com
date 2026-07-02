@@ -24,21 +24,21 @@ export default function TemplateDetailPage() {
       .then(r => {
         const t = r.templates.find(x => x.slug === slug) ?? null;
         setItem(t);
-        if (!t) setErr('Шаблон не знайдено');
+        if (!t) setErr('Șablon negăsit');
       })
       .catch(e => setErr(e.message));
   }, [slug]);
 
-  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">Назад</Link></div>;
-  if (!item) return <div style={{ padding: 40 }}>Завантаження...</div>;
+  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">Înapoi</Link></div>;
+  if (!item) return <div style={{ padding: 40 }}>Se încarcă...</div>;
 
   const path = `/sablon/${slug}`;
-  const title = lang === 'en' ? (item.title_en || item.title_uk) : item.title_uk;
-  const description = lang === 'en' ? (item.description_en || item.description_uk) : item.description_uk;
+  const title = lang === 'ru' ? (item.title_ru || item.title_ro) : item.title_ro;
+  const description = lang === 'ru' ? (item.description_ru || item.description_ro) : item.description_ro;
   const seoDesc = (description || '').slice(0, 160) ||
-    (lang === 'en'
-      ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.md platform.`
-      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.md.`);
+    (lang === 'ru'
+      ? `Юридический шаблон ${title} от Crowe Turcan Mikhailenko на платформе Bizcheck.md.`
+      : `Șablon juridic ${title} de la Crowe Turcan Mikhailenko pe platforma Bizcheck.md.`);
 
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }} data-page="template-detail">
@@ -56,24 +56,24 @@ export default function TemplateDetailPage() {
             currency: item.currency ?? 'MDL',
           }),
           breadcrumbSchema([
-            { name: lang === 'en' ? 'Home' : 'Головна', path: '/' },
-            { name: lang === 'en' ? 'Templates' : 'Шаблони', path: '/' },
+            { name: lang === 'ru' ? 'Главная' : 'Acasă', path: '/' },
+            { name: lang === 'ru' ? 'Шаблоны' : 'Șabloane', path: '/' },
             { name: title, path },
           ]),
         ]}
       />
-      <Link to="/" style={{ color: '#003B90', textDecoration: 'none' }}>← Назад</Link>
-      <h1 style={{ marginTop: 12 }}>📄 {item.title_uk}</h1>
-      <p style={{ color: '#555' }}>{item.description_uk}</p>
+      <Link to="/" style={{ color: '#0b3d7a', textDecoration: 'none' }}>← Înapoi</Link>
+      <h1 style={{ marginTop: 12 }}>📄 {item.title_ro}</h1>
+      <p style={{ color: '#555' }}>{item.description_ro}</p>
 
-      <h3 style={{ marginTop: 32 }}>Як ви хочете отримати шаблон?</h3>
+      <h3 style={{ marginTop: 32 }}>Cum vrei să primești șablonul?</h3>
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', marginTop: 12 }} data-section="delivery-picker">
-        <button className="landing-card" disabled title="Реалізація згодом">📥 Завантажити зараз</button>
-        <button className="landing-card" disabled title="Реалізація згодом">✉️ На email</button>
-        <button className="landing-card" disabled title="Реалізація згодом">💬 У Telegram</button>
+        <button className="landing-card" disabled title="Implementare ulterioară">📥 Descarcă acum</button>
+        <button className="landing-card" disabled title="Implementare ulterioară">✉️ Pe email</button>
+        <button className="landing-card" disabled title="Implementare ulterioară">💬 Pe Telegram</button>
       </div>
       <p style={{ fontSize: 12, color: '#999', marginTop: 12 }}>
-        * Доставку буде підключено в наступній ітерації. Telegram використовує наявний бот BizCheck.
+        * Livrarea va fi cablată în iterația următoare. Telegram folosește bot-ul BizCheck existent.
       </p>
     </div>
   );

@@ -31,7 +31,7 @@ function saveRecent(q: string) {
   localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, MAX_RECENT)));
 }
 
-const STOPWORDS = new Set(['the', 'a', 'an', 'of', 'for', 'to', 'in', 'on', 'and', 'or', 'with', 'і', 'та', 'для', 'на', 'в', 'у', 'з', 'по', 'до', 'що']);
+const STOPWORDS = new Set(['de', 'cu', 'pentru', 'la', 'un', 'o', 'si', 'și', 'in', 'în', 'на', 'для', 'и', 'с', 'по']);
 function tokenize(s: string): string[] {
   return s.toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
@@ -110,16 +110,16 @@ export default function Hero() {
 
     const all: Array<UnifiedHit & { _score: number }> = [];
     tests.forEach(t => {
-      const haystack = [t.name_uk, t.name_en, t.description_uk, t.description_en,
+      const haystack = [t.name_ro, t.name_ru, t.description_ro, t.description_ru,
                         t.category ?? '', (t.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'uk' ? t.name_uk : t.name_en, is_paid: t.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'ro' ? t.name_ro : t.name_ru, is_paid: t.is_paid, _score: sc });
     });
     templates.forEach(tp => {
-      const haystack = [tp.title_uk, tp.title_en, tp.description_uk, tp.description_en,
+      const haystack = [tp.title_ro, tp.title_ru, tp.description_ro, tp.description_ru,
                         tp.category ?? '', (tp.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'uk' ? tp.title_uk : tp.title_en, is_paid: tp.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'ro' ? tp.title_ro : tp.title_ru, is_paid: tp.is_paid, _score: sc });
     });
     return all.sort((a, b) => b._score - a._score).slice(0, 8);
   }, [query, tests, templates, lang]);
@@ -190,7 +190,7 @@ export default function Hero() {
             ref={menuBtnRef}
             className="hero__search-menu-btn"
             onClick={() => { setMenuOpen(o => !o); setSearchOpen(false); }}
-            aria-label="Швидке меню"
+            aria-label="Meniu rapid"
             aria-expanded={menuOpen}
           >
             <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden>
@@ -213,7 +213,7 @@ export default function Hero() {
             }}
           />
 
-          <button type="button" className="hero__search-icon-btn" onClick={focusSearch} aria-label="Пошук">
+          <button type="button" className="hero__search-icon-btn" onClick={focusSearch} aria-label="Caută">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
               <circle cx="7" cy="7" r="5" stroke="#6B7280" strokeWidth="1.5" fill="none" />
               <path d="M11 11l4 4" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
@@ -299,8 +299,8 @@ export default function Hero() {
             </svg>
           </button>
           <div className="hero__lang">
-            <button className={`hero__lang-btn ${lang === 'uk' ? 'is-active' : ''}`} onClick={() => setLang('uk')}>UA</button>
-            <button className={`hero__lang-btn ${lang === 'en' ? 'is-active' : ''}`} onClick={() => setLang('en')}>EN</button>
+            <button className={`hero__lang-btn ${lang === 'ro' ? 'is-active' : ''}`} onClick={() => setLang('ro')}>RO</button>
+            <button className={`hero__lang-btn ${lang === 'ru' ? 'is-active' : ''}`} onClick={() => setLang('ru')}>RU</button>
           </div>
         </div>
       </nav>
@@ -326,7 +326,7 @@ export default function Hero() {
 
           <div className="hero__trust">
             <div className="hero__avatars" aria-hidden>
-              <span className="hero__avatar" style={{ background: 'linear-gradient(135deg,#0075C9,#0075C9)' }}>
+              <span className="hero__avatar" style={{ background: 'linear-gradient(135deg,#4A63FF,#2D4BFF)' }}>
                 <svg viewBox="0 0 36 36" fill="none">
                   <circle cx="18" cy="13" r="5" fill="rgba(255,255,255,0.95)" />
                   <path d="M6 32c0-6.6 5.4-11 12-11s12 4.4 12 11" fill="rgba(255,255,255,0.95)" />
@@ -365,19 +365,19 @@ export default function Hero() {
             <div className="hero__badge-num">{ratingStats.avg}<span>/5</span></div>
             <div className="hero__badge-sub">
               {ratingStats.count === 0
-                ? (lang === 'uk' ? 'відгуки незабаром' : 'reviews coming soon')
-                : (lang === 'uk'
-                    ? `з ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} відгуків`
-                    : `from ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} reviews`)}
+                ? (lang === 'ro' ? 'în curând recenzii' : 'отзывы скоро')
+                : (lang === 'ro'
+                    ? `din ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} recenzii`
+                    : `из ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} отзывов`)}
             </div>
           </div>
 
           <div className="hero__badge hero__badge--purchases">
             <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-              <circle cx="7" cy="7" r="3" fill="#0075C9" />
-              <circle cx="13" cy="7" r="3" fill="#0075C9" opacity=".6" />
+              <circle cx="7" cy="7" r="3" fill="#2D4BFF" />
+              <circle cx="13" cy="7" r="3" fill="#2D4BFF" opacity=".6" />
               <path d="M2 17c1-3 3.5-4.5 5-4.5s4 1.5 5 4.5M9 17c1-3 3.5-4.5 5-4.5s4 1.5 5 4.5"
-                    stroke="#0075C9" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    stroke="#2D4BFF" strokeWidth="1.5" strokeLinecap="round" fill="none" />
             </svg>
             <div>
               <div className="hero__badge-num">+130</div>

@@ -1,5 +1,5 @@
 .report-promo {
-  background: var(--navy, #002658);
+  background: var(--navy, #0F1B4D);
   color: #fff;
   border-radius: var(--radius-md, 12px);
   padding: 56px 56px 40px;
@@ -28,7 +28,7 @@
 .report-promo__note {
   font-size: 15px;
   line-height: 1.6;
-  color: var(--gold, #F2A302);
+  color: var(--gold, #FDA100);
   max-width: 680px;
   margin: 0 auto 32px;
   font-weight: 500;
@@ -54,7 +54,7 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: var(--gold, #F2A302);
+  color: var(--gold, #FDA100);
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
   color: #fff;
   text-decoration: none;
   background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid var(--gold, #F2A302);
+  border: 1.5px solid var(--gold, #FDA100);
   border-radius: 999px;
   transition: background .15s ease, color .15s ease, transform .15s ease;
   box-sizing: border-box;
@@ -77,8 +77,8 @@
 }
 .report-promo__contact-value:hover,
 .report-promo__contact-value:focus-visible {
-  background: var(--gold, #F2A302);
-  color: var(--navy, #002658);
+  background: var(--gold, #FDA100);
+  color: var(--navy, #0F1B4D);
   transform: translateY(-1px);
 }
 

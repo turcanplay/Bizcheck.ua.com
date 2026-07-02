@@ -19,9 +19,9 @@
   padding: 7px 16px 7px 12px;
   margin-bottom: 20px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.08), rgba(0, 59, 144, 0.08));
-  border: 1px solid rgba(0, 117, 201, 0.14);
-  color: #0075C9;
+  background: linear-gradient(135deg, rgba(45, 75, 255, 0.08), rgba(124, 91, 255, 0.08));
+  border: 1px solid rgba(45, 75, 255, 0.14);
+  color: #2D4BFF;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -31,13 +31,13 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0075C9, #003B90);
-  box-shadow: 0 0 0 3px rgba(0, 117, 201, 0.2);
+  background: linear-gradient(135deg, #2D4BFF, #7C5BFF);
+  box-shadow: 0 0 0 3px rgba(45, 75, 255, 0.2);
   animation: whyDotPulse 2s ease-in-out infinite;
 }
 @keyframes whyDotPulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(0, 117, 201, 0.2); }
-  50%      { box-shadow: 0 0 0 6px rgba(0, 117, 201, 0.05); }
+  0%, 100% { box-shadow: 0 0 0 3px rgba(45, 75, 255, 0.2); }
+  50%      { box-shadow: 0 0 0 6px rgba(45, 75, 255, 0.05); }
 }
 
 .why__title {
@@ -49,7 +49,7 @@
   margin: 0 0 18px;
 }
 .why__title-accent {
-  background: linear-gradient(135deg, #0075C9 0%, #003B90 60%, #54C0E8 100%);
+  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 60%, #B38BFF 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -94,7 +94,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--why-accent, #0075C9) 0%, transparent 55%);
+  background: linear-gradient(135deg, var(--why-accent, #2D4BFF) 0%, transparent 55%);
   opacity: 0;
   transition: opacity .3s ease;
   z-index: -1;
@@ -104,16 +104,16 @@
   transform: translateY(-6px);
   box-shadow:
     0 2px 4px rgba(15, 23, 42, 0.04),
-    0 20px 40px -12px rgba(var(--why-accent-rgb, 0, 117, 201), 0.28);
-  border-color: rgba(var(--why-accent-rgb, 0, 117, 201), 0.22);
+    0 20px 40px -12px rgba(var(--why-accent-rgb, 45, 75, 255), 0.28);
+  border-color: rgba(var(--why-accent-rgb, 45, 75, 255), 0.22);
 }
 .why__card:hover::before { opacity: 0.04; }
 
 /* Accent variants */
-.why__card--blue    { --why-accent: #0075C9; --why-accent-rgb: 0, 117, 201;   --why-bg: #E5F1FA; }
-.why__card--violet  { --why-accent: #003B90; --why-accent-rgb: 177, 79, 197;  --why-bg: #E5F1FA; }
-.why__card--emerald { --why-accent: #05AB8C; --why-accent-rgb: 5, 171, 140;  --why-bg: #E2F4F0; }
-.why__card--amber   { --why-accent: #F2A302; --why-accent-rgb: 245, 168, 0;  --why-bg: #FFF4D9; }
+.why__card--blue    { --why-accent: #2D4BFF; --why-accent-rgb: 45, 75, 255;   --why-bg: #EEF1FF; }
+.why__card--violet  { --why-accent: #7C5BFF; --why-accent-rgb: 124, 91, 255;  --why-bg: #F1ECFF; }
+.why__card--emerald { --why-accent: #10B981; --why-accent-rgb: 16, 185, 129;  --why-bg: #E6FAF3; }
+.why__card--amber   { --why-accent: #F59E0B; --why-accent-rgb: 245, 158, 11;  --why-bg: #FEF4E2; }
 
 /* --- Icon --- */
 .why__icon-wrap {
@@ -127,14 +127,14 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: var(--why-bg, #E5F1FA);
-  color: var(--why-accent, #0075C9);
+  background: var(--why-bg, #EEF1FF);
+  color: var(--why-accent, #2D4BFF);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    inset 0 0 0 1px rgba(var(--why-accent-rgb, 0, 117, 201), 0.14),
-    0 6px 16px -6px rgba(var(--why-accent-rgb, 0, 117, 201), 0.4);
+    inset 0 0 0 1px rgba(var(--why-accent-rgb, 45, 75, 255), 0.14),
+    0 6px 16px -6px rgba(var(--why-accent-rgb, 45, 75, 255), 0.4);
   transition: transform .3s cubic-bezier(.2, .8, .2, 1);
 }
 .why__icon-glow {
@@ -142,7 +142,7 @@
   inset: -6px;
   border-radius: 22px;
   background: radial-gradient(circle at 30% 30%,
-    rgba(var(--why-accent-rgb, 0, 117, 201), 0.28), transparent 70%);
+    rgba(var(--why-accent-rgb, 45, 75, 255), 0.28), transparent 70%);
   opacity: 0;
   transition: opacity .3s ease;
   filter: blur(12px);
