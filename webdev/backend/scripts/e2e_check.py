@@ -60,7 +60,7 @@ def main():
     c, b = call('POST', '/api/submissions', {
         'first_name': 'Ion', 'last_name': 'Popescu',
         'email': 'ion@example.com', 'phone': '+37360000000',
-        'consent': True, 'test_slug': 'business', 'language': 'uk',
+        'consent': True, 'test_slug': 'business', 'language': 'ro',
     })
     sub = b.get('submission', {})
     ok = c == 201 and sub.get('test_id') == 1 and sub.get('first_name') == 'Ion'

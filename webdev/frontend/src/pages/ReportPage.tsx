@@ -8,6 +8,7 @@ import BlockGrid from '@/components/report/BlockGrid';
 import OverallScore from '@/components/report/OverallScore';
 import ZoneSection from '@/components/report/ZoneSection';
 import BlockDetailPage from '@/components/report/BlockDetailPage';
+import GdprQuestionPage from '@/components/report/GdprQuestionPage';
 import QuestionChecklistSlice from '@/components/report/QuestionChecklistSlice';
 import ReportFooter from '@/components/report/ReportFooter';
 import CallToAction from '@/components/report/CallToAction';
@@ -18,7 +19,7 @@ import './ReportPage.css';
 interface QuestionWithMeta { q: Question; blockTitle: string; }
 
 export default function ReportPage() {
-  const { report, restartQuiz, submissionId, submissionToken, tests, selectedTestSlug, blocks, answers, selectedKeys } = useQuiz();
+  const { report, restartQuiz, submissionId, submissionToken, tests, testsLoaded, selectedTestSlug, blocks, answers, selectedKeys } = useQuiz();
   const { t, lang } = useLang();
   const reportRef = useRef<HTMLDivElement>(null);
   const [pdfReady, setPdfReady] = useState(false);
@@ -65,6 +66,10 @@ export default function ReportPage() {
   }, [report, submissionId, generatePdf]);
 
   if (!report) return null;
+  // The report layout is chosen from the test's report_type (looked up in
+  // `tests`). Don't commit to a layout until that list has settled, otherwise
+  // a standard/gdpr report briefly renders with the wrong (bizcheck) tree.
+  if (selectedTestSlug && !testsLoaded) return null;
 
   return (
     <div className="report-page">
@@ -75,6 +80,33 @@ export default function ReportPage() {
           {(() => {
             const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
             const rt = currentTest?.report_type ?? 'bizcheck';
+
+            // ── GDPR layout ───────────────────────────────
+            // One page per question: question + given answer on top, then the
+            // fixed RO/RU explanation (intro / risk / action) for that question.
+            // Question position (1-based) maps to the explanation order (1..10).
+            if (rt === 'gdpr') {
+              const flatQuestions: QuestionWithMeta[] = [];
+              blocks.forEach(block => {
+                block.questions.filter(q => !q.parent_question_id).forEach(q => {
+                  flatQuestions.push({ q, blockTitle: block.title });
+                });
+              });
+              return (
+                <>
+                  {flatQuestions.map(({ q }, i) => (
+                    <div className="report-pdf__page" data-pdf-page key={`gdpr-${q.db_id}`}>
+                      <GdprQuestionPage
+                        q={q}
+                        number={i + 1}
+                        answers={answers}
+                        selectedKeys={selectedKeys}
+                      />
+                    </div>
+                  ))}
+                </>
+              );
+            }
 
             // ── STANDARD layout ───────────────────────────
             // Cover → [checklist, 5 questions/page] → OverallScore+Footer → outro

@@ -1,7 +1,6 @@
 """Submission routes — public quiz submission + admin data access."""
 import re
 import base64
-import json
 import logging
 
 log = logging.getLogger(__name__)
@@ -87,7 +86,7 @@ def create():
         # Fără asta, un input cu caractere speciale e expandat de bleach (ex. " → &quot;),
         # depășește VARCHAR(5) și PostgreSQL aruncă „value too long" → HTTP 500.
         lang_in = data.get("language")
-        language = lang_in if lang_in in ("uk", "en") else "uk"
+        language = lang_in if lang_in in ("ro", "ru") else "ro"
         if sub and language:
             updated = update_submission(sub["id"], {"language": language})
             if updated:
@@ -113,7 +112,7 @@ def update(sub_id):
             filtered[str_field] = clean_text(filtered[str_field], max_len=mx)
     # language: whitelist strict (coloana VARCHAR(5); doar ro/ru).
     if "language" in filtered:
-        filtered["language"] = filtered["language"] if filtered["language"] in ("uk", "en") else "uk"
+        filtered["language"] = filtered["language"] if filtered["language"] in ("ro", "ru") else "ro"
     if "first_name" in filtered and isinstance(filtered["first_name"], str):
         filtered["first_name"] = clean_optional(filtered["first_name"], max_len=30)
     if "last_name" in filtered and isinstance(filtered["last_name"], str):
@@ -312,137 +311,16 @@ def delete_all():
 @submissions_bp.route("/export/excel", methods=["GET"])
 @admin_required
 def export_excel():
-    """GET /api/submissions/export/excel — Export all submissions as Excel (admin)."""
-    from io import BytesIO
-    import openpyxl
-    from models.question import Question
-    from models.block import Block
+    """GET /api/submissions/export/excel — Export all submissions as Excel (admin).
 
-    subs = get_all_submissions()
-    blocks = Block.find_all()
-    all_questions = []
-    question_labels = {}
-    question_keys_ordered = []
+    Multi-sheet: "Sumar" (toate, cu răspunsuri), "Finalizați" (completed) și
+    "În proces" (nefinalizați — doar contact + companie + scor total).
+    """
+    from services.export_service import build_all_submissions_workbook, workbook_to_bytes
 
-    for b_idx, b in enumerate(blocks):
-        block_questions = Question.find_by_block(b["id"])
-        top_level = [q for q in block_questions if not q.get("parent_question_id")]
-        for q_idx, q in enumerate(top_level):
-            key = f"b{b['id']}q{q['id']}"
-            label = f"B{b_idx+1} Q{q_idx+1}: {(q['text_uk'] or '')[:40]}"
-            question_labels[key] = label
-            question_keys_ordered.append(key)
-            all_questions.append(q)
-            subs_qs = [sq for sq in block_questions if sq.get("parent_question_id") == q["id"]]
-            for sq_idx, sq in enumerate(subs_qs):
-                skey = f"b{b['id']}q{sq['id']}"
-                slabel = f"B{b_idx+1} Q{q_idx+1}.{sq_idx+1}: {(sq['text_uk'] or '')[:40]}"
-                question_labels[skey] = slabel
-                question_keys_ordered.append(skey)
-
-    from models.answer import Answer
-    answer_text_map = {}
-    for q in all_questions:
-        answers = Answer.find_by_question(q["id"])
-        for a in answers:
-            if q["id"] not in answer_text_map:
-                answer_text_map[q["id"]] = {}
-            answer_text_map[q["id"]][f"a{a['id']}"] = a["text_uk"]
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Submissions"
-
-    block_titles = []
-    block_title_set = set()
-    for s in subs:
-        bs = s.get("block_scores_json")
-        if bs and isinstance(bs, list):
-            for b in bs:
-                title = b.get("title", f"Block {b.get('id', '?')}")
-                if title not in block_title_set:
-                    block_title_set.add(title)
-                    block_titles.append(title)
-
-    headers = ["ID", "First Name", "Last Name", "Email", "Phone", "Sector",
-               "Company Size", "Company Age", "Sales Revenue", "Total Score %"]
-    headers += [f"{t} %" for t in block_titles]
-    headers += ["Status", "Consent", "Date", "TG Chat ID", "TG Username", "TG First Name", "TG Last Name"]
-    headers += [question_labels.get(k, k) for k in question_keys_ordered]
-    ws.append(headers)
-
-    for s in subs:
-        row = [
-            s["id"], s["first_name"], s["last_name"],
-            s.get("email", ""), s.get("phone", ""),
-            s.get("sector", ""), s.get("company_size", ""), s.get("company_age", ""),
-            s.get("company_revenue", ""),
-            s.get("total_score", ""),
-        ]
-        bs = s.get("block_scores_json")
-        block_map = {}
-        if bs and isinstance(bs, list):
-            for b in bs:
-                title = b.get("title", f"Block {b.get('id', '?')}")
-                block_map[title] = round(b.get("score", 0))
-        for t in block_titles:
-            row.append(block_map.get(t, ""))
-        row += [
-            s.get("status", ""),
-            "Yes" if s.get("consent") else "No",
-            s["created_at"],
-            s.get("tg_chat_id", ""),
-            s.get("tg_username", ""),
-            s.get("tg_first_name", ""),
-            s.get("tg_last_name", ""),
-        ]
-        answers_data = s.get("answers_json")
-        if answers_data and isinstance(answers_data, str):
-            try:
-                answers_data = json.loads(answers_data)
-            except (json.JSONDecodeError, TypeError):
-                answers_data = {}
-        if not isinstance(answers_data, dict):
-            answers_data = {}
-        for qkey in question_keys_ordered:
-            score = answers_data.get(qkey)
-            row.append(score if score is not None else "")
-        ws.append(row)
-
-    from openpyxl.styles import Alignment, Font, PatternFill
-    header_font = Font(bold=True, size=10)
-    header_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
-    header_align = Alignment(wrap_text=True, vertical="center", horizontal="center")
-    cell_align = Alignment(wrap_text=True, vertical="top")
-    for cell in ws[1]:
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = header_align
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            cell.alignment = cell_align
-
-    fixed_cols = {
-        "ID": 5, "First Name": 12, "Last Name": 12, "Email": 20,
-        "Phone": 14, "Sector": 14, "Company Size": 10, "Company Age": 10,
-        "Total Score %": 10, "Status": 9, "Consent": 8, "Date": 16,
-        "TG Chat ID": 14, "TG Username": 16, "TG First Name": 14, "TG Last Name": 14,
-    }
-    for col_idx, header_val in enumerate(headers, 1):
-        letter = openpyxl.utils.get_column_letter(col_idx)
-        if header_val in fixed_cols:
-            ws.column_dimensions[letter].width = fixed_cols[header_val]
-        elif header_val.endswith(" %"):
-            ws.column_dimensions[letter].width = 12
-        else:
-            ws.column_dimensions[letter].width = 14
-    ws.freeze_panes = "A2"
-
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
+    wb = build_all_submissions_workbook()
     return Response(
-        output.getvalue(),
+        workbook_to_bytes(wb),
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=bizcheck_submissions.xlsx"},
     )
@@ -453,6 +331,22 @@ def export_excel():
 # ─────────────────────────────────────────────────────────────
 
 _XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+@submissions_bp.route("/<int:sub_id>/report", methods=["GET"])
+@admin_required
+def view_single_user_report(sub_id):
+    """Standalone HTML report for one submission — always available (PDF-independent).
+
+    Opened in a new tab from the admin table so the report can be reviewed even
+    when the user never uploaded a PDF.
+    """
+    from services.export_service import build_single_user_report_html
+    try:
+        page, _name = build_single_user_report_html(sub_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    return Response(page, mimetype="text/html; charset=utf-8")
 
 
 @submissions_bp.route("/<int:sub_id>/export/excel", methods=["GET"])
@@ -504,13 +398,25 @@ def export_test_excels_zip(test_id):
 @submissions_bp.route("/tests/<int:test_id>/export/pdfs-zip", methods=["GET"])
 @admin_required
 def export_test_pdfs_zip(test_id):
-    """ZIP of per-user PDF files for a test."""
+    """ZIP of per-user PDF files for a test, streamed from disk (no size cap)."""
+    import os
+    from flask import send_file, after_this_request
     from services.export_service import build_pdfs_zip_for_test
-    data = build_pdfs_zip_for_test(test_id)
-    return Response(
-        data,
+
+    # No cap for admin (max_bytes=None) — streaming from disk avoids OOM.
+    path = build_pdfs_zip_for_test(test_id)
+
+    @after_this_request
+    def _cleanup(resp):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+        return resp
+
+    return send_file(
+        path,
         mimetype="application/zip",
-        headers={
-            "Content-Disposition": f'attachment; filename="BizCheck_test_{test_id}_pdfs.zip"',
-        },
+        as_attachment=True,
+        download_name=f"BizCheck_test_{test_id}_pdfs.zip",
     )

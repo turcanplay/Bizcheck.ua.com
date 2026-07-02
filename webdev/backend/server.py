@@ -34,6 +34,8 @@ from routes.tests import tests_bp, admin_tests_bp
 from routes.templates import templates_bp, admin_templates_bp
 from routes.content import content_bp, admin_content_bp
 from routes.site_settings import site_settings_bp, admin_site_settings_bp
+from routes.tg_feedback import admin_feedback_bp, tg_feedback_bp
+from routes.tg_admin import tg_exports_bp
 
 # ---------------------------------------------------------------------------
 # App factory
@@ -84,6 +86,8 @@ limiter.limit("60 per minute")(submissions_bp)
 # PATCH-urile din timpul testului rămân la 60/min. Cheia e IP-ul real (ProxyFix x_for=1).
 limiter.limit("15 per minute", methods=["POST"])(submissions_bp)
 limiter.limit("20 per minute")(tg_bp)
+limiter.limit("30 per minute")(tg_feedback_bp)
+limiter.limit("20 per minute", methods=["POST", "PUT", "DELETE"])(admin_feedback_bp)
 limiter.limit("5 per minute", methods=["POST", "PUT", "DELETE"])(admin_tests_bp)
 limiter.limit("10 per minute", methods=["POST", "PUT", "DELETE"])(admin_templates_bp)
 limiter.limit("10 per minute", methods=["POST", "PUT", "DELETE"])(admin_content_bp)
@@ -134,6 +138,15 @@ def set_security_headers(response):
         "connect-src 'self' https://www.facebook.com https://connect.facebook.net; "
         "frame-ancestors 'self' https://*.facebook.com https://*.facebook.net;"
     )
+    # The admin single-submission report is a self-contained styled HTML page
+    # (inline <style>). Relax the CSP for THAT endpoint only so it renders
+    # styled — the API JSON responses keep the strict policy above.
+    if request.path.endswith("/report") and response.mimetype == "text/html":
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; frame-ancestors 'none';"
+        )
+        response.headers["X-Frame-Options"] = "DENY"
     # API payloads carry submissions, quiz content and PII — never let a
     # browser or intermediary proxy cache them (CWE-525). Orthogonal to CSP.
     if request.path.startswith("/api_crowe_bizcheck/"):
@@ -162,6 +175,9 @@ app.register_blueprint(content_bp)
 app.register_blueprint(admin_content_bp)
 app.register_blueprint(site_settings_bp)
 app.register_blueprint(admin_site_settings_bp)
+app.register_blueprint(admin_feedback_bp)
+app.register_blueprint(tg_feedback_bp)
+app.register_blueprint(tg_exports_bp)
 
 # ---------------------------------------------------------------------------
 # Admin panel now lives in the React SPA under /admin/*.
@@ -223,6 +239,14 @@ if not os.getenv("PII_ENCRYPTION_KEY"):
 
 # Run migrations on import
 migrate()
+
+# Background scheduler for automatic feedback questions (skipped under pytest
+# and when FEEDBACK_SCHEDULER=0). Atomic per-row claim makes it multi-worker safe.
+try:
+    from services.feedback import start_scheduler
+    start_scheduler()
+except Exception as _exc:  # pragma: no cover
+    print(f"WARNING: feedback scheduler not started: {_exc}", file=sys.stderr)
 
 # Graceful shutdown
 atexit.register(close)

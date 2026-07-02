@@ -110,8 +110,8 @@ def admin_create_testimonial():
     row = Testimonial.create(
         name,
         clean_optional(d.get("role"), MAX_SHORT),
-        clean_text(d.get("quote_uk"), MAX_TEXT),
-        clean_text(d.get("quote_en"), MAX_TEXT),
+        clean_text(d.get("quote_ro"), MAX_TEXT),
+        clean_text(d.get("quote_ru"), MAX_TEXT),
         rating,
         clean_optional(d.get("avatar_url"), MAX_URL),
         order_index,
@@ -137,8 +137,8 @@ def admin_update_testimonial(tid):
         tid,
         clean_text(d.get("name") or existing["name"], MAX_NAME) or existing["name"],
         clean_optional(d.get("role") if d.get("role") is not None else existing["role"], MAX_SHORT),
-        clean_text(d.get("quote_uk") if d.get("quote_uk") is not None else existing["quote_uk"], MAX_TEXT),
-        clean_text(d.get("quote_en") if d.get("quote_en") is not None else existing["quote_en"], MAX_TEXT),
+        clean_text(d.get("quote_ro") if d.get("quote_ro") is not None else existing["quote_ro"], MAX_TEXT),
+        clean_text(d.get("quote_ru") if d.get("quote_ru") is not None else existing["quote_ru"], MAX_TEXT),
         rating,
         clean_optional(d.get("avatar_url") if d.get("avatar_url") is not None else existing["avatar_url"], MAX_URL),
         order_index,
@@ -172,8 +172,8 @@ def admin_list_faq():
 @admin_required
 def admin_create_faq():
     d = request.get_json(silent=True) or {}
-    qro = clean_text(d.get("question_uk"), MAX_TEXT)
-    qru = clean_text(d.get("question_en"), MAX_TEXT)
+    qro = clean_text(d.get("question_ro"), MAX_TEXT)
+    qru = clean_text(d.get("question_ru"), MAX_TEXT)
     if not qro and not qru:
         return jsonify({"error": "At least one question (RO or RU) is required"}), 400
     try:
@@ -183,8 +183,8 @@ def admin_create_faq():
     row = FaqItem.create(
         qro,
         qru,
-        clean_text(d.get("answer_uk"), MAX_TEXT),
-        clean_text(d.get("answer_en"), MAX_TEXT),
+        clean_text(d.get("answer_ro"), MAX_TEXT),
+        clean_text(d.get("answer_ru"), MAX_TEXT),
         order_index,
         clean_bool(d.get("is_active", True)),
     )
@@ -204,10 +204,10 @@ def admin_update_faq(fid):
         return jsonify({"error": str(e)}), 400
     row = FaqItem.update(
         fid,
-        clean_text(d.get("question_uk") if d.get("question_uk") is not None else existing["question_uk"], MAX_TEXT),
-        clean_text(d.get("question_en") if d.get("question_en") is not None else existing["question_en"], MAX_TEXT),
-        clean_text(d.get("answer_uk") if d.get("answer_uk") is not None else existing["answer_uk"], MAX_TEXT),
-        clean_text(d.get("answer_en") if d.get("answer_en") is not None else existing["answer_en"], MAX_TEXT),
+        clean_text(d.get("question_ro") if d.get("question_ro") is not None else existing["question_ro"], MAX_TEXT),
+        clean_text(d.get("question_ru") if d.get("question_ru") is not None else existing["question_ru"], MAX_TEXT),
+        clean_text(d.get("answer_ro") if d.get("answer_ro") is not None else existing["answer_ro"], MAX_TEXT),
+        clean_text(d.get("answer_ru") if d.get("answer_ru") is not None else existing["answer_ru"], MAX_TEXT),
         order_index,
         clean_bool(d.get("is_active", existing["is_active"])),
     )

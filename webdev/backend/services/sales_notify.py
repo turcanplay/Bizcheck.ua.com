@@ -2,10 +2,18 @@
 Sales-team Telegram notification.
 
 When a visitor completes a test on bizcheck.md and leaves contact details, a
-notification is posted to a private Telegram group where the sales people sit.
-The message carries the lead's name, phone, email, Telegram (if they chose the
-Telegram delivery), which test was completed + score, and the PDF report as an
-attachment.
+TEXT notification is posted to a private Telegram group (a forum / topics group)
+where the sales people sit. The message carries the lead's name, phone, email,
+Telegram (if they chose the Telegram delivery), which test was completed + score.
+
+No PDF is attached — the file is intentionally left out so a burst of heavy
+reports can never bloat the group or OOM the worker. The full PDF archive is
+pulled on demand from the group bot via /pdf (see webdev/groupbot/).
+
+Forum topics: each test gets its OWN topic, created automatically on the first
+notification (createForumTopic) and remembered in `tests.tg_topic_id`. Every
+later notification for that test lands in the same topic. If the group is not a
+forum (or the bot lacks "Manage Topics"), we fall back to the General thread.
 
 Fire-once: guarded by the `submissions.sales_notified` column claimed
 atomically (see Submission.claim_sales_notification) so concurrent PATCH /
@@ -18,15 +26,17 @@ Configuration (env vars — set on the server, NOT in code):
 Not configured? The notification is silently skipped (logged at info level).
 Uses only the Python standard library (urllib) — no extra dependency.
 """
-import io
+from __future__ import annotations
+
 import json
 import logging
-import mimetypes  # noqa: F401  (kept for clarity; we hardcode application/pdf)
 import os
+import queue
 import threading
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
-import uuid
 
 log = logging.getLogger(__name__)
 
@@ -41,11 +51,11 @@ def _configured() -> bool:
     return bool(_env("SALES_BOT_TOKEN") and _env("SALES_CHAT_ID"))
 
 
-def _zone_label_uk(score: int) -> str:
-    if score >= 80: return "Низький ризик"
-    if score >= 70: return "Помірний ризик"
-    if score >= 65: return "Високий ризик"
-    return "Критичний ризик"
+def _zone_label_ro(score: int) -> str:
+    if score >= 80: return "Risc scăzut"
+    if score >= 70: return "Risc moderat"
+    if score >= 65: return "Risc ridicat"
+    return "Risc critic"
 
 
 def _esc(s) -> str:
@@ -54,29 +64,72 @@ def _esc(s) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _admin_url() -> str:
+    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.md").rstrip("/")
+    return f"{base}/admin_bizcheck_md_crowe/"
+
+
+def _tg_contact_line(sub: dict) -> str:
+    """@username clicabil → t.me; altfel link tg://user?id= ca să-i scrii; altfel —."""
+    user = sub.get("tg_username")
+    if user:
+        u = str(user).lstrip("@")
+        return f'<a href="https://t.me/{u}">@{_esc(u)}</a>'
+    chat_id = sub.get("tg_chat_id")
+    if chat_id:
+        return f'<a href="tg://user?id={chat_id}">scrie-i pe Telegram</a> (ID {_esc(chat_id)})'
+    return "—"
+
+
+def _build_keyboard(sub: dict):
+    """Inline buttons: deschide chat-ul Telegram al persoanei + scrie-i email.
+    Returnează dict reply_markup sau None dacă nu există niciun buton valid."""
+    rows = []
+    user = sub.get("tg_username")
+    chat_id = sub.get("tg_chat_id")
+    if user:
+        u = str(user).lstrip("@")
+        rows.append([{"text": "💬 Scrie pe Telegram", "url": f"https://t.me/{u}"}])
+    elif chat_id:
+        rows.append([{"text": "💬 Scrie pe Telegram", "url": f"tg://user?id={chat_id}"}])
+    email = sub.get("email")
+    if email and "@" in str(email):
+        to = urllib.parse.quote(str(email))
+        rows.append([{"text": "✉️ Scrie email", "url": f"https://mail.google.com/mail/?view=cm&fs=1&to={to}"}])
+    return {"inline_keyboard": rows} if rows else None
+
+
 def _build_caption(sub: dict, test_name: str) -> str:
     name = " ".join(p for p in [sub.get("first_name"), sub.get("last_name")] if p) or "—"
     phone = sub.get("phone") or "—"
     email = sub.get("email") or "—"
-    tg_user = sub.get("tg_username")
-    tg_line = f"@{_esc(tg_user)}" if tg_user else "—"
+    tg_line = _tg_contact_line(sub)
+
     score = sub.get("total_score")
     try:
         score_int = int(round(float(score)))
-        score_line = f"{score_int}% — {_zone_label_uk(score_int)}"
+        score_line = f"{score_int}% — {_zone_label_ro(score_int)}"
     except (TypeError, ValueError):
         score_line = "—"
-    date = str(sub.get("created_at") or "")[:16].replace("T", " ")
 
+    sector = sub.get("sector") or "—"
+    revenue = sub.get("company_revenue") or "—"
+
+    sep = "➖➖➖➖➖➖➖➖➖➖"
     return (
-        "🔔 <b>Новий тест пройдено на bizcheck.md</b>\n\n"
+        "🆕 <b>Lead nou pe bizcheck.md</b>\n\n"
         f"👤 <b>{_esc(name)}</b>\n"
-        f"📞 {_esc(phone)}\n"
         f"✉️ {_esc(email)}\n"
-        f"✈️ Telegram: {tg_line}\n\n"
-        f"🧪 Тест: <b>{_esc(test_name or '—')}</b>\n"
-        f"📊 Бал: <b>{score_line}</b>\n"
-        f"🗓 {_esc(date)}"
+        f"📞 {_esc(phone)}\n"
+        f"✈️ {tg_line}\n\n"
+        f"🧪 Test: <b>{_esc(test_name or '—')}</b>\n"
+        f"📊 Scor: <b>{_esc(score_line)}</b>\n\n"
+        f"{sep}\n"
+        "🏢 <b>Companie</b>\n"
+        f"• Sector: {_esc(sector)}\n"
+        f"• Cifră de afaceri: {_esc(revenue)}\n\n"
+        f"{sep}\n"
+        f'📄 PDF & detalii complete → <a href="{_admin_url()}">panou admin</a>'
     )
 
 
@@ -92,89 +145,254 @@ def _post_json(method: str, payload: dict) -> dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def _post_document(caption: str, pdf_bytes: bytes, filename: str) -> dict:
-    """Multipart/form-data POST to sendDocument (stdlib, no `requests`)."""
-    token = _env("SALES_BOT_TOKEN")
+# ──────────────────────────────────────────────────────────────────
+# Forum topics — one per test, created on demand
+# ──────────────────────────────────────────────────────────────────
+# Once we learn the group is not a forum (or the bot lacks "Manage Topics"),
+# stop trying to create topics this process and post to the General thread.
+_topics_disabled = False
+
+
+def _create_forum_topic(name: str):
+    """Create a forum topic in the sales group; return its message_thread_id or None."""
+    global _topics_disabled
     chat_id = _env("SALES_CHAT_ID")
-    boundary = "----bizcheck" + uuid.uuid4().hex
-
-    def field(name, value):
-        return (
-            f'--{boundary}\r\n'
-            f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
-            f'{value}\r\n'
-        ).encode("utf-8")
-
-    body = io.BytesIO()
-    body.write(field("chat_id", chat_id))
-    body.write(field("caption", caption))
-    body.write(field("parse_mode", "HTML"))
-    body.write(
-        f'--{boundary}\r\n'
-        f'Content-Disposition: form-data; name="document"; filename="{filename}"\r\n'
-        f'Content-Type: application/pdf\r\n\r\n'.encode("utf-8")
-    )
-    body.write(pdf_bytes)
-    body.write(f'\r\n--{boundary}--\r\n'.encode("utf-8"))
-
-    req = urllib.request.Request(
-        _API.format(token=token, method="sendDocument"),
-        data=body.getvalue(),
-        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
-    )
-    with urllib.request.urlopen(req, timeout=40) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        resp = _post_json("createForumTopic", {"chat_id": chat_id, "name": name[:128]})
+        return ((resp or {}).get("result") or {}).get("message_thread_id")
+    except urllib.error.HTTPError as e:
+        body = b""
+        try:
+            body = e.read()
+        except Exception:
+            body = b""
+        low = body.lower()
+        if b"forum" in low or b"not enough rights" in low or b"can't be managed" in low:
+            log.warning("[sales] forum topics unavailable (%s) — using General thread", body[:200])
+            _topics_disabled = True
+        else:
+            log.error("[sales] createForumTopic failed: %s %s", e.code, body[:200])
+    except Exception:
+        log.exception("[sales] createForumTopic error")
+    return None
 
 
-def _send_sync(sub: dict, test_name: str, pdf_bytes: bytes | None) -> None:
+def _topic_thread_id(sub: dict):
+    """Resolve the forum topic to post the lead notification into.
+
+    If SALES_TOPIC_ID is set, ALL lead notifications go to that single topic
+    (e.g. the dedicated "Lead/Client Chat bot" topic) — this takes priority.
+    Otherwise fall back to a per-test topic (auto-created once), or General.
+    """
+    fixed = _env("SALES_TOPIC_ID")
+    if fixed:
+        try:
+            return int(fixed)
+        except ValueError:
+            pass
+
+    if _topics_disabled:
+        return None
+    tid = sub.get("test_id")
+    if not tid:
+        return None
+    try:
+        from models.test import Test
+        existing = Test.get_topic_id(tid)
+        if existing:
+            return int(existing)
+        name = _resolve_test_name(sub) or f"Test {tid}"
+        thread_id = _create_forum_topic(name)
+        if thread_id:
+            try:
+                Test.set_topic_id(tid, thread_id)
+            except Exception:
+                log.exception("[sales] could not persist topic id for test %s", tid)
+            return thread_id
+    except Exception:
+        log.exception("[sales] topic resolve failed for test %s", tid)
+    return None
+
+
+# ──────────────────────────────────────────────────────────────────
+# Serialized sender
+# ──────────────────────────────────────────────────────────────────
+# A single background worker per process drains a queue, so no matter how many
+# leads complete at once we NEVER spawn a thread-per-submission storm. Jobs carry
+# only the submission id and the messages are plain text (no PDF), so memory stays
+# flat under a burst. Sends are spaced to respect Telegram's per-chat rate limit
+# and 429s are retried.
+
+_QUEUE: "queue.Queue" = queue.Queue(maxsize=2000)
+_worker_started = False
+_worker_lock = threading.Lock()
+
+_SEND_SPACING_SEC = float(_env("SALES_SEND_SPACING_SEC") or 3.0)   # ~20 msg/min (limita de grup)
+_MAX_SEND_RETRY = int(_env("SALES_MAX_SEND_RETRY") or 4)           # mai rezistent la 429 înainte de release
+
+
+def _retry_after(body: bytes) -> float:
+    try:
+        ra = int((json.loads(body.decode("utf-8")).get("parameters") or {}).get("retry_after") or 0)
+    except Exception:
+        ra = 0
+    return min(max(ra, 1), 30)
+
+
+def _resolve_test_name(sub: dict) -> str:
+    try:
+        from models.test import Test
+        tid = sub.get("test_id")
+        if tid:
+            t = Test.find_by_id(tid)
+            if t:
+                return t.get("name_ro") or t.get("name_ru") or ""
+    except Exception:
+        pass
+    return ""
+
+
+def _do_send(sub: dict, test_name: str, thread_id):
+    """Send the text notification into the test's topic (or General).
+    Returns (ok, msg_id). Retries 429 a few times; on a missing topic falls
+    back once to the General thread so the lead still lands."""
     chat_id = _env("SALES_CHAT_ID")
     caption = _build_caption(sub, test_name)
-    msg_id = None
-    is_doc = False
-    try:
-        if pdf_bytes and len(pdf_bytes) > 1024:
-            safe_name = " ".join(p for p in [sub.get("first_name"), sub.get("last_name")] if p) or f"submission_{sub.get('id')}"
-            filename = "BizCheck_" + "".join(c for c in safe_name if c.isalnum() or c in " _-").strip().replace(" ", "_")[:40] + ".pdf"
-            resp = _post_document(caption, pdf_bytes, filename)
-            is_doc = True
-        else:
-            # No PDF yet — send just the text so the lead isn't lost.
-            resp = _post_json("sendMessage", {"chat_id": chat_id, "text": caption, "parse_mode": "HTML"})
-        msg_id = ((resp or {}).get("result") or {}).get("message_id")
-        log.info("[sales] notification sent for submission %s (msg %s)", sub.get("id"), msg_id)
-    except urllib.error.HTTPError as e:
-        log.error("[sales] Telegram API error for submission %s: %s %s",
-                  sub.get("id"), e.code, e.read()[:300])
-    except Exception as e:
-        log.exception("[sales] failed to notify for submission %s: %s", sub.get("id"), e)
+    payload = {"chat_id": chat_id, "text": caption, "parse_mode": "HTML"}
+    kb = _build_keyboard(sub)
+    if kb:
+        payload["reply_markup"] = kb
+    if thread_id:
+        payload["message_thread_id"] = thread_id
 
-    # Persist the message id so later contact updates can edit it in-place.
-    if msg_id:
+    for attempt in range(_MAX_SEND_RETRY + 1):
         try:
-            from models.submission import Submission
-            Submission.set_sales_message(sub.get("id"), msg_id, is_doc)
+            resp = _post_json("sendMessage", payload)
+            msg_id = ((resp or {}).get("result") or {}).get("message_id")
+            log.info("[sales] notification sent for submission %s (msg %s)", sub.get("id"), msg_id)
+            return True, msg_id
+        except urllib.error.HTTPError as e:
+            body = b""
+            try:
+                body = e.read()
+            except Exception:
+                body = b""
+            if e.code == 429 and attempt < _MAX_SEND_RETRY:
+                wait = _retry_after(body)
+                log.warning("[sales] 429 for submission %s; sleeping %ss then retry", sub.get("id"), wait)
+                time.sleep(wait)
+                continue
+            # Topic was deleted on the group side → retry once into General.
+            if payload.get("message_thread_id") and b"thread not found" in body.lower():
+                log.warning("[sales] topic missing for submission %s — retrying in General", sub.get("id"))
+                payload.pop("message_thread_id", None)
+                continue
+            log.error("[sales] Telegram API error for submission %s: %s %s",
+                      sub.get("id"), e.code, body[:300])
+            return False, None
+        except Exception as e:
+            log.exception("[sales] failed to notify for submission %s: %s", sub.get("id"), e)
+            return False, None
+    return False, None
+
+
+def _process_send(submission_id: int) -> None:
+    from models.submission import Submission
+    try:
+        sub = Submission.find_by_id(submission_id)
+    except Exception:
+        sub = None
+    if not sub:
+        Submission.release_sales_notification(submission_id)
+        return
+
+    thread_id = _topic_thread_id(sub)
+    ok, msg_id = _do_send(sub, _resolve_test_name(sub), thread_id)
+    if ok and msg_id:
+        try:
+            # Text message → is_doc is always False now (no PDF attachment).
+            Submission.set_sales_message(submission_id, msg_id, False)
+        except Exception:
+            pass
+    elif not ok:
+        # Real failure → release the claim so a later write retries instead of
+        # the lead being lost forever.
+        try:
+            Submission.release_sales_notification(submission_id)
         except Exception:
             pass
 
 
-def _update_sync(sub: dict, test_name: str, msg_id: int, is_doc: bool) -> None:
+def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
     """Edit the already-sent sales notification in place with fresh contact data."""
+    from models.submission import Submission
+    try:
+        sub = Submission.find_by_id(submission_id)
+    except Exception:
+        sub = None
+    if not sub:
+        return
     chat_id = _env("SALES_CHAT_ID")
-    caption = _build_caption(sub, test_name)
+    caption = _build_caption(sub, _resolve_test_name(sub))
     method = "editMessageCaption" if is_doc else "editMessageText"
     text_field = "caption" if is_doc else "text"
     payload = {"chat_id": chat_id, "message_id": msg_id, text_field: caption, "parse_mode": "HTML"}
+    kb = _build_keyboard(sub)
+    if kb:
+        payload["reply_markup"] = kb
     try:
         _post_json(method, payload)
-        log.info("[sales] notification updated for submission %s (msg %s)", sub.get("id"), msg_id)
+        log.info("[sales] notification updated for submission %s (msg %s)", submission_id, msg_id)
     except urllib.error.HTTPError as e:
         body = e.read()[:300]
         # Editing with identical content returns 400 "message is not modified" — harmless.
         if b"not modified" in body:
             return
-        log.error("[sales] update error for submission %s: %s %s", sub.get("id"), e.code, body)
+        log.error("[sales] update error for submission %s: %s %s", submission_id, e.code, body)
     except Exception as e:
-        log.exception("[sales] failed to update notification for submission %s: %s", sub.get("id"), e)
+        log.exception("[sales] failed to update notification for submission %s: %s", submission_id, e)
+
+
+def _worker_loop() -> None:
+    while True:
+        job = _QUEUE.get()
+        try:
+            if job[0] == "send":
+                _process_send(job[1])
+            elif job[0] == "update":
+                _process_update(job[1], job[2], job[3])
+        except Exception:
+            log.exception("[sales] worker job failed: %s", job)
+        finally:
+            _QUEUE.task_done()
+            # Space consecutive sends to the same chat (per-chat ~1 msg/s).
+            time.sleep(_SEND_SPACING_SEC)
+
+
+def _ensure_worker() -> None:
+    global _worker_started
+    if _worker_started:
+        return
+    with _worker_lock:
+        if _worker_started:
+            return
+        threading.Thread(target=_worker_loop, daemon=True, name="sales-notify").start()
+        _worker_started = True
+
+
+def _enqueue(job: tuple, *, release_on_drop: int | None = None) -> None:
+    """Non-blocking enqueue. If the queue is somehow full, drop the job rather
+    than block a request thread; release the claim so it can retry later."""
+    try:
+        _QUEUE.put_nowait(job)
+    except queue.Full:
+        log.error("[sales] queue full, dropping job %s", job)
+        if release_on_drop is not None:
+            try:
+                from models.submission import Submission
+                Submission.release_sales_notification(release_on_drop)
+            except Exception:
+                pass
 
 
 def maybe_notify_sales(submission_id: int) -> None:
@@ -183,13 +401,15 @@ def maybe_notify_sales(submission_id: int) -> None:
     in place so newly-added contact info (e.g. email/phone left in the bot) shows
     up without spamming the group with duplicates.
 
+    The actual sending is handed to a single serialized background worker (see
+    above) so heavy PDFs and lead bursts can never spawn a thread storm / OOM.
+
     Safe to call from any write path (PATCH, /tg/contact, /tg/lead).
     """
     if not _configured():
         return
 
     from models.submission import Submission
-    from models.test import Test
 
     try:
         sub = Submission.find_by_id(submission_id)
@@ -203,30 +423,12 @@ def maybe_notify_sales(submission_id: int) -> None:
     if not (has_name and has_contact):
         return  # not a complete lead yet — wait for the next write
 
-    test_name = ""
-    try:
-        tid = sub.get("test_id")
-        if tid:
-            t = Test.find_by_id(tid)
-            if t:
-                test_name = t.get("name_uk") or t.get("name_en") or ""
-    except Exception:
-        pass
+    _ensure_worker()
 
     # Atomically claim the right to notify. If we win → first send. If not →
     # the notification already exists; edit it with the fresh data instead.
     if Submission.claim_sales_notification(submission_id) is not None:
-        pdf_bytes = None
-        try:
-            pdf_bytes = Submission.get_pdf(submission_id)
-        except Exception:
-            pdf_bytes = None
-        threading.Thread(
-            target=_send_sync,
-            args=(sub, test_name, pdf_bytes),
-            daemon=True,
-            name=f"sales-notify-{submission_id}",
-        ).start()
+        _enqueue(("send", submission_id), release_on_drop=submission_id)
         return
 
     # Already notified → update the existing message (if we know which one).
@@ -237,9 +439,4 @@ def maybe_notify_sales(submission_id: int) -> None:
     if not existing:
         return
     msg_id, is_doc = existing
-    threading.Thread(
-        target=_update_sync,
-        args=(sub, test_name, msg_id, is_doc),
-        daemon=True,
-        name=f"sales-update-{submission_id}",
-    ).start()
+    _enqueue(("update", submission_id, msg_id, is_doc))

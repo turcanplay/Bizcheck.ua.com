@@ -53,6 +53,15 @@ services:
       # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
       SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
       SALES_CHAT_ID: ${SALES_CHAT_ID:-}
+      # Forum topic (message_thread_id) where ALL "Lead nou" notifications go.
+      # Set to the "Lead/Client Chat bot" topic id. Empty → per-test topics / General.
+      SALES_TOPIC_ID: ${SALES_TOPIC_ID:-}
+      # BizCheck bot token — backend uses it to send the feedback question
+      # directly (services/telegram_send.py). SAME token as the tgbot service.
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      # Shared secret guarding the bot-only feedback endpoints (/tg/feedback/*).
+      # Must match the value on the tgbot service. Leave empty to run ungated.
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
 
   frontend:
     build:
@@ -76,6 +85,24 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
       BACKEND_URL: http://backend:4001
+      # Must match BOT_SHARED_SECRET on the backend service.
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
+
+  # Internal team bot (private group). Polls SALES_BOT_TOKEN for /excel and /pdf;
+  # the backend uses the SAME token only to *send* notifications (no poll conflict).
+  groupbot:
+    build: ./groupbot
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
+      SALES_CHAT_ID: ${SALES_CHAT_ID:-}
+      BACKEND_URL: http://backend:4001
+      # Must match BOT_SHARED_SECRET on the backend. REQUIRED for exports to work.
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
+      # Link shown by /pdf (bulk PDFs are downloaded from the admin panel, not Telegram).
+      ADMIN_PANEL_URL: ${ADMIN_PANEL_URL:-https://bizcheck.md/admin_bizcheck_md_crowe/}
 
 volumes:
   pgdata:

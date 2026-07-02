@@ -29,6 +29,7 @@ const AdminTemplateDetail = lazy(() => import('@/pages/admin/AdminTemplateDetail
 const AdminFaq = lazy(() => import('@/pages/admin/AdminFaq'));
 const AdminTestimonials = lazy(() => import('@/pages/admin/AdminTestimonials'));
 const AdminPageSettings = lazy(() => import('@/pages/admin/AdminPageSettings'));
+const AdminFeedback = lazy(() => import('@/pages/admin/AdminFeedback'));
 
 const QuizShell = ({ children }: { children: React.ReactNode }) => (
   <QuizProvider>{children}</QuizProvider>
@@ -83,17 +84,17 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center',
           justifyContent: 'center', minHeight: '60vh', color: '#0F172A', fontSize: 15,
-          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', textAlign: 'center', padding: 24,
+          fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', padding: 24,
         }}>
-          <span>Застосунок оновлено. Перезавантажуємо сторінку…</span>
+          <span>S-a actualizat aplicația. Reîncărcăm pagina…</span>
           <button
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 22px', borderRadius: 999, border: 'none', cursor: 'pointer',
-              background: '#003B90', color: '#fff', fontWeight: 700, fontSize: 14,
+              background: '#E03E2D', color: '#fff', fontWeight: 700, fontSize: 14,
             }}
           >
-            Перезавантажити
+            Reîncarcă
           </button>
         </div>
       );
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="templates" element={<AdminTemplates />} />
             <Route path="templates/:id" element={<AdminTemplateDetail />} />
             <Route path="testimonials" element={<AdminTestimonials />} />
+            <Route path="feedback" element={<AdminFeedback />} />
             <Route path="faq" element={<AdminFaq />} />
             <Route path="page-settings" element={<AdminPageSettings />} />
           </Route>

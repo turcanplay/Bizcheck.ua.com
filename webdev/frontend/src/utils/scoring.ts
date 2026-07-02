@@ -29,12 +29,11 @@ export function getZone(pct: number): Zone {
 }
 
 export function getZoneColor(zone: Zone): string {
-  // Crowe accent palette: Teal (good) → Amber → Amber-dark → Coral (risk)
   switch (zone) {
-    case 'safe': return '#05AB8C';
-    case 'developing': return '#F2A302';
-    case 'warning': return '#D7761D';
-    case 'risk': return '#E5376B';
+    case 'safe': return '#16A34A';
+    case 'developing': return '#EAB308';
+    case 'warning': return '#F97316';
+    case 'risk': return '#DC2626';
   }
 }
 

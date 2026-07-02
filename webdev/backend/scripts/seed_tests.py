@@ -66,7 +66,7 @@ def main():
     conn = get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT slug, name_uk FROM tests WHERE is_active ORDER BY id")
+            cur.execute("SELECT slug, name_ro FROM tests WHERE is_active ORDER BY id")
             for row in cur.fetchall():
                 print(f"  - {row[0]}: {row[1]}")
     finally:

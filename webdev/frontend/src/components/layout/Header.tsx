@@ -10,7 +10,7 @@ export default function Header() {
 
   const currentTest = tests.find(x => x.slug === selectedTestSlug);
   const testName = currentTest
-    ? (lang === 'uk' ? currentTest.name_uk : currentTest.name_en)
+    ? (lang === 'ro' ? currentTest.name_ro : currentTest.name_ru)
     : null;
 
   // Show test name only during quiz / cta phases where a test is active
@@ -29,16 +29,16 @@ export default function Header() {
         <span className="header-right__text">{t('headerRight')}</span>
         <div className="lang-toggle">
           <button
-            className={`lang-toggle__btn ${lang === 'uk' ? 'lang-toggle__btn--active' : ''}`}
-            onClick={() => setLang('uk')}
+            className={`lang-toggle__btn ${lang === 'ro' ? 'lang-toggle__btn--active' : ''}`}
+            onClick={() => setLang('ro')}
           >
-            UA
+            RO
           </button>
           <button
-            className={`lang-toggle__btn ${lang === 'en' ? 'lang-toggle__btn--active' : ''}`}
-            onClick={() => setLang('en')}
+            className={`lang-toggle__btn ${lang === 'ru' ? 'lang-toggle__btn--active' : ''}`}
+            onClick={() => setLang('ru')}
           >
-            EN
+            RU
           </button>
         </div>
       </div>

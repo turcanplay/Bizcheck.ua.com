@@ -96,7 +96,11 @@ def execute(sql, params=None):
             cur.execute(sql, params)
             conn.commit()
             try:
-                return dict(cur.fetchone()) if cur.description else None
+                # RETURNING sets cur.description even when the UPDATE/DELETE matched
+                # 0 rows — but fetchone() is then None. Guard against dict(None),
+                # which raises "'NoneType' object is not iterable".
+                row = cur.fetchone() if cur.description else None
+                return dict(row) if row else None
             except psycopg2.ProgrammingError:
                 return None
     except Exception:
@@ -115,7 +119,9 @@ def execute_many(sql, params_list):
             for params in params_list:
                 cur.execute(sql, params)
                 try:
-                    results.append(dict(cur.fetchone()))
+                    row = cur.fetchone() if cur.description else None
+                    if row:
+                        results.append(dict(row))
                 except psycopg2.ProgrammingError:
                     pass
             conn.commit()
@@ -162,10 +168,10 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS tests (
                     id                    SERIAL       PRIMARY KEY,
                     slug                  VARCHAR(100) UNIQUE NOT NULL,
-                    name_uk               VARCHAR(255) NOT NULL,
-                    name_en               VARCHAR(255) NOT NULL DEFAULT '',
-                    description_uk        TEXT         NOT NULL DEFAULT '',
-                    description_en        TEXT         NOT NULL DEFAULT '',
+                    name_ro               VARCHAR(255) NOT NULL,
+                    name_ru               VARCHAR(255) NOT NULL DEFAULT '',
+                    description_ro        TEXT         NOT NULL DEFAULT '',
+                    description_ru        TEXT         NOT NULL DEFAULT '',
                     scoring_zones         JSONB        NOT NULL DEFAULT '{"safe": 80, "developing": 70, "warn": 65, "risk": 0}',
                     zone_recommendations  JSONB        DEFAULT NULL,
                     is_active             BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -183,6 +189,9 @@ def migrate():
                 ALTER TABLE tests ADD COLUMN IF NOT EXISTS is_coming_soon BOOLEAN NOT NULL DEFAULT FALSE;
                 -- Display order on the public catalog (lower = first / left). Admin-editable.
                 ALTER TABLE tests ADD COLUMN IF NOT EXISTS order_index INTEGER NOT NULL DEFAULT 0;
+                -- Telegram forum topic id (message_thread_id) auto-created for this test in the
+                -- sales group. NULL until the first notification creates the topic. See services/sales_notify.py.
+                ALTER TABLE tests ADD COLUMN IF NOT EXISTS tg_topic_id BIGINT DEFAULT NULL;
                 -- 3 distinct report layouts: 'bizcheck' (per-block detail), 'standard' (per-question
                 -- checklist), 'premium' (short).
                 -- Previous migration remapped block-based 'bizcheck' rows to 'standard' by mistake.
@@ -206,8 +215,8 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS blocks (
                     id          SERIAL       PRIMARY KEY,
                     test_id     INTEGER      NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
-                    title_uk    VARCHAR(255) NOT NULL,
-                    title_en    VARCHAR(255) NOT NULL,
+                    title_ro    VARCHAR(255) NOT NULL,
+                    title_ru    VARCHAR(255) NOT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
                     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
                 );
@@ -217,14 +226,14 @@ def migrate():
                     id                 SERIAL      PRIMARY KEY,
                     block_id           INTEGER     NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
                     parent_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_uk            TEXT        NOT NULL,
-                    text_en            TEXT        NOT NULL,
-                    note_uk            TEXT        DEFAULT NULL,
-                    note_en            TEXT        DEFAULT NULL,
-                    purpose_uk         TEXT        DEFAULT NULL,
-                    purpose_en         TEXT        DEFAULT NULL,
-                    example_uk         TEXT        DEFAULT NULL,
-                    example_en         TEXT        DEFAULT NULL,
+                    text_ro            TEXT        NOT NULL,
+                    text_ru            TEXT        NOT NULL,
+                    note_ro            TEXT        DEFAULT NULL,
+                    note_ru            TEXT        DEFAULT NULL,
+                    purpose_ro         TEXT        DEFAULT NULL,
+                    purpose_ru         TEXT        DEFAULT NULL,
+                    example_ro         TEXT        DEFAULT NULL,
+                    example_ru         TEXT        DEFAULT NULL,
                     order_index        INTEGER     NOT NULL DEFAULT 0,
                     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
@@ -235,13 +244,13 @@ def migrate():
                     id               SERIAL      PRIMARY KEY,
                     question_id      INTEGER     NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
                     next_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_uk          TEXT        NOT NULL,
-                    text_en          TEXT        NOT NULL,
+                    text_ro          TEXT        NOT NULL,
+                    text_ru          TEXT        NOT NULL,
                     score            REAL        NOT NULL DEFAULT 0,
-                    explanation_uk   TEXT        DEFAULT NULL,
-                    explanation_en   TEXT        DEFAULT NULL,
-                    risk_uk          TEXT        DEFAULT NULL,
-                    risk_en          TEXT        DEFAULT NULL,
+                    explanation_ro   TEXT        DEFAULT NULL,
+                    explanation_ru   TEXT        DEFAULT NULL,
+                    risk_ro          TEXT        DEFAULT NULL,
+                    risk_ru          TEXT        DEFAULT NULL,
                     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
                 CREATE INDEX IF NOT EXISTS idx_answers_question ON answers(question_id);
@@ -270,7 +279,7 @@ def migrate():
                     company_size          VARCHAR(50)  DEFAULT NULL,
                     company_age           VARCHAR(50)  DEFAULT NULL,
                     company_revenue       VARCHAR(50)  DEFAULT NULL,
-                    language              VARCHAR(5)   DEFAULT 'uk',
+                    language              VARCHAR(5)   DEFAULT 'ro',
                     total_score           REAL         DEFAULT NULL,
                     answers_json          JSONB        DEFAULT NULL,
                     selected_answers_json JSONB        DEFAULT NULL,
@@ -329,10 +338,10 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS templates (
                     id             SERIAL        PRIMARY KEY,
                     slug           VARCHAR(100)  UNIQUE NOT NULL,
-                    title_uk       VARCHAR(255)  NOT NULL,
-                    title_en       VARCHAR(255)  NOT NULL DEFAULT '',
-                    description_uk TEXT          NOT NULL DEFAULT '',
-                    description_en TEXT          NOT NULL DEFAULT '',
+                    title_ro       VARCHAR(255)  NOT NULL,
+                    title_ru       VARCHAR(255)  NOT NULL DEFAULT '',
+                    description_ro TEXT          NOT NULL DEFAULT '',
+                    description_ru TEXT          NOT NULL DEFAULT '',
                     is_active      BOOLEAN       NOT NULL DEFAULT TRUE,
                     is_coming_soon BOOLEAN       NOT NULL DEFAULT FALSE,
                     is_paid        BOOLEAN       NOT NULL DEFAULT FALSE,
@@ -362,8 +371,8 @@ def migrate():
                     id          SERIAL       PRIMARY KEY,
                     name        VARCHAR(100) NOT NULL,
                     role        VARCHAR(150) DEFAULT NULL,
-                    quote_uk    TEXT         NOT NULL DEFAULT '',
-                    quote_en    TEXT         NOT NULL DEFAULT '',
+                    quote_ro    TEXT         NOT NULL DEFAULT '',
+                    quote_ru    TEXT         NOT NULL DEFAULT '',
                     rating      SMALLINT     NOT NULL DEFAULT 5,
                     avatar_url  VARCHAR(500) DEFAULT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
@@ -374,10 +383,10 @@ def migrate():
 
                 CREATE TABLE IF NOT EXISTS faq_items (
                     id          SERIAL      PRIMARY KEY,
-                    question_uk TEXT        NOT NULL,
-                    question_en TEXT        NOT NULL DEFAULT '',
-                    answer_uk   TEXT        NOT NULL DEFAULT '',
-                    answer_en   TEXT        NOT NULL DEFAULT '',
+                    question_ro TEXT        NOT NULL,
+                    question_ru TEXT        NOT NULL DEFAULT '',
+                    answer_ro   TEXT        NOT NULL DEFAULT '',
+                    answer_ru   TEXT        NOT NULL DEFAULT '',
                     order_index INTEGER     NOT NULL DEFAULT 0,
                     is_active   BOOLEAN     NOT NULL DEFAULT TRUE,
                     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -398,53 +407,42 @@ def migrate():
                 -- written in — public reviews live in ONE language only.
                 ALTER TABLE testimonials ALTER COLUMN rating TYPE NUMERIC(2,1) USING rating::numeric;
                 ALTER TABLE testimonials ALTER COLUMN rating SET DEFAULT 5;
-                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'uk';
+                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'ro';
                 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS is_user_submitted BOOLEAN NOT NULL DEFAULT FALSE;
 
-                -- ============================================================
-                -- Language migration: ro -> uk, ru -> en (idempotent).
-                -- Renames bilingual columns on pre-existing databases and
-                -- remaps stored language codes. Fresh databases already get
-                -- _uk/_en columns from the CREATE TABLE statements above, so
-                -- the rename loop simply finds nothing to do.
-                -- ============================================================
-                DO $$
-                DECLARE
-                    pairs TEXT[][] := ARRAY[
-                        ['tests','name_ro','name_uk'],               ['tests','name_ru','name_en'],
-                        ['tests','description_ro','description_uk'], ['tests','description_ru','description_en'],
-                        ['blocks','title_ro','title_uk'],            ['blocks','title_ru','title_en'],
-                        ['questions','text_ro','text_uk'],           ['questions','text_ru','text_en'],
-                        ['questions','note_ro','note_uk'],           ['questions','note_ru','note_en'],
-                        ['questions','purpose_ro','purpose_uk'],     ['questions','purpose_ru','purpose_en'],
-                        ['questions','example_ro','example_uk'],     ['questions','example_ru','example_en'],
-                        ['answers','text_ro','text_uk'],             ['answers','text_ru','text_en'],
-                        ['answers','explanation_ro','explanation_uk'],['answers','explanation_ru','explanation_en'],
-                        ['answers','risk_ro','risk_uk'],             ['answers','risk_ru','risk_en'],
-                        ['templates','title_ro','title_uk'],         ['templates','title_ru','title_en'],
-                        ['templates','description_ro','description_uk'],['templates','description_ru','description_en'],
-                        ['testimonials','quote_ro','quote_uk'],      ['testimonials','quote_ru','quote_en'],
-                        ['faq_items','question_ro','question_uk'],   ['faq_items','question_ru','question_en'],
-                        ['faq_items','answer_ro','answer_uk'],       ['faq_items','answer_ru','answer_en']
-                    ];
-                    i INT;
-                BEGIN
-                    FOR i IN 1 .. array_length(pairs, 1) LOOP
-                        IF EXISTS (SELECT 1 FROM information_schema.columns
-                                   WHERE table_name = pairs[i][1] AND column_name = pairs[i][2])
-                       AND NOT EXISTS (SELECT 1 FROM information_schema.columns
-                                   WHERE table_name = pairs[i][1] AND column_name = pairs[i][3]) THEN
-                            EXECUTE format('ALTER TABLE %I RENAME COLUMN %I TO %I',
-                                           pairs[i][1], pairs[i][2], pairs[i][3]);
-                        END IF;
-                    END LOOP;
-                END $$;
-
-                -- Remap language codes stored on existing rows.
-                UPDATE submissions  SET language = 'uk' WHERE language = 'ro';
-                UPDATE submissions  SET language = 'en' WHERE language = 'ru';
-                UPDATE testimonials SET lang     = 'uk' WHERE lang     = 'ro';
-                UPDATE testimonials SET lang     = 'en' WHERE lang     = 'ru';
+                -- Telegram feedback outreach: admin sends a predefined (editable)
+                -- question to a person, the person's first reply is captured here.
+                -- Two creation modes:
+                --   'contact' → chat_id resolved from an existing submission contact;
+                --               backend sends the prompt immediately via the Bot API.
+                --   'link'    → no chat_id yet; admin shares the t.me deep-link
+                --               (start=fb_<token>); chat_id is bound when the person
+                --               opens it and the prompt is sent then.
+                -- status ∈ {'pending','sent','answered','failed'}.
+                CREATE TABLE IF NOT EXISTS tg_outreach (
+                    id          SERIAL       PRIMARY KEY,
+                    mode        VARCHAR(10)  NOT NULL DEFAULT 'contact',
+                    username    VARCHAR(100) DEFAULT NULL,
+                    tg_chat_id  BIGINT       DEFAULT NULL,
+                    lang        VARCHAR(5)   NOT NULL DEFAULT 'ru',
+                    token       VARCHAR(64)  UNIQUE NOT NULL,
+                    status      VARCHAR(20)  NOT NULL DEFAULT 'pending',
+                    prompt_sent TEXT         DEFAULT NULL,
+                    reply_text  TEXT         DEFAULT NULL,
+                    error       TEXT         DEFAULT NULL,
+                    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+                    sent_at     TIMESTAMPTZ  DEFAULT NULL,
+                    answered_at TIMESTAMPTZ  DEFAULT NULL
+                );
+                -- Automatic feedback: a row with mode='auto' and status='scheduled'
+                -- is created when a report is delivered in Telegram; the background
+                -- scheduler sends it once due_at (delivery + delay) passes.
+                ALTER TABLE tg_outreach ADD COLUMN IF NOT EXISTS due_at TIMESTAMPTZ DEFAULT NULL;
+                CREATE INDEX IF NOT EXISTS idx_tg_outreach_token   ON tg_outreach(token);
+                CREATE INDEX IF NOT EXISTS idx_tg_outreach_chat_id ON tg_outreach(tg_chat_id);
+                CREATE INDEX IF NOT EXISTS idx_tg_outreach_status  ON tg_outreach(status);
+                CREATE INDEX IF NOT EXISTS idx_tg_outreach_due
+                    ON tg_outreach(due_at) WHERE status = 'scheduled';
             """)
 
             conn.commit()
