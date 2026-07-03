@@ -22,6 +22,7 @@ each one is scoped to a single subsystem so you never load context you won't use
 | Quiz / report / layout / UI components | [`frontend/02-components.md`](frontend/02-components.md) |
 | React contexts (state) and the API client layer | [`frontend/03-state-and-api.md`](frontend/03-state-and-api.md) |
 | Scoring, PDF generation, cookies, i18n, TS types, block content | [`frontend/04-utils-and-data.md`](frontend/04-utils-and-data.md) |
+| Crowe brand design system — palette tokens, amber buttons, typography | [`frontend/05-design-system.md`](frontend/05-design-system.md) |
 | The web-flow Telegram bot service | [`telegram-bot.md`](telegram-bot.md) |
 | Docker, nginx, Dockerfiles, env vars, scripts, build tooling | [`deployment.md`](deployment.md) |
 
