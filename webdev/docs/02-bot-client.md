@@ -1,7 +1,23 @@
 # 02 — Botul de clienți (`tgbot/`)
 
-Fișier: `webdev/tgbot/bot.py`. Bibliotecă: **python-telegram-bot 21.7**, mod **polling**,
+Director: `webdev/tgbot/`. Bibliotecă: **python-telegram-bot 21.7**, mod **polling**,
 token `TELEGRAM_BOT_TOKEN`. Rolul: livrează raportul clientului și colectează contacte.
+
+## Structura modulelor
+
+Botul e împărțit într-un pachet mic (extras din fostul `bot.py` unic). Graful de import este
+unidirecțional — `bot → handlers → {backend, helpers, strings, config}` — deci fără cicluri.
+
+| Fișier | Responsabilitate |
+|--------|------------------|
+| `bot.py` | Punct de intrare: construiește `Application`, înregistrează handler-ele, `error_handler`, `run_polling`. |
+| `config.py` | Variabile de mediu (`BACKEND_URL`, `TELEGRAM_BOT_TOKEN`, `BOT_SHARED_SECRET`), logging, `bot_headers()`, regex-urile `EMAIL_RE`/`PHONE_RE`. |
+| `strings.py` | Dicționarul `_STRINGS` (texte RO/RU) + traducătorul `_t()`. |
+| `backend.py` | Client `httpx` asincron — câte o funcție pentru fiecare apel backend `/tg/*` (întoarce `Response`, apelantul decide după status). |
+| `helpers.py` | Formatări de scor: `_zone()` / `_bar()`. |
+| `handlers.py` | Toate handler-ele Telegram (`cmd_start`, `_send_report`, fluxurile email/lead/telefon, `on_text`, captarea feedback-ului). |
+
+`Dockerfile` copiază acum `*.py` (nu doar `bot.py`); punctul de intrare rămâne `python bot.py`.
 
 ## Fluxul principal (livrarea raportului)
 
@@ -34,6 +50,12 @@ token `TELEGRAM_BOT_TOKEN`. Rolul: livrează raportul clientului și colectează
    - **„Primește raportul pe email"** (`callback_data=eml:<lang>:<token>`).
    - **„Lasă datele de contact"** — email + telefon, pentru vânzări
      (`callback_data=lead:<lang>:<token>`).
+
+> **Notă (refactorizare):** înainte de restructurare, `_send_report` folosea `context` fără
+> să-l primească drept parametru, așa că pașii 3–4 de mai sus (butonul de telefon și cele
+> două butoane inline) eșuau tăcut cu `NameError` — înghițit de `try/except` și scris doar ca
+> `warning` — deci nu se trimiteau niciodată. Acum `_send_report(update, context, token)`
+> primește `context`, iar butoanele se trimit corect. De testat pe staging după redeploy.
 
 ## Fluxuri inline (handler unic pe text, cu stare în `user_data`)
 
