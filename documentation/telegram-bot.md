@@ -1,7 +1,21 @@
 # Telegram Bot (web flow)
 
-`webdev/tgbot/bot.py` — the Telegram bot for the **web** flow. Separate from the sales-team
+`webdev/tgbot/` — the Telegram bot for the **web** flow. Separate from the sales-team
 notification bot (`backend/services/sales_notify.py`) and from the legacy standalone bot at repo root.
+
+## Module layout
+
+The bot is a small package (split out of a single `bot.py`). Import graph is one-directional —
+`bot → handlers → {backend, helpers, strings, config}` — so there are no cycles.
+
+| File | Responsibility |
+|---|---|
+| `bot.py` | Entry point: builds the `Application`, wires handlers, `error_handler`, `run_polling`. |
+| `config.py` | Env (`BACKEND_URL`, `TELEGRAM_BOT_TOKEN`, `BOT_SHARED_SECRET`), logging, `bot_headers()`, `EMAIL_RE`/`PHONE_RE`. |
+| `strings.py` | `_STRINGS` (RO/RU copy) + `_t()` translator. |
+| `backend.py` | Async `httpx` client — one function per backend `/tg/*` call (returns the raw `Response`; caller branches on status). |
+| `helpers.py` | `_zone()` / `_bar()` score formatters. |
+| `handlers.py` | All Telegram update handlers (`cmd_start`, `_send_report`, the email/lead/phone flows, `on_text`, feedback capture). |
 
 ## Stack
 - `python-telegram-bot` 21.7 (official Bot API wrapper, **not** aiogram), `httpx`, `python-dotenv`.
@@ -35,12 +49,15 @@ BACKEND_URL=http://backend:4001  # internal Docker service URL
 | `POST /tg/contact/{token}` | Save Telegram contact (`tg_chat_id, tg_username, tg_first_name, tg_last_name`) | — |
 | `POST /tg/email/{token}` | Deliver report by email (`{email}`) | 200 sent · 404 expired · 409 PDF still generating |
 | `POST /tg/lead/{token}` | Save sales lead (`{email, phone}` or `{phone}`) | 200 · 404 expired |
+| `POST /tg/feedback/open` | Bind chat to a feedback-outreach token (`fb_<token>` deep link); **bot-secret gated** | — |
+| `POST /tg/feedback/reply` | Submit free-text reply to an open feedback question; **bot-secret gated** | `{matched, ack}` |
 
-(Backend side of these endpoints: [`backend/01-routes.md`](backend/01-routes.md) → `telegram.py`.)
+Feedback calls send the `X-Bot-Secret` header (`config.bot_headers()`); the token-gated report/contact/email/lead
+calls do not. (Backend side of these endpoints: [`backend/01-routes.md`](backend/01-routes.md) → `telegram.py`.)
 
 ## Bilingual & zones
 - ~90 strings in `_STRINGS` (RO/RU; RO fallback). Risk emojis: 🟢 ≥80, 🟡 70–79, 🟠 65–69, 🔴 <65.
 
 ## Deploy
-- `tgbot/Dockerfile`: `python:3.12-slim`, `pip install -r requirements.txt`, `CMD python bot.py`.
+- `tgbot/Dockerfile`: `python:3.12-slim`, `pip install -r requirements.txt`, `COPY *.py .`, `CMD python bot.py`.
 - Runs as the `tgbot` compose service, internal network only (see [`deployment.md`](deployment.md)).

@@ -17,7 +17,7 @@ src/
   data/             blockExplanations.ts                              → 04-utils-and-data.md
   i18n/             translations.ts (ro/ru)                           → 04-utils-and-data.md
   types/index.ts    shared TS types                                   → 04-utils-and-data.md
-  styles/           variables.css, App.css, index.css
+  styles/           variables.css (Crowe brand tokens), App.css, index.css → 05-design-system.md
 ```
 
 ## Provider stack (`App.tsx`, outer→inner)
