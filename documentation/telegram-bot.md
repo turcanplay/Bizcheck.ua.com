@@ -42,6 +42,12 @@ BACKEND_URL=http://backend:4001  # internal Docker service URL
 - **Contact share** (`on_contact`) — one-tap phone button → `POST /tg/lead/{token}` (phone only).
 - **Text handler** (`on_text`) — routes free text into the active flow (email/lead/phone).
 
+> **Note (refactor):** before the package split, `_send_report` referenced `context` without
+> receiving it as a parameter, so the one-tap phone-share keyboard and the two inline buttons
+> failed silently with a `NameError` (swallowed by the surrounding `try/except`, logged only as a
+> warning) and were never sent. `_send_report(update, context, token)` now takes `context`, so the
+> buttons send correctly — worth verifying on staging after the bot redeploys.
+
 ## Backend endpoints it calls (under `/api_crowe_bizcheck/tg/`)
 | Call | Purpose | Notable statuses |
 |---|---|---|
