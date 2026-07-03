@@ -4,16 +4,16 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-family: var(--font-sans);
 }
 
 /* ── Header (page 1 only) ── */
 .qslice__header {
-  background: var(--navy-deep, #082E5E);
+  background: var(--navy-deep, #011E41);
   color: #fff;
   border-radius: var(--radius-md, 10px);
   padding: 22px 26px 24px;
-  border-left: 5px solid var(--gold, #FDA100);
+  border-left: 5px solid var(--gold, #F5A800);
 }
 
 .qslice__header-eyebrow {
@@ -21,12 +21,12 @@
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--gold, #FDA100);
+  color: var(--gold, #F5A800);
   margin-bottom: 8px;
 }
 
 .qslice__header-title {
-  font-family: var(--font-serif, Georgia, serif);
+  font-family: var(--font-serif);
   font-size: 26px;
   font-weight: 700;
   color: #fff;
@@ -53,30 +53,30 @@
   gap: 20px;
   padding: 20px 22px;
   background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(1, 30, 65, 0.08);
   border-left-width: 6px;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(8, 46, 94, 0.05);
 }
 
-.qslice__item--pass    { border-left-color: #22C55E; }
-.qslice__item--fail    { border-left-color: #EF4444; }
-.qslice__item--partial { border-left-color: #FDA100; }
-.qslice__item--skipped { border-left-color: rgba(15, 23, 42, 0.15); opacity: 0.72; }
+.qslice__item--pass    { border-left-color: #2BC0A2; }
+.qslice__item--fail    { border-left-color: #E5634F; }
+.qslice__item--partial { border-left-color: #F5A800; }
+.qslice__item--skipped { border-left-color: rgba(1, 30, 65, 0.15); opacity: 0.72; }
 
 /* Big number square */
 .qslice__num {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.05);
+  background: rgba(1, 30, 65, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-serif, Georgia, serif);
+  font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 800;
-  color: #1a1a2e;
+  color: #011E41;
   line-height: 1;
 }
 
@@ -102,7 +102,7 @@
 .qslice__text {
   font-size: 17px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #011E41;
   line-height: 1.5;
   margin-bottom: 10px;
   letter-spacing: -0.003em;
@@ -118,20 +118,20 @@
 }
 
 .qslice__answer-label {
-  color: rgba(15, 23, 42, 0.5);
+  color: rgba(1, 30, 65, 0.5);
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
 .qslice__answer-value {
-  color: #1a1a2e;
+  color: #011E41;
   font-weight: 700;
 }
 
 .qslice__skip {
   font-size: 13.5px;
   font-style: italic;
-  color: rgba(15, 23, 42, 0.5);
+  color: rgba(1, 30, 65, 0.5);
 }
 
 /* ── Status badge — right side, bigger ── */

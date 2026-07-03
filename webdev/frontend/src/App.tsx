@@ -83,15 +83,15 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
       return (
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center',
-          justifyContent: 'center', minHeight: '60vh', color: '#0F172A', fontSize: 15,
-          fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'center', padding: 24,
+          justifyContent: 'center', minHeight: '60vh', color: '#011E41', fontSize: 15,
+          fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", textAlign: 'center', padding: 24,
         }}>
           <span>S-a actualizat aplicația. Reîncărcăm pagina…</span>
           <button
             onClick={() => window.location.reload()}
             style={{
               padding: '10px 22px', borderRadius: 999, border: 'none', cursor: 'pointer',
-              background: '#E03E2D', color: '#fff', fontWeight: 700, fontSize: 14,
+              background: '#F5A800', color: '#011E41', fontWeight: 700, fontSize: 14,
             }}
           >
             Reîncarcă

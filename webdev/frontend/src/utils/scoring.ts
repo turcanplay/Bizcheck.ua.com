@@ -30,10 +30,10 @@ export function getZone(pct: number): Zone {
 
 export function getZoneColor(zone: Zone): string {
   switch (zone) {
-    case 'safe': return '#16A34A';
-    case 'developing': return '#EAB308';
-    case 'warning': return '#F97316';
-    case 'risk': return '#DC2626';
+    case 'safe': return '#05AB8C';       /* Crowe teal */
+    case 'developing': return '#F5A800'; /* Crowe amber */
+    case 'warning': return '#E07B00';    /* burnt amber */
+    case 'risk': return '#D64535';       /* red */
   }
 }
 

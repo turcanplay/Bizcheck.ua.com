@@ -74,7 +74,7 @@
 .cta__telegram-error {
   font-family: var(--font-sans);
   font-size: 12px;
-  color: #ff9800;
+  color: #F5A800;
   margin: 0;
 }
 
@@ -129,12 +129,12 @@
   gap: 10px;
   padding: 16px 36px;
   background: var(--gold);
-  color: white;
+  color: #011E41;
   border: none;
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.25s;
@@ -143,7 +143,7 @@
 .cta__btn:hover {
   background: var(--gold-light);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(253, 161, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(245, 168, 0, 0.35);
 }
 
 .cta__footer {

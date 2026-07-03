@@ -6,10 +6,10 @@
   --border: #2e3345;
   --text: #e4e6f0;
   --text2: #8b8fa7;
-  --accent: #fda100;
+  --accent: #F5A800;
   --accent-hover: #ffb733;
-  --green: #16a34a;
-  --red: #dc2626;
+  --green: #05AB8C;
+  --red: #D64535;
   --blue: #3b82f6;
   --radius: 10px;
 
@@ -99,7 +99,7 @@
   transition: box-shadow .15s ease, border-color .15s ease, opacity .15s ease;
 }
 .admin-test-card--dragging { opacity: .45; }
-.admin-test-card--dragover { border-color: var(--accent, #0b3d7a); box-shadow: 0 0 0 2px var(--accent, #0b3d7a) inset; }
+.admin-test-card--dragover { border-color: var(--accent, #0A3A6E); box-shadow: 0 0 0 2px var(--accent, #0A3A6E) inset; }
 .admin-test-card__drag {
   cursor: grab;
   user-select: none;
@@ -132,7 +132,7 @@
 .admin-badge-blue { background: rgba(59,130,246,.15); color: var(--blue); }
 .admin-badge-gold { background: rgba(253,161,0,.18); color: var(--accent); }
 .admin-badge-muted { background: var(--surface2); color: var(--text2); }
-.admin-badge-red { background: rgba(220,38,38,.15); color: #DC2626; }
+.admin-badge-red { background: rgba(220,38,38,.15); color: #D64535; }
 
 /* Modal */
 .admin-modal-overlay {
@@ -205,11 +205,11 @@
   transition: border-color .15s ease, background .15s ease, transform .15s ease;
   text-align: center;
 }
-.admin-report-type-card:hover { border-color: #6A7EFF; background: #F7F9FF; }
+.admin-report-type-card:hover { border-color: #4A90D0; background: #F5F7FA; }
 .admin-report-type-card.is-selected {
-  border-color: #2D4BFF;
-  background: linear-gradient(135deg, rgba(45, 75, 255, 0.06), rgba(124, 91, 255, 0.06));
-  box-shadow: 0 4px 14px -6px rgba(45, 75, 255, 0.35);
+  border-color: #0075C9;
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 117, 201, 0.06));
+  box-shadow: 0 4px 14px -6px rgba(0, 117, 201, 0.35);
 }
 .admin-report-type-card input[type="radio"] {
   position: absolute;
@@ -220,7 +220,7 @@
 .admin-report-type-title {
   font-size: 14px;
   font-weight: 700;
-  color: #0F172A;
+  color: #011E41;
   margin-bottom: 4px;
 }
 .admin-report-type-desc {
@@ -249,11 +249,11 @@
   transition: border-color .15s ease, background .15s ease;
   text-align: center;
 }
-.admin-visibility-card:hover { border-color: #6A7EFF; background: #F7F9FF; }
+.admin-visibility-card:hover { border-color: #4A90D0; background: #F5F7FA; }
 .admin-visibility-card.is-selected {
-  border-color: #2D4BFF;
-  background: linear-gradient(135deg, rgba(45, 75, 255, 0.06), rgba(124, 91, 255, 0.06));
-  box-shadow: 0 4px 14px -6px rgba(45, 75, 255, 0.35);
+  border-color: #0075C9;
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 117, 201, 0.06));
+  box-shadow: 0 4px 14px -6px rgba(0, 117, 201, 0.35);
 }
 .admin-visibility-card input[type="radio"] {
   position: absolute;
@@ -264,7 +264,7 @@
 .admin-visibility-title {
   font-size: 13.5px;
   font-weight: 700;
-  color: #0F172A;
+  color: #011E41;
   margin-bottom: 3px;
 }
 .admin-visibility-desc {

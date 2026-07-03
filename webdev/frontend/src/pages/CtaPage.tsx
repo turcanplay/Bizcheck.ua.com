@@ -365,7 +365,7 @@ export default function CtaPage() {
   if (!report) return null;
 
   const score = Math.round(report.totalScore);
-  const scoreColor = score >= 80 ? '#16A34A' : score >= 70 ? '#EAB308' : score >= 65 ? '#F97316' : '#DC2626';
+  const scoreColor = score >= 80 ? '#05AB8C' : score >= 70 ? '#F5A800' : score >= 65 ? '#E07B00' : '#D64535';
 
   return (
     <div className="cta-page">

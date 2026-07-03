@@ -6,8 +6,8 @@
 ═══════════════════════════════════════════════════════ */
 
 .gdpr-q {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #0F172A;
+  font-family: var(--font-sans);
+  color: #011E41;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -22,10 +22,10 @@
   gap: 18px;
   align-items: start;
   background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(1, 30, 65, 0.06);
   border-radius: 18px;
   padding: 18px 20px;
-  box-shadow: 0 10px 28px -18px rgba(45, 75, 255, 0.22);
+  box-shadow: 0 10px 28px -18px rgba(0, 117, 201, 0.22);
 }
 
 .gdpr-q__num {
@@ -38,7 +38,7 @@
   font-size: 24px;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+  background: linear-gradient(135deg, #0A3A6E 0%, #0075C9 100%);
 }
 
 .gdpr-q__head-right {
@@ -62,7 +62,7 @@
   line-height: 1.3;
   letter-spacing: -0.01em;
   margin: 0;
-  color: #0F172A;
+  color: #011E41;
 }
 
 .gdpr-q__answer {
@@ -85,7 +85,7 @@
   font-size: 12.5px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+  background: linear-gradient(135deg, #05AB8C 0%, #059669 100%);
   padding: 4px 12px;
   border-radius: 999px;
 }
@@ -104,7 +104,7 @@
   line-height: 1.25;
   letter-spacing: -0.015em;
   margin: 0;
-  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+  background: linear-gradient(135deg, #0A3A6E 0%, #0075C9 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -131,10 +131,10 @@
   align-self: flex-start;
 }
 .gdpr-q__section-title--risk {
-  background: linear-gradient(135deg, #F97316 0%, #DC2626 100%);
+  background: linear-gradient(135deg, #E07B00 0%, #D64535 100%);
 }
 .gdpr-q__section-title--action {
-  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+  background: linear-gradient(135deg, #05AB8C 0%, #059669 100%);
 }
 
 .gdpr-q__paragraphs {
@@ -152,7 +152,7 @@
   line-height: 1.55;
   color: #1E293B;
   margin: 0;
-  text-align: justify;
+  text-align: left;
 }
 
 @media print {

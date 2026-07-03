@@ -1,52 +1,101 @@
+/* =========================================================
+   Crowe brand tokens — Bizcheck
+   Source of truth: Crowe Global Brand Standards Guidelines
+   Primary:  Crowe Indigo #011E41 · Crowe Amber #F5A800
+   Accents (use sparingly, ≤20% coverage):
+     teal #05AB8C · sky #54C0E8 · blue #0075C9 · purple #B14FC5 · pink #E5376B
+   Type: Helvetica (primary) / Arial (secondary) — system stack, no web fonts.
+   ========================================================= */
+
 :root {
-  /* Navy palette */
-  --navy: #0B3D7A;
-  --navy-deep: #082E5E;
-  --navy-mid: #1A5BA0;
-  --navy-light: #2E6FB8;
-  --navy-pale: #E8F0FA;
+  /* ===== Crowe primary ===== */
+  --crowe-indigo: #011E41; /* primary dark */
+  --crowe-amber:  #F5A800; /* primary accent — all action buttons */
 
-  /* Background */
-  --bg-page: #F4F6F9;
+  /* ===== Indigo scale (built around Crowe Indigo) ===== */
+  --indigo-950: #01152E;
+  --indigo-900: #011E41; /* base */
+  --indigo-800: #052A55;
+  --indigo-700: #0A3A6E;
+  --indigo-600: #12508F;
+  --indigo-500: #2A66A8;
+  --indigo-300: #6E90B8;
+  --indigo-100: #D6E1EF;
+  --indigo-50:  #EAF1F8;
+
+  /* ===== Amber scale (built around Crowe Amber) ===== */
+  --amber:        #F5A800; /* base */
+  --amber-dark:   #D99400; /* hover */
+  --amber-darker: #B87D00; /* active / amber text on light */
+  --amber-light:  #FFC24D;
+  --amber-pale:   #FFF3D6;
+
+  /* ===== Accent palette (official Crowe accents) ===== */
+  --accent-teal:   #05AB8C;
+  --accent-sky:    #54C0E8;
+  --accent-blue:   #0075C9;
+  --accent-purple: #B14FC5;
+  --accent-pink:   #E5376B;
+  /* pale washes for accent chips/badges */
+  --accent-teal-pale:   #E4F6F1;
+  --accent-sky-pale:    #E7F5FC;
+  --accent-blue-pale:   #E4F0FB;
+  --accent-purple-pale: #F5E9F8;
+  --accent-pink-pale:   #FCE7ED;
+
+  /* ===== Legacy aliases — re-anchored to Crowe (do not remove; widely referenced) ===== */
+  --navy:       #0A3A6E; /* indigo-700 */
+  --navy-deep:  #011E41; /* Crowe Indigo */
+  --navy-mid:   #12508F;
+  --navy-light: #2A66A8;
+  --navy-pale:  #EAF1F8;
+
+  --gold:       #F5A800; /* Crowe Amber */
+  --gold-dark:  #D99400;
+  --gold-light: #FFC24D;
+  --gold-pale:  #FFF3D6;
+
+  /* ===== Background ===== */
+  --bg-page: #F5F7FA;
   --bg-card: #FFFFFF;
-  --bg-quiz: #F4F6F9;
-  --bg-dark: #082E5E;
+  --bg-quiz: #F5F7FA;
+  --bg-dark: #011E41;
 
-  /* Accent */
-  --gold: #FDA100;
-  --gold-dark: #D48800;
-  --gold-light: #FFBA3D;
-  --gold-pale: #FFF7E6;
+  /* ===== Semantic ===== */
+  --red: #D64535;              /* errors only */
+  --red-light: #FBECEA;
+  --green: #05AB8C;            /* success = Crowe teal */
+  --green-light: #E4F6F1;
+  --blue-mid: #0075C9;         /* info = Crowe blue */
+  --blue-light: #E4F0FB;
 
-  /* Semantic */
-  --red: #E03E2D;
-  --red-light: #F9ECEB;
-  --green: #1E6B4A;
-  --green-light: #EBF4F0;
-  --blue-mid: #2563AB;
-  --blue-light: #EDF3FB;
-
-  /* Text */
-  --ink: #1A1A2E;
-  --ink-80: rgba(26, 26, 46, 0.8);
-  --ink-60: rgba(26, 26, 46, 0.6);
-  --ink-30: rgba(26, 26, 46, 0.3);
+  /* ===== Text ===== */
+  --ink: #011E41;             /* Crowe Indigo — headings & body */
+  --ink-80: rgba(1, 30, 65, 0.82);
+  --ink-60: rgba(1, 30, 65, 0.60);
+  --ink-30: rgba(1, 30, 65, 0.30);
+  --muted: #5B6B80;           /* neutral secondary text */
   --white: #FFFFFF;
   --white-60: rgba(255, 255, 255, 0.6);
   --white-35: rgba(255, 255, 255, 0.35);
 
-  /* Border */
-  --border: #DDE3ED;
+  /* ===== Border ===== */
+  --border: #DCE3EC;
   --border-light: rgba(255, 255, 255, 0.12);
 
-  /* Report */
-  --report-header: #082E5E;
+  /* ===== Report ===== */
+  --report-header: #011E41;
 
-  /* Fonts */
-  --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* ===== Brand gradients (mirror the two Crowe background textures) ===== */
+  --grad-brand:  linear-gradient(135deg, #011E41 0%, #0A3A6E 48%, #F5A800 135%);
+  --grad-indigo: linear-gradient(160deg, #011E41 0%, #0A3A6E 100%);
+  --grad-amber:  linear-gradient(135deg, #F5A800 0%, #FFC24D 100%);
 
-  /* Spacing */
+  /* ===== Fonts — Helvetica primary, Arial secondary (Crowe standard) ===== */
+  --font-serif: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* display: use bold weight */
+  --font-sans:  'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* ===== Spacing ===== */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -55,20 +104,20 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Radius */
+  /* ===== Radius ===== */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
   --radius-full: 50%;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(11, 61, 122, 0.06);
-  --shadow-md: 0 4px 16px rgba(11, 61, 122, 0.08);
-  --shadow-lg: 0 8px 32px rgba(11, 61, 122, 0.1);
-  --shadow-xl: 0 16px 48px rgba(11, 61, 122, 0.14);
+  /* ===== Shadows (Crowe Indigo tint) ===== */
+  --shadow-sm: 0 1px 3px rgba(1, 30, 65, 0.06);
+  --shadow-md: 0 4px 16px rgba(1, 30, 65, 0.08);
+  --shadow-lg: 0 8px 32px rgba(1, 30, 65, 0.10);
+  --shadow-xl: 0 16px 48px rgba(1, 30, 65, 0.14);
 
-  /* Transitions */
+  /* ===== Transitions ===== */
   --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 150ms;

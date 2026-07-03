@@ -23,7 +23,7 @@
   pointer-events: auto;
   width: 100%;
   max-width: 720px;
-  background: #0E1A33;            /* navy */
+  background: #011E41;            /* navy */
   color: #F4F1E8;                 /* warm bone */
   border: 1px solid rgba(212, 175, 55, 0.28);  /* gold hairline */
   border-radius: 16px;
@@ -64,7 +64,7 @@
 .cookie-banner__policy-link {
   display: inline-block;
   font-size: 0.8rem;
-  color: #D4AF37;
+  color: #C98A00;
   text-decoration: none;
   border-bottom: 1px dashed rgba(212, 175, 55, 0.45);
   padding-bottom: 1px;
@@ -120,7 +120,7 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #D4AF37;
+  color: #C98A00;
   background: rgba(212, 175, 55, 0.1);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 999px;
@@ -142,7 +142,7 @@
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 .cookie-toggle:focus-visible {
-  outline: 2px solid #D4AF37;
+  outline: 2px solid #C98A00;
   outline-offset: 2px;
 }
 .cookie-toggle__knob {
@@ -158,12 +158,12 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 .cookie-toggle--on {
-  background: #D4AF37;
+  background: #C98A00;
   border-color: rgba(212, 175, 55, 0.6);
 }
 .cookie-toggle--on .cookie-toggle__knob {
   left: 22px;
-  background: #FFFDF5;
+  background: #FFF9EC;
 }
 
 /* ── Action buttons (pill style) ── */
@@ -190,9 +190,9 @@
 .cookie-banner__btn:active { transform: translateY(0); }
 
 .cookie-banner__btn--primary {
-  background: #D4AF37;
-  color: #0E1A33;
-  border-color: #D4AF37;
+  background: #C98A00;
+  color: #011E41;
+  border-color: #C98A00;
   box-shadow: 0 4px 12px -4px rgba(212, 175, 55, 0.55);
 }
 .cookie-banner__btn--primary:hover {

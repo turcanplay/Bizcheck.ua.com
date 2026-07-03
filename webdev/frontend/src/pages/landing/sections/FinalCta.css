@@ -1,6 +1,6 @@
 .final-cta {
   position: relative;
-  background: #EEF3FF;
+  background: #E4F0FB;
   padding: 56px 40px;
   margin-bottom: 64px;
   overflow: hidden;
@@ -22,7 +22,7 @@
 .final-cta__title {
   font-size: 26px;
   font-weight: 800;
-  color: #0F172A;
+  color: #011E41;
   margin: 0 0 6px;
   letter-spacing: -0.01em;
 }
@@ -34,8 +34,8 @@
 }
 
 .final-cta__btn {
-  background: linear-gradient(135deg, #E03E2D 0%, #C32D1E 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #F5A800 0%, #FFB733 100%);
+  color: #011E41;
   padding: 22px 44px;
   border-radius: 999px;
   text-decoration: none;
@@ -44,18 +44,18 @@
   white-space: nowrap;
   letter-spacing: -0.005em;
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.06),
-    0 20px 48px -12px rgba(224, 62, 45, 0.65),
-    0 0 0 6px rgba(224, 62, 45, 0.10);
+    0 2px 4px rgba(1, 30, 65, 0.06),
+    0 20px 48px -12px rgba(245, 168, 0, 0.55),
+    0 0 0 6px rgba(245, 168, 0, 0.12);
   transition: background .2s, transform .25s ease, box-shadow .25s ease;
 }
 .final-cta__btn:hover {
-  background: linear-gradient(135deg, #F4533F 0%, #E03E2D 100%);
+  background: linear-gradient(135deg, #D99400 0%, #F5A800 100%);
   transform: translateY(-3px) scale(1.02);
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.06),
-    0 28px 56px -12px rgba(224, 62, 45, 0.75),
-    0 0 0 8px rgba(224, 62, 45, 0.14);
+    0 2px 4px rgba(1, 30, 65, 0.06),
+    0 28px 56px -12px rgba(245, 168, 0, 0.65),
+    0 0 0 8px rgba(245, 168, 0, 0.16);
 }
 
 @media (max-width: 840px) {

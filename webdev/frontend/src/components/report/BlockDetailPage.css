@@ -4,8 +4,8 @@
 ═══════════════════════════════════════════════════════ */
 
 .block-detail {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #0F172A;
+  font-family: var(--font-sans);
+  color: #011E41;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -20,10 +20,10 @@
   gap: 22px;
   align-items: start;
   background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(1, 30, 65, 0.06);
   border-radius: 18px;
   padding: 18px 20px;
-  box-shadow: 0 10px 28px -18px rgba(45, 75, 255, 0.22);
+  box-shadow: 0 10px 28px -18px rgba(0, 117, 201, 0.22);
 }
 
 .block-detail__score {
@@ -69,8 +69,8 @@
   line-height: 1.2;
   letter-spacing: -0.015em;
   margin: 0;
-  color: #0F172A;
-  background: linear-gradient(135deg, #2D4BFF 0%, #7C5BFF 70%);
+  color: #011E41;
+  background: linear-gradient(135deg, #0A3A6E 0%, #0075C9 100%);
   -webkit-background-clip: text;
           background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -104,10 +104,10 @@
   align-self: flex-start;
 }
 .block-detail__section-title--risk {
-  background: linear-gradient(135deg, #F97316 0%, #DC2626 100%);
+  background: linear-gradient(135deg, #E07B00 0%, #D64535 100%);
 }
 .block-detail__section-title--action {
-  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+  background: linear-gradient(135deg, #05AB8C 0%, #059669 100%);
 }
 
 .block-detail__paragraphs {
@@ -122,7 +122,7 @@
   line-height: 1.55;
   color: #1E293B;
   margin: 0;
-  text-align: justify;
+  text-align: left;
 }
 
 /* ── Regulatory footer ── */
@@ -130,8 +130,8 @@
   margin-top: 4px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(45, 75, 255, 0.06), rgba(124, 91, 255, 0.06));
-  border: 1px solid rgba(45, 75, 255, 0.12);
+  background: linear-gradient(135deg, rgba(0, 117, 201, 0.06), rgba(0, 117, 201, 0.06));
+  border: 1px solid rgba(0, 117, 201, 0.12);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -142,13 +142,13 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #2D4BFF;
+  color: #0075C9;
 }
 
 .block-detail__regulatory-link {
   font-size: 12px;
   font-weight: 600;
-  color: #1E3BE8;
+  color: #005A9C;
   text-decoration: underline;
   word-break: break-word;
   line-height: 1.4;
