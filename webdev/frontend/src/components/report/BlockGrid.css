@@ -60,7 +60,7 @@
   font-family: var(--font-sans);
   font-size: 19px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #011E41;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   margin-bottom: 6px;
@@ -70,7 +70,7 @@
   display: block;
   font-family: var(--font-sans);
   font-size: 20px;
-  color: #1a1a2e;
+  color: #011E41;
   line-height: 1.4;
 }
 

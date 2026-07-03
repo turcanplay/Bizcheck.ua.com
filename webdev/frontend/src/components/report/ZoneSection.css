@@ -39,10 +39,10 @@
 .zone-section__desc-text {
   font-family: var(--font-sans);
   font-size: 17px;
-  color: #1a1a2e;
+  color: #011E41;
   margin-bottom: 16px;
   line-height: 1.25;
-  text-align: justify;
+  text-align: left;
 }
 
 .zone-section__cards {
@@ -54,8 +54,8 @@
 .zone-section__empty {
   padding: 18px 20px;
   border-radius: var(--radius-sm, 8px);
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px dashed rgba(15, 23, 42, 0.12);
+  background: rgba(1, 30, 65, 0.04);
+  border: 1px dashed rgba(1, 30, 65, 0.12);
   color: #8B92A5;
   text-align: center;
   font-size: 14px;
@@ -87,7 +87,7 @@
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #1a1a2e;
+  color: #011E41;
   margin-bottom: 4px;
 }
 

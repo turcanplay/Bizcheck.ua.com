@@ -69,7 +69,7 @@ export default function Testimonials() {
         <div className="testimonials__row">
           <button className="testimonials__nav" onClick={() => scrollByDir(-1)} disabled={atStart} aria-label="Prev">
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
-              <path d="M14 5l-6 6 6 6" stroke="#0F172A" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M14 5l-6 6 6 6" stroke="#011E41" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
@@ -100,7 +100,7 @@ export default function Testimonials() {
                         <svg key={i} width="14" height="14" viewBox="0 0 14 14" aria-hidden>
                           <defs>
                             <linearGradient id={gid}>
-                              <stop offset={`${frac * 100}%`} stopColor="#F5C518" />
+                              <stop offset={`${frac * 100}%`} stopColor="#F5A800" />
                               <stop offset={`${frac * 100}%`} stopColor="#E5E7EB" />
                             </linearGradient>
                           </defs>
@@ -117,7 +117,7 @@ export default function Testimonials() {
 
           <button className="testimonials__nav" onClick={() => scrollByDir(1)} disabled={atEnd} aria-label="Next">
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
-              <path d="M8 5l6 6-6 6" stroke="#0F172A" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M8 5l6 6-6 6" stroke="#011E41" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

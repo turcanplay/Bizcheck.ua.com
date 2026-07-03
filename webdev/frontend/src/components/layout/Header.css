@@ -21,7 +21,7 @@
   transition: opacity .2s ease;
 }
 .header-logo:hover { opacity: .85; }
-.header-logo:hover .header-sub { color: #FFD27A; }
+.header-logo:hover .header-sub { color: #FFC24D; }
 
 .crowe-logo__img {
   height: 36px;

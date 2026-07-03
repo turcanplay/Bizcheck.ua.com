@@ -74,22 +74,22 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
             <div className="report-header__legend-title">{t('legendTitle')}</div>
             <div className="report-header__legend-grid">
               <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#16A34A' }} />
+                <span className="report-header__legend-badge" style={{ background: '#05AB8C' }} />
                 <span className="report-header__legend-range">{t('legendGreen')}</span>
                 <span className="report-header__legend-desc">{t('legendGreenDesc')}</span>
               </div>
               <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#EAB308' }} />
+                <span className="report-header__legend-badge" style={{ background: '#F5A800' }} />
                 <span className="report-header__legend-range">{t('legendYellow')}</span>
                 <span className="report-header__legend-desc">{t('legendYellowDesc')}</span>
               </div>
               <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#F97316' }} />
+                <span className="report-header__legend-badge" style={{ background: '#E07B00' }} />
                 <span className="report-header__legend-range">{t('legendOrange')}</span>
                 <span className="report-header__legend-desc">{t('legendOrangeDesc')}</span>
               </div>
               <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#DC2626' }} />
+                <span className="report-header__legend-badge" style={{ background: '#D64535' }} />
                 <span className="report-header__legend-range">{t('legendRed')}</span>
                 <span className="report-header__legend-desc">{t('legendRedDesc')}</span>
               </div>

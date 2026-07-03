@@ -12,7 +12,7 @@ function Guide() {
   };
   const step: CSSProperties = { display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 };
   const num: CSSProperties = {
-    flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: 'var(--accent, #FDA100)',
+    flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: 'var(--accent, #F5A800)',
     color: '#fff', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
   };
   return (
@@ -116,7 +116,7 @@ function AutoSettings() {
             onClick={() => save(enabled, delay)}>
             {busy ? '...' : 'Salvează'}
           </button>
-          {saved && <span style={{ color: 'var(--success, #16A34A)', fontSize: 13 }}>✓</span>}
+          {saved && <span style={{ color: 'var(--success, #05AB8C)', fontSize: 13 }}>✓</span>}
         </div>
         <small style={{ color: 'var(--text2)' }}>
           Acum: {enabled ? `activă, la ${delay} min după livrare` : 'oprită'}.
@@ -259,7 +259,7 @@ function PromptEditor() {
       {error && <div className="admin-error">⚠️ {error}</div>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Salvează textul'}</button>
-        {saved && <span style={{ color: 'var(--success, #16A34A)', fontSize: 13 }}>✓ Salvat</span>}
+        {saved && <span style={{ color: 'var(--success, #05AB8C)', fontSize: 13 }}>✓ Salvat</span>}
       </div>
     </form>
   );
@@ -331,7 +331,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
       {results && (
         <div style={{ marginTop: 14 }}>
           {sent.length > 0 && (
-            <div style={{ color: 'var(--success, #16A34A)', fontSize: 13, marginBottom: 8 }}>
+            <div style={{ color: 'var(--success, #05AB8C)', fontSize: 13, marginBottom: 8 }}>
               ✓ Trimis către {sent.length}: {sent.map(r => r.username ? `@${r.username}` : r.target).join(', ')}
             </div>
           )}
@@ -351,7 +351,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
             </div>
           )}
           {invalid.length > 0 && (
-            <div style={{ color: 'var(--danger, #DC2626)', fontSize: 13 }}>
+            <div style={{ color: 'var(--danger, #D64535)', fontSize: 13 }}>
               ⚠️ Invalide (ignorate): {invalid.map(r => r.target).join(', ')}
             </div>
           )}

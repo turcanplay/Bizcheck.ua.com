@@ -62,7 +62,7 @@ export default function TemplateDetailPage() {
           ]),
         ]}
       />
-      <Link to="/" style={{ color: '#0b3d7a', textDecoration: 'none' }}>← Înapoi</Link>
+      <Link to="/" style={{ color: '#0A3A6E', textDecoration: 'none' }}>← Înapoi</Link>
       <h1 style={{ marginTop: 12 }}>📄 {item.title_ro}</h1>
       <p style={{ color: '#555' }}>{item.description_ro}</p>
 
