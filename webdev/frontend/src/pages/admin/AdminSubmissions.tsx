@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { adminApi, adminFetch, type AdminSubmission, type AdminTest } from '@/api/admin';
 
 export default function AdminSubmissions() {
@@ -8,24 +8,33 @@ export default function AdminSubmissions() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  async function load(testId: number | '' = testFilter) {
+  // The test list is fetched once and reused for the filter dropdown / testName().
+  // Tracked in a ref rather than by reading `tests` inside load(): load() also
+  // SETS `tests`, so depending on it would make load() a new function on every
+  // fetch and the mount effect below would refetch forever.
+  const testsLoadedRef = useRef(false);
+
+  // Deps are honestly empty: only setters and the explicit testId argument are
+  // used, so `load` is referentially stable for the component's whole lifetime.
+  const load = useCallback(async (testId: number | '') => {
     setLoading(true);
     try {
       const [s, t] = await Promise.all([
         adminApi.listSubmissions(testId || undefined),
-        tests.length === 0 ? adminApi.listTests() : Promise.resolve({ tests }),
+        testsLoadedRef.current ? Promise.resolve(null) : adminApi.listTests(),
       ]);
       setSubmissions(s.submissions);
-      if (tests.length === 0) setTests(t.tests);
+      if (t) { setTests(t.tests); testsLoadedRef.current = true; }
       setError('');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Load failed');
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  // Fetches on mount, and again only when the admin picks a different test.
+  useEffect(() => { load(testFilter); }, [load, testFilter]);
 
   function testName(id: number | null) {
     if (!id) return '—';
@@ -36,7 +45,7 @@ export default function AdminSubmissions() {
   async function onDelete(id: number) {
     if (!confirm('Видалити цю відповідь?')) return;
     await adminApi.deleteSubmission(id);
-    await load();
+    await load(testFilter);
   }
 
   async function onDeleteAll() {
@@ -45,7 +54,7 @@ export default function AdminSubmissions() {
     if (!confirm(`Видалити ВСІ ${submissions.length} відповідей з усіх тестів?\n\nДія є НЕЗВОРОТНОЮ.`)) return;
     try {
       await adminApi.deleteAllSubmissions();
-      await load();
+      await load(testFilter);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Помилка видалення');
     }
@@ -100,11 +109,13 @@ export default function AdminSubmissions() {
       <div className="admin-section-header">
         <h2>📋 Submissions</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* The effect above reacts to testFilter — do not also call load() from
+              onChange, that would fire two requests for one filter change. */}
           <select
             className="admin-btn admin-btn-ghost"
             style={{ padding: '8px 14px' }}
             value={testFilter}
-            onChange={e => { const v = e.target.value ? Number(e.target.value) : ''; setTestFilter(v); load(v); }}
+            onChange={e => setTestFilter(e.target.value ? Number(e.target.value) : '')}
           >
             <option value="">Усі тести</option>
             {tests.map(t => <option value={t.id} key={t.id}>{t.name_uk}</option>)}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import { publicApi, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
@@ -399,16 +399,22 @@ export default function Hero() {
 
 function Star({ fill = 1 }: { fill?: number }) {
   const pct = Math.max(0, Math.min(1, fill));
-  const id = `star-grad-${Math.random().toString(36).slice(2, 9)}`;
+  // useId, not Math.random(): the id must be stable across re-renders and
+  // unique per instance. Math.random() in render is impure (react-hooks/purity)
+  // and churned the <defs> id + its url(#…) reference on every render. useId's
+  // value contains colons (":r1:") — invalid in a CSS selector, but perfectly
+  // valid in an HTML id and in an SVG url(#…) functional reference, which is
+  // all this is used for.
+  const gid = useId();
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
           <stop offset={`${pct * 100}%`} stopColor="#F5A800" />
           <stop offset={`${pct * 100}%`} stopColor="#E5E7EB" />
         </linearGradient>
       </defs>
-      <path d="M7 .7l1.9 4 4.4.6-3.1 3 .7 4.3L7 10.5 3.1 12.6l.7-4.3-3.1-3 4.4-.6z" fill={`url(#${id})`} />
+      <path d="M7 .7l1.9 4 4.4.6-3.1 3 .7 4.3L7 10.5 3.1 12.6l.7-4.3-3.1-3 4.4-.6z" fill={`url(#${gid})`} />
     </svg>
   );
 }

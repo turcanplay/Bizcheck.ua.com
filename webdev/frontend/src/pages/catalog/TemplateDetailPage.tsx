@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { publicApi, type PublicTemplate } from '@/api/public';
-import Seo, { productSchema, breadcrumbSchema, SITE_URL } from '@/components/seo/Seo';
+import Seo from '@/components/seo/Seo';
+import { productSchema, breadcrumbSchema } from '@/components/seo/schema';
+import { SITE_URL } from '@/components/seo/siteMeta';
 import { useLang } from '@/context/LanguageContext';
 
 /**
@@ -27,7 +29,11 @@ export default function TemplateDetailPage() {
         if (!t) setErr(lang === 'en' ? 'Template not found' : 'Шаблон не знайдено');
       })
       .catch(e => setErr(e.message));
-  }, [slug]);
+    // `lang` is a real dependency: the not-found message is captured into state,
+    // so without it a language switch leaves the old-language error on screen.
+    // Re-running is safe — listTemplates() is an idempotent GET and the effect
+    // never writes `lang`, so this cannot loop.
+  }, [slug, lang]);
 
   if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">{lang === 'en' ? 'Back' : 'Назад'}</Link></div>;
   if (!item) return <div style={{ padding: 40 }}>{lang === 'en' ? 'Loading...' : 'Завантаження...'}</div>;

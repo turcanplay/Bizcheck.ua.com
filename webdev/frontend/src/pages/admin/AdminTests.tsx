@@ -98,7 +98,6 @@ export default function AdminTests() {
     const url = `${window.location.origin}/test/${slug}`;
     navigator.clipboard.writeText(url).then(() => {
       // Lightweight feedback without extra deps
-      // eslint-disable-next-line no-alert
       alert(`Посилання скопійовано: ${url}`);
     });
   }

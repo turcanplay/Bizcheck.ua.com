@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminApi, adminFetch, type AdminTemplate, type AdminTemplateFile } from '@/api/admin';
 
@@ -32,7 +32,9 @@ export default function AdminTemplateDetail() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function load() {
+  // Only real input is templateId (from the route). Nothing this sets is read
+  // back here, so `load` stays stable between templateId changes.
+  const load = useCallback(async () => {
     if (!Number.isFinite(templateId)) { setError('Недійсний ID'); setLoading(false); return; }
     setLoading(true);
     try {
@@ -44,9 +46,9 @@ export default function AdminTemplateDetail() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [templateId]);
 
-  useEffect(() => { load(); }, [templateId]);
+  useEffect(() => { load(); }, [load]);
 
   async function onFilesSelected(e: ChangeEvent<HTMLInputElement>) {
     const files = e.target.files ? Array.from(e.target.files) : [];
