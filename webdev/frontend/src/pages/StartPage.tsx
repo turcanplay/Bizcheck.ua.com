@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
@@ -21,10 +21,23 @@ export default function StartPage() {
   // Remaining steps: 1 = sector, 2 = size, 3 = age, 4 = sales revenue.
   const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(fromDeepLink || selectedTestSlug ? 1 : 0);
 
-  // If the test slug becomes available after mount (context async), advance.
-  useEffect(() => {
+  // Advance past the test picker when the slug BECOMES set after mount (QuizApp
+  // re-applies it via selectTest() on the /test/:slug deep-link path).
+  //
+  // This deliberately reacts to the slug *changing*, not to it merely being
+  // truthy. The previous effect fired on `selectedTestSlug && step === 0` with
+  // [selectedTestSlug, step] deps, so once a test was picked, pressing "Înapoi"
+  // on Step 1 set step→0 and the effect immediately bounced it back to 1 — the
+  // back button to the test picker was unreachable. Comparing against the
+  // previous slug fixes that: going back does not change the slug, so nothing
+  // re-advances. Adjusting state during render like this is the supported
+  // pattern (react.dev/reference/react/useState#storing-information-from-previous-renders);
+  // React re-runs this render before committing, so there is no extra pass.
+  const [prevSlug, setPrevSlug] = useState(selectedTestSlug);
+  if (selectedTestSlug !== prevSlug) {
+    setPrevSlug(selectedTestSlug);
     if (selectedTestSlug && step === 0) setStep(1);
-  }, [selectedTestSlug, step]);
+  }
 
   /* Company info (4 sub-steps) */
   const [sectorList, setSectorList] = useState<string[]>([]);

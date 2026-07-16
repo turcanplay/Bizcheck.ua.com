@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminApi, adminFetch, type AdminSubmission } from '@/api/admin';
 
 interface Props {
@@ -37,7 +37,9 @@ export default function AdminTestReports({ testId }: Props) {
   const [deliveryFilter, setDeliveryFilter] = useState<'' | Delivery>('');
   const [onlyWithPdf, setOnlyWithPdf] = useState(false);
 
-  async function load() {
+  // Only real input is the testId prop. Filtering is client-side (see `filtered`
+  // below), so filter state must NOT re-trigger a fetch.
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const r = await adminApi.listSubmissions(testId);
@@ -48,9 +50,9 @@ export default function AdminTestReports({ testId }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [testId]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [testId]);
+  useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() => {
     const q = qText.trim().toLowerCase();

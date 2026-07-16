@@ -14,22 +14,24 @@ interface CookieConsentValue {
 const Ctx = createContext<CookieConsentValue | null>(null);
 
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
-  const [consent, setConsent] = useState<CookieConsent>(DEFAULT_CONSENT);
-  const [hasDecided, setHasDecided] = useState(false);
-  const [bannerVisible, setBannerVisible] = useState(false);
+  // Read the stored choice during the FIRST render instead of in a mount effect.
+  // Reading it in an effect meant every visitor rendered one frame with
+  // DEFAULT_CONSENT + no banner, then re-rendered — a flash of the wrong UI for
+  // users who had already consented, and a cascading render for everyone.
+  const [stored] = useState<CookieConsent | null>(loadConsent);
+  const [consent, setConsent] = useState<CookieConsent>(stored ?? DEFAULT_CONSENT);
+  const [hasDecided, setHasDecided] = useState(stored !== null);
+  const [bannerVisible, setBannerVisible] = useState(stored === null);
 
-  // Load any stored choice on mount.
+  // Re-applying a stored choice to the third-party tags is a genuine side effect
+  // (it calls fbq and injects the Metrica <script>), so it stays in an effect —
+  // it must not run during render, and `stored`'s initializer can be invoked
+  // twice under StrictMode. It sets no state, so it triggers no extra render.
   useEffect(() => {
-    const existing = loadConsent();
-    if (existing) {
-      setConsent(existing);
-      setHasDecided(true);
-      applyMarketingConsent(existing.marketing);  // marketing salvat → Meta Pixel
-      applyAnalyticsConsent(existing.analytics);  // statistici salvat → încarcă Yandex Metrica
-    } else {
-      setBannerVisible(true);
-    }
-  }, []);
+    if (!stored) return;
+    applyMarketingConsent(stored.marketing);  // marketing salvat → Meta Pixel
+    applyAnalyticsConsent(stored.analytics);  // statistici salvat → încarcă Yandex Metrica
+  }, [stored]);
 
   const acceptAll = useCallback(() => {
     const next = saveConsent({ analytics: true, marketing: true });

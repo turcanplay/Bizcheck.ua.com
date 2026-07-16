@@ -1,5 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 import { useLang } from '@/context/LanguageContext';
+import {
+  SITE_URL,
+  DEFAULT_IMAGE,
+  DEFAULT_TITLE_UK,
+  DEFAULT_TITLE_EN,
+  DEFAULT_DESC_UK,
+  DEFAULT_DESC_EN,
+} from './siteMeta';
 
 interface SeoProps {
   title?: string;
@@ -16,19 +24,6 @@ interface SeoProps {
   ogType?: 'website' | 'article' | 'product';
 }
 
-/** Canonical origin of the public site. Single source of truth — import as
- *  `SITE_URL` anywhere a full absolute URL is needed (JSON-LD, OG images).
- *  Not build-time env: this frontend has no `args:` block in docker-compose and
- *  its VITE_* vars are never passed at build time, so a literal is the only
- *  thing that actually ships. */
-export const SITE_URL = 'https://bizcheck.ua.com';
-const SITE = SITE_URL;
-const DEFAULT_IMAGE = `${SITE}/android-chrome-512x512.png`;
-const DEFAULT_TITLE_UK = 'Bizcheck.md · Оцінка ризиків бізнесу · Crowe';
-const DEFAULT_TITLE_EN = 'Bizcheck.md · Business Risk Assessment · Crowe';
-const DEFAULT_DESC_UK = 'Bizcheck.md — онлайн-платформа самодіагностики ризиків бізнесу за методологією Crowe. Тести за блоками, детальний звіт PDF, юридичні шаблони для МСБ.';
-const DEFAULT_DESC_EN = 'Bizcheck.md is an online platform for self-diagnosing business risks based on the Crowe methodology. Block-based tests, a detailed PDF report, and legal templates for SMEs.';
-
 /**
  * Per-page SEO meta. Drop into the top of any page component:
  *
@@ -36,6 +31,9 @@ const DEFAULT_DESC_EN = 'Bizcheck.md is an online platform for self-diagnosing b
  *
  * Updates <title>, meta description, canonical, hreflang, OG, Twitter,
  * and (optionally) appends JSON-LD structured data.
+ *
+ * This module exports the component ONLY — constants live in ./siteMeta and
+ * JSON-LD builders in ./schema, so Vite fast refresh keeps working here.
  */
 export default function Seo({
   title,
@@ -50,7 +48,7 @@ export default function Seo({
   const finalTitle = title || (lang === 'en' ? DEFAULT_TITLE_EN : DEFAULT_TITLE_UK);
   const finalDesc = description || (lang === 'en' ? DEFAULT_DESC_EN : DEFAULT_DESC_UK);
   const finalImage = image || DEFAULT_IMAGE;
-  const url = `${SITE}${path}`;
+  const url = `${SITE_URL}${path}`;
 
   return (
     <Helmet prioritizeSeoTags>
@@ -89,85 +87,4 @@ export default function Seo({
       )}
     </Helmet>
   );
-}
-
-// ── JSON-LD builders ──────────────────────────────────────────────
-
-export function articleSchema(opts: {
-  title: string;
-  description: string;
-  url: string;
-  image?: string;
-  datePublished?: string;
-  dateModified?: string;
-}) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: opts.title,
-    description: opts.description,
-    url: opts.url,
-    image: opts.image || DEFAULT_IMAGE,
-    datePublished: opts.datePublished,
-    dateModified: opts.dateModified || opts.datePublished,
-    author: { '@type': 'Organization', name: 'Crowe Turcan Mikhailenko' },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Crowe Turcan Mikhailenko',
-      logo: { '@type': 'ImageObject', url: `${SITE}/android-chrome-512x512.png` },
-    },
-  };
-}
-
-export function breadcrumbSchema(items: { name: string; path: string }[]) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((it, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      name: it.name,
-      item: `${SITE}${it.path}`,
-    })),
-  };
-}
-
-export function faqSchema(faqs: { question: string; answer: string }[]) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({
-      '@type': 'Question',
-      name: f.question,
-      acceptedAnswer: { '@type': 'Answer', text: f.answer },
-    })),
-  };
-}
-
-export function productSchema(opts: {
-  name: string;
-  description: string;
-  url: string;
-  image?: string;
-  price?: number | null;
-  currency?: string;
-}) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: opts.name,
-    description: opts.description,
-    url: opts.url,
-    image: opts.image || DEFAULT_IMAGE,
-    brand: { '@type': 'Brand', name: 'Bizcheck.md · Crowe' },
-    offers: opts.price != null
-      ? {
-          '@type': 'Offer',
-          price: opts.price,
-          priceCurrency: opts.currency || 'MDL',
-          availability: 'https://schema.org/InStock',
-          url: opts.url,
-        }
-      : undefined,
-  };
 }

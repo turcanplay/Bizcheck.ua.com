@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
-import Seo, { breadcrumbSchema } from '@/components/seo/Seo';
+import Seo from '@/components/seo/Seo';
+import { breadcrumbSchema } from '@/components/seo/schema';
 import { PRIVACY_BLOCKS } from './privacyContent';
 import './PrivacyPage.css';
 

@@ -26,6 +26,21 @@ interface UnifiedItem {
   features: string[];
 }
 
+/**
+ * Read the catalog filters out of `?q=...&tab=...`.
+ *
+ * `location.search` comes from react-router (not from `window`), so this is safe
+ * to call during render — including in a lazy useState initializer.
+ */
+function readUrlFilters(search: string): { q: string | null; tab: Tab | null } {
+  const params = new URLSearchParams(search);
+  const tabParam = params.get('tab');
+  return {
+    q: params.get('q'),
+    tab: tabParam === 'tests' || tabParam === 'templates' || tabParam === 'all' ? tabParam : null,
+  };
+}
+
 function toUnified(tests: PublicTest[], templates: PublicTemplate[]): UnifiedItem[] {
   const a: UnifiedItem[] = tests.map(t => ({
     kind: 'test', id: t.id, slug: t.slug,
@@ -56,21 +71,26 @@ export default function CatalogSection() {
   const [templates, setTemplates] = useState<PublicTemplate[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
-  const [tab, setTab] = useState<Tab>('all');
-  const [search, setSearch] = useState('');
+  // Filters — seeded from the URL on the very first render, so arriving at
+  // /?q=foo paints the filtered list directly instead of rendering the full
+  // catalog and then re-rendering it filtered.
+  const [tab, setTab] = useState<Tab>(() => readUrlFilters(location.search).tab ?? 'all');
+  const [search, setSearch] = useState(() => readUrlFilters(location.search).q ?? '');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Sync from URL: ?q=...&tab=...
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const q = params.get('q');
-    const tabParam = params.get('tab');
+  // ...and re-synced when the URL changes while we stay mounted (Hero's search
+  // box navigates to /?q=... while the landing page is already open). The URL is
+  // the source of truth here but `search`/`tab` are also edited locally, so this
+  // is the "adjust state when a value changes" pattern rather than pure derived
+  // state: react to the transition, not to the current value.
+  const [prevSearchParams, setPrevSearchParams] = useState(location.search);
+  if (location.search !== prevSearchParams) {
+    setPrevSearchParams(location.search);
+    const { q, tab: tabFromUrl } = readUrlFilters(location.search);
     if (q !== null) setSearch(q);
-    if (tabParam === 'tests' || tabParam === 'templates' || tabParam === 'all') {
-      setTab(tabParam as Tab);
-    }
-  }, [location.search]);
+    if (tabFromUrl) setTab(tabFromUrl);
+  }
+
   const [categoriesSel, setCategoriesSel] = useState<Set<string>>(new Set());
   const [typesSel, setTypesSel] = useState<Set<'test' | 'template'>>(new Set());
   const [pricesSel, setPricesSel] = useState<Set<PriceFilter>>(new Set());
