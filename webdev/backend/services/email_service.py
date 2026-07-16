@@ -201,7 +201,7 @@ def send_report_email_sync(
         log.warning("[email] missing to_email — skipping")
         return False
 
-    effective_logo = logo_url or _env("EMAIL_LOGO_URL", "https://bizcheck.md/logo_email.png")
+    effective_logo = logo_url or _env("EMAIL_LOGO_URL", "https://bizcheck.ua.com/logo_email.png")
     reply_to = _env("SMTP_REPLY_TO") or _env("SMTP_USER") or "office@bizcheck.md"
 
     # Inline the logo when we can fetch it; otherwise reference it remotely.

@@ -82,7 +82,7 @@ def create():
         # update_submission below uses _SELECT_COLS which excludes the token by design.
         # Preserve it across the language patch so the client receives it exactly once.
         created_token = sub.get("submission_token") if sub else None
-        # language: whitelist strict — coloana e VARCHAR(5) și doar uk/ru sunt valide.
+        # language: whitelist strict — coloana e VARCHAR(5) și doar uk/en sunt valide.
         # Fără asta, un input cu caractere speciale e expandat de bleach (ex. " → &quot;),
         # depășește VARCHAR(5) și PostgreSQL aruncă „value too long" → HTTP 500.
         lang_in = data.get("language")
@@ -110,7 +110,7 @@ def update(sub_id):
     for str_field, mx in (("sector", 200), ("company_size", 50), ("company_age", 50), ("company_revenue", 50), ("status", 20)):
         if str_field in filtered and isinstance(filtered[str_field], str):
             filtered[str_field] = clean_text(filtered[str_field], max_len=mx)
-    # language: whitelist strict (coloana VARCHAR(5); doar ro/ru).
+    # language: whitelist strict (coloana VARCHAR(5); doar uk/en).
     if "language" in filtered:
         filtered["language"] = filtered["language"] if filtered["language"] in ("uk", "en") else "uk"
     if "first_name" in filtered and isinstance(filtered["first_name"], str):

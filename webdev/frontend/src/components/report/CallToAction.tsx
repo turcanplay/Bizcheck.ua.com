@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { useLang } from '@/context/LanguageContext';
-import { API_BASE } from '@/config/api';
+import { useTelegramLink } from '@/hooks/useTelegramLink';
 import './CallToAction.css';
 
 interface CallToActionProps {
@@ -11,34 +10,7 @@ interface CallToActionProps {
 
 export default function CallToAction({ onRestart, submissionId, submissionToken }: CallToActionProps) {
   const { t } = useLang();
-  const [tgLoading, setTgLoading] = useState(false);
-  const [tgError, setTgError] = useState(false);
-
-  async function handleOpenTelegram() {
-    if (!submissionId) {
-      window.open('https://t.me/CROWE_BIZCHECK_bot', '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    setTgLoading(true);
-    setTgError(false);
-
-    try {
-      const res = await fetch(`${API_BASE}/tg/link/${submissionId}`, {
-        method: 'POST',
-        headers: submissionToken ? { 'X-Submission-Token': submissionToken } : {},
-      });
-      if (!res.ok) throw new Error('failed');
-      const data = await res.json();
-      window.open(data.url, '_blank', 'noopener,noreferrer');
-    } catch {
-      setTgError(true);
-      // Fallback — open bot without deep-link token
-      window.open('https://t.me/CROWE_BIZCHECK_bot', '_blank', 'noopener,noreferrer');
-    } finally {
-      setTgLoading(false);
-    }
-  }
+  const { tgLoading, tgError, tgPending, openTelegram } = useTelegramLink(submissionId, submissionToken);
 
   return (
     <section className="cta">
@@ -52,9 +24,12 @@ export default function CallToAction({ onRestart, submissionId, submissionToken 
           {tgError && (
             <p className="cta__telegram-error">{t('telegramError')}</p>
           )}
+          {tgPending && (
+            <p className="cta__telegram-pending">{t('telegramPdfPending')}</p>
+          )}
           <button
             className="cta__telegram-btn"
-            onClick={handleOpenTelegram}
+            onClick={() => void openTelegram()}
             disabled={tgLoading}
           >
             {tgLoading ? (

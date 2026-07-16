@@ -5,4 +5,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location for fast discovery.
-Sitemap: https://bizcheck.md/sitemap.xml
+Sitemap: https://bizcheck.ua.com/sitemap.xml

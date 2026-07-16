@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { publicApi, type PublicTemplate } from '@/api/public';
-import Seo, { productSchema, breadcrumbSchema } from '@/components/seo/Seo';
+import Seo, { productSchema, breadcrumbSchema, SITE_URL } from '@/components/seo/Seo';
 import { useLang } from '@/context/LanguageContext';
 
 /**
@@ -51,7 +51,7 @@ export default function TemplateDetailPage() {
           productSchema({
             name: title,
             description: seoDesc,
-            url: `https://bizcheck.md${path}`,
+            url: `${SITE_URL}${path}`,
             price: item.price ?? null,
             currency: item.currency ?? 'MDL',
           }),

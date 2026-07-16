@@ -10,9 +10,9 @@
  *   $ node scripts/generate-sitemap.mjs
  *
  * Configurable via env:
- *   SITEMAP_BASE_URL   default https://bizcheck.md
+ *   SITEMAP_BASE_URL   default https://bizcheck.ua.com
  *   SITEMAP_API_URL    default http://localhost:4001/api_crowe_bizcheck
- *                      (use full prod URL when running on server: https://bizcheck.md/api_crowe_bizcheck)
+ *                      (use full prod URL when running on server: https://bizcheck.ua.com/api_crowe_bizcheck)
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +21,7 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = resolve(__dirname, '..', 'public');
 
-const SITE = (process.env.SITEMAP_BASE_URL || 'https://bizcheck.md').replace(/\/$/, '');
+const SITE = (process.env.SITEMAP_BASE_URL || 'https://bizcheck.ua.com').replace(/\/$/, '');
 const API  = (process.env.SITEMAP_API_URL  || '').replace(/\/$/, '');
 
 const TODAY = new Date().toISOString().slice(0, 10);

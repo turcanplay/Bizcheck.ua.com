@@ -16,11 +16,13 @@ Admin endpoints (cookie + CSRF, @admin_required):
   POST   /admin/feedback              create {mode, username?}
   DELETE /admin/feedback/<id>         remove
   GET    /admin/feedback/contacts     reachable TG contacts (username picker)
-  GET    /admin/feedback/prompt       {ro, ru}
-  PUT    /admin/feedback/prompt       set {ro, ru}
+  GET    /admin/feedback/prompt       {uk, en}
+  PUT    /admin/feedback/prompt       set {uk, en}
 
-Bot endpoints (called by the polling bot service, guarded by X-Bot-Secret when
-BOT_SHARED_SECRET is configured):
+Bot endpoints (called by the polling bot service) are guarded by a STRICT
+X-Bot-Secret check: when BOT_SHARED_SECRET is unset the endpoints are DISABLED
+(403) rather than open, since /reply is reachable with nothing but a guessable
+chat_id. Same gate as routes/tg_admin.py and routes/tg_group.py.
   POST   /tg/feedback/open           {token, chat_id, username, lang} link opened
   POST   /tg/feedback/reply          {chat_id, username, text} capture first reply
 """
@@ -74,12 +76,21 @@ def _public_row(row):
 
 
 def _bot_authorized(req) -> bool:
-    """Bot-only endpoints. Enforce the shared secret when one is configured;
-    if BOT_SHARED_SECRET is unset (e.g. not yet deployed), allow but the caller
-    still needs a valid unguessable token / known chat for anything to happen."""
+    """STRICT: a configured secret is mandatory. No secret → feature off (403).
+
+    Fail-closed on purpose. These endpoints bind a chat_id to an outreach and
+    capture replies; /reply in particular only needs a guessable chat_id, so an
+    unset secret would let anyone hijack or forge feedback. An unconfigured
+    server must therefore DISABLE the feature, not open it — matching the same
+    gate in routes/tg_admin.py and routes/tg_group.py.
+
+    The empty-header case is covered by returning early on a falsy secret: it
+    never reaches the comparison, so an empty X-Bot-Secret cannot "match" an
+    empty server secret.
+    """
     secret = (os.getenv("BOT_SHARED_SECRET") or "").strip()
     if not secret:
-        return True
+        return False
     return req.headers.get("X-Bot-Secret", "") == secret
 
 

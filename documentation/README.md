@@ -24,6 +24,7 @@ each one is scoped to a single subsystem so you never load context you won't use
 | Scoring, PDF generation, cookies, i18n, TS types, block content | [`frontend/04-utils-and-data.md`](frontend/04-utils-and-data.md) |
 | Crowe brand design system — palette tokens, amber buttons, typography | [`frontend/05-design-system.md`](frontend/05-design-system.md) |
 | The web-flow Telegram bot service | [`telegram-bot.md`](telegram-bot.md) |
+| Cei doi boți Telegram (raport + notificare) — stare actuală, ce mai trebuie făcut, `/register` | [`telegram-boti-status.md`](telegram-boti-status.md) |
 | Docker, nginx, Dockerfiles, env vars, scripts, build tooling | [`deployment.md`](deployment.md) |
 | Language migration (RO→UK, then RU→EN) — what changed, how to deploy, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
 

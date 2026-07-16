@@ -36,6 +36,7 @@ from routes.content import content_bp, admin_content_bp
 from routes.site_settings import site_settings_bp, admin_site_settings_bp
 from routes.tg_feedback import admin_feedback_bp, tg_feedback_bp
 from routes.tg_admin import tg_exports_bp
+from routes.tg_group import tg_group_bp
 
 # ---------------------------------------------------------------------------
 # App factory
@@ -87,6 +88,9 @@ limiter.limit("60 per minute")(submissions_bp)
 limiter.limit("15 per minute", methods=["POST"])(submissions_bp)
 limiter.limit("20 per minute")(tg_bp)
 limiter.limit("30 per minute")(tg_feedback_bp)
+limiter.limit("20 per minute")(tg_group_bp)
+# Excel/PDF exports are heavy (full PII dumps built on the fly) — keep them modest.
+limiter.limit("10 per minute")(tg_exports_bp)
 limiter.limit("20 per minute", methods=["POST", "PUT", "DELETE"])(admin_feedback_bp)
 limiter.limit("5 per minute", methods=["POST", "PUT", "DELETE"])(admin_tests_bp)
 limiter.limit("10 per minute", methods=["POST", "PUT", "DELETE"])(admin_templates_bp)
@@ -178,6 +182,7 @@ app.register_blueprint(admin_site_settings_bp)
 app.register_blueprint(admin_feedback_bp)
 app.register_blueprint(tg_feedback_bp)
 app.register_blueprint(tg_exports_bp)
+app.register_blueprint(tg_group_bp)
 
 # ---------------------------------------------------------------------------
 # Admin panel now lives in the React SPA under /admin/*.

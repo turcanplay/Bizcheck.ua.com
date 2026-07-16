@@ -500,8 +500,12 @@ export const translations = {
     en: 'Preparing...',
   },
   telegramError: {
-    uk: 'Тимчасова помилка. Відкрито напряму.',
-    en: 'Temporary error. Opened directly.',
+    uk: 'Не вдалося підготувати посилання на бота. Спробуйте ще раз за кілька секунд.',
+    en: 'Could not prepare the bot link. Please try again in a few seconds.',
+  },
+  telegramPdfPending: {
+    uk: 'Звіт ще генерується. Зачекайте кілька секунд і натисніть кнопку ще раз.',
+    en: 'The report is still being generated. Wait a few seconds and tap the button again.',
   },
 
   // CTA success page (after quiz, before bot)

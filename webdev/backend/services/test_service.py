@@ -79,7 +79,7 @@ def _norm_features(value):
 #   - bizcheck: cover + blocks + zones + per-BLOCK detail pages (in-depth, 4 sections each)
 #   - standard: cover + blocks + zones + per-QUESTION checklist (pass/fail per item)
 #   - premium:  cover + blocks + zones only (no details, short format)
-#   - gdpr:     one page per question (question + answer + fixed RO/RU explanation)
+#   - gdpr:     one page per question (question + answer + fixed UK/EN explanation)
 CANONICAL_REPORT_TYPES = {"bizcheck", "standard", "premium", "gdpr"}
 ACCEPTED_REPORT_TYPES = CANONICAL_REPORT_TYPES
 

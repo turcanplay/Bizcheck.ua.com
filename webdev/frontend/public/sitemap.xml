@@ -4,17 +4,17 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>https://bizcheck.md/</loc>
+    <loc>https://bizcheck.ua.com/</loc>
     <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="uk" href="https://bizcheck.md/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://bizcheck.md/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://bizcheck.ua.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bizcheck.ua.com/"/>
 
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://bizcheck.md/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bizcheck.ua.com/"/>
   </url>
   <url>
-    <loc>https://bizcheck.md/confidentialitate</loc>
+    <loc>https://bizcheck.ua.com/confidentialitate</loc>
     <lastmod>2026-07-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

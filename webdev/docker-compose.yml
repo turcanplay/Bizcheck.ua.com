@@ -37,9 +37,9 @@ services:
       # Blocks direct-IP probing. `backend` is the internal Docker service name the
       # tgbot uses (http://backend:4001), so it MUST stay in the list. Override in
       # .env if the domain changes.
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-bizcheck.md,www.bizcheck.md,backend,localhost,127.0.0.1}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-bizcheck.ua.com,www.bizcheck.ua.com,backend,localhost,127.0.0.1}
       # Base URL used to build the report download link inside report emails.
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://bizcheck.md}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://bizcheck.ua.com}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
       # SMTP (Office 365) — leave SMTP_PASSWORD empty to disable email delivery.
       SMTP_HOST: ${SMTP_HOST:-smtp.office365.com}
@@ -48,7 +48,7 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Crowe Turcan Mikhailenko}
       SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@bizcheck.md}
-      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.md/logo_email.png}
+      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.ua.com/logo_email.png}
       # Sales-team Telegram notification (private group with the notifier bot).
       # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
       SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
@@ -62,6 +62,9 @@ services:
       # Shared secret guarding the bot-only feedback endpoints (/tg/feedback/*).
       # Must match the value on the tgbot service. Leave empty to run ungated.
       BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
+      # Background loop that sends due feedback questions. "1" (default) = on,
+      # "0" = off. Only set to "0" to disable the scheduler entirely.
+      FEEDBACK_SCHEDULER: ${FEEDBACK_SCHEDULER:-1}
 
   frontend:
     build:
@@ -102,7 +105,7 @@ services:
       # Must match BOT_SHARED_SECRET on the backend. REQUIRED for exports to work.
       BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
       # Link shown by /pdf (bulk PDFs are downloaded from the admin panel, not Telegram).
-      ADMIN_PANEL_URL: ${ADMIN_PANEL_URL:-https://bizcheck.md/admin_bizcheck_md_crowe/}
+      ADMIN_PANEL_URL: ${ADMIN_PANEL_URL:-https://bizcheck.ua.com/admin_bizcheck_md_crowe/}
 
 volumes:
   pgdata:
