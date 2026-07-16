@@ -29,9 +29,9 @@ def public_list():
             {
                 "id": t["id"],
                 "slug": t["slug"],
-                "name_ro": t["name_ro"],
+                "name_uk": t["name_uk"],
                 "name_ru": t["name_ru"],
-                "description_ro": t["description_ro"],
+                "description_uk": t["description_uk"],
                 "description_ru": t["description_ru"],
                 "is_paid": bool(t.get("is_paid", False)),
                 "is_active": bool(t.get("is_active", True)),
@@ -78,9 +78,9 @@ def admin_create():
     try:
         t = create_test(
             slug=data.get("slug"),
-            name_ro=data.get("name_ro"),
+            name_uk=data.get("name_uk"),
             name_ru=data.get("name_ru"),
-            description_ro=data.get("description_ro", ""),
+            description_uk=data.get("description_uk", ""),
             description_ru=data.get("description_ru", ""),
             is_active=data.get("is_active", True),
             is_coming_soon=data.get("is_coming_soon", False),

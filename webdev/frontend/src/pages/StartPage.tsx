@@ -130,10 +130,10 @@ export default function StartPage() {
                   <span className="start-form__step">{t('step0')}</span>
                   <div className="start-form__lang">
                     <button
-                      className={`start-form__lang-btn ${lang === 'ro' ? 'start-form__lang-btn--active' : ''}`}
-                      onClick={() => setLang('ro')}
+                      className={`start-form__lang-btn ${lang === 'uk' ? 'start-form__lang-btn--active' : ''}`}
+                      onClick={() => setLang('uk')}
                     >
-                      RO
+                      UA
                     </button>
                     <button
                       className={`start-form__lang-btn ${lang === 'ru' ? 'start-form__lang-btn--active' : ''}`}
@@ -151,8 +151,8 @@ export default function StartPage() {
 
               <div className="start-form__test-grid">
                 {tests.map(tt => {
-                  const name = lang === 'ro' ? tt.name_ro : tt.name_ru;
-                  const desc = lang === 'ro' ? tt.description_ro : tt.description_ru;
+                  const name = lang === 'uk' ? tt.name_uk : tt.name_ru;
+                  const desc = lang === 'uk' ? tt.description_uk : tt.description_ru;
                   return (
                     <button
                       key={tt.slug}
@@ -184,10 +184,10 @@ export default function StartPage() {
                   <span className="start-form__step">{t('step2')} · 1/4</span>
                   <div className="start-form__lang">
                     <button
-                      className={`start-form__lang-btn ${lang === 'ro' ? 'start-form__lang-btn--active' : ''}`}
-                      onClick={() => setLang('ro')}
+                      className={`start-form__lang-btn ${lang === 'uk' ? 'start-form__lang-btn--active' : ''}`}
+                      onClick={() => setLang('uk')}
                     >
-                      RO
+                      UA
                     </button>
                     <button
                       className={`start-form__lang-btn ${lang === 'ru' ? 'start-form__lang-btn--active' : ''}`}
@@ -202,8 +202,8 @@ export default function StartPage() {
               </div>
 
               <p className="start-form__hint start-form__hint--multi">
-                {lang === 'ro' ? (
-                  <>✓ Puteți alege <strong>mai multe</strong> domenii, nu doar unul.</>
+                {lang === 'uk' ? (
+                  <>✓ Можна обрати <strong>кілька</strong> напрямів, не лише один.</>
                 ) : (
                   <>✓ Можно выбрать <strong>несколько</strong> направлений, не только одно.</>
                 )}

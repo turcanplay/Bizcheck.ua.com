@@ -13,9 +13,9 @@ interface Props {
 export default function AdminQuestionModal({ initial, blocks, allQuestions, defaultBlockId, onClose, onSave }: Props) {
   const editing = !!initial;
   const [blockId, setBlockId] = useState<number>(initial?.block_id ?? defaultBlockId);
-  const [textRo, setTextRo] = useState(initial?.text_ro ?? '');
+  const [textUk, setTextUk] = useState(initial?.text_uk ?? '');
   const [textRu, setTextRu] = useState(initial?.text_ru ?? '');
-  const [noteRo, setNoteRo] = useState(initial?.note_ro ?? '');
+  const [noteUk, setNoteUk] = useState(initial?.note_uk ?? '');
   const [noteRu, setNoteRu] = useState(initial?.note_ru ?? '');
   // Order can be typed as "1", "1.1", "2,3" — comma auto-converted to dot.
   // Stored DB column is INTEGER, so "1.1" means: sub-question of question at main-index 1, in 1st sub slot.
@@ -24,13 +24,13 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
   const [answers, setAnswers] = useState<AdminAnswerInput[]>(() => {
     if (initial?.answers && initial.answers.length > 0) {
       return initial.answers.map(a => ({
-        text_ro: a.text_ro, text_ru: a.text_ru,
+        text_uk: a.text_uk, text_ru: a.text_ru,
         score: a.score, next_question_id: a.next_question_id,
       }));
     }
     return [
-      { text_ro: 'Da', text_ru: 'Да', score: 1, next_question_id: null },
-      { text_ro: 'Nu', text_ru: 'Нет', score: 0, next_question_id: null },
+      { text_uk: 'Так', text_ru: 'Да', score: 1, next_question_id: null },
+      { text_uk: 'Ні', text_ru: 'Нет', score: 0, next_question_id: null },
     ];
   });
   const [error, setError] = useState('');
@@ -43,17 +43,17 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
     setAnswers(prev => prev.filter((_, idx) => idx !== i));
   }
   function addAnswer() {
-    setAnswers(prev => [...prev, { text_ro: '', text_ru: '', score: 0, next_question_id: null }]);
+    setAnswers(prev => [...prev, { text_uk: '', text_ru: '', score: 0, next_question_id: null }]);
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!blockId) { setError('Selectează un bloc'); return; }
-    if (!textRo.trim() && !textRu.trim()) { setError('Cel puțin un text (RO sau RU) este obligatoriu'); return; }
-    if (answers.length < 2) { setError('Minim 2 opțiuni de răspuns'); return; }
+    if (!blockId) { setError('Оберіть блок'); return; }
+    if (!textUk.trim() && !textRu.trim()) { setError('Обов\'язковий щонайменше один текст (UA або RU)'); return; }
+    if (answers.length < 2) { setError('Мінімум 2 варіанти відповіді'); return; }
     for (const a of answers) {
-      if (!a.text_ro.trim() && !a.text_ru.trim()) { setError('Fiecare răspuns trebuie să aibă text (RO sau RU)'); return; }
+      if (!a.text_uk.trim() && !a.text_ru.trim()) { setError('Кожна відповідь повинна мати текст (UA або RU)'); return; }
     }
     setBusy(true);
     try {
@@ -81,14 +81,14 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
       }
       const data: AdminQuestionInput = {
         block_id: blockId,
-        text_ro: textRo.trim(),
+        text_uk: textUk.trim(),
         text_ru: textRu.trim(),
-        note_ro: noteRo.trim() || null,
+        note_uk: noteUk.trim() || null,
         note_ru: noteRu.trim() || null,
         order_index,
         parent_question_id: parent_override !== undefined ? parent_override : parentId,
         answers: answers.map(a => ({
-          text_ro: a.text_ro.trim(), text_ru: a.text_ru.trim(),
+          text_uk: a.text_uk.trim(), text_ru: a.text_ru.trim(),
           score: Number(a.score) || 0,
           next_question_id: a.next_question_id ?? null,
         })),
@@ -130,57 +130,57 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
 
   const labelFor = (q: AdminQuestion) => {
     const num = questionNumberById.get(q.id) ?? `#${q.id}`;
-    const preview = (q.text_ro || q.text_ru || '').slice(0, 50);
+    const preview = (q.text_uk || q.text_ru || '').slice(0, 50);
     return `${num}: ${preview}`;
   };
 
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
       <form className="admin-modal" style={{ width: 760 }} onClick={e => e.stopPropagation()} onSubmit={onSubmit}>
-        <h3>{editing ? 'Editează Întrebare' : 'Adaugă Întrebare'}</h3>
+        <h3>{editing ? 'Редагувати запитання' : 'Додати запитання'}</h3>
 
         <div className="admin-form-group">
-          <label>Bloc *</label>
+          <label>Блок *</label>
           <select value={blockId} onChange={e => setBlockId(+e.target.value)}>
-            {blocks.map(b => <option key={b.id} value={b.id}>{b.title_ro || b.title_ru}</option>)}
+            {blocks.map(b => <option key={b.id} value={b.id}>{b.title_uk || b.title_ru}</option>)}
           </select>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div className="admin-form-group">
-            <label>Text întrebare (RO)</label>
-            <textarea value={textRo} onChange={e => setTextRo(e.target.value)} />
+            <label>Текст запитання (UA)</label>
+            <textarea value={textUk} onChange={e => setTextUk(e.target.value)} />
           </div>
           <div className="admin-form-group">
-            <label>Text întrebare (RU)</label>
+            <label>Текст запитання (RU)</label>
             <textarea value={textRu} onChange={e => setTextRu(e.target.value)} />
           </div>
           <div className="admin-form-group">
-            <label>Notă (RO) — opțional</label>
-            <textarea value={noteRo} onChange={e => setNoteRo(e.target.value)} />
+            <label>Примітка (UA) — необов'язково</label>
+            <textarea value={noteUk} onChange={e => setNoteUk(e.target.value)} />
           </div>
           <div className="admin-form-group">
-            <label>Notă (RU) — opțional</label>
+            <label>Примітка (RU) — необов'язково</label>
             <textarea value={noteRu} onChange={e => setNoteRu(e.target.value)} />
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div className="admin-form-group">
-            <label>Ordine (1, 2, 1.1, 2.3… — „,"→ „.")</label>
+            <label>Порядок (1, 2, 1.1, 2.3… — „,"→ „.")</label>
             <input
               type="text"
               inputMode="decimal"
               value={orderText}
               maxLength={10}
               onChange={e => setOrderText(e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.'))}
-              placeholder="ex: 1  sau  2.1"
+              placeholder="напр.: 1  або  2.1"
             />
           </div>
           <div className="admin-form-group">
-            <label>Sub-întrebare a… (opțional)</label>
+            <label>Підзапитання до… (необов'язково)</label>
             <select value={parentId ?? ''} onChange={e => setParentId(e.target.value ? +e.target.value : null)}>
-              <option value="">— Întrebare principală —</option>
+              <option value="">— Головне запитання —</option>
               {candidateParents.map(q => (
                 <option key={q.id} value={q.id}>{labelFor(q)}</option>
               ))}
@@ -189,36 +189,36 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
         </div>
 
         <div style={{ marginTop: 20, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h4 style={{ margin: 0 }}>Opțiuni de răspuns (min. 2)</h4>
-          <button type="button" className="admin-btn admin-btn-ghost admin-btn-sm" onClick={addAnswer}>+ Adaugă opțiune</button>
+          <h4 style={{ margin: 0 }}>Варіанти відповіді (мін. 2)</h4>
+          <button type="button" className="admin-btn admin-btn-ghost admin-btn-sm" onClick={addAnswer}>+ Додати варіант</button>
         </div>
 
         {answers.map((a, i) => (
           <div key={i} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: 12, marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontWeight: 600, color: 'var(--accent)' }}>Opțiunea #{i + 1}</span>
+              <span style={{ fontWeight: 600, color: 'var(--accent)' }}>Варіант #{i + 1}</span>
               {answers.length > 2 && (
                 <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => removeAnswer(i)}>🗑</button>
               )}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-              <input placeholder="Text (RO)" value={a.text_ro} onChange={e => updateAnswer(i, { text_ro: e.target.value })} style={inputStyle} />
-              <input placeholder="Text (RU)" value={a.text_ru} onChange={e => updateAnswer(i, { text_ru: e.target.value })} style={inputStyle} />
+              <input placeholder="Текст (UA)" value={a.text_uk} onChange={e => updateAnswer(i, { text_uk: e.target.value })} style={inputStyle} />
+              <input placeholder="Текст (RU)" value={a.text_ru} onChange={e => updateAnswer(i, { text_ru: e.target.value })} style={inputStyle} />
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              <label style={{ fontSize: 12, color: 'var(--text2)' }}>Scor:</label>
+              <label style={{ fontSize: 12, color: 'var(--text2)' }}>Бал:</label>
               <input
                 type="number" step="0.1" value={a.score}
                 onChange={e => updateAnswer(i, { score: +e.target.value })}
                 style={{ ...inputStyle, width: 80 }}
               />
-              <label style={{ fontSize: 12, color: 'var(--text2)', marginLeft: 8 }}>→ Sari la:</label>
+              <label style={{ fontSize: 12, color: 'var(--text2)', marginLeft: 8 }}>→ Перейти до:</label>
               <select
                 value={a.next_question_id ?? ''}
                 onChange={e => updateAnswer(i, { next_question_id: e.target.value ? +e.target.value : null })}
                 style={{ ...inputStyle, flex: 1, minWidth: 180 }}
               >
-                <option value="">— Următoarea în ordine —</option>
+                <option value="">— Наступне за порядком —</option>
                 {candidateNext.map(q => (
                   <option key={q.id} value={q.id}>{labelFor(q)}</option>
                 ))}
@@ -230,8 +230,8 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
         {error && <div className="admin-error">⚠️ {error}</div>}
 
         <div className="admin-modal-actions">
-          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Anulează</button>
-          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Salvează'}</button>
+          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Скасувати</button>
+          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Зберегти'}</button>
         </div>
       </form>
     </div>

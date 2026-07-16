@@ -39,15 +39,15 @@ export default function AdminLayout() {
       </div>
       <div className="admin-layout">
         <nav className="admin-sidebar">
-          <NavLink to="/admin_bizcheck_md_crowe" end className={({ isActive }) => isActive ? 'active' : ''}>📊 Dashboard</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/tests" className={({ isActive }) => isActive ? 'active' : ''}>🧪 Teste</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/templates" className={({ isActive }) => isActive ? 'active' : ''}>📄 Șabloane de acte</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/testimonials" className={({ isActive }) => isActive ? 'active' : ''}>💬 Testimoniale</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/feedback" className={({ isActive }) => isActive ? 'active' : ''}>✈️ Feedback TG</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/faq" className={({ isActive }) => isActive ? 'active' : ''}>❓ Întrebări frecvente</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/submissions" className={({ isActive }) => isActive ? 'active' : ''}>📋 Submissions</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/users" className={({ isActive }) => isActive ? 'active' : ''}>👥 Utilizatori</NavLink>
-          <NavLink to="/admin_bizcheck_md_crowe/page-settings" className={({ isActive }) => isActive ? 'active' : ''}>⚙️ Setări pagină</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe" end className={({ isActive }) => isActive ? 'active' : ''}>📊 Панель</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/tests" className={({ isActive }) => isActive ? 'active' : ''}>🧪 Тести</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/templates" className={({ isActive }) => isActive ? 'active' : ''}>📄 Шаблони документів</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/testimonials" className={({ isActive }) => isActive ? 'active' : ''}>💬 Відгуки</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/feedback" className={({ isActive }) => isActive ? 'active' : ''}>✈️ Відгуки TG</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/faq" className={({ isActive }) => isActive ? 'active' : ''}>❓ Часті запитання</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/submissions" className={({ isActive }) => isActive ? 'active' : ''}>📋 Заявки</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/users" className={({ isActive }) => isActive ? 'active' : ''}>👥 Користувачі</NavLink>
+          <NavLink to="/admin_bizcheck_md_crowe/page-settings" className={({ isActive }) => isActive ? 'active' : ''}>⚙️ Налаштування сторінки</NavLink>
         </nav>
         <div className="admin-main">
           <Outlet />

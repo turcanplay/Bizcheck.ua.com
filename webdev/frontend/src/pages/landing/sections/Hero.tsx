@@ -31,7 +31,7 @@ function saveRecent(q: string) {
   localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, MAX_RECENT)));
 }
 
-const STOPWORDS = new Set(['de', 'cu', 'pentru', 'la', 'un', 'o', 'si', 'și', 'in', 'în', 'на', 'для', 'и', 'с', 'по']);
+const STOPWORDS = new Set(['на', 'для', 'и', 'с', 'по', 'та', 'і', 'й', 'у', 'в', 'з', 'до']);
 function tokenize(s: string): string[] {
   return s.toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
@@ -110,16 +110,16 @@ export default function Hero() {
 
     const all: Array<UnifiedHit & { _score: number }> = [];
     tests.forEach(t => {
-      const haystack = [t.name_ro, t.name_ru, t.description_ro, t.description_ru,
+      const haystack = [t.name_uk, t.name_ru, t.description_uk, t.description_ru,
                         t.category ?? '', (t.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'ro' ? t.name_ro : t.name_ru, is_paid: t.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'uk' ? t.name_uk : t.name_ru, is_paid: t.is_paid, _score: sc });
     });
     templates.forEach(tp => {
-      const haystack = [tp.title_ro, tp.title_ru, tp.description_ro, tp.description_ru,
+      const haystack = [tp.title_uk, tp.title_ru, tp.description_uk, tp.description_ru,
                         tp.category ?? '', (tp.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'ro' ? tp.title_ro : tp.title_ru, is_paid: tp.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'uk' ? tp.title_uk : tp.title_ru, is_paid: tp.is_paid, _score: sc });
     });
     return all.sort((a, b) => b._score - a._score).slice(0, 8);
   }, [query, tests, templates, lang]);
@@ -213,7 +213,7 @@ export default function Hero() {
             }}
           />
 
-          <button type="button" className="hero__search-icon-btn" onClick={focusSearch} aria-label="Caută">
+          <button type="button" className="hero__search-icon-btn" onClick={focusSearch} aria-label="Пошук">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
               <circle cx="7" cy="7" r="5" stroke="#6B7280" strokeWidth="1.5" fill="none" />
               <path d="M11 11l4 4" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" />
@@ -299,7 +299,7 @@ export default function Hero() {
             </svg>
           </button>
           <div className="hero__lang">
-            <button className={`hero__lang-btn ${lang === 'ro' ? 'is-active' : ''}`} onClick={() => setLang('ro')}>RO</button>
+            <button className={`hero__lang-btn ${lang === 'uk' ? 'is-active' : ''}`} onClick={() => setLang('uk')}>UA</button>
             <button className={`hero__lang-btn ${lang === 'ru' ? 'is-active' : ''}`} onClick={() => setLang('ru')}>RU</button>
           </div>
         </div>
@@ -365,9 +365,9 @@ export default function Hero() {
             <div className="hero__badge-num">{ratingStats.avg}<span>/5</span></div>
             <div className="hero__badge-sub">
               {ratingStats.count === 0
-                ? (lang === 'ro' ? 'în curând recenzii' : 'отзывы скоро')
-                : (lang === 'ro'
-                    ? `din ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} recenzii`
+                ? (lang === 'uk' ? 'відгуки незабаром' : 'отзывы скоро')
+                : (lang === 'uk'
+                    ? `з ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} відгуків`
                     : `из ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} отзывов`)}
             </div>
           </div>

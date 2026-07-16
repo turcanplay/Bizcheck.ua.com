@@ -37,13 +37,13 @@ export default function AboutPlatform() {
 
   const title = t('aboutTitle');
   const [titleFirst, titleLast] = splitTitle(title);
-  const eyebrow = lang === 'ro' ? 'DESPRE NOI' : 'О НАС';
+  const eyebrow = lang === 'uk' ? 'ПРО НАС' : 'О НАС';
   const totalResources = counts?.total ?? 0;
-  const stats = lang === 'ro'
+  const stats = lang === 'uk'
     ? [
-        { value: formatCount(totalResources), label: 'Șabloane și teste' },
-        { value: '24/7', label: 'Acces online' },
-        { value: '8 min', label: 'Timp mediu per test' },
+        { value: formatCount(totalResources), label: 'Шаблонів і тестів' },
+        { value: '24/7', label: 'Онлайн-доступ' },
+        { value: '8 хв', label: 'Час на тест' },
       ]
     : [
         { value: formatCount(totalResources), label: 'Шаблонов и тестов' },
@@ -111,11 +111,11 @@ export default function AboutPlatform() {
             </div>
             <div>
               <div className="about__visual-check-title">
-                {lang === 'ro' ? 'Verificat de juriști' : 'Проверено юристами'}
+                {lang === 'uk' ? 'Перевірено юристами' : 'Проверено юристами'}
               </div>
               <div className="about__visual-check-sub">
-                {lang === 'ro'
-                  ? 'documente reale, create de profesioniști'
+                {lang === 'uk'
+                  ? 'реальні документи від професіоналів'
                   : 'реальные документы от профессионалов'}
               </div>
             </div>

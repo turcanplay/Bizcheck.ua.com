@@ -37,11 +37,11 @@ _HEADER_FILL = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="
 _HEADER_ALIGN = Alignment(wrap_text=True, vertical="center", horizontal="center")
 _CELL_ALIGN = Alignment(wrap_text=True, vertical="top")
 _FIXED_COLS = {
-    "ID": 5, "Prenume": 12, "Nume": 12, "Email": 24, "Telefon": 14,
-    "Sector": 16, "Mărime companie": 15, "Vechime companie": 15, "Cifră de afaceri": 16,
-    "Status": 12, "Data": 18, "Limbă": 8, "Livrare": 12, "Consimțământ": 13,
-    "Telegram @user": 16, "Telegram nume": 16, "Telegram ChatID": 14,
-    "Scor total %": 11,
+    "ID": 5, "Ім'я": 12, "Прізвище": 12, "Email": 24, "Телефон": 14,
+    "Сектор": 16, "Розмір компанії": 15, "Вік компанії": 15, "Оборот": 16,
+    "Статус": 12, "Дата": 18, "Мова": 8, "Доставка": 12, "Згода": 13,
+    "Telegram @user": 16, "Telegram ім'я": 16, "Telegram ChatID": 14,
+    "Загальний бал %": 11,
 }
 
 # Openpyxl sheet-name constraints: ≤31 chars, no / \ ? * [ ]
@@ -79,7 +79,7 @@ def _collect_questions_for_blocks(blocks):
     """Return (question_keys_ordered, question_labels).
 
     Keys are composed `b{block_id}q{question_id}` and labels are friendly
-    `B1 Q2: first 40 chars...` strings (in RO).
+    `B1 Q2: first 40 chars...` strings (in UK).
 
     Batched: one query fetches questions for all blocks at once (ANY(%s)),
     replacing per-block round-trips. For 10 blocks with 50 questions, this
@@ -104,13 +104,13 @@ def _collect_questions_for_blocks(blocks):
         top_level = [q for q in block_questions if not q.get("parent_question_id")]
         for q_idx, q in enumerate(top_level):
             key = f"b{b['id']}q{q['id']}"
-            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_ro'] or '')[:40]}"
+            question_labels[key] = f"B{b_idx + 1} Q{q_idx + 1}: {(q['text_uk'] or '')[:40]}"
             question_keys_ordered.append(key)
             subs = [sq for sq in block_questions if sq.get("parent_question_id") == q["id"]]
             for sq_idx, sq in enumerate(subs):
                 skey = f"b{b['id']}q{sq['id']}"
                 question_labels[skey] = (
-                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_ro'] or '')[:40]}"
+                    f"B{b_idx + 1} Q{q_idx + 1}.{sq_idx + 1}: {(sq['text_uk'] or '')[:40]}"
                 )
                 question_keys_ordered.append(skey)
 
@@ -176,7 +176,7 @@ def _summary_row(s, block_titles, question_keys_ordered):
         # ── status / meta ──
         s.get("status", ""), str(s.get("created_at", "")),
         s.get("language", ""), _infer_delivery(s),
-        "Da" if s.get("consent") else "Nu",
+        "Так" if s.get("consent") else "Ні",
         # ── Telegram (strâns la un loc) ──
         s.get("tg_username", ""), tg_name, s.get("tg_chat_id", ""),
         # ── scor total ──
@@ -193,11 +193,11 @@ def _summary_row(s, block_titles, question_keys_ordered):
 
 def _summary_headers(block_titles, question_labels, question_keys_ordered):
     headers = [
-        "ID", "Prenume", "Nume", "Email", "Telefon",
-        "Sector", "Mărime companie", "Vechime companie", "Cifră de afaceri",
-        "Status", "Data", "Limbă", "Livrare", "Consimțământ",
-        "Telegram @user", "Telegram nume", "Telegram ChatID",
-        "Scor total %",
+        "ID", "Ім'я", "Прізвище", "Email", "Телефон",
+        "Сектор", "Розмір компанії", "Вік компанії", "Оборот",
+        "Статус", "Дата", "Мова", "Доставка", "Згода",
+        "Telegram @user", "Telegram ім'я", "Telegram ChatID",
+        "Загальний бал %",
     ]
     headers += [f"{t} %" for t in block_titles]
     headers += [question_labels.get(k, k) for k in question_keys_ordered]
@@ -212,12 +212,12 @@ def _fill_summary_sheet(ws, subs, block_titles, question_keys_ordered, question_
     _style_header_row(ws, headers)
 
 
-# Trimmed view for non-completed ("În proces") submissions: only contact data,
+# Trimmed view for non-completed ("У процесі") submissions: only contact data,
 # company info and the total score — no per-question answers, no block scores.
 _PROCESSED_HEADERS = [
-    "ID", "Prenume", "Nume", "Email", "Telefon",
-    "Sector", "Mărime companie", "Vechime companie", "Cifră de afaceri",
-    "Status", "Data", "Scor total %",
+    "ID", "Ім'я", "Прізвище", "Email", "Телефон",
+    "Сектор", "Розмір компанії", "Вік компанії", "Оборот",
+    "Статус", "Дата", "Загальний бал %",
 ]
 
 
@@ -242,33 +242,33 @@ def _fill_processed_sheet(ws, subs):
 
 def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
     """Render one user's full detail on a dedicated sheet."""
-    ws.append(["BizCheck — Raport individual"])
+    ws.append(["BizCheck — Індивідуальний звіт"])
     ws.cell(row=1, column=1).font = Font(bold=True, size=14)
     ws.append([])
 
     name = f"{sub.get('first_name') or ''} {sub.get('last_name') or ''}".strip() or "—"
     pairs = [
-        ("Nume complet", name),
+        ("Повне ім'я", name),
         ("Email", sub.get("email") or "—"),
-        ("Telefon", sub.get("phone") or "—"),
-        ("Sector", sub.get("sector") or "—"),
-        ("Mărime companie", sub.get("company_size") or "—"),
-        ("Vechime companie", sub.get("company_age") or "—"),
-        ("Cifra de afaceri", sub.get("company_revenue") or "—"),
-        ("Limba", sub.get("language") or "—"),
-        ("Canal livrare ales", _infer_delivery(sub)),
+        ("Телефон", sub.get("phone") or "—"),
+        ("Сектор", sub.get("sector") or "—"),
+        ("Розмір компанії", sub.get("company_size") or "—"),
+        ("Вік компанії", sub.get("company_age") or "—"),
+        ("Оборот", sub.get("company_revenue") or "—"),
+        ("Мова", sub.get("language") or "—"),
+        ("Обраний канал доставки", _infer_delivery(sub)),
         ("Telegram @username", sub.get("tg_username") or "—"),
-        ("Telegram nume afișat", f"{sub.get('tg_first_name') or ''} {sub.get('tg_last_name') or ''}".strip() or "—"),
-        ("Status", sub.get("status") or "—"),
-        ("Dată completare", str(sub.get("created_at") or "—")),
-        ("Scor total %", sub.get("total_score", "—")),
+        ("Telegram відображуване ім'я", f"{sub.get('tg_first_name') or ''} {sub.get('tg_last_name') or ''}".strip() or "—"),
+        ("Статус", sub.get("status") or "—"),
+        ("Дата заповнення", str(sub.get("created_at") or "—")),
+        ("Загальний бал %", sub.get("total_score", "—")),
     ]
     for k, v in pairs:
         ws.append([k, v])
         ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
 
     ws.append([])
-    ws.append(["Scoruri per bloc"])
+    ws.append(["Бали за блоками"])
     ws.cell(row=ws.max_row, column=1).font = Font(bold=True, size=12)
 
     bs = _parse_json_field(sub.get("block_scores_json")) or []
@@ -277,9 +277,9 @@ def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
             ws.append([b.get("title", "—"), f"{round(b.get('score', 0))}%"])
 
     ws.append([])
-    ws.append(["Răspunsuri detaliate per întrebare"])
+    ws.append(["Детальні відповіді за питаннями"])
     ws.cell(row=ws.max_row, column=1).font = Font(bold=True, size=12)
-    ws.append(["Întrebare", "Scor"])
+    ws.append(["Питання", "Бал"])
     for c in ws[ws.max_row]:
         c.font = _HEADER_FONT
         c.fill = _HEADER_FILL
@@ -328,12 +328,12 @@ def build_test_combined_workbook(test_id, date_from=None, date_to=None):
     """Multi-sheet workbook: summary sheets + one sheet per completed user.
 
     Summary sheets, in order:
-      • "Sumar"      — toți participanții (general), cu răspunsuri la întrebări
-      • "Finalizați" — doar cei care au terminat tot (status == completed)
-      • "În proces"  — cei nefinalizați (started / in_progress / abandoned),
+      • "Зведення"  — toți participanții (general), cu răspunsuri la întrebări
+      • "Завершені" — doar cei care au terminat tot (status == completed)
+      • "У процесі" — cei nefinalizați (started / in_progress / abandoned),
                        doar date de contact + companie + scor total (fără răspunsuri)
     Then one detail sheet per *completed* user (cei în proces nu primesc foaie
-    individuală cu răspunsuri — apar doar pe foaia trimisă "În proces").
+    individuală cu răspunsuri — apar doar pe foaia trimisă "У процесі").
 
     When ``date_from`` and/or ``date_to`` (``datetime.date``) are provided,
     submissions are kept only when their ``created_at`` (as a date) falls in the
@@ -363,20 +363,20 @@ def build_test_combined_workbook(test_id, date_from=None, date_to=None):
 
     wb = openpyxl.Workbook()
     summary = wb.active
-    summary.title = "Sumar"
+    summary.title = "Зведення"
     _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
 
-    finished_ws = wb.create_sheet(title="Finalizați")
+    finished_ws = wb.create_sheet(title="Завершені")
     _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
 
-    in_progress_ws = wb.create_sheet(title="În proces")
+    in_progress_ws = wb.create_sheet(title="У процесі")
     _fill_processed_sheet(in_progress_ws, in_progress)
 
     # One sheet per completed user. Name: "{id}_FirstLast" truncated to 31 chars.
     # Over MAX_USER_SHEETS completed users we omit the individual sheets to avoid
     # OOM / request timeouts — the complete data still lives in the summary sheets
-    # ("Sumar" / "Finalizați" / "În proces") and in the admin panel.
-    used_names = {"Sumar", "Finalizați", "În proces"}
+    # ("Зведення" / "Завершені" / "У процесі") and in the admin panel.
+    used_names = {"Зведення", "Завершені", "У процесі"}
     for s in completed[:MAX_USER_SHEETS]:
         raw = f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}"
         base = _safe_sheet_name(raw)
@@ -397,9 +397,9 @@ def build_all_submissions_workbook():
 
     Same layout as the per-test combined workbook, minus per-user sheets
     (the global table can hold thousands of rows):
-      • "Sumar"      — toate submisiile, cu răspunsuri la întrebări
-      • "Finalizați" — status == completed, cu răspunsuri
-      • "În proces"  — nefinalizați, doar contact + companie + scor total
+      • "Зведення"  — toate submisiile, cu răspunsuri la întrebări
+      • "Завершені" — status == completed, cu răspunsuri
+      • "У процесі" — nefinalizați, doar contact + companie + scor total
     """
     subs = Submission.find_all()
     blocks = Block.find_all()
@@ -411,13 +411,13 @@ def build_all_submissions_workbook():
 
     wb = openpyxl.Workbook()
     summary = wb.active
-    summary.title = "Sumar"
+    summary.title = "Зведення"
     _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
 
-    finished_ws = wb.create_sheet(title="Finalizați")
+    finished_ws = wb.create_sheet(title="Завершені")
     _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
 
-    in_progress_ws = wb.create_sheet(title="În proces")
+    in_progress_ws = wb.create_sheet(title="У процесі")
     _fill_processed_sheet(in_progress_ws, in_progress)
 
     return wb
@@ -467,18 +467,18 @@ def build_single_user_report_html(submission_id) -> tuple[str, str]:
     name = f"{sub.get('first_name') or ''} {sub.get('last_name') or ''}".strip() or "—"
 
     info_pairs = [
-        ("Nume complet", name),
+        ("Повне ім'я", name),
         ("Email", sub.get("email") or "—"),
-        ("Telefon", sub.get("phone") or "—"),
-        ("Sector", sub.get("sector") or "—"),
-        ("Mărime companie", sub.get("company_size") or "—"),
-        ("Vechime companie", sub.get("company_age") or "—"),
-        ("Cifra de afaceri", sub.get("company_revenue") or "—"),
-        ("Limba", sub.get("language") or "—"),
-        ("Canal livrare", _infer_delivery(sub)),
+        ("Телефон", sub.get("phone") or "—"),
+        ("Сектор", sub.get("sector") or "—"),
+        ("Розмір компанії", sub.get("company_size") or "—"),
+        ("Вік компанії", sub.get("company_age") or "—"),
+        ("Оборот", sub.get("company_revenue") or "—"),
+        ("Мова", sub.get("language") or "—"),
+        ("Канал доставки", _infer_delivery(sub)),
         ("Telegram @username", sub.get("tg_username") or "—"),
-        ("Status", sub.get("status") or "—"),
-        ("Dată completare", str(sub.get("created_at") or "—")),
+        ("Статус", sub.get("status") or "—"),
+        ("Дата заповнення", str(sub.get("created_at") or "—")),
     ]
     info_rows = "".join(
         f"<tr><th>{e(k)}</th><td>{e(str(v))}</td></tr>" for k, v in info_pairs
@@ -493,7 +493,7 @@ def build_single_user_report_html(submission_id) -> tuple[str, str]:
             title = e(str(b.get("title", "—")))
             block_rows += f"<tr><td>{title}</td><td class='num'>{_fmt_score(b.get('score'))}</td></tr>"
     if not block_rows:
-        block_rows = "<tr><td colspan='2' class='empty'>Fără scoruri pe blocuri</td></tr>"
+        block_rows = "<tr><td colspan='2' class='empty'>Немає балів за блоками</td></tr>"
 
     answers = _parse_json_field(sub.get("answers_json")) or {}
     if not isinstance(answers, dict):
@@ -504,14 +504,14 @@ def build_single_user_report_html(submission_id) -> tuple[str, str]:
         val_str = "" if val is None else e(str(val))
         q_rows += f"<tr><td>{e(question_labels.get(qkey, qkey))}</td><td class='num'>{val_str}</td></tr>"
     if not q_rows:
-        q_rows = "<tr><td colspan='2' class='empty'>Fără răspunsuri înregistrate</td></tr>"
+        q_rows = "<tr><td colspan='2' class='empty'>Немає записаних відповідей</td></tr>"
 
     page = f"""<!doctype html>
-<html lang="ro">
+<html lang="uk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BizCheck — Raport {e(name)}</title>
+<title>BizCheck — Звіт {e(name)}</title>
 <style>
   :root {{ --ink:#1d2530; --muted:#6b7685; --line:#e3e8ef; --head:#0b2e4f; --accent:#0b6; }}
   * {{ box-sizing:border-box; }}
@@ -536,19 +536,19 @@ def build_single_user_report_html(submission_id) -> tuple[str, str]:
 </head>
 <body>
   <div class="sheet">
-    <h1>BizCheck — Raport individual</h1>
-    <div class="sub">ID submisie #{e(str(sub.get('id', '')))}</div>
+    <h1>BizCheck — Індивідуальний звіт</h1>
+    <div class="sub">ID подання #{e(str(sub.get('id', '')))}</div>
 
-    <h2>Date companie & contact</h2>
+    <h2>Дані компанії та контакт</h2>
     <table class="info">{info_rows}</table>
 
-    <h2>Scor total</h2>
+    <h2>Загальний бал</h2>
     <span class="total">{_fmt_score(sub.get('total_score'))}</span>
 
-    <h2>Scoruri per bloc</h2>
+    <h2>Бали за блоками</h2>
     <table>{block_rows}</table>
 
-    <h2>Răspunsuri detaliate per întrebare</h2>
+    <h2>Детальні відповіді за питаннями</h2>
     <table>{q_rows}</table>
   </div>
 </body>
@@ -678,7 +678,7 @@ def single_pdf_filename(sub) -> str:
 
 
 def export_basename(test_id, kind) -> str:
-    """Base filename (no extension) for a test export: Extras_<kind>_<test>_<date>."""
+    """Base filename (no extension) for a test export: Виписка_<kind>_<test>_<date>."""
     test = Test.find_by_id(test_id) or {}
-    name = test.get("name_ro") or test.get("name_ru") or f"Test {test_id}"
-    return f"Extras_{kind}_{_safe_filename(name)}_{date.today().isoformat()}"
+    name = test.get("name_uk") or test.get("name_ru") or f"Test {test_id}"
+    return f"Виписка_{kind}_{_safe_filename(name)}_{date.today().isoformat()}"

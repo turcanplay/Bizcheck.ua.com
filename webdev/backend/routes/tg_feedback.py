@@ -90,7 +90,7 @@ def _bot_authorized(req) -> bool:
 @admin_feedback_bp.route("/feedback/prompt", methods=["GET"])
 @admin_required
 def get_prompt():
-    return jsonify({"ro": fb.get_prompt("ro"), "ru": fb.get_prompt("ru")})
+    return jsonify({"uk": fb.get_prompt("uk"), "ru": fb.get_prompt("ru")})
 
 
 @admin_feedback_bp.route("/feedback/prompt", methods=["PUT"])
@@ -98,12 +98,12 @@ def get_prompt():
 def set_prompt():
     data = request.get_json(silent=True) or {}
     from models.site_settings import SiteSettings
-    for lang in ("ro", "ru"):
+    for lang in ("uk", "ru"):
         if lang in data:
             # Keep emoji + newlines, strip control chars / cap length.
             text = clean_text(data.get(lang), max_len=4000)
             SiteSettings.set(fb.PROMPT_KEYS[lang], text)
-    return jsonify({"ro": fb.get_prompt("ro"), "ru": fb.get_prompt("ru")})
+    return jsonify({"uk": fb.get_prompt("uk"), "ru": fb.get_prompt("ru")})
 
 
 # ---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ def send_feedback():
         targets = []
 
     lang_override = (data.get("lang") or "auto").strip().lower()
-    if lang_override not in ("auto", "ro", "ru"):
+    if lang_override not in ("auto", "uk", "ru"):
         lang_override = "auto"
 
     results = []
@@ -208,7 +208,7 @@ def send_feedback():
 
         chat_id = parsed["chat_id"]
         username = parsed["username"]
-        lang = lang_override if lang_override in ("ro", "ru") else "ru"
+        lang = lang_override if lang_override in ("uk", "ru") else "ru"
 
         # Resolve a @username to a chat_id (+ language) from our existing contacts.
         if username:
@@ -240,7 +240,7 @@ def send_feedback():
             # forbids messaging them). Fall through to a shareable link.
 
         # Not reachable → mint a personal link the admin can forward manually.
-        link_lang = lang if lang_override in ("ro", "ru") else "ru"
+        link_lang = lang if lang_override in ("uk", "ru") else "ru"
         row = TgOutreach.create(
             mode="link", username=None, tg_chat_id=None,
             lang=link_lang, token=token, status="pending",

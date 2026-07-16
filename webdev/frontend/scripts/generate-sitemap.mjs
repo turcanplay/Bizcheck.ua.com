@@ -28,7 +28,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 
 // Static, always-present URLs.
 const staticUrls = [
-  { loc: '/',                       changefreq: 'weekly',  priority: '1.0', alternates: ['ro', 'ru'] },
+  { loc: '/',                       changefreq: 'weekly',  priority: '1.0', alternates: ['uk', 'ru'] },
   { loc: '/confidentialitate',      changefreq: 'yearly',  priority: '0.4' },
 ];
 

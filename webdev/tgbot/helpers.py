@@ -7,7 +7,7 @@ Zone thresholds (kept in sync with the frontend/report): 🟢≥80 🟡70–79 �
 from strings import _t
 
 
-def _zone(score: int, lang: str = "ro") -> tuple[str, str]:
+def _zone(score: int, lang: str = "uk") -> tuple[str, str]:
     """Emoji + localized label for a score."""
     if score >= 80:
         return "🟢", _t(lang, "zone_high")

@@ -1,16 +1,16 @@
 /**
  * Per-block explanations for the BizCheck report.
- * Keyed by block `order` (1..8). Each block has 4 sections in RO and RU.
+ * Keyed by block `order` (1..8). Each block has 4 sections in UK and RU.
  */
 
 export interface BlockExplanation {
   order: number;
-  title: { ro: string; ru: string };
-  essence: { ro: string; ru: string };
-  risk: { ro: string[]; ru: string[] };      // paragraphs
-  action: { ro: string[]; ru: string[] };
+  title: { uk: string; ru: string };
+  essence: { uk: string; ru: string };
+  risk: { uk: string[]; ru: string[] };      // paragraphs
+  action: { uk: string[]; ru: string[] };
   regulatory: {
-    ro: { label: string; url: string };
+    uk: { label: string; url: string };
     ru: { label: string; url: string };
   };
 }
@@ -22,19 +22,19 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 1,
     title: {
-      ro: 'Blocul 1. Fondatori și management',
+      uk: 'Блок 1. Засновники та управління',
       ru: 'Блок 1. Учредители и управление',
     },
     essence: {
-      ro: 'Acest bloc arată cum este structurat managementul companiei dumneavoastră: câte persoane iau decizii, dacă există acorduri între ele și în ce măsură sunt înregistrate aceste acorduri.',
+      uk: 'Цей блок показує, як у Вас влаштоване управління компанією: скільки людей ухвалюють рішення, чи є між ними домовленості й наскільки ці домовленості зафіксовані.',
       ru: 'Этот блок показывает, как у Вас устроено управление компанией: сколько человек принимают решения, есть ли между ними договорённости и насколько эти договорённости зафиксированы.',
     },
     risk: {
-      ro: [
-        'Când o companie are un singur fondator, totul funcționează simplu și rapid – deciziile se iau fără aprobare, dar, în același timp, toate riscurile sunt concentrate asupra unei singure persoane.',
-        'Când există doi sau mai mulți fondatori, situația se schimbă. Afacerea începe să depindă nu doar de piață sau de clienți, ci și de relațiile dintre parteneri. Dacă regulile nu sunt bătute în cuie, atunci la prima neînțelegere serioasă, fiecare începe să înțeleagă „calea corectă" diferit. În acest moment, deciziile pot fi amânate, blocate sau deloc luate.',
-        'În practică, acest lucru duce la conflicte, pierderea controlului asupra companiei, oprirea anumitor procese și uneori chiar la paralizarea efectivă a afacerii. Această problemă devine deosebit de acută în situațiile care implică bani, ieșirea unui asociat sau decizii strategice.',
-        'Un risc separat apare atunci când deciziile fondatorilor nu sunt înregistrate în scris. În acest caz, este imposibil de verificat cine ce a aprobat, ceea ce face compania vulnerabilă atât la dispute interne, cât și externe.',
+      uk: [
+        'Коли в компанії один засновник, усе працює просто і швидко – рішення ухвалюються без погоджень, але водночас усі ризики концентруються на одній людині.',
+        'Коли засновників двоє або більше, ситуація змінюється. Бізнес починає залежати не лише від ринку чи клієнтів, а від стосунків між партнерами. Якщо правила не зафіксовані, то за першої серйозної незгоди кожен починає по-своєму розуміти, «як правильно». У цей момент рішення можуть затягуватися, блокуватися або взагалі не ухвалюватися.',
+        'На практиці це призводить до конфліктів, втрати контролю над компанією, зупинки окремих процесів, а іноді й до фактичного паралічу бізнесу. Особливо гостро це проявляється в ситуаціях, пов’язаних із грошима, виходом одного з учасників або стратегічними рішеннями.',
+        'Окремий ризик виникає, якщо рішення засновників не фіксуються письмово. У цьому випадку неможливо підтвердити, хто і що погодив, і компанія стає вразливою як усередині, так і в зовнішніх спорах.',
       ],
       ru: [
         'Когда в компании один учредитель, всё работает просто и быстро – решения принимаются без согласований, но при этом все риски концентрируются на одном человеке.',
@@ -44,9 +44,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Dacă aveți mai mulți fondatori, este important să stabiliți regulile de bază în scris: cine ia deciziile, cum este distribuit profitul, ce se întâmplă în caz de conflict și cum poate un participant să părăsească afacerea.',
-        'Experiența arată că nu este necesară elaborarea imediată a unor documente complexe și costisitoare. Chiar și acorduri scurte și clare, consemnate în scris și revizuite cel puțin anual, cresc semnificativ reziliența afacerilor. Însuși procesul de revizuire periodică ajută la reamintirea reciprocă a acestor reguli, la alinierea așteptărilor și la reducerea riscului de conflict.',
+      uk: [
+        'Якщо у Вас кілька засновників, важливо письмово зафіксувати базові правила: хто ухвалює рішення, як розподіляється прибуток, що відбувається за конфлікту і як учасник може вийти з бізнесу.',
+        'При цьому практика показує, що не обов’язково одразу робити складні й дорогі документи. Навіть короткі, зрозумілі домовленості, зафіксовані на папері та переглядувані хоча б раз на рік, уже суттєво підвищують стійкість бізнесу. Сам факт того, що Ви періодично повертаєтеся до цих правил, допомагає нагадати одне одному про ці правила, синхронізувати очікування та знизити ризик конфліктів.',
       ],
       ru: [
         'Если у Вас несколько учредителей, важно письменно зафиксировать базовые правила: кто принимает решения, как распределяется прибыль, что происходит при конфликте и как участник может выйти из бизнеса.',
@@ -54,9 +54,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Legea nr. 135/2007 privind societățile cu răspundere limitată',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=152601&lang=ro',
+      uk: {
+        label: 'Закон №135/2007 про товариства з обмеженою відповідальністю',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=152601&lang=ru',
       },
       ru: {
         label: 'Закон №135/2007 об обществах с ограниченной ответственностью',
@@ -71,19 +71,19 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 2,
     title: {
-      ro: 'Blocul 2. Date cu caracter personal și IT',
+      uk: 'Блок 2. Персональні дані та IT',
       ru: 'Блок 2. Персональные данные и IT',
     },
     essence: {
-      ro: 'Acest bloc arată în ce măsură dețineți controlul asupra datelor cu care lucrează compania. Este vorba despre toate tipurile de date: supraveghere video, sisteme CRM, servicii cloud, baze de date de clienți, informații despre angajați – orice instrumente care conțin informații despre persoane. În esență, aceasta nu este o problemă de securitate IT și nici măcar una legată de faptul că înțelegeți sau nu ce date dețineți și ce se întâmplă cu ele, ci despre modul în care autoritățile statului interpretează acțiunile dumneavoastră în raport cu aceste date.',
+      uk: 'Цей блок показує, наскільки Ви контролюєте дані, з якими працює компанія. Ідеться про все: відеоспостереження, CRM-системи, хмарні сервіси, бази клієнтів, інформація про співробітників – будь-які інструменти, де є інформація про людей. По суті, це питання не про IT-безпеку, і навіть не про те, чи розумієте Ви, які дані у Вас є і що з ними відбувається, а про те, як державні органи інтерпретують Ваші дії з цими даними.',
       ru: 'Этот блок показывает, насколько Вы контролируете данные, с которыми работает компания. Речь про всё: видеонаблюдение, CRM-системы, облачные сервисы, базы клиентов, информация о сотрудниках – любые инструменты, где есть информация о людях. По сути, это вопрос не про IT-безопасность, и даже не про то, понимаете ли Вы, какие данные у Вас есть и что с ними происходит, а про то, как государственные органы интерпретируют Ваши действия с этими данными.',
     },
     risk: {
-      ro: [
-        'Principalul risc aici este că firmele folosesc aproape întotdeauna astfel de instrumente, dar nu formalizează acest lucru din punct de vedere legal și nici măcar nu înțeleg pe deplin cum sunt prelucrate datele.',
-        'De exemplu, supravegherea video este deja un proces de prelucrare a datelor cu caracter personal. Un sistem CRM implică stocarea și adesea transferul de date către terți. Serviciile cloud pot stoca informații în afara țării sau a UE, fără ca firma să știe măcar despre acest lucru. Practic, orice companie care are cel puțin un angajat efectuează, din punct de vedere legal, o prelucrare de date cu caracter personal.',
-        'Prin urmare, compania încalcă formal legea, chiar dacă nu face nimic „greșit". Acest lucru poate duce la amenzi, inspecții, reclamații din partea clienților sau angajaților și, la fel de important, la pierderea încrederii.',
-        'O problemă separată apare atunci când nu există documente în cadrul companiei care să înregistreze clar ce date colectați, unde se află acestea și cine este responsabil pentru ele. Simpla absență a unor astfel de documente ridică suspiciunile autorităților și face ca situația companiei să fie imprevizibilă din punct de vedere juridic. În această situație, devine extrem de dificil să dovedești că respecți cu adevărat legea.',
+      uk: [
+        'Основний ризик тут у тому, що бізнес майже завжди використовує такі інструменти, але не оформлює це юридично й навіть не до кінця розуміє, як саме влаштована робота з даними.',
+        'Наприклад, відеоспостереження – це вже обробка персональних даних. CRM-система – це зберігання і часто передавання даних третім особам. Хмарні сервіси можуть зберігати інформацію за межами країни або ЄС, і компанія про це навіть не знає. Фактично, будь-яка компанія, у якій є хоча б один співробітник, з точки зору закону здійснює обробку персональних даних.',
+        'У результаті компанія формально порушує закон, навіть якщо нічого «поганого» не робить. Це може призвести до штрафів, перевірок, скарг з боку клієнтів чи співробітників і, що не менш важливо, до втрати довіри.',
+        'Окрема проблема виникає, коли всередині компанії відсутні документи, які чітко фіксують, які дані Ви збираєте, де вони містяться і хто за них відповідає. Сама відсутність таких документів уже викликає в держави підозри й робить ситуацію для компанії юридично непередбачуваною. У цій ситуації стає вкрай складно довести, що Ви дійсно дотримуєтеся вимог закону.',
       ],
       ru: [
         'Основной риск здесь в том, что бизнес почти всегда использует такие инструменты, но не оформляет это юридически и даже не до конца понимает, как именно устроена работа с данными.',
@@ -93,13 +93,13 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Important aici să nu complicăm lucrurile, ci să stabilim o ordine de bază.',
-        'Trebuie să înțelegeți clar ce date personale colectați, unde sunt stocate și cine are acces la ele.',
-        'Este deosebit de important să se verifice utilizarea supravegherii video: pe ce bază se realizează aceasta, dacă sunt amplasate pictograme care indică faptul că se utilizează supravegherea video și dacă sunt îndeplinite cerințele legale pentru stocarea și prelucrarea acestor date.',
-        'Dacă lucrați cu CRM sau servicii cloud, este important să înțelegeți unde sunt amplasate fizic serverele și cine procesează exact datele. Dacă serverele sunt în UE, aveți noroc; dacă sunt în orice altă țară, acesta este un risc.',
-        'Apoi, formalizați acest lucru într-o politică simplă, scrisă. Nu este nevoie de un document complex — o descriere clară, pe care o puteți explica singuri, va fi suficientă.',
-        'Dacă în companie sunt procese mai sensibile (de exemplu, supraveghere video, prelucrarea datelor de contact sau biometrice), este esențial să se efectueze o evaluare a riscurilor, să se documenteze și să se pregătească un set complet de documente necesare. Acest lucru va permite remedierea timpurie a vulnerabilităților și evitarea consecințelor negative. În caz contrar, se vor aplica amenzi în conformitate cu Legea nr. 195 din 25 iulie 2024 – de până la 2.000.000 de lei sau de până la 2% din cifra de afaceri totală, oricare dintre acestea este mai mare.',
+      uk: [
+        'Тут важливо не ускладнювати, а навести базовий лад.',
+        'Потрібно для себе чітко розуміти, які персональні дані Ви збираєте, де вони зберігаються і хто має до них доступ.',
+        'Окремо важливо перевірити використання відеоспостереження: на якій підставі воно здійснюється, чи розміщені таблички про те, що ведеться відеоспостереження, і чи дотримано вимог закону до зберігання та обробки таких даних.',
+        'Якщо Ви працюєте з CRM або хмарними сервісами, важливо розуміти, де фізично розташовані сервери і хто саме обробляє дані. Якщо сервери розташовані в ЄС – Вам пощастило, якщо в будь-якій іншій країні – це вже зона ризику.',
+        'Далі – зафіксувати це в простій письмовій політиці. Не потрібно робити складний документ – достатньо зрозумілого опису, який Ви самі зможете пояснити.',
+        'Якщо в компанії є більш чутливі процеси (наприклад, відеоспостереження, обробка контактних або біометричних даних), украй важливо провести оцінку ризиків, оформити її документально й підготувати повний комплект необхідних документів. Це дасть змогу заздалегідь закрити вразливості й уникнути негативних наслідків. У протилежному випадку застосовуються штрафи згідно із Законом № 195 від 25.07.2024 – до 2 000 000 леїв або до 2% від загального обороту, застосовується найбільше значення.',
       ],
       ru: [
         'Здесь важно не усложнять, а навести базовый порядок.',
@@ -111,9 +111,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Legea nr. 195/2024 privind protecția datelor cu caracter personal',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=144681&lang=ro',
+      uk: {
+        label: 'Закон №195/2024 про захист персональних даних',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=144681&lang=ru',
       },
       ru: {
         label: 'Закон №195/2024 о защите персональных данных',
@@ -128,23 +128,23 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 3,
     title: {
-      ro: 'Blocul 3. Fiabilitatea contractelor',
+      uk: 'Блок 3. Надійність договорів',
       ru: 'Блок 3. Надёжность договоров',
     },
     essence: {
-      ro: 'Această secțiune demonstrează în ce măsură contractele companiei dumneavoastră protejează de fapt afacerea și nu creează, pur și simplu o senzație de siguranță. Este important nu doar să aveți un contract ca document, ci și să înțelegeți cum a fost creat, dacă ia în considerare specificul afacerii dumneavoastră, dacă a fost actualizat pe măsură ce afacerea se schimbă și dacă conține mecanisme clare de protecție.',
+      uk: 'Цей блок показує, наскільки договори у Вашій компанії реально захищають Ваш бізнес, а не просто створюють відчуття безпеки. Важлива не лише наявність договору як документа, а й те, як він з’явився, чи враховує він специфіку Вашої діяльності, чи оновлювався він разом зі зміною бізнесу і чи містить зрозумілі механізми захисту.',
       ru: 'Этот блок показывает, насколько договоры в Вашей компании реально защищают Ваш бизнес, а не просто создают ощущение безопасности. Важно не только наличие договора как документа, но и то, как он появился, учитывает ли он специфику Вашей деятельности, обновлялся ли он вместе с изменением бизнеса и содержит ли понятные механизмы защиты.',
     },
     risk: {
-      ro: [
-        'Dacă contractele sunt întocmite din șabloane aleatorii, copiate de la prieteni, descărcate de pe internet sau nu sunt folosite deloc, compania funcționează practic fără un sprijin juridic adecvat. Atât timp cât lucrurile sunt calme, această lipsă poate să nu fie percepută ca o problemă. Însă perioadele de liniște în afaceri creează adesea un fals sentiment de securitate.',
-        'Acest lucru este evident în Moldova: trecem prin crize atât de des încât contractele pot fi considerate nu doar documente, ci instrumente de supraviețuire. Fiecare nouă perioadă stresantă dezvăluie rapid ce a oficializat de fapt o companie și ce s-a bazat pe încredere, acord verbal sau „vom rezolva mai târziu".',
-        'Tocmai atunci când plățile sunt întârziate, obligațiile sunt refuzate, termenii sunt renegociați sau apar dispute privind calitatea, devine clară măsura în care un contract funcționează efectiv. Adesea devine clar că documentul fie nu protejează compania, fie nu oferă instrumentele necesare pentru presiune, negocieri și colectare a datoriilor.',
-        'Este deosebit de important de luat în considerare faptul că acordul ar putea pur și simplu să nu fie valabil deoarece este învechit și nu ia în considerare normele juridice actuale, care se schimbă destul de frecvent în Moldova.',
-        'O problemă deosebită în zilele noastre este că mulți oameni încep să redacteze contracte folosind ChatGPT. Este convenabil, rapid și uneori cu adevărat util ca schiță. Există însă un risc fundamental: ChatGPT nu numai că poate face greșeli, dar poate și inventa cu încredere lucruri care nici măcar nu există — construcții inexistente, referințe inexacte, logică juridică străină din alte jurisdicții, formulări slabe sau goale din punct de vedere juridic. Scrie convingător și tocmai de aceea riscul este deosebit de periculos: o persoană s-ar putea să nu observe unde textul a început deja să o inducă în eroare.',
-        'Prin urmare, dacă folosiți contracte șablon sau încredințați pregătirea lor inteligenței artificiale fără o revizuire profesională, trebuie să vă întrebați sincer: sunteți dispus să vă încredințați riscurile afacerii unui instrument care poate halucina și inventa reglementări care nu există? Dacă da, trebuie să înțelegeți și că veți fi trași la răspundere pentru consecințe.',
-        'Un risc suplimentar apare atunci când contractele au fost cândva elaborate, dar apoi nu au fost revizuite timp de ani de zile. Afacerile se schimbă, procesele devin mai complexe, legislația este actualizată, dar contractul rămâne învechit. Drept urmare, documentul nu mai reflectă modul în care compania operează în prezent.',
-        'Dacă un contract nu conține reguli clare privind răspunderea, penalitățile, termenele limită, procedurile de acceptare, rezilierea și soluționarea litigiilor, devine mult mai dificil pentru companie să își protejeze fondurile, termenele limită și interesele într-o situație de conflict. În practică, acest lucru duce la pierderi, litigii prelungite, o poziție de negociere slabă și incapacitatea de a colecta rapid datoriile.',
+      uk: [
+        'Якщо договори збираються з випадкових шаблонів, копіюються у знайомих, завантажуються з інтернету або взагалі не використовуються, компанія фактично працює без нормальної юридичної опори. Поки все спокійно, це може довго не відчуватися як проблема. Але спокійний період у бізнесі часто створює хибне відчуття безпеки.',
+        'У молдовських реаліях це особливо помітно: у нас кризи приходять так регулярно, що договори можна вважати не просто документами, а інструментом виживання. Кожен новий стресовий період швидко показує, що саме в компанії оформлено по-справжньому, а що трималося «на довірі», «на словах» чи «якось потім розберемося».',
+        'Саме в момент затримок оплат, відмов від зобов’язань, спроб перегляду умов або спорів щодо якості стає зрозуміло, наскільки договір реально працює. Дуже часто виявляється, що документ або не захищає компанію, або не дає необхідних інструментів для тиску, переговорів і стягнення заборгованості.',
+        'Особливо варто враховувати, що договір може просто не працювати, бо застарів і не враховує актуальні норми права, які в Молдові змінюються досить часто.',
+        'Окрема проблема сьогодні пов’язана з тим, що багато хто починає складати договори через ChatGPT. Це зручно, швидко і іноді дійсно корисно як чернетка. Але є принциповий ризик: ChatGPT може не просто помилятися, а впевнено вигадувати те, чого взагалі не існує – неіснуючі конструкції, неточні посилання, чужу логіку з інших країн, слабкі або юридично порожні формулювання. Він пише переконливо, і саме тому ризик особливо небезпечний: людина може не помітити, де текст уже почав вводити її в оману.',
+        'Тому, якщо Ви берете договори із шаблонів або довіряєте їхню підготовку штучному інтелекту без професійної перевірки, потрібно чесно відповісти собі на запитання: чи готові Ви довірити ризики свого бізнесу інструменту, який може галюцинувати й вигадувати норми, яких у природі немає. Якщо так – отже, потрібно так само чесно розуміти, що відповідальність за наслідки залишиться на Вас.',
+        'Додатковий ризик виникає тоді, коли договори колись були підготовлені, але потім роками не переглядалися. Бізнес змінюється, процеси ускладнюються, законодавство оновлюється, а договір залишається старим. У результаті документ перестає відповідати тому, як компанія реально працює сьогодні.',
+        'Якщо в договорі немає чітких правил про відповідальність, штрафи, строки, порядок приймання, розірвання та вирішення спорів, то в конфліктній ситуації компанії стає набагато складніше захищати свої гроші, строки й інтереси. На практиці це призводить до втрат, затяжних спорів, слабкої позиції в переговорах і неможливості швидко стягнути заборгованість.',
       ],
       ru: [
         'Если договоры собираются из случайных шаблонов, копируются у знакомых, скачиваются из интернета или вообще не используются, компания фактически работает без нормальной юридической опоры. Пока всё спокойно, это может долго не ощущаться как проблема. Но спокойный период в бизнесе часто создаёт ложное чувство безопасности.',
@@ -158,13 +158,13 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Este important să tratați contractele nu ca pe o formalitate, ci ca pe un instrument de protejare a afacerii dumneavoastră.',
-        'Este mai bine ca, contractele să fie adaptate la modelul dvs. operațional real, decât să fie preluate din șabloane sau asamblate prin ChatGPT fără verificare. Astfel de texte pot părea convingătoare, dar pot conține erori sau construcții fictive pentru care sunteți în cele din urmă responsabil.',
-        'Contractele trebuie revizuite periodic. Este suficient să vă întrebați cel puțin o dată pe an: reflectă acest document modul în care lucrăm de fapt astăzi?',
-        'Un test simplu: dați contractul unei persoane din afară. Dacă îl interpretează diferit față de cum ați intenționat, înseamnă că există puncte slabe.',
-        'Și verificați obligatoriu dacă contractul include mecanisme specifice de protecție: răspundere, penalități, procedura de plată, primire-predare, reziliere și soluționare a litigiilor. Dacă acestea nu sunt incluse, contractul nu vă protejează.',
-        'Și vă rog, nu vă amăgiți. Dacă nu înțelegeţi ceva, probabil acest lucru va fi folosit împotriva dumneavoastră. Orice rămâne neclar este, în esență, un risc ascuns.',
+      uk: [
+        'До договорів важливо ставитися не як до формальності, а як до інструмента захисту бізнесу.',
+        'Краще, коли договори зроблені під Вашу реальну модель роботи, а не взяті з шаблонів чи зібрані через ChatGPT без перевірки. Такі тексти можуть виглядати переконливо, але містити помилки або вигадані конструкції, за які зрештою відповідаєте Ви.',
+        'Договори потрібно періодично переглядати. Достатньо хоча б раз на рік ставити собі запитання: чи цей документ відповідає тому, як ми реально працюємо сьогодні?',
+        'Простий тест – дайте договір людині «зі сторони». Якщо вона розуміє його інакше, ніж Ви задумували, отже, є слабкі місця.',
+        'І обов’язково перевірте, чи є в договорі конкретні механізми захисту: відповідальність, штрафи, порядок оплати, приймання, розірвання і розгляду спорів. Якщо цього немає – договір Вас не захищає.',
+        'І, будь ласка, не варто себе обманювати. Якщо Ви чогось не розумієте, то, найімовірніше, це буде використано проти Вас. Усе, що залишається незрозумілим, по суті є прихованим ризиком.',
       ],
       ru: [
         'К договорам важно относиться не как к формальности, а как к инструменту защиты бизнеса.',
@@ -176,9 +176,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Codul Civil al Republicii Moldova',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=150498&lang=ro',
+      uk: {
+        label: 'Цивільний кодекс Республіки Молдова',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=150498&lang=ru',
       },
       ru: {
         label: 'Гражданский кодекс Республики Молдова',
@@ -193,22 +193,22 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 4,
     title: {
-      ro: 'Blocul 4. Riscuri financiare și fiscale',
+      uk: 'Блок 4. Фінанси та податкові ризики',
       ru: 'Блок 4. Финансы и налоговые риски',
     },
     essence: {
-      ro: 'Această secțiune demonstrează cât de atent gestionează compania banii, impozitele și disciplina financiară. Aici se examinează dacă fondurile afacerii sunt separate de cheltuielile personale ale proprietarilor, cât de consecvent își îndeplinește compania obligațiile fiscale, cum gestionează numerarul și dacă își înțelege adevărata povară fiscală.',
+      uk: 'Цей блок показує, наскільки акуратно в компанії вибудувані відносини з грошима, податками й фінансовою дисципліною. Тут перевіряється, чи відокремлені гроші бізнесу від особистих витрат власників, наскільки стабільно компанія виконує податкові зобов’язання, як працює з готівкою і чи взагалі розуміє своє реальне податкове навантаження.',
       ru: 'Этот блок показывает, насколько аккуратно в компании выстроены отношения с деньгами, налогами и финансовой дисциплиной. Здесь проверяется, отделены ли деньги бизнеса от личных расходов собственников, насколько стабильно компания исполняет налоговые обязательства, как работает с наличными и понимает ли вообще свою реальную налоговую нагрузку.',
     },
     risk: {
-      ro: [
-        'Atunci când fondurile companiei sunt utilizate pentru cheltuielile personale ale fondatorilor sau directorilor, granița dintre fondurile de afaceri și cele personale devine neclară.',
-        'În acest moment, cel mai des întâlnit gând este: „Nu e mare lucru, oricum sunt banii mei". Logica este clară, dar din punct de vedere juridic, nu este adevărată. O companie este o entitate separată, iar banii ei nu sunt banii personali ai proprietarului.',
-        'Și tocmai cu aceste acțiuni aparent inofensive încep adesea problemele reale: întrebări din partea băncii, evaluări fiscale suplimentare, amenzi și riscul ca, într-o situație dificilă, responsabilitatea să vă revină personal.',
-        'Restanțele fiscale, chiar dacă nu sunt sistemice, indică slăbiciuni în disciplina financiară a unei companii. Iar dacă astfel de restanțe se repetă, este un semn că afacerea este supusă unei presiuni constante și s-ar putea confrunta cu sancțiuni, penalități, blocaje și control guvernamental suplimentar în orice moment.',
-        'Un semnal de risc separat este operarea regulată cu numerarul. În realitatea noastră, acesta este aproape întotdeauna un domeniu sensibil, deoarece numerarul este cel mai probabil să ridice semne de întrebare din partea băncilor, a serviciului fiscal și a Serviciului Prevenirea și Combaterea Spălării Banilor. Dacă o companie retrage în mod regulat numerar, dar nu analizează de ce și cât, acest lucru creează impresia unui model financiar netransparent.',
-        'O problemă suplimentară apare atunci când o afacere nu analizează ponderea din cifra sa de afaceri consumată de impozite. În acest caz, compania nu își gestionează povara fiscală, ci pur și simplu „plătește cât poate". Acest lucru orbește modelul financiar: proprietarul poate vedea veniturile, dar nu înțelege cât pierde de fapt afacerea din cauza impozitelor, erorilor și a unei structuri ineficiente.',
-        'În cele din urmă, toate acestea pot duce la amenzi, penalități, deficit de numerar, blocări de tranzacții, reclamații din partea băncii și a autorităților fiscale, precum și la o pierdere generală a controlului financiar.',
+      uk: [
+        'Коли гроші компанії використовуються на особисті витрати засновників або директора, межа між бізнесом і особистими коштами розмивається.',
+        'У цей момент найчастіше звучить проста думка: «нічого страшного, це ж і так мої гроші». Логіка зрозуміла, але з точки зору закону це не так. Компанія – це окрема структура, і її гроші – це не особисті гроші власника.',
+        'І саме з таких, на перший погляд, безневинних дій найчастіше починаються реальні проблеми: питання від банку, донарахування податків, штрафи і ризик того, що в складній ситуації відповідальність уже перейде на Вас особисто.',
+        'Прострочення за податками, навіть якщо вони були не системними, показують, що в компанії є слабкі місця у фінансовій дисципліні. А якщо такі прострочення повторюються, це вже ознака того, що бізнес живе в режимі постійної напруги і може будь-якої миті зіткнутися із санкціями, пенею, блокуваннями та додатковою увагою з боку держави.',
+        'Окремий сигнал ризику – регулярна робота з готівкою. У наших реаліях це майже завжди чутлива зона, тому що саме готівка найчастіше викликає питання в банку, податкової служби та Центру з боротьби з відмиванням грошей. Якщо компанія регулярно знімає гроші, але не аналізує, навіщо і в якому обсязі це відбувається, це виглядає як непрозора фінансова модель.',
+        'Додаткова проблема виникає тоді, коли бізнес узагалі не аналізує, яку частку обороту з’їдають податки. У цьому випадку компанія не керує податковим навантаженням, а просто «платить як виходить». Це робить фінансову модель сліпою: власник може бачити виручку, але не розуміти, скільки бізнес реально втрачає на податках, помилках і неефективній структурі.',
+        'У підсумку все це може призвести до штрафів, пені, касових розривів, блокувань операцій, претензій з боку банку та податкових органів, а також до загальної втрати керованості фінансами.',
       ],
       ru: [
         'Когда деньги компании используются на личные расходы учредителей или директора, граница между бизнесом и личными средствами размывается.',
@@ -221,11 +221,11 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Aici, este crucial să se separe în mod sincer fondurile companiei de cheltuielile personale. Dacă proprietarul sau directorul folosește fondurile companiei în scopuri personale, astfel de tranzacții trebuie fie oprite, fie documentate corespunzător; în acest caz, birocrația devine scutul dumneavoastră de încredere împotriva pretențiilor din partea organelor de stat.',
-        'În continuare, merită să se analizeze conformitatea fiscală din ultimii ani și să se stabilească dacă întârzierile la plăți au fost o întâmplare sau un tipar. Gestionarea numerarului ar trebui examinată separat: cât de des se retrage numerar, de ce și dacă astfel de tranzacții pot fi reduse.',
-        'În același timp, este esențial ca afacerile să înțeleagă trei lucruri de bază. În primul rând, cât câștigă compania de fapt – profitul net, adică banii care rămân după toate cheltuielile și impozitele. În al doilea rând, care este cifra sa de afaceri și cum se comportă dinamic. Și în al treilea rând, ce cotă din această cifră de afaceri plătește compania sub formă de impozite.',
-        'Anume al treilea indicator mulți îl ignoră, însă pe nedrept. Acesta adesea conține o „bombă cu ceas": erorile, plățile insuficiente sau o structură fiscală ineficientă pot să nu iasă la suprafață pentru o lungă perioadă de timp, dar în timpul unui audit fiscal, acestea pot avea un impact puternic și semnificativ asupra afacerii.',
+      uk: [
+        'Тут насамперед важливо чесно відокремити гроші компанії від особистих витрат. Якщо власник або директор використовує кошти бізнесу для себе, такі операції мають бути або припинені, або правильно оформлені – у цьому випадку бюрократія стає Вашим надійним щитом від претензій з боку державних органів.',
+        'Далі варто перевірити податкову дисципліну за останні роки й зрозуміти, чи були прострочення випадковістю, чи вже системою. Окремо потрібно подивитися на роботу з готівкою: як часто гроші знімаються, навіщо саме і чи можна скоротити такі операції.',
+        'При цьому для бізнесу критично розуміти три базові речі. По-перше, скільки компанія реально заробляє – її чистий прибуток, тобто ті гроші, які залишаються після всіх витрат і податків. По-друге, який у неї оборот і як він поводиться в динаміці. І, по-третє, яку частку від цього обороту компанія платить у вигляді податків.',
+        'Саме третій показник багато хто ігнорує, а даремно. У ньому часто прихована «міна сповільненої дії»: помилки, недоплати або неефективна податкова структура можуть довго не проявлятися, але під час перевірки з боку податкової це може різко й суттєво вдарити по бізнесу.',
       ],
       ru: [
         'Здесь прежде всего важно честно отделить деньги компании от личных расходов. Если собственник или директор использует средства бизнеса для себя, такие операции должны быть либо прекращены, либо правильно оформлены в этом случае бюрократия становится Вашим надёжным щитом от претензий со стороны государственных органов.',
@@ -235,9 +235,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Codul Fiscal al Republicii Moldova',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=138613&lang=ro',
+      uk: {
+        label: 'Податковий кодекс Республіки Молдова',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=138613&lang=ru',
       },
       ru: {
         label: 'Налоговый кодекс Республики Молдова',
@@ -252,20 +252,20 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 5,
     title: {
-      ro: 'Blocul 5. Răspundere personală și faliment',
+      uk: 'Блок 5. Особиста відповідальність і банкрутство',
       ru: 'Блок 5. Личная ответственность и банкротство',
     },
     essence: {
-      ro: 'Această secțiune demonstrează cât de eficient se aplică principiul „companie separat, riscurile personale separat" afacerii dumneavoastră. Deși acest lucru este adevărat din punct de vedere tehnic, în unele situații această distincție poate deveni neclară.',
+      uk: 'Цей блок показує, наскільки у Вашому бізнесі реально працює принцип «компанія окремо – особисті ризики окремо». Формально це так, але в низці ситуацій ця межа може розмиватися.',
       ru: 'Этот блок показывает, насколько в Вашем бизнесе реально работает принцип «компания отдельно – личные риски отдельно». Формально это так, но в ряде ситуаций эта граница может размываться.',
     },
     risk: {
-      ro: [
-        'Principala greșeală este să presupunem că existența unei companii protejează automat și complet bunurile personale de o posibilă confiscare. În practică, acest lucru nu este mereu așa.',
-        'Există situații în care riscul se transferă asupra proprietarului sau directorului. Acestea implică cel mai adesea garanții personale, depășirea atribuțiilor sau acțiuni nereglementate în cadrul companiei.',
-        'Garanțiile trebuie tratate cu o atenție deosebită. Deși sunt adesea percepute ca o formalitate în momentul semnării, ele reprezintă, în esență, o asumare voluntară a unui risc suplimentar. Dacă obligația nu este îndeplinită, pot fi formulate reclamații împotriva dumneavoastră personal, până la limitele garanției.',
-        'Un risc deosebit apare atunci când contractele sau angajamentele sunt semnate fără aprobare sau în afara unei structuri decizionale clare. În condiții normale de muncă, acest lucru poate să nu reprezinte o problemă, dar într-un conflict sau o dispută, astfel de acțiuni pot fi contestate și pot duce la pierderi și pretenții.',
-        'Este important să înțelegem că nu orice încălcare duce automat la răspundere personală, dar anumite acțiuni pot crește semnificativ acest risc și pot „depăși" apărarea companiei.',
+      uk: [
+        'Основна помилка – вважати, що наявність компанії автоматично повністю захищає особисті активи від можливого стягнення. На практиці це не завжди так.',
+        'Є ситуації, у яких ризик переходить на рівень власника або директора. Найчастіше це пов’язано з особистими поруками, перевищенням повноважень або діями без належного оформлення всередині компанії.',
+        'Особливо уважно потрібно ставитися до порук. У момент підписання вони часто сприймаються як формальність, але, по суті, це добровільне прийняття на себе додаткового ризику. Якщо зобов’язання не виконується, вимоги можуть бути пред’явлені вже до Вас особисто – у межах такої поруки.',
+        'Окрема зона ризику – коли договори або зобов’язання підписуються без погодження або поза зрозумілою структурою ухвалення рішень. У звичайній роботі це може не створювати проблем, але в конфлікті чи спорі такі дії можуть бути оскаржені й призвести до збитків і претензій.',
+        'Важливо розуміти: не кожне порушення автоматично веде до особистої відповідальності, але певні дії можуть суттєво підвищити цей ризик і «пробити» захист компанії.',
       ],
       ru: [
         'Основная ошибка – считать, что наличие компании автоматически полностью защищает личные активы от возможного взыскания. На практике это не всегда так.',
@@ -276,11 +276,11 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Cheia aici este conștientizarea și disciplina de bază.',
-        'Este important să înțelegeți clar dacă ați semnat garanții personale și amploarea riscurilor pe care vi le-ați asumat deja. De acum înainte, astfel de decizii ar trebui luate în mod conștient, înțelegând și gestionând consecințele.',
-        'Este important să se construiască un sistem simplu, dar clar: deciziile cheie sunt înregistrate, obligațiile semnificative sunt convenite și autoritatea nu este depășită.',
-        'Și cel mai important, înțelegeți unde se află limitele responsabilității personale în situația dumneavoastră. Chiar și o înțelegere de bază a acestor reguli reduce semnificativ riscul de erori.',
+      uk: [
+        'Тут ключове – усвідомленість і базова дисципліна.',
+        'Потрібно чітко розуміти, чи підписувалися особисті поруки і в яких обсягах Ви вже прийняли на себе ризики. Надалі такі рішення варто ухвалювати лише усвідомлено, розуміючи наслідки й керуючи ними.',
+        'Важливо вибудувати просту, але зрозумілу систему: ключові рішення фіксуються, суттєві зобов’язання погоджуються, повноваження не виходять за межі.',
+        'І найголовніше – розуміти, де проходять межі особистої відповідальності у Вашій ситуації. Навіть базове розуміння цих правил уже суттєво знижує ризик помилок.',
       ],
       ru: [
         'Здесь ключевое – осознанность и базовая дисциплина.',
@@ -290,9 +290,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Legea privind insolvența (falimentul) Republicii Moldova',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=152605&lang=ro',
+      uk: {
+        label: 'Закон про неспроможність (банкрутство) Республіки Молдова',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=152605&lang=ru',
       },
       ru: {
         label: 'Закон о несостоятельности (банкротстве) Республики Молдова',
@@ -307,20 +307,20 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 6,
     title: {
-      ro: 'Blocul 6. Contrapărți și activități reale',
+      uk: 'Блок 6. Контрагенти та реальна діяльність',
       ru: 'Блок 6. Контрагенты и реальная деятельность',
     },
     essence: {
-      ro: 'Acest bloc arată cât de mult este compania cu adevărat operațională, nu doar „pe hârtie". Două lucruri foarte practice intră în joc aici. În primul rând, știți cum să verificați în avans cu cine începeți să lucrați și să eliminați companiile nesigure și potențialii escroci care v-ar putea crea probleme? În al doilea rând, puteți evalua dacă contrapartea își poate îndeplini obligațiile sau este în pragul falimentului? Cu alte cuvinte, este vorba despre a înțelege ce are de fapt compania, ce deține și ce obligații îi revin. În esență, aceasta este o întrebare nu doar despre documente, ci despre gestionabilitatea și predictibilitatea afacerii.',
+      uk: 'Цей блок показує, наскільки компанія живе в реальності, а не лише «на папері». Тут проявляються дві дуже практичні речі. По-перше, чи вмієте Ви заздалегідь перевіряти, з ким починаєте працювати, і відсікати неблагонадійні компанії та потенційних шахраїв, які можуть створити Вам проблеми. По-друге, чи здатні Ви оцінити, чи дійсно контрагент може виконати свої зобов’язання або перебуває на межі банкрутства. Інакше кажучи, ідеться про те, чи розумієте Ви, що в компанії реально є, чим вона володіє і які зобов’язання на ній фактично лежать. По суті, це питання не лише про документи, а про керованість і передбачуваність бізнесу.',
       ru: 'Этот блок показывает, насколько компания живёт в реальности, а не только «на бумаге». Здесь проявляются две очень практичные вещи. Во-первых, умеете ли Вы заранее проверять, с кем начинаете работать, и отсекать неблагонадёжные компании и потенциальных мошенников, которые могут создать Вам проблемы. Во-вторых, способны ли Вы оценить, действительно ли контрагент может выполнить свои обязательства или находится на грани банкротства. Иначе говоря, речь о том, понимаете ли Вы, что у компании реально есть, чем она владеет и какие обязательства на ней фактически лежат. По сути, это вопрос не только про документы, а про управляемость и предсказуемость бизнеса.',
     },
     risk: {
-      ro: [
-        'Dacă o companie nu are un proces clar de verificare a partenerilor contractuali, colaborarea începe adesea „pe bază de încredere", „prin recomandare" sau pur și simplu pentru că o tranzacție trebuie încheiată rapid. Într-o perioadă de liniște, acest lucru poate părea normal. Dar apoi se dovedește brusc că partenerul contractual este problematic, nu își îndeplinește obligațiile, are datorii, prezintă semnele unei firme-fantomă sau pur și simplu nu a fost un partener de încredere de la bun început.',
-        'Într-o astfel de situație, o afacere pierde mai mult decât bani. De asemenea, pierde timp, atenție din partea conducerii, reputație și oportunitatea de a se apăra rapid. Și, în unele cazuri, pot apărea întrebări nu doar despre contraparte, ci și despre companie în sine: de ce ați început să lucrați cu ei și cât de amănunțit i-ați verificat înainte de tranzacție.',
-        'Al doilea domeniu sensibil este inventarierea. Mulți o percep ca pe o sarcină contabilă plictisitoare care poate fi amânată. Dar, în practică, acesta demonstrează dacă imaginea de sine a unei companii corespunde cu activele sale reale.',
-        'Dacă nu se ține un inventar, o afacere începe treptat să trăiască într-o iluzie. Pe hârtie, poate părea că există un singur activ, un singur bilanț și un singur pasiv, dar în realitate, imaginea este complet diferită. Și acest lucru iese de obicei la iveală în cel mai nepotrivit moment: înaintea vânzării unei afaceri, în timpul unui conflict între fondatori, în timpul unui audit, al unei schimbări de contabil, al unei dispute cu o contraparte sau al unui deficit de flux de numerar.',
-        'Drept urmare, compania se poate confrunta cu pierderi, haos intern, dispute privind activele și datoriile, probleme de raportare și o poziție slabă în timpul auditurilor sau negocierilor.',
+      uk: [
+        'Якщо в компанії немає зрозумілого порядку перевірки контрагентів, співпраця часто починається «на довірі», «за рекомендацією» або просто тому, що потрібно швидко закрити угоду. У спокійний період це може здаватися нормальним. Але потім раптово виявляється, що контрагент проблемний, не виконує зобов’язань, має борги, ознаки фіктивності або просто від початку не був надійним партнером.',
+        'У такій ситуації бізнес втрачає не лише гроші. Він втрачає час, управлінську увагу, репутацію і можливість швидко захистити себе. А в деяких випадках питання можуть з’явитися вже не тільки до контрагента, а й до самої компанії: чому Ви взагалі почали з ним працювати і наскільки сумлінно перевіряли його до угоди.',
+        'Друга чутлива зона – інвентаризація. Багато хто сприймає її як нудний бухгалтерський обов’язок, який можна відкласти. Але на практиці саме вона показує, чи збігається те, що компанія думає про себе, з тим, що в неї є насправді.',
+        'Якщо інвентаризація не проводиться, бізнес поступово починає жити в ілюзії. На папері може бути одне майно, одні залишки, одні зобов’язання, а в реальності – зовсім інша картина. І зазвичай це з’ясовується в найбільш невідповідний момент: перед продажем бізнесу, у конфлікті між засновниками, під час перевірки, зміни бухгалтера, спору з контрагентом чи касового розриву.',
+        'У результаті компанія може зіткнутися з втратами, внутрішнім хаосом, спорами щодо активів і боргів, проблемами зі звітністю та слабкою позицією під час перевірок або переговорів.',
       ],
       ru: [
         'Если в компании нет понятного порядка проверки контрагентов, сотрудничество часто начинается «на доверии», «по рекомендации» или просто потому, что нужно быстро закрыть сделку. В спокойный период это может казаться нормальным. Но потом внезапно выясняется, что контрагент проблемный, не исполняет обязательства, имеет долги, признаки фиктивности или просто изначально не был надёжным партнёром.',
@@ -331,11 +331,11 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Nu este nevoie să inventăm un sistem complex aici. O disciplină de bază este suficientă.',
-        'Înainte de a începe lucrul cu o nouă contraparte, merită să efectuați cel puțin o verificare de bază: să înțelegeți cine este, dacă acționează în mod fiabil și dacă are probleme evidente.',
-        'Este important să priviți inventarizarea nu ca pe o formalitate, ci ca pe o modalitate de a verifica periodic datele cu realitatea. Chiar dacă nu aveți resursele necesare pentru a efectua proceduri complexe, este suficient să vă revizuiți activele și pasivele cheie cel puțin o dată pe an.',
-        'Per total, sarcina este simplă – să vezi cu cine lucrezi și ce ai.',
+      uk: [
+        'Тут не потрібно винаходити складну систему. Достатньо запровадити базову дисципліну.',
+        'Перед початком роботи з новим контрагентом варто проводити хоча б базову перевірку: зрозуміти, хто це, чи діє він реально і чи немає в нього очевидних проблем.',
+        'Інвентаризацію важливо сприймати не як формальність, а як спосіб періодично звіряти дані з реальністю. Навіть якщо немає ресурсу робити складні процедури, достатньо хоча б раз на рік перевіряти основні активи та зобов’язання.',
+        'Загалом завдання просте – бачити, з ким Ви працюєте і що у Вас є.',
       ],
       ru: [
         'Здесь не нужно изобретать сложную систему. Достаточно ввести базовую дисциплину.',
@@ -345,9 +345,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Legea privind contabilitatea și raportarea financiară a Republicii Moldova',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=140124&lang=ro',
+      uk: {
+        label: 'Закон про бухгалтерський облік і фінансову звітність Республіки Молдова',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=140124&lang=ru',
       },
       ru: {
         label: 'Закон о бухгалтерском учёте и финансовой отчётности Республики Молдова',
@@ -362,18 +362,18 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 7,
     title: {
-      ro: 'Blocul 7. Relații de muncă',
+      uk: 'Блок 7. Трудові відносини',
       ru: 'Блок 7. Трудовые отношения',
     },
     essence: {
-      ro: 'Această secțiune prezintă modul în care compania își protejează proactiv baza de clienți, informațiile interne și relațiile de muncă cheie.',
+      uk: 'Цей блок про те, наскільки компанія заздалегідь захищає свою клієнтську базу, внутрішню інформацію і ключові робочі зв’язки.',
       ru: 'Этот блок про то, насколько компания заранее защищает свою клиентскую базу, внутреннюю информацию и ключевые рабочие связи.',
     },
     risk: {
-      ro: [
-        'Una dintre cele mai neplăcute situații pentru un proprietar este atunci când un angajat pleacă nu singur, ci cu clienții, corespondența, contacte și o înțelegere a modului în care totul este organizat intern. Foarte des, acest lucru se întâmplă nu din cauza „intenției răuvoitoare", ci pur și simplu pentru că firma nu a reușit să stabilească limite în avans.',
-        'Dacă nu se semnează un acord de confidențialitate și un acord de transfer de informații cu un angajat, devine dificil să se explice și să se dovedească ce anume a fost confidențial și ce anume a fost secret comercial. Iar dacă problema utilizării bazei de clienți după plecare nu este rezolvată cu angajații cheie, afacerea se poate confrunta cu o situație foarte neplăcută: ieri, cineva lucra pentru tine, iar mâine, scrie acelorași clienți în nume propriu sau în numele unui concurent.',
-        'Pentru un antreprenor, acest lucru este aproape întotdeauna la fel de dureros: o bază de clienți aparent construită pe cheltuiala companiei, dar atunci când un angajat pleacă, aceasta devine bunul personal al angajatului. Atunci afacerea pierde nu doar venituri, ci și controlul.',
+      uk: [
+        'Одна з найнеприємніших ситуацій для власника – коли співробітник іде не сам, а разом із клієнтами, листуванням, контактами і розумінням того, як у Вас усе влаштовано всередині. Дуже часто це відбувається не через «злий намір», а просто тому, що компанія заздалегідь не вибудувала межі.',
+        'Якщо зі співробітником не підписано угоду про конфіденційність і акт передавання інформації, потім стає важко пояснити і довести, що саме було конфіденційною інформацією і комерційною таємницею. А якщо з ключовими людьми не врегульовано питання використання клієнтської бази після звільнення, бізнес може зіткнутися з дуже неприємною картиною: учора людина працювала у Вас, а завтра вже пише тим самим клієнтам від свого імені або від імені конкурента.',
+        'Для підприємця це майже завжди виглядає однаково болісно: клієнтська база начебто створювалася за рахунок компанії, а в момент звільнення перетворюється на особистий актив співробітника. І тоді бізнес втрачає не лише виручку, а й контроль.',
       ],
       ru: [
         'Одна из самых неприятных ситуаций для собственника – когда сотрудник уходит не один, а вместе с клиентами, перепиской, контактами и пониманием, как у Вас всё устроено внутри. Очень часто это происходит не из-за «злого умысла», а просто потому, что компания заранее не выстроила границы.',
@@ -382,9 +382,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Cel mai bine este să păstrezi lucrurile simple și să acoperi elementele de bază de la început. Ar trebui semnate acorduri clare de confidențialitate cu angajații care au acces la clienți, prețuri, corespondență, dosare și informații interne. Iar cu angajații cheie, merită să conveniți separat asupra a ceea ce se întâmplă cu baza de clienți și informațiile comerciale după plecarea lor.',
-        'Cu cât se face acest lucru mai repede, cu calm și normalitate, cu atât este mai puțin probabil să trebuiască să vă puneți din urmă cu clienții care au plecat deja și să vă dați seama cine „ce a însemnat" pentru cine.',
+      uk: [
+        'Тут краще не ускладнювати, а заздалегідь закрити базові речі. Зі співробітниками, які мають доступ до клієнтів, цін, листування, файлів і внутрішньої інформації, мають бути підписані зрозумілі угоди про конфіденційність. А з ключовими людьми варто окремо врегулювати, що відбувається з клієнтською базою і комерційною інформацією після їхнього звільнення.',
+        'Чим раніше це оформлено спокійно і нормально, тим менша ймовірність, що потім доведеться наздоганяти вже втрачених клієнтів і розбиратися, хто кому що «мав на увазі».',
       ],
       ru: [
         'Здесь лучше не усложнять, а заранее закрыть базовые вещи. С сотрудниками, у которых есть доступ к клиентам, ценам, переписке, файлам и внутренней информации, должны быть подписаны понятные соглашения о конфиденциальности. А с ключевыми людьми стоит отдельно урегулировать, что происходит с клиентской базой и коммерческой информацией после их ухода.',
@@ -392,9 +392,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Codul Muncii al Republicii Moldova',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=151096&lang=ro',
+      uk: {
+        label: 'Трудовий кодекс Республіки Молдова',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=151096&lang=ru',
       },
       ru: {
         label: 'Трудовой кодекс Республики Молдова',
@@ -409,22 +409,22 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
   {
     order: 8,
     title: {
-      ro: 'Blocul 8. Riscuri de piață',
+      uk: 'Блок 8. Ринкові ризики',
       ru: 'Блок 8. Рыночные риски',
     },
     essence: {
-      ro: 'Această secțiune discută modul în care o companie operează pe piață și dacă aceasta înțelege regulile jocului dintr-o perspectivă concurențială.',
+      uk: 'Цей блок про те, як компанія поводиться на ринку і чи розуміє правила гри з точки зору конкуренції.',
       ru: 'Этот блок про то, как компания ведёт себя на рынке и понимает ли правила игры с точки зрения конкуренции.',
     },
     risk: {
-      ro: [
-        'Există lucruri care sunt adesea considerate „normale" în lumea afacerilor — discuțiile despre prețuri cu colegii de pe piață, schimbul de planuri, ajungerea la acorduri „pentru ca toată lumea să se simtă confortabil". În realitate, astfel de acțiuni pot fi percepute ca o încălcare a regulilor de concurență.',
-        'Problema aici este că nu pare nimic periculos. Oamenii comunică, se întâlnesc, se alătură asociațiilor și discută în chat-uri. Dar, la un moment dat, astfel de conversații ar putea deveni motive pentru pretenții serioase din partea autorităților de reglementare.',
-        'În astfel de cazuri, companiile se pot confrunta cu amenzi, inspecții și restricții, iar acest lucru reprezintă un nivel de risc complet diferit — nu operațional, ci sistemic.',
-        'Al doilea domeniu sensibil îl reprezintă tranzacțiile comerciale: achiziționarea unei companii, a unei participații sau o fuziune. Mulți le percep ca pe o tranzacție comercială standard, dar legea stabilește praguri clare dincolo de care se declanșează supravegherea obligatorie din partea Consiliului Concurenței.',
-        'Dacă cifra de afaceri totală a părților la o tranzacție depășește 50.000.000 lei, iar cel puțin două părți au o cifră de afaceri în Republica Moldova de peste 20.000.000 lei fiecare, o astfel de tranzacție este supusă notificării obligatorii înainte de efectuarea ei.',
-        'În acest caz, tranzacția în sine este apreciată nu doar prin prisma transferului afacerii, ci din momentul semnării unui acord, al anunțării unei oferte publice sau al dobândirii controlului.',
-        'Dacă această cerință este ignorată, chiar și o tranzacție complet transparentă și solidă din punct de vedere economic poate crea probleme serioase: amenzi, intervenții de reglementare, necesitatea renegocierii termenilor sau revenirea la starea inițială. Aici se pune problema nu legată de „conținutul tranzacției", ci mai degrabă de faptul că aceasta a fost executată fără o procedură adecvată.',
+      uk: [
+        'Є речі, які в бізнес-середовищі часто вважаються «нормальними» – обговорити ціни з колегами по ринку, обмінятися планами, домовитися «щоб усім було комфортно». У реальності такі дії можуть сприйматися як порушення правил конкуренції.',
+        'І проблема тут у тому, що це не виглядає як щось небезпечне. Люди спілкуються, зустрічаються, перебувають в асоціаціях, листуються в чатах. Але в певний момент такі розмови можуть стати підставою для серйозних претензій з боку регулюючих органів.',
+        'У таких випадках бізнес може зіткнутися зі штрафами, перевірками та обмеженнями, і це вже зовсім інший рівень ризику – не операційний, а системний.',
+        'Друга чутлива зона – угоди з бізнесом: купівля компанії, часток або об’єднання. Багато хто сприймає це як звичайну комерційну угоду, але закон установлює чіткі пороги, після яких вмикається обов’язковий контроль з боку Ради з конкуренції.',
+        'Якщо сукупний оборот учасників угоди перевищує 50 000 000 леїв, і при цьому щонайменше два учасники мають оборот у Республіці Молдова понад 20 000 000 леїв кожен, така угода підлягає обов’язковому повідомленню до її реалізації.',
+        'При цьому під самою угодою розуміється вже не лише факт передавання бізнесу, а момент підписання угоди, оголошення публічної оферти або набуття контролю.',
+        'Якщо ця вимога ігнорується, навіть повністю «біла» і економічно логічна угода може створити серйозні проблеми: штрафи, втручання регулятора, необхідність перегляду умов або повернення до початкового стану. І це той випадок, коли питання виникає не до «змісту угоди», а до того, що вона була здійснена без дотримання процедури.',
       ],
       ru: [
         'Есть вещи, которые в бизнес-среде часто считаются «нормальными» – обсудить цены с коллегами по рынку, обменяться планами, договориться «чтобы всем было комфортно». В реальности такие действия могут восприниматься как нарушение правил конкуренции.',
@@ -437,11 +437,11 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        'Este important să înțelegem pur și simplu limitele aici.',
-        'Cel mai bine este să nu discutați prețuri, condiții de vânzare sau planuri cu concurenții — nici măcar în contexte informale. Ceea ce pare a fi o comunicare informală poate fi interpretată diferit în anumite circumstanțe.',
-        'Atunci când se ia în considerare achiziționarea unei afaceri, a unor acțiuni sau fuziunea unei companii, este recomandat să verificați în prealabil dacă tranzacția se califică pentru notificare. Aceasta nu este o verificare complicată, dar poate economisi o mulțime de bani și stres.',
-        'În general, logica este simplă: pe piață este important nu doar să faci bani, ci și să respecți regulile, chiar dacă acestea nu sunt întotdeauna evidente.',
+      uk: [
+        'Тут важливо просто розуміти межі.',
+        'З конкурентами краще не обговорювати ціни, умови продажів або плани – навіть у неформальній обстановці. Те, що виглядає як звичайне спілкування, за певних умов може бути інтерпретоване інакше.',
+        'Якщо йдеться про купівлю бізнесу, часток або об’єднання компаній, має сенс заздалегідь перевірити, чи підпадає угода під вимоги повідомлення. Це не складна перевірка, але вона може зекономити багато грошей і нервів.',
+        'Загалом логіка проста: на ринку важливо не лише заробляти, а й не порушувати правила, навіть якщо вони не завжди очевидні.',
       ],
       ru: [
         'Здесь важно просто понимать границы.',
@@ -451,9 +451,9 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
       ],
     },
     regulatory: {
-      ro: {
-        label: 'Legea concurenței nr. 183/2012',
-        url: 'https://www.legis.md/cautare/getResults?doc_id=152606&lang=ro',
+      uk: {
+        label: 'Закон про конкуренцію №183/2012',
+        url: 'https://www.legis.md/cautare/getResults?doc_id=152606&lang=ru',
       },
       ru: {
         label: 'Закон о конкуренции №183/2012',

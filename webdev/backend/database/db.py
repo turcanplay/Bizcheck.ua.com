@@ -5,7 +5,7 @@ Supports DATABASE_URL (Railway/Render) or individual DB_* env vars.
 
 import os
 import psycopg2
-from psycopg2 import pool
+from psycopg2 import pool, sql
 from psycopg2.extras import RealDictCursor
 
 _pool = None
@@ -133,6 +133,66 @@ def execute_many(sql, params_list):
         put_conn(conn)
 
 
+"""Tables whose bilingual columns were `<col>_ro` before Romanian was replaced
+by Ukrainian. Fresh databases are created with `<col>_uk` directly."""
+RO_TO_UK_COLUMNS = [
+    ("tests",        ["name", "description"]),
+    ("blocks",       ["title"]),
+    ("questions",    ["text", "note", "purpose", "example"]),
+    ("answers",      ["text", "explanation", "risk"]),
+    ("templates",    ["title", "description"]),
+    ("testimonials", ["quote"]),
+    ("faq_items",    ["question", "answer"]),
+]
+
+
+def migrate_ro_to_uk(cur):
+    """Rename every `*_ro` column to `*_uk` and relabel stored 'ro' values.
+
+    Idempotent: guarded on both sides, so a database that has already been
+    migrated (and a second gunicorn worker racing through boot) does nothing.
+    A fresh database created by the CREATE TABLE block above already has the
+    `_uk` columns, so nothing matches here either.
+    """
+    for table, cols in RO_TO_UK_COLUMNS:
+        for col in cols:
+            old, new = f"{col}_ro", f"{col}_uk"
+            cur.execute(
+                """
+                SELECT
+                  bool_or(column_name = %(old)s) AS has_old,
+                  bool_or(column_name = %(new)s) AS has_new
+                FROM information_schema.columns
+                WHERE table_name = %(t)s
+                """,
+                {"t": table, "old": old, "new": new},
+            )
+            row = cur.fetchone() or (None, None)
+            has_old, has_new = row[0], row[1]
+            if has_old and not has_new:
+                cur.execute(
+                    sql.SQL("ALTER TABLE {} RENAME COLUMN {} TO {}").format(
+                        sql.Identifier(table), sql.Identifier(old), sql.Identifier(new)
+                    )
+                )
+
+    # Rows still tagged 'ro' would fall back to UK at render time anyway;
+    # relabel them so the stored value matches what is actually shown.
+    cur.execute("UPDATE submissions  SET language = 'uk' WHERE language = 'ro';")
+    cur.execute("UPDATE testimonials SET lang     = 'uk' WHERE lang     = 'ro';")
+    cur.execute("UPDATE tg_outreach  SET lang     = 'uk' WHERE lang     = 'ro';")
+    # The feedback prompt lives in site_settings under a per-language key.
+    cur.execute(
+        """
+        UPDATE site_settings SET key = 'feedback_prompt_uk'
+         WHERE key = 'feedback_prompt_ro'
+           AND NOT EXISTS (
+               SELECT 1 FROM site_settings s2 WHERE s2.key = 'feedback_prompt_uk'
+           );
+        """
+    )
+
+
 def migrate():
     """Create the full BizCheck schema in one shot.
 
@@ -168,9 +228,9 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS tests (
                     id                    SERIAL       PRIMARY KEY,
                     slug                  VARCHAR(100) UNIQUE NOT NULL,
-                    name_ro               VARCHAR(255) NOT NULL,
+                    name_uk               VARCHAR(255) NOT NULL,
                     name_ru               VARCHAR(255) NOT NULL DEFAULT '',
-                    description_ro        TEXT         NOT NULL DEFAULT '',
+                    description_uk        TEXT         NOT NULL DEFAULT '',
                     description_ru        TEXT         NOT NULL DEFAULT '',
                     scoring_zones         JSONB        NOT NULL DEFAULT '{"safe": 80, "developing": 70, "warn": 65, "risk": 0}',
                     zone_recommendations  JSONB        DEFAULT NULL,
@@ -215,7 +275,7 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS blocks (
                     id          SERIAL       PRIMARY KEY,
                     test_id     INTEGER      NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
-                    title_ro    VARCHAR(255) NOT NULL,
+                    title_uk    VARCHAR(255) NOT NULL,
                     title_ru    VARCHAR(255) NOT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
                     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -226,13 +286,13 @@ def migrate():
                     id                 SERIAL      PRIMARY KEY,
                     block_id           INTEGER     NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
                     parent_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_ro            TEXT        NOT NULL,
+                    text_uk            TEXT        NOT NULL,
                     text_ru            TEXT        NOT NULL,
-                    note_ro            TEXT        DEFAULT NULL,
+                    note_uk            TEXT        DEFAULT NULL,
                     note_ru            TEXT        DEFAULT NULL,
-                    purpose_ro         TEXT        DEFAULT NULL,
+                    purpose_uk         TEXT        DEFAULT NULL,
                     purpose_ru         TEXT        DEFAULT NULL,
-                    example_ro         TEXT        DEFAULT NULL,
+                    example_uk         TEXT        DEFAULT NULL,
                     example_ru         TEXT        DEFAULT NULL,
                     order_index        INTEGER     NOT NULL DEFAULT 0,
                     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -244,12 +304,12 @@ def migrate():
                     id               SERIAL      PRIMARY KEY,
                     question_id      INTEGER     NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
                     next_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
-                    text_ro          TEXT        NOT NULL,
+                    text_uk          TEXT        NOT NULL,
                     text_ru          TEXT        NOT NULL,
                     score            REAL        NOT NULL DEFAULT 0,
-                    explanation_ro   TEXT        DEFAULT NULL,
+                    explanation_uk   TEXT        DEFAULT NULL,
                     explanation_ru   TEXT        DEFAULT NULL,
-                    risk_ro          TEXT        DEFAULT NULL,
+                    risk_uk          TEXT        DEFAULT NULL,
                     risk_ru          TEXT        DEFAULT NULL,
                     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
@@ -279,7 +339,7 @@ def migrate():
                     company_size          VARCHAR(50)  DEFAULT NULL,
                     company_age           VARCHAR(50)  DEFAULT NULL,
                     company_revenue       VARCHAR(50)  DEFAULT NULL,
-                    language              VARCHAR(5)   DEFAULT 'ro',
+                    language              VARCHAR(5)   DEFAULT 'uk',
                     total_score           REAL         DEFAULT NULL,
                     answers_json          JSONB        DEFAULT NULL,
                     selected_answers_json JSONB        DEFAULT NULL,
@@ -338,9 +398,9 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS templates (
                     id             SERIAL        PRIMARY KEY,
                     slug           VARCHAR(100)  UNIQUE NOT NULL,
-                    title_ro       VARCHAR(255)  NOT NULL,
+                    title_uk       VARCHAR(255)  NOT NULL,
                     title_ru       VARCHAR(255)  NOT NULL DEFAULT '',
-                    description_ro TEXT          NOT NULL DEFAULT '',
+                    description_uk TEXT          NOT NULL DEFAULT '',
                     description_ru TEXT          NOT NULL DEFAULT '',
                     is_active      BOOLEAN       NOT NULL DEFAULT TRUE,
                     is_coming_soon BOOLEAN       NOT NULL DEFAULT FALSE,
@@ -371,7 +431,7 @@ def migrate():
                     id          SERIAL       PRIMARY KEY,
                     name        VARCHAR(100) NOT NULL,
                     role        VARCHAR(150) DEFAULT NULL,
-                    quote_ro    TEXT         NOT NULL DEFAULT '',
+                    quote_uk    TEXT         NOT NULL DEFAULT '',
                     quote_ru    TEXT         NOT NULL DEFAULT '',
                     rating      SMALLINT     NOT NULL DEFAULT 5,
                     avatar_url  VARCHAR(500) DEFAULT NULL,
@@ -383,9 +443,9 @@ def migrate():
 
                 CREATE TABLE IF NOT EXISTS faq_items (
                     id          SERIAL      PRIMARY KEY,
-                    question_ro TEXT        NOT NULL,
+                    question_uk TEXT        NOT NULL,
                     question_ru TEXT        NOT NULL DEFAULT '',
-                    answer_ro   TEXT        NOT NULL DEFAULT '',
+                    answer_uk   TEXT        NOT NULL DEFAULT '',
                     answer_ru   TEXT        NOT NULL DEFAULT '',
                     order_index INTEGER     NOT NULL DEFAULT 0,
                     is_active   BOOLEAN     NOT NULL DEFAULT TRUE,
@@ -407,7 +467,7 @@ def migrate():
                 -- written in — public reviews live in ONE language only.
                 ALTER TABLE testimonials ALTER COLUMN rating TYPE NUMERIC(2,1) USING rating::numeric;
                 ALTER TABLE testimonials ALTER COLUMN rating SET DEFAULT 5;
-                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'ro';
+                ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS lang VARCHAR(5) NOT NULL DEFAULT 'uk';
                 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS is_user_submitted BOOLEAN NOT NULL DEFAULT FALSE;
 
                 -- Telegram feedback outreach: admin sends a predefined (editable)
@@ -444,6 +504,8 @@ def migrate():
                 CREATE INDEX IF NOT EXISTS idx_tg_outreach_due
                     ON tg_outreach(due_at) WHERE status = 'scheduled';
             """)
+
+            migrate_ro_to_uk(cur)
 
             conn.commit()
     except Exception:

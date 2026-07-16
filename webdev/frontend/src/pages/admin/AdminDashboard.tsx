@@ -19,13 +19,13 @@ export default function AdminDashboard() {
   }, []);
 
   if (error) return <div className="admin-error">⚠️ {error}</div>;
-  if (!stats) return <div className="admin-empty">Se încarcă...</div>;
+  if (!stats) return <div className="admin-empty">Завантаження...</div>;
 
   const cards: Array<[string, number]> = [
-    ['Utilizatori', stats.total_users],
-    ['Blocuri', stats.total_blocks],
-    ['Întrebări', stats.total_questions],
-    ['Rezultate', stats.total_results],
+    ['Користувачі', stats.total_users],
+    ['Блоки', stats.total_blocks],
+    ['Питання', stats.total_questions],
+    ['Результати', stats.total_results],
     ['Submissions', stats.total_submissions],
   ];
 
@@ -44,13 +44,13 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <h3 style={{ marginBottom: 12 }}>Scor mediu per bloc</h3>
+      <h3 style={{ marginBottom: 12 }}>Середній бал за блоком</h3>
       {stats.avg_per_block.length === 0 ? (
-        <div className="admin-empty">Încă nu sunt rezultate.</div>
+        <div className="admin-empty">Поки що немає результатів.</div>
       ) : (
         <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Block</th><th>Scor mediu</th><th>Încercări</th></tr></thead>
+            <thead><tr><th>Блок</th><th>Середній бал</th><th>Спроби</th></tr></thead>
             <tbody>
               {stats.avg_per_block.map(r => (
                 <tr key={r.block_id}>

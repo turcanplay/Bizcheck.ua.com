@@ -5,12 +5,12 @@ from database.db import query, execute
 
 class Question:
     @staticmethod
-    def create(block_id, text_ro, text_ru, note_ro=None, note_ru=None, order_index=0, parent_question_id=None):
+    def create(block_id, text_uk, text_ru, note_uk=None, note_ru=None, order_index=0, parent_question_id=None):
         return execute(
-            """INSERT INTO questions (block_id, text_ro, text_ru, note_ro, note_ru, order_index, parent_question_id)
+            """INSERT INTO questions (block_id, text_uk, text_ru, note_uk, note_ru, order_index, parent_question_id)
                VALUES (%s, %s, %s, %s, %s, %s, %s)
                RETURNING *""",
-            (block_id, text_ro, text_ru, note_ro, note_ru, order_index, parent_question_id),
+            (block_id, text_uk, text_ru, note_uk, note_ru, order_index, parent_question_id),
         )
 
     @staticmethod
@@ -43,13 +43,13 @@ class Question:
         )
 
     @staticmethod
-    def update(question_id, block_id, text_ro, text_ru, note_ro, note_ru, order_index, parent_question_id=None):
+    def update(question_id, block_id, text_uk, text_ru, note_uk, note_ru, order_index, parent_question_id=None):
         return execute(
             """UPDATE questions
-               SET block_id = %s, text_ro = %s, text_ru = %s,
-                   note_ro = %s, note_ru = %s, order_index = %s, parent_question_id = %s
+               SET block_id = %s, text_uk = %s, text_ru = %s,
+                   note_uk = %s, note_ru = %s, order_index = %s, parent_question_id = %s
                WHERE id = %s RETURNING *""",
-            (block_id, text_ro, text_ru, note_ro, note_ru, order_index, parent_question_id, question_id),
+            (block_id, text_uk, text_ru, note_uk, note_ru, order_index, parent_question_id, question_id),
         )
 
     @staticmethod

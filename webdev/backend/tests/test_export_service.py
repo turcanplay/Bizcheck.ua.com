@@ -105,7 +105,7 @@ class TestSummaryRow:
         sub = {
             "id": 1, "first_name": "Ion", "last_name": "P", "email": "a@b.md",
             "phone": "+373", "sector": "IT", "company_size": "10", "company_age": "3",
-            "company_revenue": "1M", "language": "ro", "consent": True,
+            "company_revenue": "1M", "language": "uk", "consent": True,
             "total_score": 80, "status": "completed", "created_at": "2026-01-01",
             "block_scores_json": '[{"title": "Bloc A", "score": 75.6}]',
             "answers_json": '{"b1q1": 3}',
@@ -115,7 +115,7 @@ class TestSummaryRow:
         assert row[1] == "Ion"                # prenume first
         assert row[-1] == 3                   # answer value last
         assert 76 in row                      # block score rounded
-        assert "Da" in row                    # consent rendered (RO)
+        assert "Так" in row                   # consent rendered (UK)
 
     def test_header_and_row_lengths_match(self):
         # Guard against the headers/row drifting out of sync on future edits.
@@ -125,7 +125,7 @@ class TestSummaryRow:
 
     def test_contact_first_answers_last(self):
         headers = ex._summary_headers([], {}, ["b1q1"])
-        assert headers[:5] == ["ID", "Prenume", "Nume", "Email", "Telefon"]
+        assert headers[:5] == ["ID", "Ім'я", "Прізвище", "Email", "Телефон"]
         assert headers[-1] == "Q1" or headers[-1] == "b1q1"   # question at the end
 
 
@@ -212,21 +212,21 @@ def patch_models(monkeypatch):
                         staticmethod(lambda: [{"id": 1}]))
     monkeypatch.setattr("models.question.Question.find_by_blocks",
                         staticmethod(lambda ids: [
-                            {"id": 1, "block_id": 1, "text_ro": "Întrebare 1",
+                            {"id": 1, "block_id": 1, "text_uk": "Întrebare 1",
                              "parent_question_id": None}]))
 
 
 class TestCombinedWorkbook:
     def test_has_three_summary_sheets_plus_user_sheet(self, patch_models):
         wb = ex.build_test_combined_workbook(1)
-        assert wb.sheetnames[:3] == ["Sumar", "Finalizați", "În proces"]
+        assert wb.sheetnames[:3] == ["Зведення", "Завершені", "У процесі"]
         # one completed user → exactly one extra detail sheet
         assert len(wb.sheetnames) == 4
 
     def test_date_filter_excludes_out_of_range(self, patch_models):
         wb = ex.build_test_combined_workbook(1, date_from=date(2026, 1, 2))
         # only the in-progress sub (2026-01-02) survives → no completed → no user sheet
-        assert "Finalizați" in wb.sheetnames
+        assert "Завершені" in wb.sheetnames
         assert len(wb.sheetnames) == 3
 
     def test_workbook_to_bytes_is_valid_xlsx(self, patch_models):
@@ -281,7 +281,7 @@ class TestPdfZip:
 class TestExportBasename:
     def test_uses_test_name(self, monkeypatch):
         monkeypatch.setattr("models.test.Test.find_by_id",
-                            staticmethod(lambda i: {"name_ro": "BizCheck Pro"}))
+                            staticmethod(lambda i: {"name_uk": "BizCheck Pro"}))
         base = ex.export_basename(1, "sumar")
         # _safe_filename keeps spaces (regex [^\w\- ]+), so "BizCheck Pro" survives.
-        assert base.startswith("Extras_sumar_BizCheck Pro_")
+        assert base.startswith("Виписка_sumar_BizCheck Pro_")

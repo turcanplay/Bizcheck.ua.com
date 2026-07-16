@@ -5,23 +5,23 @@ from database.db import query, execute, execute_many
 
 class Answer:
     @staticmethod
-    def create(question_id, text_ro, text_ru, score=0, next_question_id=None):
+    def create(question_id, text_uk, text_ru, score=0, next_question_id=None):
         return execute(
-            """INSERT INTO answers (question_id, text_ro, text_ru, score, next_question_id)
+            """INSERT INTO answers (question_id, text_uk, text_ru, score, next_question_id)
                VALUES (%s, %s, %s, %s, %s)
                RETURNING *""",
-            (question_id, text_ro, text_ru, score, next_question_id),
+            (question_id, text_uk, text_ru, score, next_question_id),
         )
 
     @staticmethod
     def create_many(question_id, answers_list):
-        """Bulk-create. Each item: {text_ro, text_ru, score, next_question_id?}."""
+        """Bulk-create. Each item: {text_uk, text_ru, score, next_question_id?}."""
         params = [
-            (question_id, a["text_ro"], a["text_ru"], float(a.get("score", 0)), a.get("next_question_id"))
+            (question_id, a["text_uk"], a["text_ru"], float(a.get("score", 0)), a.get("next_question_id"))
             for a in answers_list
         ]
         return execute_many(
-            """INSERT INTO answers (question_id, text_ro, text_ru, score, next_question_id)
+            """INSERT INTO answers (question_id, text_uk, text_ru, score, next_question_id)
                VALUES (%s, %s, %s, %s, %s)
                RETURNING *""",
             params,

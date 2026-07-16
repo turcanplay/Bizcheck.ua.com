@@ -25,7 +25,7 @@ export default function AdminUsers() {
   const testName = (id: number | null) => {
     if (!id) return '—';
     const t = tests.find(x => x.id === id);
-    return t ? t.name_ro : `#${id}`;
+    return t ? t.name_uk : `#${id}`;
   };
 
   const filtered = useMemo(() => {
@@ -43,9 +43,9 @@ export default function AdminUsers() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>👥 Utilizatori</h2>
+        <h2>👥 Користувачі</h2>
         <input
-          placeholder="Caută după nume, email, telefon, TG..."
+          placeholder="Пошук за іменем, email, телефоном, TG..."
           value={query}
           onChange={e => setQuery(e.target.value)}
           style={{
@@ -57,9 +57,9 @@ export default function AdminUsers() {
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
       {!loading && filtered.length === 0 && (
-        <div className="admin-empty">{query ? 'Niciun rezultat.' : 'Niciun utilizator încă.'}</div>
+        <div className="admin-empty">{query ? 'Нічого не знайдено.' : 'Ще немає користувачів.'}</div>
       )}
 
       {!loading && filtered.length > 0 && (
@@ -67,10 +67,10 @@ export default function AdminUsers() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Prenume</th><th>Nume</th><th>Email</th><th>Telefon</th>
-                <th>Test</th><th>Sector</th>
-                <th>Status</th><th>Scor</th>
-                <th>TG ID</th><th>TG Username</th><th>Data</th>
+                <th>Ім'я</th><th>Прізвище</th><th>Email</th><th>Телефон</th>
+                <th>Тест</th><th>Сектор</th>
+                <th>Статус</th><th>Бал</th>
+                <th>TG ID</th><th>TG Username</th><th>Дата</th>
               </tr>
             </thead>
             <tbody>

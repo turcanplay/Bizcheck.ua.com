@@ -5,13 +5,13 @@ from database.db import query, execute
 
 class Block:
     @staticmethod
-    def create(test_id, title_ro, title_ru, order_index=0):
+    def create(test_id, title_uk, title_ru, order_index=0):
         """Create a new block for a given test with bilingual title."""
         return execute(
-            """INSERT INTO blocks (test_id, title_ro, title_ru, order_index)
+            """INSERT INTO blocks (test_id, title_uk, title_ru, order_index)
                VALUES (%s, %s, %s, %s)
                RETURNING *""",
-            (test_id, title_ro, title_ru, order_index),
+            (test_id, title_uk, title_ru, order_index),
         )
 
     @staticmethod
@@ -33,18 +33,18 @@ class Block:
         )
 
     @staticmethod
-    def update(block_id, title_ro, title_ru, order_index, test_id=None):
+    def update(block_id, title_uk, title_ru, order_index, test_id=None):
         if test_id is not None:
             return execute(
                 """UPDATE blocks
-                   SET test_id = %s, title_ro = %s, title_ru = %s, order_index = %s
+                   SET test_id = %s, title_uk = %s, title_ru = %s, order_index = %s
                    WHERE id = %s RETURNING *""",
-                (test_id, title_ro, title_ru, order_index, block_id),
+                (test_id, title_uk, title_ru, order_index, block_id),
             )
         return execute(
-            """UPDATE blocks SET title_ro = %s, title_ru = %s, order_index = %s
+            """UPDATE blocks SET title_uk = %s, title_ru = %s, order_index = %s
                WHERE id = %s RETURNING *""",
-            (title_ro, title_ru, order_index, block_id),
+            (title_uk, title_ru, order_index, block_id),
         )
 
     @staticmethod

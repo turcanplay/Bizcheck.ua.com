@@ -90,14 +90,14 @@ export default function AdminTestQuestions({ testId }: Props) {
     return map;
   }, [blocks, questionsByBlock]);
 
-  async function saveBlock(data: { title_ro: string; title_ru: string; order_index: number }, id: number | null) {
+  async function saveBlock(data: { title_uk: string; title_ru: string; order_index: number }, id: number | null) {
     if (id === null) await adminApi.createBlock({ test_id: testId, ...data });
     else await adminApi.updateBlock(id, data);
     setBlockModal(null);
     await load();
   }
   async function deleteBlock(b: AdminBlock) {
-    if (!confirm(`Ștergi blocul "${b.title_ro || b.title_ru}"? Toate întrebările din el se vor șterge.`)) return;
+    if (!confirm(`Видалити блок "${b.title_uk || b.title_ru}"? Усі питання в ньому також буде видалено.`)) return;
     await adminApi.deleteBlock(b.id);
     await load();
   }
@@ -108,7 +108,7 @@ export default function AdminTestQuestions({ testId }: Props) {
     await load();
   }
   async function deleteQuestion(q: AdminQuestion) {
-    if (!confirm('Ștergi această întrebare?')) return;
+    if (!confirm('Видалити це питання?')) return;
     await adminApi.deleteQuestion(q.id);
     await load();
   }
@@ -198,35 +198,35 @@ export default function AdminTestQuestions({ testId }: Props) {
 
   // --------------------------------------------------------------------------
 
-  if (loading) return <div className="admin-empty">Se încarcă...</div>;
+  if (loading) return <div className="admin-empty">Завантаження...</div>;
   if (error) return <div className="admin-error">⚠️ {error}</div>;
 
   const nextQuestionLookup = (id: number | null) => {
     if (!id) return null;
     const num = questionNumberById.get(id);
-    return num ? `→ întrebarea ${num}` : `→ #${id}`;
+    return num ? `→ питання ${num}` : `→ #${id}`;
   };
 
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
         <p style={{ color: 'var(--text2)', fontSize: 13, margin: 0 }}>
-          ⬍ Trage întrebarea cu mouse-ul: pe <b>zona liberă a unui bloc</b> → devine întrebare simplă; <b>peste altă întrebare</b> → devine sub-întrebare.
+          ⬍ Перетягніть питання мишею: на <b>вільну зону блоку</b> → стає звичайним питанням; <b>на інше питання</b> → стає під-питанням.
         </p>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {saveStatus === 'saving' && <span style={{ fontSize: 12, color: 'var(--text2)' }}>💾 Se salvează...</span>}
-          {saveStatus === 'saved' && <span style={{ fontSize: 12, color: 'var(--green)' }}>✓ Salvat</span>}
-          <button className="admin-btn admin-btn-ghost" onClick={() => setBlockModal({ initial: null })}>+ Adaugă Bloc</button>
+          {saveStatus === 'saving' && <span style={{ fontSize: 12, color: 'var(--text2)' }}>💾 Збереження...</span>}
+          {saveStatus === 'saved' && <span style={{ fontSize: 12, color: 'var(--green)' }}>✓ Збережено</span>}
+          <button className="admin-btn admin-btn-ghost" onClick={() => setBlockModal({ initial: null })}>+ Додати блок</button>
           {blocks.length > 0 && (
             <button className="admin-btn admin-btn-accent" onClick={() => setQuestionModal({ initial: null, defaultBlockId: blocks[0].id })}>
-              + Adaugă Întrebare
+              + Додати питання
             </button>
           )}
         </div>
       </div>
 
       {blocks.length === 0 && (
-        <div className="admin-empty">Acest test nu are niciun bloc. Adaugă primul bloc pentru a putea introduce întrebări.</div>
+        <div className="admin-empty">Цей тест не має жодного блоку. Додайте перший блок, щоб можна було вводити питання.</div>
       )}
 
       {blocks.map(b => {
@@ -239,15 +239,15 @@ export default function AdminTestQuestions({ testId }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 600 }}>
-                  📦 {b.title_ro || b.title_ru}
-                  <span className="admin-badge admin-badge-muted" style={{ marginLeft: 8 }}>{blockQuestions.length} întrebări</span>
+                  📦 {b.title_uk || b.title_ru}
+                  <span className="admin-badge admin-badge-muted" style={{ marginLeft: 8 }}>{blockQuestions.length} питань</span>
                 </div>
-                {b.title_ru && b.title_ro && (
+                {b.title_ru && b.title_uk && (
                   <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{b.title_ru}</div>
                 )}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setQuestionModal({ initial: null, defaultBlockId: b.id })}>+ Întrebare</button>
+                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setQuestionModal({ initial: null, defaultBlockId: b.id })}>+ Питання</button>
                 <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setBlockModal({ initial: b })}>✏️</button>
                 <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => deleteBlock(b)}>🗑</button>
               </div>
@@ -268,7 +268,7 @@ export default function AdminTestQuestions({ testId }: Props) {
             >
               {tops.length === 0 && (
                 <div style={{ padding: 20, textAlign: 'center', color: 'var(--text2)', fontSize: 13 }}>
-                  Niciun întrebare în acest bloc. {draggedId != null ? 'Elibereză aici pentru a muta ca întrebare principală.' : ''}
+                  Жодного питання в цьому блоці. {draggedId != null ? 'Відпустіть тут, щоб перемістити як основне питання.' : ''}
                 </div>
               )}
 
@@ -404,12 +404,12 @@ function QuestionRow({
                 fontWeight: 700,
                 minWidth: 32,
               }}>{number}.</span>
-              <span>{q.text_ro || q.text_ru}</span>
+              <span>{q.text_uk || q.text_ru}</span>
               {level === 1 && (
-                <span className="admin-badge admin-badge-gold">sub-întrebare</span>
+                <span className="admin-badge admin-badge-gold">під-питання</span>
               )}
             </div>
-            {q.text_ru && q.text_ro && (
+            {q.text_ru && q.text_uk && (
               <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6, marginLeft: 52 }}>{q.text_ru}</div>
             )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 52 }}>
@@ -421,7 +421,7 @@ function QuestionRow({
                     background: 'var(--surface2)', border: '1px solid var(--border)',
                   }}
                 >
-                  {a.text_ro || a.text_ru}
+                  {a.text_uk || a.text_ru}
                   <span style={{ color: 'var(--accent)', marginLeft: 6, fontWeight: 600 }}>{a.score}</span>
                   {a.next_question_id && (
                     <span style={{ color: 'var(--blue)', marginLeft: 6, fontSize: 11 }}>

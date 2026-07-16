@@ -29,7 +29,7 @@ def get_all():
 @admin_required
 def create():
     data = request.get_json(silent=True) or {}
-    title_ro = (data.get("title_ro") or "").strip()
+    title_uk = (data.get("title_uk") or "").strip()
     title_ru = (data.get("title_ru") or "").strip()
     order_index = data.get("order_index", 0)
     test_id = data.get("test_id")
@@ -37,13 +37,13 @@ def create():
     errors = []
     if not test_id:
         errors.append("test_id is required")
-    if not title_ro and not title_ru:
+    if not title_uk and not title_ru:
         errors.append("At least one title (RO or RU) is required")
     if errors:
         return jsonify({"errors": errors}), 400
 
     try:
-        block = create_block(test_id, title_ro, title_ru, order_index)
+        block = create_block(test_id, title_uk, title_ru, order_index)
         return jsonify({"block": block}), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -56,7 +56,7 @@ def update(block_id):
     try:
         block = update_block(
             block_id,
-            data.get("title_ro"),
+            data.get("title_uk"),
             data.get("title_ru"),
             data.get("order_index"),
             test_id=data.get("test_id"),

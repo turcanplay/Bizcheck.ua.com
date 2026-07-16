@@ -11,17 +11,17 @@ class TestZoneHelpers:
     def test_zone_color_boundaries(self, score, color):
         assert et._zone_color(score) == color
 
-    def test_zone_label_ro_vs_ru(self):
-        assert et._zone_label(90, "ro") == "Risc scăzut"
+    def test_zone_label_uk_vs_ru(self):
+        assert et._zone_label(90, "uk") == "Низький ризик"
         assert et._zone_label(90, "ru") == "Низкий риск"
 
     def test_zone_label_critical(self):
-        assert et._zone_label(20, "ro") == "Risc critic"
+        assert et._zone_label(20, "uk") == "Критичний ризик"
 
 
 class TestRender:
     def _render(self, **kw):
-        base = dict(lang="ro", first_name="Ion", test_name="BizCheck",
+        base = dict(lang="uk", first_name="Ion", test_name="BizCheck",
                     date_str="2026-01-01", score=82,
                     logo_url="https://x/logo.png")
         base.update(kw)
@@ -40,22 +40,22 @@ class TestRender:
     def test_download_button_present_when_url_given(self):
         _, html, text = self._render(download_url="https://x/report.pdf")
         assert "https://x/report.pdf" in html
-        assert "Deschide raportul PDF" in html
+        assert "Відкрити звіт PDF" in html
         assert "https://x/report.pdf" in text
 
     def test_no_download_shows_pending_note(self):
         _, html, text = self._render(download_url=None)
-        assert "disponibil în scurt timp" in html
-        assert "disponibil în scurt timp" in text
+        assert "буде доступний найближчим часом" in html
+        assert "буде доступний найближчим часом" in text
 
     def test_ru_language_switches_copy(self):
         subject, html, _ = self._render(lang="ru")
         assert "готов" in subject
         assert 'lang="ru"' in html
 
-    def test_unknown_lang_falls_back_to_ro(self):
+    def test_unknown_lang_falls_back_to_uk(self):
         subject, _, _ = self._render(lang="fr")
-        assert "Raportul dvs" in subject
+        assert "Ваш звіт" in subject
 
     def test_html_escapes_first_name(self):
         # A malicious first_name must not inject markup into the HTML body.
@@ -63,9 +63,9 @@ class TestRender:
         assert "<script>alert(1)</script>" not in html
         assert "&lt;script&gt;" in html
 
-    def test_empty_first_name_uses_default_ro(self):
+    def test_empty_first_name_uses_default_uk(self):
         _, html, _ = self._render(first_name="")
-        assert "Client" in html
+        assert "Клієнт" in html
 
     def test_empty_first_name_uses_default_ru(self):
         _, html, _ = self._render(lang="ru", first_name="")

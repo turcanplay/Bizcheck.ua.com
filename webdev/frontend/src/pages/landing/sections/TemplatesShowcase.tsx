@@ -26,17 +26,17 @@ export default function TemplatesShowcase() {
 
   return (
     <section className="landing-templates" data-section="templates">
-      <h2>Șabloane de acte</h2>
+      <h2>Шаблони документів</h2>
       {err && <p style={{ color: 'crimson' }}>{err}</p>}
       <div className="landing-templates__grid">
         {items.map(t => (
           <button key={t.slug} className="landing-card" data-card="template" onClick={() => onPick(t)}>
-            <div className="landing-card__title">📄 {t.title_ro}</div>
-            <div className="landing-card__desc">{t.description_ro}</div>
+            <div className="landing-card__title">📄 {t.title_uk}</div>
+            <div className="landing-card__desc">{t.description_uk}</div>
             <div className="landing-card__meta">
               {t.is_paid
-                ? <span>💰 {t.price != null ? `${t.price} ${t.currency}` : 'Cu plată'}</span>
-                : <span>🆓 Gratuit</span>}
+                ? <span>💰 {t.price != null ? `${t.price} ${t.currency}` : 'Платно'}</span>
+                : <span>🆓 Безкоштовно</span>}
             </div>
           </button>
         ))}

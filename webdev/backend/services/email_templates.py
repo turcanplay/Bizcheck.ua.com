@@ -34,9 +34,9 @@ def _zone_tint(score: int) -> str:
 
 
 def _zone_label(score: int, lang: str) -> str:
-    ro = ["Risc scăzut", "Risc moderat", "Risc ridicat", "Risc critic"]
+    uk = ["Низький ризик", "Помірний ризик", "Підвищений ризик", "Критичний ризик"]
     ru = ["Низкий риск", "Умеренный риск", "Повышенный риск", "Критический риск"]
-    labels = ro if lang == "ro" else ru
+    labels = uk if lang == "uk" else ru
     if score >= 80: return labels[0]
     if score >= 70: return labels[1]
     if score >= 65: return labels[2]
@@ -63,31 +63,31 @@ def render(
 
     The text_body mirrors the HTML so the multipart/alternative has a real
     plain-text part (a thin text part next to rich HTML is a spam signal)."""
-    lang = (lang or "ro").lower()
-    if lang not in ("ro", "ru"):
-        lang = "ro"
+    lang = (lang or "uk").lower()
+    if lang not in ("uk", "ru"):
+        lang = "uk"
 
     zone_col = _zone_color(score)
     zone_tint = _zone_tint(score)
     zone_lbl = _zone_label(score, lang)
-    first = escape(first_name.strip()) if first_name else ("Client" if lang == "ro" else "Клиент")
-    test_clean = escape(test_name or ("Raport Bizcheck.md" if lang == "ro" else "Отчёт Bizcheck.md"))
+    first = escape(first_name.strip()) if first_name else ("Клієнт" if lang == "uk" else "Клиент")
+    test_clean = escape(test_name or ("Звіт Bizcheck.md" if lang == "uk" else "Отчёт Bizcheck.md"))
     date_clean = escape(date_str or "")
 
-    if lang == "ro":
-        subject = f"Raportul dvs. Bizcheck.md este gata · {test_clean}"
+    if lang == "uk":
+        subject = f"Ваш звіт Bizcheck.md готовий · {test_clean}"
         eyebrow = "BIZCHECK.MD"
-        title_line = "Raportul dumneavoastră este gata"
-        greeting = f"Bună ziua, {first},"
-        intro = ("Evaluarea este finalizată. Apăsați butonul de mai jos ca să "
-                 "deschideți raportul complet.")
-        score_caption = "SCOR"
-        btn_open = "Deschide raportul PDF" if download_url else None
-        contact_intro = "Aveți întrebări? Scrieți-ne:"
-        privacy_text = "Politica de confidențialitate"
-        no_link_note = "Raportul va fi disponibil în scurt timp."
-        btn_contact = "Scrie-ne un mesaj"
-        contact_subject = "Întrebare despre raportul BizCheck"
+        title_line = "Ваш звіт готовий"
+        greeting = f"Вітаємо, {first},"
+        intro = ("Діагностику завершено. Натисніть кнопку нижче, щоб відкрити "
+                 "повний звіт.")
+        score_caption = "БАЛ"
+        btn_open = "Відкрити звіт PDF" if download_url else None
+        contact_intro = "Є запитання? Напишіть нам:"
+        privacy_text = "Політика конфіденційності"
+        no_link_note = "Звіт буде доступний найближчим часом."
+        btn_contact = "Напишіть нам"
+        contact_subject = "Запитання щодо звіту BizCheck"
     else:
         subject = f"Ваш отчёт Bizcheck.md готов · {test_clean}"
         eyebrow = "BIZCHECK.MD"
@@ -224,8 +224,8 @@ def render(
 </html>"""
 
     # ── Plain-text alternative (mirrors the HTML; raw, unescaped values) ──
-    first_plain = (first_name.strip() if first_name else ("Client" if lang == "ro" else "Клиент"))
-    test_plain = test_name or ("Raport Bizcheck.md" if lang == "ro" else "Отчёт Bizcheck.md")
+    first_plain = (first_name.strip() if first_name else ("Клієнт" if lang == "uk" else "Клиент"))
+    test_plain = test_name or ("Звіт Bizcheck.md" if lang == "uk" else "Отчёт Bizcheck.md")
     date_plain = date_str or ""
 
     text_lines = [

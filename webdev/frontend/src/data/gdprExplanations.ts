@@ -1,5 +1,5 @@
 /**
- * GDPR report — per-question explanations (RO/RU).
+ * GDPR report — per-question explanations (UK/RU).
  * Keyed by 1-based question order (1..10). Generated from the source
  * .docx files; for future edits prefer regenerating or moving to admin.
  * Each entry: a fixed explanation shown regardless of the given answer.
@@ -7,24 +7,24 @@
 
 export interface GdprExplanation {
   order: number;
-  title: { ro: string; ru: string };
-  intro: { ro: string[]; ru: string[] };
-  risk: { ro: string[]; ru: string[] };
-  action: { ro: string[]; ru: string[] };
+  title: { uk: string; ru: string };
+  intro: { uk: string[]; ru: string[] };
+  risk: { uk: string[]; ru: string[] };
+  action: { uk: string[]; ru: string[] };
 }
 
 export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 1,
     title: {
-      ro: "Date generale despre companie",
+      uk: "Загальні відомості про компанію",
       ru: "Общие сведения о компании",
     },
     intro: {
-      ro: [
-        "Acest bloc are rolul de a înțelege profilul general al companiei: domeniul în care activează, dimensiunea aproximativă a echipei, locurile în care se desfășoară activitatea și tipul principal de clienți cu care compania interacționează.",
-        "Aceste informații sunt importante deoarece nivelul de expunere la obligațiile și riscurile GDPR diferă de la o companie la alta. O companie mică, fără activitate online și care lucrează doar cu persoane juridice, are de regulă un nivel de risc mai redus decât o companie cu mai multe puncte de lucru, numeroși angajați, clienți persoane fizice și activitate desfășurată online.",
-        "Prin urmare, înainte de a analiza documentele interne sau măsurile de protecție aplicate, este necesar să fie clar cum funcționează compania în practică și în ce zone apar datele cu caracter personal.",
+      uk: [
+        "Даний блок призначений для розуміння загального профілю компанії: сфери, в якій вона провадить діяльність, приблизного розміру команди, місць, де ведеться діяльність, а також основного типу клієнтів, з якими взаємодіє компанія.",
+        "Ця інформація важлива, оскільки рівень підданості обов'язкам і ризикам GDPR відрізняється від однієї компанії до іншої. Невелика компанія, яка не провадить онлайн-діяльність і працює лише з юридичними особами, як правило, має нижчий рівень ризику, ніж компанія з кількома точками діяльності, великою кількістю співробітників, клієнтами — фізичними особами та діяльністю, що провадиться онлайн.",
+        "Отже, перш ніж аналізувати внутрішні документи або застосовувані заходи захисту, необхідно чітко розуміти, як компанія функціонує на практиці та в яких зонах з'являються персональні дані.",
       ],
       ru: [
         "Данный блок предназначен для понимания общего профиля компании: сферы, в которой она осуществляет деятельность, приблизительного размера команды, мест, где ведется деятельность, а также основного типа клиентов, с которыми взаимодействует компания.",
@@ -33,12 +33,12 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Dacă nu există o imagine clară asupra activității companiei, devine dificil de identificat ce date personale sunt colectate, de la cine provin aceste date, în ce scop sunt utilizate și cine are acces la ele.",
-        "De exemplu, o companie care are mai multe birouri, magazine, filiale sau angajați care lucrează remote poate prelucra date personale în mai multe locuri și prin mai multe canale. În lipsa unei evidențe clare, datele pot fi păstrate neorganizat, pot fi accesate de persoane care nu au nevoie de ele sau pot fi transmise fără reguli interne bine stabilite.",
-        "Un risc suplimentar apare atunci când compania lucrează direct cu persoane fizice. În acest caz, compania poate colecta nume, numere de telefon, adrese de email, date de livrare, date de plată, reclamații sau alte informații personale. Dacă aceste date nu sunt gestionate corect, compania poate fi expusă la plângeri, solicitări din partea persoanelor vizate sau controale din partea autorității competente.",
-        "De asemenea, dacă activitatea companiei se desfășoară online sau prin mijloace digitale, riscurile cresc, deoarece datele pot fi colectate automat, pot fi stocate în platforme externe sau pot fi accesate de mai multe persoane în același timp.",
-        "În practică, lipsa unei imagini clare asupra companiei duce la dificultăți în demonstrarea conformității GDPR. Chiar dacă anumite măsuri există, compania poate să nu poată explica suficient de clar ce date prelucrează, unde se află acestea și cum sunt protejate.",
+      uk: [
+        "Якщо відсутнє чітке уявлення про діяльність компанії, стає складно визначити, які персональні дані збираються, від кого надходять ці дані, з якою метою вони використовуються та хто має до них доступ.",
+        "Наприклад, компанія, що має кілька офісів, магазинів, філій або співробітників, які працюють віддалено, може обробляти персональні дані в кількох місцях і через кілька каналів. За відсутності чіткого обліку дані можуть зберігатися неорганізовано, можуть бути доступні особам, яким вони не потрібні, або можуть передаватися без чітко встановлених внутрішніх правил.",
+        "Додатковий ризик виникає, коли компанія працює безпосередньо з фізичними особами. У цьому випадку компанія може збирати імена, номери телефонів, адреси електронної пошти, дані доставки, платіжні дані, скарги або іншу персональну інформацію. Якщо такі дані не управляються належним чином, компанія може бути піддана скаргам, запитам з боку суб'єктів даних або перевіркам з боку компетентного органу.",
+        "Також, якщо діяльність компанії провадиться онлайн або з використанням цифрових засобів, ризики зростають, оскільки дані можуть збиратися автоматично, зберігатися на зовнішніх платформах або бути одночасно доступними кільком особам.",
+        "На практиці відсутність чіткого уявлення про компанію призводить до труднощів при підтвердженні відповідності вимогам GDPR. Навіть якщо певні заходи існують, компанія може бути не в змозі достатньо ясно пояснити, які дані вона обробляє, де вони знаходяться та яким чином захищаються.",
       ],
       ru: [
         "Если отсутствует четкое представление о деятельности компании, становится сложно определить, какие персональные данные собираются, от кого поступают эти данные, в каких целях они используются и кто имеет к ним доступ.",
@@ -49,11 +49,11 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să descrie cât mai clar modul în care își desfășoară activitatea: domeniul principal de activitate, numărul aproximativ de angajați, punctele de lucru, existența activității online sau remote și tipul principal de clienți.",
-        "Această descriere nu trebuie să fie complicată, dar trebuie să reflecte realitatea practică. Scopul este ca, pe baza acestor informații, să poată fi identificate principalele fluxuri de date personale din companie.",
-        "Este recomandat ca această informație să fie revizuită periodic, mai ales atunci când compania își extinde activitatea, deschide noi puncte de lucru, lansează un site, începe să colecteze date online sau angajează personal nou.",
-        "O evidență simplă și actualizată a acestor aspecte ajută compania să înțeleagă unde apar datele personale și ce măsuri de protecție trebuie aplicate.",
+      uk: [
+        "Компанія повинна максимально чітко описати спосіб провадження своєї діяльності: основну сферу діяльності, приблизну кількість співробітників, точки провадження діяльності, наявність онлайн- або віддаленої діяльності, а також основний тип клієнтів.",
+        "Такий опис не повинен бути складним, але він має відображати практичну реальність. Мета полягає в тому, щоб на підставі цієї інформації можна було визначити основні потоки персональних даних усередині компанії.",
+        "Рекомендується періодично переглядати цю інформацію, особливо коли компанія розширює свою діяльність, відкриває нові точки діяльності, запускає сайт, починає збирати дані онлайн або наймає новий персонал.",
+        "Простий і актуальний облік цих аспектів допомагає компанії зрозуміти, де виникають персональні дані та які заходи захисту необхідно застосовувати.",
       ],
       ru: [
         "Компания должна максимально четко описать способ осуществления своей деятельности: основную сферу деятельности, приблизительное количество сотрудников, точки осуществления деятельности, наличие онлайн- или удаленной деятельности, а также основной тип клиентов.",
@@ -66,14 +66,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 2,
     title: {
-      ro: "Structura organizațională a companiei",
+      uk: "Організаційна структура компанії",
       ru: "Организационная структура компании",
     },
     intro: {
-      ro: [
-        "Acest bloc arată cum este organizată compania din punct de vedere intern și cine gestionează cele mai importante zone în care apar date personale: contabilitatea, sistemele IT și resursele umane.",
-        "Aceste trei zone sunt esențiale pentru conformitatea GDPR. Contabilitatea gestionează date financiare și documente justificative, resursele umane gestionează datele angajaților și candidaților, iar zona IT asigură infrastructura prin care datele sunt stocate, accesate și transmise.",
-        "În practică, aceste activități pot fi gestionate intern, de angajații companiei, sau externalizat, prin prestatori precum firme de contabilitate, companii IT, consultanți HR sau alți furnizori specializați.",
+      uk: [
+        "Даний блок показує, як компанія організована всередині та хто керує найважливішими зонами, в яких з'являються персональні дані: бухгалтерією, IT-системами та людськими ресурсами.",
+        "Ці три зони є ключовими для дотримання вимог GDPR. Бухгалтерія керує фінансовими даними та підтвердними документами, людські ресурси — даними співробітників і кандидатів, а IT-напрям забезпечує інфраструктуру, через яку дані зберігаються, доступні та передаються.",
+        "На практиці ці види діяльності можуть управлятися всередині компанії, її співробітниками, або передаватися на аутсорсинг таким постачальникам послуг, як бухгалтерські компанії, IT-компанії, HR-консультанти або інші спеціалізовані постачальники.",
       ],
       ru: [
         "Данный блок показывает, как компания организована внутри и кто управляет наиболее важными зонами, в которых появляются персональные данные: бухгалтерией, IT-системами и человеческими ресурсами.",
@@ -82,13 +82,13 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Dacă nu este clar cine gestionează fiecare zonă, apare riscul ca responsabilitățile privind datele personale să fie împărțite neclar sau să nu fie asumate de nimeni în mod concret.",
-        "De exemplu, în cazul contabilității, compania poate transmite către un prestator extern date despre angajați, salarii, contracte, acte de identitate, date bancare sau alte documente financiare. Chiar dacă aceste date sunt prelucrate de contabil, compania rămâne responsabilă să se asigure că transmiterea și utilizarea lor se face legal și în condiții de securitate.",
-        "În zona IT, riscurile pot fi și mai mari. Prestatorul IT poate avea acces la emailuri, servere, calculatoare, baze de date, copii de rezervă sau conturi interne. Dacă accesul nu este reglementat și monitorizat, pot apărea situații în care datele sunt accesate fără o justificare clară sau fără măsuri suficiente de protecție.",
-        "În zona HR, compania prelucrează date ale angajaților și candidaților, inclusiv documente de angajare, date de contact, informații despre salarii, concedii, performanță, absențe sau, în unele cazuri, date medicale. Aceste date trebuie gestionate cu atenție, deoarece privesc direct viața profesională și personală a persoanelor.",
-        "Un risc frecvent apare atunci când compania folosește prestatori externi, dar nu are contracte sau clauze privind protecția datelor. În asemenea cazuri, compania nu poate demonstra clar ce obligații are prestatorul, cum trebuie să protejeze datele, dacă le poate transmite mai departe și ce se întâmplă cu datele după încetarea colaborării.",
-        "În lipsa unor reguli clare, pot apărea accesări neautorizate, pierderi de date, transmiteri necontrolate sau imposibilitatea de a răspunde corect la solicitările persoanelor vizate.",
+      uk: [
+        "Якщо неясно, хто керує кожною зоною, виникає ризик того, що обов'язки щодо персональних даних будуть розподілені нечітко або не будуть конкретно взяті на себе жодною особою.",
+        "Наприклад, у випадку бухгалтерії компанія може передавати зовнішньому постачальнику дані про співробітників, заробітну плату, договори, посвідчення особи, банківські дані або інші фінансові документи. Навіть якщо ці дані обробляються бухгалтером, компанія залишається відповідальною за те, щоб їх передача та використання здійснювалися законно та в умовах безпеки.",
+        "У IT-зоні ризики можуть бути ще вищими. IT-постачальник може мати доступ до електронної пошти, серверів, комп'ютерів, баз даних, резервних копій або внутрішніх облікових записів. Якщо доступ не врегульований і не контролюється, можуть виникнути ситуації, коли дані будуть доступні без чіткого обґрунтування або без достатніх заходів захисту.",
+        "У HR-зоні компанія обробляє дані співробітників і кандидатів, включаючи документи про працевлаштування, контактні дані, інформацію про заробітну плату, відпустки, результати роботи, відсутності або, в окремих випадках, медичні дані. Ці дані повинні управлятися уважно, оскільки вони безпосередньо стосуються професійного та особистого життя осіб.",
+        "Поширений ризик виникає тоді, коли компанія використовує зовнішніх постачальників, але не має договорів або положень про захист даних. У таких випадках компанія не може чітко довести, які обов'язки має постачальник, яким чином він повинен захищати дані, чи може він передавати їх далі та що відбувається з даними після припинення співпраці.",
+        "За відсутності чітких правил можуть виникати несанкціоновані доступи, втрати даних, неконтрольовані передачі або неможливість коректно відповідати на запити суб'єктів даних.",
       ],
       ru: [
         "Если неясно, кто управляет каждой зоной, возникает риск того, что обязанности в отношении персональных данных будут распределены нечетко либо не будут конкретно приняты на себя ни одним лицом.",
@@ -100,12 +100,12 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să stabilească exact cine gestionează contabilitatea, sistemele IT și resursele umane. Pentru fiecare dintre aceste zone trebuie identificat dacă activitatea este realizată intern sau prin outsourcing.",
-        "Dacă activitatea este gestionată intern, este recomandat ca persoanele responsabile să cunoască regulile minime privind protecția datelor și să aibă acces doar la informațiile necesare pentru îndeplinirea atribuțiilor lor.",
-        "Dacă activitatea este externalizată, compania trebuie să verifice dacă există contracte scrise cu prestatorii și dacă aceste contracte conțin clauze privind protecția datelor personale. În special, trebuie clarificat ce date primește prestatorul, în ce scop le utilizează, cine are acces la ele, cât timp le păstrează și ce măsuri de securitate aplică.",
-        "Este recomandat ca toate relațiile cu prestatorii care au acces la date personale să fie documentate. Chiar și o anexă simplă privind protecția datelor poate reduce riscurile și poate demonstra că compania tratează responsabil acest subiect.",
-        "De asemenea, compania ar trebui să desemneze intern o persoană care să cunoască principalele fluxuri de date și să poată comunica atât cu prestatorii externi, cât și cu angajații și conducerea companiei. Această persoană nu trebuie neapărat să aibă titlul formal de DPO, dar trebuie să poată coordona în mod practic aspectele de bază privind protecția datelor.",
+      uk: [
+        "Компанія повинна точно встановити, хто керує бухгалтерією, IT-системами та людськими ресурсами. По кожній з цих зон необхідно визначити, чи здійснюється діяльність усередині компанії, чи через аутсорсинг.",
+        "Якщо діяльність управляється всередині компанії, рекомендується, щоб відповідальні особи знали мінімальні правила захисту даних і мали доступ лише до тієї інформації, яка необхідна для виконання їхніх обов'язків.",
+        "Якщо діяльність передана на аутсорсинг, компанія повинна перевірити, чи існують письмові договори з постачальниками послуг і чи містять ці договори положення про захист персональних даних. Зокрема, необхідно уточнити, які дані отримує постачальник, з якою метою він їх використовує, хто має до них доступ, як довго він їх зберігає та які заходи безпеки застосовує.",
+        "Рекомендується документувати всі відносини з постачальниками, які мають доступ до персональних даних. Навіть простий додаток про захист даних може знизити ризики та підтвердити, що компанія відповідально ставиться до цього питання.",
+        "Також компанії слід призначити всередині відповідальну особу, яка знатиме основні потоки даних і зможе взаємодіяти як із зовнішніми постачальниками, так і зі співробітниками та керівництвом компанії. Така особа не обов'язково повинна мати формальний статус DPO, однак вона має бути здатною на практиці координувати базові питання, пов'язані із захистом даних.",
       ],
       ru: [
         "Компания должна точно установить, кто управляет бухгалтерией, IT-системами и человеческими ресурсами. По каждой из этих зон необходимо определить, осуществляется ли деятельность внутри компании или через аутсорсинг.",
@@ -119,14 +119,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 3,
     title: {
-      ro: "Website și activitate online",
+      uk: "Веб-сайт та онлайн-діяльність",
       ru: "Веб-сайт и онлайн-деятельность",
     },
     intro: {
-      ro: [
-        "Acest bloc arată dacă compania are o prezență online și dacă prin intermediul site-ului, formularelor, newslettere-lor, comenzilor online sau altor instrumente digitale sunt colectate date cu caracter personal.",
-        "Activitatea online este importantă din perspectiva GDPR deoarece datele personale pot fi colectate rapid, automat și de la un număr mare de persoane. Chiar și un simplu formular de contact poate implica prelucrarea unor date precum nume, prenume, email, număr de telefon, mesaj transmis sau alte informații introduse de utilizator.",
-        "Dacă site-ul este utilizat doar ca pagină de prezentare, riscurile pot fi mai reduse. Însă dacă prin site se primesc solicitări, comenzi, abonări la newsletter sau alte informații de la utilizatori, compania trebuie să aplice reguli clare privind informarea persoanelor, scopul colectării datelor și modul în care acestea sunt păstrate.",
+      uk: [
+        "Даний блок показує, чи має компанія онлайн-присутність і чи збираються персональні дані за допомогою веб-сайту, форм, розсилок, онлайн-замовлень або інших цифрових інструментів.",
+        "Онлайн-діяльність важлива з точки зору GDPR, оскільки персональні дані можуть збиратися швидко, автоматично та від великої кількості осіб. Навіть проста контактна форма може передбачати обробку таких даних, як ім'я, прізвище, адреса електронної пошти, номер телефону, надіслане повідомлення або інша інформація, введена користувачем.",
+        "Якщо сайт використовується лише як презентаційна сторінка, ризики можуть бути нижчими. Однак якщо через сайт надходять запити, замовлення, підписки на розсилку або інша інформація від користувачів, компанія повинна застосовувати чіткі правила щодо інформування осіб, мети збору даних і порядку їх зберігання.",
       ],
       ru: [
         "Данный блок показывает, имеет ли компания онлайн-присутствие и собираются ли персональные данные посредством веб-сайта, форм, рассылок, онлайн-заказов или других цифровых инструментов.",
@@ -135,13 +135,13 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un risc important apare atunci când compania colectează date prin site fără să informeze suficient persoanele vizate. Utilizatorul care completează un formular trebuie să știe cine colectează datele, în ce scop sunt folosite, dacă sunt transmise către terți, cât timp sunt păstrate și ce drepturi are.",
-        "În lipsa unei politici de confidențialitate clare, compania poate fi acuzată că prelucrează datele fără transparență. Chiar dacă datele colectate par simple, cum ar fi numele, telefonul sau adresa de email, acestea rămân date cu caracter personal și trebuie tratate corespunzător.",
-        "Un risc suplimentar apare în cazul newsletterelor sau campaniilor de marketing. Dacă utilizatorii sunt abonați automat, fără consimțământ clar, sau dacă nu au posibilitatea reală de dezabonare, compania poate primi reclamații. În practică, comunicările comerciale nesolicitate sunt una dintre cele mai frecvente surse de nemulțumire din partea clienților sau utilizatorilor.",
-        "De asemenea, în cazul comenzilor online, riscurile sunt mai mari deoarece pot fi colectate mai multe categorii de date: nume, adresă, telefon, email, date despre comandă, date de livrare, date de plată sau istoricul interacțiunilor cu clientul. Dacă aceste date sunt păstrate necontrolat sau transmise către curieri, platforme de plată, furnizori IT sau alți prestatori fără reguli clare, compania poate pierde controlul asupra fluxului de date.",
-        "Un alt risc ține de instrumentele tehnice utilizate pe site: module de analiză, cookie-uri, chat online, formulare externe, integrări cu rețele sociale sau platforme de marketing. Uneori, compania nu colectează direct datele, dar permite unor instrumente externe să le colecteze prin intermediul site-ului. În asemenea situații, compania trebuie să înțeleagă ce date sunt colectate și în ce condiții.",
-        "În lipsa unei evaluări clare a activității online, compania poate ajunge să aibă un site funcțional din punct de vedere comercial, dar vulnerabil din punct de vedere juridic și operațional.",
+      uk: [
+        "Важливий ризик виникає тоді, коли компанія збирає дані через сайт без достатнього інформування суб'єктів даних. Користувач, який заповнює форму, повинен знати, хто збирає дані, з якою метою вони використовуються, чи передаються вони третім особам, як довго зберігаються та які права він має.",
+        "За відсутності чіткої політики конфіденційності компанію можуть звинуватити в непрозорій обробці даних. Навіть якщо зібрані дані здаються простими, наприклад ім'я, телефон або адреса електронної пошти, вони залишаються персональними даними та повинні оброблятися належним чином.",
+        "Додатковий ризик виникає у випадку розсилок або маркетингових кампаній. Якщо користувачі підписуються автоматично, без чіткої згоди, або якщо вони не мають реальної можливості відписатися, компанія може отримати скарги. На практиці небажані комерційні повідомлення є одним із найчастіших джерел невдоволення з боку клієнтів або користувачів.",
+        "Також у випадку онлайн-замовлень ризики вищі, оскільки можуть збиратися кілька категорій даних: ім'я, адреса, телефон, електронна пошта, дані про замовлення, дані доставки, платіжні дані або історія взаємодії з клієнтом. Якщо ці дані зберігаються безконтрольно або передаються кур'єрам, платіжним платформам, IT-постачальникам або іншим постачальникам послуг без чітких правил, компанія може втратити контроль над потоком даних.",
+        "Ще один ризик пов'язаний із технічними інструментами, що використовуються на сайті: аналітичними модулями, файлами cookie, онлайн-чатом, зовнішніми формами, інтеграціями із соціальними мережами або маркетинговими платформами. Іноді компанія не збирає дані безпосередньо, але дозволяє зовнішнім інструментам збирати їх через сайт. У таких ситуаціях компанія повинна розуміти, які дані збираються та на яких умовах.",
+        "За відсутності чіткої оцінки онлайн-діяльності компанія може мати сайт, функціональний з комерційної точки зору, але вразливий з юридичної та операційної точки зору.",
       ],
       ru: [
         "Важный риск возникает тогда, когда компания собирает данные через сайт без достаточного информирования субъектов данных. Пользователь, который заполняет форму, должен знать, кто собирает данные, в каких целях они используются, передаются ли они третьим лицам, как долго хранятся и какие права он имеет.",
@@ -153,13 +153,13 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să identifice toate modalitățile prin care colectează date personale online. Aceasta include formulare de contact, abonări la newsletter, comenzi online, conturi de utilizator, chat online, cereri de ofertă, programări, aplicații mobile sau alte instrumente digitale.",
-        "Pentru fiecare metodă de colectare trebuie stabilit ce date sunt colectate, în ce scop, în baza cărui temei legal, unde sunt stocate și cine are acces la ele.",
-        "Este recomandat ca site-ul să conțină o politică de confidențialitate clară, redactată într-un limbaj accesibil. Aceasta trebuie să explice modul în care compania prelucrează datele utilizatorilor și drepturile pe care aceștia le au.",
-        "În cazul newsletterelor, compania trebuie să se asigure că abonarea are loc în mod clar și documentat, iar utilizatorii au posibilitatea de a se dezabona ușor. De asemenea, nu este recomandată utilizarea datelor colectate pentru un scop într-un alt scop, fără o justificare legală sau fără informarea corespunzătoare a persoanei vizate.",
-        "Dacă site-ul utilizează cookie-uri sau instrumente externe de analiză și marketing, este recomandată verificarea acestora și, după caz, implementarea unei politici de cookie-uri și a unui mecanism adecvat de consimțământ.",
-        "O verificare periodică a site-ului și a instrumentelor online ajută compania să evite colectarea necontrolată a datelor și să demonstreze că activitatea sa digitală este organizată în conformitate cu cerințele GDPR.",
+      uk: [
+        "Компанія повинна визначити всі способи, за допомогою яких вона збирає персональні дані онлайн. Це включає контактні форми, підписки на розсилку, онлайн-замовлення, облікові записи користувачів, онлайн-чат, запити комерційних пропозицій, записи на прийом, мобільні застосунки або інші цифрові інструменти.",
+        "По кожному способу збору даних необхідно встановити, які дані збираються, з якою метою, на якій правовій підставі, де вони зберігаються та хто має до них доступ.",
+        "Рекомендується, щоб сайт містив чітку політику конфіденційності, складену зрозумілою мовою. Вона повинна пояснювати, яким чином компанія обробляє дані користувачів і які права вони мають.",
+        "У випадку розсилок компанія повинна переконатися, що підписка здійснюється чітко та документально підтверджувано, а користувачі мають можливість легко відписатися. Також не рекомендується використовувати дані, зібрані для однієї мети, з іншою метою без законного обґрунтування або без належного інформування суб'єкта даних.",
+        "Якщо сайт використовує файли cookie або зовнішні інструменти аналітики та маркетингу, рекомендується перевірити їх і, за необхідності, впровадити політику використання файлів cookie та належний механізм отримання згоди.",
+        "Періодична перевірка сайту та онлайн-інструментів допомагає компанії уникнути неконтрольованого збору даних і підтвердити, що її цифрова діяльність організована відповідно до вимог GDPR.",
       ],
       ru: [
         "Компания должна определить все способы, посредством которых она собирает персональные данные онлайн. Это включает контактные формы, подписки на рассылку, онлайн-заказы, учетные записи пользователей, онлайн-чат, запросы коммерческих предложений, записи на прием, мобильные приложения или другие цифровые инструменты.",
@@ -174,14 +174,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 4,
     title: {
-      ro: "Categorii de persoane vizate",
+      uk: "Категорії суб'єктів даних",
       ru: "Категории субъектов данных",
     },
     intro: {
-      ro: [
-        "Acest bloc arată de la cine colectează compania date cu caracter personal. În activitatea unei companii, datele pot proveni de la angajați, candidați la angajare, clienți persoane fizice, reprezentanți ai partenerilor sau furnizorilor, vizitatori monitorizați prin camere video sau alte persoane care interacționează cu compania.",
-        "Identificarea acestor categorii este esențială deoarece fiecare categorie de persoane vizate implică obligații diferite. Nu toate datele sunt colectate în același scop, nu toate trebuie păstrate aceeași perioadă și nu toate pot fi accesate de aceleași persoane din companie.",
-        "Prin urmare, înainte de a analiza documentele sau măsurile de protecție, este important ca compania să înțeleagă clar cine sunt persoanele ale căror date le prelucrează.",
+      uk: [
+        "Даний блок показує, від кого компанія збирає персональні дані. У діяльності компанії дані можуть надходити від співробітників, кандидатів на працевлаштування, клієнтів — фізичних осіб, представників партнерів або постачальників, відвідувачів, які перебувають під відеоспостереженням, або інших осіб, які взаємодіють з компанією.",
+        "Визначення цих категорій є суттєвим, оскільки кожна категорія суб'єктів даних передбачає різні обов'язки. Не всі дані збираються з однією і тією ж метою, не всі дані повинні зберігатися однаковий період часу і не до всіх даних можуть мати доступ одні й ті самі особи всередині компанії.",
+        "Отже, перш ніж аналізувати документи або заходи захисту, важливо, щоб компанія чітко розуміла, чиї саме дані вона обробляє.",
       ],
       ru: [
         "Данный блок показывает, от кого компания собирает персональные данные. В деятельности компании данные могут поступать от сотрудников, кандидатов на трудоустройство, клиентов — физических лиц, представителей партнеров или поставщиков, посетителей, находящихся под видеонаблюдением, или иных лиц, которые взаимодействуют с компанией.",
@@ -190,14 +190,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Dacă persoanele vizate nu sunt identificate corect, compania poate aplica reguli generale acolo unde ar trebui să existe reguli separate. De exemplu, datele angajaților sunt prelucrate în contextul raporturilor de muncă, datele candidaților sunt prelucrate în procesul de recrutare, iar datele clienților sunt prelucrate în context comercial sau contractual.",
-        "Un risc frecvent apare în cazul candidaților la angajare. Compania poate primi CV-uri, copii de acte, informații despre experiența profesională, date de contact sau alte informații personale. Dacă aceste date sunt păstrate pe termen nedeterminat sau sunt accesibile mai multor persoane decât este necesar, compania poate încălca principiul limitării stocării și principiul accesului limitat.",
-        "În cazul angajaților, riscurile sunt mai mari deoarece compania poate prelucra un volum considerabil de date: contracte de muncă, date de identificare, date bancare, informații despre salarii, concedii, absențe, evaluări profesionale sau documente medicale. Aceste date trebuie protejate cu atenție, deoarece folosirea sau divulgarea lor necorespunzătoare poate afecta direct persoana.",
-        "În cazul clienților persoane fizice, compania trebuie să fie atentă la datele colectate pentru prestarea serviciilor, vânzări, livrări, facturare, comunicare sau soluționarea reclamațiilor. Dacă datele clienților sunt utilizate ulterior pentru marketing, analiză sau alte scopuri, trebuie verificat dacă există o bază legală adecvată.",
-        "Reprezentanții partenerilor și furnizorilor sunt uneori tratați greșit ca fiind „date ale companiei”, însă numele, funcția, telefonul, emailul profesional sau semnătura unei persoane fizice sunt tot date cu caracter personal. Prin urmare, și aceste date trebuie gestionate corespunzător.",
-        "În cazul vizitatorilor monitorizați prin camere video, riscul este legat de lipsa informării, păstrarea imaginilor prea mult timp sau accesul necontrolat la înregistrări. Chiar dacă supravegherea video este folosită pentru securitate, compania trebuie să respecte reguli clare privind transparența și proporționalitatea.",
-        "Dacă aceste categorii nu sunt separate, compania poate ajunge să păstreze date inutile, să nu informeze corect persoanele vizate sau să nu poată răspunde corespunzător la solicitările acestora.",
+      uk: [
+        "Якщо суб'єкти даних не визначені коректно, компанія може застосовувати загальні правила там, де повинні існувати окремі правила. Наприклад, дані співробітників обробляються в контексті трудових відносин, дані кандидатів — у процесі підбору персоналу, а дані клієнтів — у комерційному або договірному контексті.",
+        "Поширений ризик виникає у випадку кандидатів на працевлаштування. Компанія може отримувати резюме, копії документів, інформацію про професійний досвід, контактні дані або іншу персональну інформацію. Якщо ці дані зберігаються протягом невизначеного строку або доступні більшій кількості осіб, ніж необхідно, компанія може порушити принцип обмеження строку зберігання та принцип обмеженого доступу.",
+        "У випадку співробітників ризики вищі, оскільки компанія може обробляти значний обсяг даних: трудові договори, ідентифікаційні дані, банківські дані, інформацію про заробітну плату, відпустки, відсутності, професійні оцінки або медичні документи. Ці дані повинні ретельно захищатися, оскільки їх неналежне використання або розкриття може безпосередньо зачепити відповідну особу.",
+        "У випадку клієнтів — фізичних осіб компанія повинна уважно ставитися до даних, що збираються для надання послуг, продажів, доставки, виставлення рахунків, комунікації або розгляду скарг. Якщо дані клієнтів згодом використовуються для маркетингу, аналізу або інших цілей, необхідно перевірити наявність належної правової підстави.",
+        "Представники партнерів і постачальників іноді помилково сприймаються як «дані компанії», однак ім'я, посада, телефон, робоча адреса електронної пошти або підпис фізичної особи також є персональними даними. Отже, такі дані також повинні управлятися належним чином.",
+        "У випадку відвідувачів, які перебувають під відеоспостереженням, ризик пов'язаний з відсутністю інформування, надто тривалим зберіганням зображень або неконтрольованим доступом до записів. Навіть якщо відеоспостереження використовується з метою безпеки, компанія повинна дотримуватися чітких правил прозорості та пропорційності.",
+        "Якщо ці категорії не розділені, компанія може врешті зберігати непотрібні дані, неправильно інформувати суб'єктів даних або не мати можливості належним чином відповідати на їхні запити.",
       ],
       ru: [
         "Если субъекты данных не определены корректно, компания может применять общие правила там, где должны существовать отдельные правила. Например, данные сотрудников обрабатываются в контексте трудовых отношений, данные кандидатов — в процессе подбора персонала, а данные клиентов — в коммерческом или договорном контексте.",
@@ -210,12 +210,12 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să identifice toate categoriile de persoane ale căror date sunt colectate sau utilizate în activitatea sa. Pentru fiecare categorie trebuie stabilit ce date sunt prelucrate, de ce sunt necesare, cine are acces la ele și cât timp sunt păstrate.",
-        "Este recomandat ca această analiză să fie făcută separat pentru angajați, candidați, clienți, reprezentanți ai partenerilor, vizitatori și alte persoane relevante. O astfel de separare ajută la aplicarea unor reguli corecte pentru fiecare situație.",
-        "Pentru angajați, compania trebuie să aibă documente interne clare privind prelucrarea datelor în cadrul relațiilor de muncă. Pentru candidați, trebuie stabilit cât timp se păstrează CV-urile și cine are acces la ele. Pentru clienți, trebuie clarificate scopurile comerciale, contractuale și, după caz, de marketing. Pentru reprezentanții partenerilor, trebuie asigurată o informare corespunzătoare. Pentru vizitatori, trebuie analizate regulile privind supravegherea video.",
-        "O abordare practică este întocmirea unei liste simple cu toate categoriile de persoane vizate și situațiile în care compania colectează datele acestora. Această listă poate sta la baza politicilor interne, notelor de informare și registrelor de evidență a prelucrărilor.",
-        "Revizuirea periodică a acestor categorii este importantă, deoarece activitatea companiei se poate schimba. Pot apărea noi servicii, noi canale de comunicare, noi prestatori sau noi puncte de lucru, iar toate acestea pot introduce noi categorii de persoane vizate sau noi fluxuri de date.",
+      uk: [
+        "Компанія повинна визначити всі категорії осіб, чиї дані збираються або використовуються в її діяльності. По кожній категорії необхідно встановити, які дані обробляються, чому вони необхідні, хто має до них доступ і як довго вони зберігаються.",
+        "Рекомендується проводити такий аналіз окремо для співробітників, кандидатів, клієнтів, представників партнерів, відвідувачів та інших релевантних осіб. Такий поділ допомагає застосовувати коректні правила для кожної ситуації.",
+        "Щодо співробітників компанія повинна мати чіткі внутрішні документи про обробку даних у рамках трудових відносин. Щодо кандидатів необхідно встановити, як довго зберігаються резюме та хто має до них доступ. Щодо клієнтів необхідно уточнити комерційні, договірні та, за необхідності, маркетингові цілі. Щодо представників партнерів необхідно забезпечити належне інформування. Щодо відвідувачів необхідно проаналізувати правила відеоспостереження.",
+        "Практичний підхід полягає у складанні простого переліку всіх категорій суб'єктів даних і ситуацій, у яких компанія збирає їхні дані. Такий перелік може слугувати основою для внутрішніх політик, інформаційних повідомлень і реєстрів обліку операцій з обробки даних.",
+        "Періодичний перегляд цих категорій є важливим, оскільки діяльність компанії може змінюватися. Можуть з'являтися нові послуги, нові канали комунікації, нові постачальники послуг або нові точки діяльності, і все це може вводити нові категорії суб'єктів даних або нові потоки даних.",
       ],
       ru: [
         "Компания должна определить все категории лиц, чьи данные собираются или используются в ее деятельности. По каждой категории необходимо установить, какие данные обрабатываются, почему они необходимы, кто имеет к ним доступ и как долго они хранятся.",
@@ -229,14 +229,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 5,
     title: {
-      ro: "Tipuri de date colectate",
+      uk: "Типи даних, що збираються",
       ru: "Типы собираемых данных",
     },
     intro: {
-      ro: [
-        "Acest bloc arată ce tipuri de date cu caracter personal colectează, utilizează sau păstrează compania în activitatea sa curentă. Nu toate datele personale au același nivel de risc. Unele date sunt uzuale, cum ar fi numele, telefonul sau adresa de email, iar altele pot avea un impact mult mai mare asupra persoanei, cum ar fi copiile actelor de identitate, datele medicale, datele bancare sau datele biometrice.",
-        "Identificarea tipurilor de date este importantă deoarece compania trebuie să știe nu doar de la cine colectează date, ci și ce fel de informații colectează concret. În funcție de tipul datelor, pot fi necesare măsuri diferite de protecție, termene diferite de păstrare și reguli mai stricte de acces.",
-        "De exemplu, o companie poate avea o obligație legală să păstreze anumite date ale angajaților pentru evidența muncii sau pentru contabilitate. În schimb, păstrarea copiilor actelor de identitate, a fotografiilor sau a unor date medicale trebuie analizată cu mai multă atenție, pentru a verifica dacă este cu adevărat necesară.",
+      uk: [
+        "Даний блок показує, які типи персональних даних компанія збирає, використовує або зберігає у своїй поточній діяльності. Не всі персональні дані мають однаковий рівень ризику. Одні дані є звичайними, наприклад ім'я, телефон або адреса електронної пошти, а інші можуть мати набагато більший вплив на особу, наприклад копії документів, що посвідчують особу, медичні дані, банківські дані або біометричні дані.",
+        "Визначення типів даних важливе, оскільки компанія повинна знати не лише те, від кого вона збирає дані, але й які саме відомості вона збирає на практиці. Залежно від типу даних можуть знадобитися різні заходи захисту, різні строки зберігання та суворіші правила доступу.",
+        "Наприклад, компанія може мати законний обов'язок зберігати певні дані співробітників для кадрового обліку або бухгалтерії. Водночас зберігання копій документів, що посвідчують особу, фотографій або окремих медичних даних повинно аналізуватися уважніше, щоб перевірити, чи це дійсно необхідно.",
       ],
       ru: [
         "Данный блок показывает, какие типы персональных данных компания собирает, использует или хранит в своей текущей деятельности. Не все персональные данные имеют одинаковый уровень риска. Одни данные являются обычными, например имя, телефон или адрес электронной почты, а другие могут иметь гораздо большее влияние на лицо, например копии удостоверяющих личность документов, медицинские данные, банковские данные или биометрические данные.",
@@ -245,14 +245,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un prim risc apare atunci când compania colectează mai multe date decât are nevoie în mod real. În practică, uneori se solicită copii de acte, date bancare, fotografii sau alte informații „pentru orice eventualitate”, fără ca necesitatea lor să fie clar explicată. Această abordare poate încălca principiul minimizării datelor, potrivit căruia compania trebuie să colecteze doar datele necesare pentru un scop clar.",
-        "Copiile actelor de identitate reprezintă o categorie sensibilă din punct de vedere practic, chiar dacă nu sunt întotdeauna date speciale în sens strict. Acestea conțin multe informații într-un singur document și, dacă sunt pierdute sau transmise greșit, pot fi folosite în mod abuziv. De aceea, păstrarea lor trebuie justificată și limitată.",
-        "Datele medicale sau informațiile despre sănătate implică un nivel ridicat de protecție. Acestea pot apărea în legătură cu concedii medicale, fișe medicale, certificate, aptitudinea de muncă sau alte documente similare. Dacă asemenea date sunt accesate de persoane care nu au nevoie de ele sau sunt păstrate fără reguli clare, compania se expune unor riscuri semnificative.",
-        "Datele financiare și bancare ale angajaților sau clienților trebuie, de asemenea, protejate corespunzător. Acestea pot fi necesare pentru plăți, salarii, rambursări sau relații contractuale, însă accesul la ele trebuie să fie limitat la persoanele care au atribuții directe în acest sens.",
-        "Un risc deosebit apare în cazul datelor biometrice, cum ar fi amprentele, recunoașterea facială sau vocea utilizată pentru identificare. Aceste date sunt foarte sensibile, deoarece sunt legate direct de identitatea fizică a persoanei și nu pot fi schimbate ușor în cazul unei utilizări abuzive. Utilizarea lor trebuie justificată foarte atent și, de regulă, necesită măsuri speciale de protecție.",
-        "Fotografiile persoanelor pot părea inofensive, însă și ele reprezintă date personale atunci când permit identificarea unei persoane. Acestea pot fi folosite pentru legitimații, profiluri interne, promovare, evenimente sau alte scopuri. Dacă sunt publicate sau utilizate fără informare sau fără acord atunci când acesta este necesar, pot apărea reclamații din partea persoanelor vizate.",
-        "În lipsa unei evidențe clare a tipurilor de date colectate, compania poate ajunge să păstreze date inutile, să permită accesul nejustificat la informații sensibile sau să nu poată demonstra de ce are nevoie de anumite date.",
+      uk: [
+        "Перший ризик виникає тоді, коли компанія збирає більше даних, ніж їй реально необхідно. На практиці іноді запитуються копії документів, банківські дані, фотографії або інша інформація «про всяк випадок», без чіткого пояснення їх необхідності. Такий підхід може порушувати принцип мінімізації даних, згідно з яким компанія повинна збирати лише ті дані, які необхідні для чітко визначеної мети.",
+        "Копії документів, що посвідчують особу, становлять чутливу категорію з практичної точки зору, навіть якщо вони не завжди є спеціальними категоріями даних у строгому сенсі. Вони містять багато інформації в одному документі і, у випадку втрати або помилкової передачі, можуть бути використані неправомірно. Тому їх зберігання повинно бути обґрунтованим та обмеженим.",
+        "Медичні дані або інформація про стан здоров'я передбачають високий рівень захисту. Вони можуть з'являтися у зв'язку з медичними відпустками, медичними довідками, висновками, придатністю до роботи або іншими аналогічними документами. Якщо такі дані доступні особам, яким вони не потрібні, або зберігаються без чітких правил, компанія піддається значним ризикам.",
+        "Фінансові та банківські дані співробітників або клієнтів також повинні бути належним чином захищені. Вони можуть бути необхідні для платежів, виплати заробітної плати, відшкодувань або договірних відносин, однак доступ до них повинен бути обмежений особами, які мають прямі обов'язки в цій сфері.",
+        "Особливий ризик виникає у випадку біометричних даних, таких як відбитки пальців, розпізнавання обличчя або голос, що використовується для ідентифікації. Ці дані є дуже чутливими, оскільки вони безпосередньо пов'язані з фізичною ідентичністю особи і не можуть бути легко змінені у випадку неправомірного використання. Їх використання повинно бути дуже ретельно обґрунтоване і, як правило, вимагає спеціальних заходів захисту.",
+        "Фотографії осіб можуть здаватися нешкідливими, однак вони також є персональними даними, якщо дозволяють ідентифікувати особу. Вони можуть використовуватися для перепусток, внутрішніх профілів, просування, заходів або інших цілей. Якщо фотографії публікуються або використовуються без інформування чи без згоди, коли вона необхідна, можуть виникнути скарги з боку суб'єктів даних.",
+        "За відсутності чіткого обліку типів даних, що збираються, компанія може врешті зберігати непотрібні дані, допускати необґрунтований доступ до чутливої інформації або не мати можливості довести, навіщо їй потрібні певні дані.",
       ],
       ru: [
         "Первый риск возникает тогда, когда компания собирает больше данных, чем ей реально необходимо. На практике иногда запрашиваются копии документов, банковские данные, фотографии или иная информация «на всякий случай», без четкого объяснения их необходимости. Такой подход может нарушать принцип минимизации данных, согласно которому компания должна собирать только те данные, которые необходимы для четко определенной цели.",
@@ -265,12 +265,12 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să identifice toate categoriile de date personale pe care le colectează și le păstrează. Această analiză trebuie făcută practic, nu doar formal: trebuie verificat ce documente există în dosarele fizice, în sistemele electronice, în emailuri, în CRM, în contabilitate, în HR și în alte platforme utilizate.",
-        "Pentru fiecare tip de date trebuie stabilit de ce este necesar, în baza cărui temei este prelucrat, cine are acces la el și cât timp trebuie păstrat. Dacă anumite date nu sunt necesare, acestea nu trebuie colectate sau trebuie eliminate din procesele interne.",
-        "Este recomandat ca datele cu risc ridicat, cum ar fi datele medicale, copiile actelor de identitate, datele bancare sau datele biometrice, să fie tratate separat și să fie accesibile doar unui număr restrâns de persoane.",
-        "Compania trebuie să stabilească reguli clare privind păstrarea documentelor care conțin date personale. De exemplu, nu toate documentele trebuie copiate, nu toate copiile trebuie păstrate, iar accesul la dosarele fizice sau electronice trebuie limitat.",
-        "De asemenea, este utilă o revizuire periodică a datelor colectate. Activitatea companiei se poate schimba, iar unele date care erau necesare la un moment dat pot deveni inutile ulterior. Prin această revizuire, compania reduce riscurile și demonstrează că gestionează datele personale într-un mod responsabil.",
+      uk: [
+        "Компанія повинна визначити всі категорії персональних даних, які вона збирає та зберігає. Такий аналіз повинен бути практичним, а не лише формальним: необхідно перевірити, які документи є у фізичних досьє, електронних системах, електронній пошті, CRM, бухгалтерії, HR та інших використовуваних платформах.",
+        "По кожному типу даних необхідно встановити, навіщо він потрібен, на якій підставі обробляється, хто має до нього доступ і як довго він повинен зберігатися. Якщо певні дані не є необхідними, вони не повинні збиратися або повинні бути виключені з внутрішніх процесів.",
+        "Рекомендується, щоб дані з високим рівнем ризику, такі як медичні дані, копії документів, що посвідчують особу, банківські дані або біометричні дані, оброблялися окремо та були доступні лише обмеженому колу осіб.",
+        "Компанія повинна встановити чіткі правила зберігання документів, що містять персональні дані. Наприклад, не всі документи необхідно копіювати, не всі копії необхідно зберігати, а доступ до фізичних або електронних досьє повинен бути обмежений.",
+        "Також корисно проводити періодичний перегляд даних, що збираються. Діяльність компанії може змінюватися, і деякі дані, які були необхідні в певний момент, згодом можуть стати непотрібними. Завдяки такому перегляду компанія знижує ризики та підтверджує, що управляє персональними даними відповідальним чином.",
       ],
       ru: [
         "Компания должна определить все категории персональных данных, которые она собирает и хранит. Такой анализ должен быть практическим, а не только формальным: необходимо проверить, какие документы имеются в физических досье, электронных системах, электронной почте, CRM, бухгалтерии, HR и других используемых платформах.",
@@ -284,14 +284,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 6,
     title: {
-      ro: "Gestionarea datelor prin CRM, baze de date și stocare",
+      uk: "Управління даними через CRM, бази даних і системи зберігання",
       ru: "Управление данными через CRM, базы данных и системы хранения",
     },
     intro: {
-      ro: [
-        "Acest bloc arată unde sunt păstrate datele personale și prin ce instrumente sunt gestionate. Datele pot fi stocate în sisteme CRM, programe de contabilitate, fișiere Excel, platforme de HR, servere interne, calculatoare, emailuri, aplicații cloud sau alte baze de date.",
-        "Această secțiune este importantă deoarece, în practică, riscurile nu apar doar din faptul că datele sunt colectate, ci și din modul în care acestea sunt păstrate, accesate, copiate, transmise sau șterse. O companie poate avea documente juridice corecte, dar dacă datele sunt păstrate haotic în mai multe locuri, conformitatea GDPR devine greu de demonstrat.",
-        "Prin urmare, compania trebuie să cunoască exact unde se află datele personale și cine are acces la ele.",
+      uk: [
+        "Даний блок показує, де зберігаються персональні дані та за допомогою яких інструментів вони управляються. Дані можуть зберігатися в CRM-системах, бухгалтерських програмах, файлах Excel, HR-платформах, внутрішніх серверах, комп'ютерах, електронній пошті, хмарних застосунках або інших базах даних.",
+        "Цей розділ важливий, оскільки на практиці ризики виникають не лише через сам факт збору даних, але й через те, як вони зберігаються, використовуються, копіюються, передаються або видаляються. Компанія може мати коректні юридичні документи, однак якщо дані зберігаються хаотично в кількох місцях, відповідність вимогам GDPR стає важко довести.",
+        "Отже, компанія повинна точно знати, де знаходяться персональні дані та хто має до них доступ.",
       ],
       ru: [
         "Данный блок показывает, где хранятся персональные данные и посредством каких инструментов они управляются. Данные могут храниться в CRM-системах, бухгалтерских программах, Excel-файлах, HR-платформах, внутренних серверах, компьютерах, электронной почте, облачных приложениях или иных базах данных.",
@@ -300,14 +300,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un risc frecvent apare atunci când datele sunt păstrate în prea multe locuri, fără o evidență clară. De exemplu, aceleași date ale unui client pot exista în CRM, în email, într-un fișier Excel, într-o factură, într-un folder partajat și într-o conversație internă. Dacă nu există reguli clare, compania nu mai controlează efectiv unde se află datele și cine le poate accesa.",
-        "În cazul fișierelor Excel sau al bazelor de date gestionate manual, riscurile apar din lipsa controlului asupra versiunilor, parolelor și accesului. Fișierele pot fi copiate ușor, trimise prin email, descărcate pe calculatoare personale sau modificate fără o evidență clară.",
-        "În cazul sistemelor CRM sau al altor platforme de gestiune, riscul principal ține de drepturile de acces. Dacă toți angajații pot vedea toate datele, fără legătură cu atribuțiile lor, compania poate încălca principiul accesului limitat. Fiecare persoană trebuie să aibă acces doar la datele necesare pentru activitatea sa.",
-        "Stocarea locală, pe servere interne sau calculatoare, implică riscuri legate de securitatea echipamentelor, backupuri, parole, acces fizic și protecție împotriva pierderii datelor. Dacă un calculator se defectează, se pierde sau este accesat neautorizat, compania poate pierde date importante sau poate expune informații personale.",
-        "Stocarea în cloud poate fi eficientă și sigură, dar trebuie gestionată corect. Compania trebuie să știe ce platformă folosește, unde pot fi stocate datele, cine este furnizorul serviciului, ce măsuri de securitate există și cine are drept de acces. Utilizarea unor conturi personale sau neoficiale pentru documentele companiei poate crea riscuri suplimentare.",
-        "Un alt risc important este lipsa regulilor de ștergere. Dacă datele sunt păstrate în platforme, foldere și backupuri fără termene clare, compania poate ajunge să păstreze informații mult mai mult decât este necesar. Acest lucru poate crea probleme în cazul solicitărilor de ștergere, controalelor sau incidentelor de securitate.",
-        "În lipsa unei organizări clare, compania poate întâmpina dificultăți atunci când trebuie să răspundă unei persoane care solicită acces la datele sale, rectificarea datelor sau ștergerea acestora. Dacă datele sunt răspândite în mai multe sisteme, răspunsul poate fi incomplet sau întârziat.",
+      uk: [
+        "Поширений ризик виникає тоді, коли дані зберігаються в надто великій кількості місць без чіткого обліку. Наприклад, одні й ті самі дані клієнта можуть знаходитися в CRM, в електронній пошті, у файлі Excel, у рахунку, у спільній папці та у внутрішньому листуванні. Якщо відсутні чіткі правила, компанія фактично перестає контролювати, де знаходяться дані та хто може отримати до них доступ.",
+        "У випадку файлів Excel або баз даних, що управляються вручну, ризики виникають через відсутність контролю над версіями, паролями та доступом. Файли можуть легко копіюватися, надсилатися електронною поштою, завантажуватися на особисті комп'ютери або змінюватися без чіткого обліку.",
+        "У випадку CRM-систем або інших платформ управління основний ризик пов'язаний з правами доступу. Якщо всі співробітники можуть бачити всі дані без зв'язку з їхніми посадовими обов'язками, компанія може порушити принцип обмеженого доступу. Кожна особа повинна мати доступ лише до тих даних, які необхідні для її роботи.",
+        "Локальне зберігання на внутрішніх серверах або комп'ютерах пов'язане з ризиками, що стосуються безпеки обладнання, резервних копій, паролів, фізичного доступу та захисту від втрати даних. Якщо комп'ютер виходить з ладу, губиться або до нього отримують несанкціонований доступ, компанія може втратити важливі дані або розкрити персональну інформацію.",
+        "Зберігання в хмарі може бути ефективним і безпечним, однак воно повинно управлятися правильно. Компанія повинна знати, яку платформу вона використовує, де можуть зберігатися дані, хто є постачальником послуги, які заходи безпеки застосовуються та хто має право доступу. Використання особистих або неофіційних облікових записів для документів компанії може створювати додаткові ризики.",
+        "Ще один важливий ризик — відсутність правил видалення даних. Якщо дані зберігаються в платформах, папках і резервних копіях без чітких строків, компанія може врешті зберігати інформацію значно довше, ніж це необхідно. Це може створити проблеми у випадку запитів на видалення, перевірок або інцидентів безпеки.",
+        "За відсутності чіткої організації компанія може зіткнутися з труднощами, коли необхідно відповісти особі, яка запитує доступ до своїх даних, виправлення даних або їх видалення. Якщо дані розподілені по кількох системах, відповідь може бути неповною або затриманою.",
       ],
       ru: [
         "Распространенный риск возникает тогда, когда данные хранятся в слишком большом количестве мест без четкого учета. Например, одни и те же данные клиента могут находиться в CRM, в электронной почте, в Excel-файле, в счете, в общей папке и во внутренней переписке. Если отсутствуют четкие правила, компания фактически перестает контролировать, где находятся данные и кто может получить к ним доступ.",
@@ -320,14 +320,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să identifice toate sistemele și locurile în care sunt păstrate datele personale. Această identificare trebuie să includă atât sistemele oficiale, cât și instrumentele folosite practic de angajați: CRM, Excel, email, cloud, servere interne, calculatoare, aplicații de comunicare, platforme de contabilitate sau HR.",
-        "Pentru fiecare sistem trebuie stabilit ce tipuri de date sunt păstrate, cine are acces, cine administrează sistemul, dacă există backupuri și dacă datele pot fi șterse sau exportate atunci când este necesar.",
-        "Este recomandat ca accesul la date să fie acordat în funcție de rolul fiecărui angajat. Nu toți angajații trebuie să vadă toate datele. Accesul trebuie limitat la ceea ce este necesar pentru îndeplinirea atribuțiilor de serviciu.",
-        "Compania trebuie să stabilească reguli clare privind utilizarea fișierelor Excel, folderelor partajate, emailului și platformelor cloud. Documentele care conțin date personale nu trebuie păstrate în conturi personale, transmise necontrolat sau copiate fără necesitate.",
-        "De asemenea, trebuie verificate măsurile minime de securitate: parole puternice, acces individual, autentificare suplimentară acolo unde este posibil, copii de rezervă, protecție antivirus și reguli privind utilizarea echipamentelor de serviciu.",
-        "Este utilă și stabilirea unor termene de păstrare pentru datele din fiecare sistem. Compania trebuie să știe când anumite date trebuie arhivate, șterse sau anonimizate. Această regulă ajută la reducerea riscurilor și la menținerea unei evidențe curate și controlate.",
-        "O gestionare organizată a sistemelor și bazelor de date permite companiei să demonstreze că știe unde se află datele personale, cine le folosește și cum sunt protejate.",
+      uk: [
+        "Компанія повинна визначити всі системи та місця, де зберігаються персональні дані. Така ідентифікація повинна включати як офіційні системи, так і інструменти, що фактично використовуються співробітниками: CRM, Excel, електронну пошту, хмару, внутрішні сервери, комп'ютери, комунікаційні застосунки, бухгалтерські або HR-платформи.",
+        "По кожній системі необхідно встановити, які типи даних зберігаються, хто має доступ, хто адмініструє систему, чи існують резервні копії та чи можуть дані бути видалені або експортовані за необхідності.",
+        "Рекомендується надавати доступ до даних залежно від ролі кожного співробітника. Не всі співробітники повинні бачити всі дані. Доступ повинен бути обмежений тим, що необхідно для виконання службових обов'язків.",
+        "Компанія повинна встановити чіткі правила використання файлів Excel, спільних папок, електронної пошти та хмарних платформ. Документи, що містять персональні дані, не повинні зберігатися в особистих облікових записах, передаватися неконтрольовано або копіюватися без необхідності.",
+        "Також необхідно перевірити мінімальні заходи безпеки: надійні паролі, індивідуальний доступ, додаткову автентифікацію там, де це можливо, резервні копії, антивірусний захист і правила використання службового обладнання.",
+        "Корисно також встановити строки зберігання даних у кожній системі. Компанія повинна знати, коли певні дані необхідно архівувати, видалити або анонімізувати. Таке правило допомагає знизити ризики та підтримувати чистий і контрольований облік.",
+        "Організоване управління системами та базами даних дозволяє компанії довести, що вона знає, де знаходяться персональні дані, хто їх використовує та яким чином вони захищаються.",
       ],
       ru: [
         "Компания должна определить все системы и места, где хранятся персональные данные. Такая идентификация должна включать как официальные системы, так и инструменты, фактически используемые сотрудниками: CRM, Excel, электронную почту, облако, внутренние серверы, компьютеры, коммуникационные приложения, бухгалтерские или HR-платформы.",
@@ -343,14 +343,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 7,
     title: {
-      ro: "Transmitere și acces la date",
+      uk: "Передача даних і доступ до даних",
       ru: "Передача данных и доступ к данным",
     },
     intro: {
-      ro: [
-        "Acest bloc arată dacă datele cu caracter personal sunt transmise sau devin accesibile unor persoane ori companii din afara companiei. În practică, aproape orice companie colaborează cu prestatori externi care pot avea acces la date personale: contabili, consultanți, prestatori IT, firme de marketing, curieri, furnizori de servicii cloud, avocați, auditori sau alți parteneri.",
-        "Această secțiune este importantă deoarece GDPR nu privește doar datele păstrate intern, ci și datele care sunt transmise în afara companiei sau accesate de terți. Chiar dacă prelucrarea este efectuată de un prestator extern, compania trebuie să înțeleagă ce date sunt transmise, de ce sunt transmise și în ce condiții sunt protejate.",
-        "De asemenea, este important de verificat dacă datele ajung în alte țări, direct sau indirect. De exemplu, chiar dacă prestatorul este local, acesta poate utiliza platforme cloud, servere, subcontractori sau instrumente tehnice care presupun stocarea ori accesarea datelor din afara țării.",
+      uk: [
+        "Даний блок показує, чи передаються персональні дані або чи стають вони доступними особам чи компаніям за межами компанії. На практиці майже будь-яка компанія співпрацює із зовнішніми постачальниками послуг, які можуть мати доступ до персональних даних: бухгалтерами, консультантами, IT-постачальниками, маркетинговими компаніями, кур'єрськими службами, постачальниками хмарних сервісів, адвокатами, аудиторами або іншими партнерами.",
+        "Цей розділ важливий, оскільки GDPR стосується не лише даних, які зберігаються всередині компанії, але й даних, які передаються за межі компанії або стають доступними третім особам. Навіть якщо обробка здійснюється зовнішнім постачальником послуг, компанія повинна розуміти, які дані передаються, чому вони передаються та на яких умовах вони захищаються.",
+        "Також важливо перевірити, чи потрапляють дані в інші країни, прямо або опосередковано. Наприклад, навіть якщо постачальник є місцевим, він може використовувати хмарні платформи, сервери, субпідрядників або технічні інструменти, які передбачають зберігання даних або доступ до них з-за меж країни.",
       ],
       ru: [
         "Данный блок показывает, передаются ли персональные данные или становятся ли они доступными лицам либо компаниям за пределами компании. На практике почти любая компания сотрудничает с внешними поставщиками услуг, которые могут иметь доступ к персональным данным: бухгалтерами, консультантами, IT-поставщиками, маркетинговыми компаниями, курьерскими службами, поставщиками облачных сервисов, адвокатами, аудиторами или другими партнерами.",
@@ -359,14 +359,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un risc important apare atunci când datele sunt transmise către terți fără o evidență clară. În asemenea situații, compania poate să nu știe exact cine are acces la date, ce date sunt utilizate, în ce scop și cât timp sunt păstrate.",
-        "De exemplu, contabilul poate primi date despre angajați, salarii, contracte, plăți și acte justificative. Prestatorul IT poate avea acces la emailuri, servere, calculatoare, copii de rezervă și baze de date. Consultantul sau avocatul poate primi documente care conțin date despre angajați, clienți, parteneri sau alte persoane. Fiecare dintre aceste situații presupune un flux de date care trebuie controlat.",
-        "Dacă nu există contracte sau clauze privind protecția datelor, compania nu poate demonstra clar care sunt obligațiile prestatorului. În lipsa acestor prevederi, pot apărea probleme privind confidențialitatea, securitatea datelor, subcontractarea, păstrarea documentelor sau returnarea și ștergerea datelor după încetarea colaborării.",
-        "Un risc suplimentar apare atunci când prestatorii externi folosesc propriile sisteme, platforme sau subcontractori. Compania poate crede că datele sunt gestionate doar de prestatorul direct, dar în realitate acestea pot ajunge și la furnizori tehnici, servicii cloud, platforme de marketing, servere externe sau alte companii implicate în prestarea serviciului.",
-        "În cazul transmiterii datelor către companii din alte țări, riscurile sunt și mai sensibile. Transferurile internaționale de date trebuie analizate separat, deoarece nu toate țările oferă același nivel de protecție a datelor personale. Dacă datele sunt transmise fără verificarea condițiilor legale, compania poate fi expusă la riscuri juridice și reputaționale.",
-        "De asemenea, lipsa unei evidențe clare a accesului la date poate crea dificultăți în cazul unui incident. Dacă are loc o scurgere de informații sau un acces neautorizat, compania trebuie să poată stabili rapid ce date au fost afectate, cine a avut acces și ce măsuri trebuie luate.",
-        "În practică, transmiterea necontrolată a datelor către terți este una dintre cele mai vulnerabile zone, deoarece compania pierde controlul direct asupra datelor, dar rămâne responsabilă pentru modul în care acestea sunt gestionate.",
+      uk: [
+        "Важливий ризик виникає тоді, коли дані передаються третім особам без чіткого обліку. У таких ситуаціях компанія може не знати точно, хто має доступ до даних, які дані використовуються, з якою метою та як довго вони зберігаються.",
+        "Наприклад, бухгалтер може отримувати дані про співробітників, заробітну плату, договори, платежі та підтвердні документи. IT-постачальник може мати доступ до електронної пошти, серверів, комп'ютерів, резервних копій і баз даних. Консультант або адвокат може отримувати документи, що містять дані про співробітників, клієнтів, партнерів або інших осіб. Кожна з цих ситуацій передбачає потік даних, який повинен контролюватися.",
+        "Якщо відсутні договори або положення про захист даних, компанія не може чітко довести, які обов'язки має постачальник послуг. За відсутності таких положень можуть виникати проблеми, пов'язані з конфіденційністю, безпекою даних, залученням субпідрядників, зберіганням документів або поверненням і видаленням даних після припинення співпраці.",
+        "Додатковий ризик виникає тоді, коли зовнішні постачальники використовують власні системи, платформи або субпідрядників. Компанія може вважати, що дані управляються лише безпосереднім постачальником послуг, але насправді вони можуть потрапляти також до технічних постачальників, хмарних сервісів, маркетингових платформ, зовнішніх серверів або інших компаній, що беруть участь у наданні послуги.",
+        "У випадку передачі даних компаніям з інших країн ризики є ще чутливішими. Міжнародні передачі даних повинні аналізуватися окремо, оскільки не всі країни забезпечують однаковий рівень захисту персональних даних. Якщо дані передаються без перевірки законних умов, компанія може бути піддана юридичним і репутаційним ризикам.",
+        "Також відсутність чіткого обліку доступу до даних може створити труднощі у випадку інциденту. Якщо відбувається витік інформації або несанкціонований доступ, компанія повинна мати можливість швидко встановити, які дані були зачеплені, хто мав доступ і які заходи необхідно вжити.",
+        "На практиці неконтрольована передача даних третім особам є однією з найбільш вразливих зон, оскільки компанія втрачає прямий контроль над даними, але залишається відповідальною за те, яким чином вони управляються.",
       ],
       ru: [
         "Важный риск возникает тогда, когда данные передаются третьим лицам без четкого учета. В таких ситуациях компания может не знать точно, кто имеет доступ к данным, какие данные используются, в каких целях и как долго они хранятся.",
@@ -379,13 +379,13 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să identifice toți partenerii, furnizorii și prestatorii externi care primesc date personale sau au acces la acestea. Această analiză trebuie să includă atât colaborările evidente, cum ar fi contabilitatea și serviciile IT, cât și colaborările mai puțin vizibile, cum ar fi platformele cloud, marketingul, serviciile de livrare, mentenanța software sau consultanța externă.",
-        "Pentru fiecare prestator trebuie stabilit ce date primește, în ce scop, în baza cărui contract, cine are acces la date, dacă prestatorul poate implica subcontractori și ce se întâmplă cu datele după încetarea colaborării.",
-        "Este recomandat ca relațiile cu prestatorii care prelucrează date personale să fie reglementate prin clauze privind protecția datelor sau prin acorduri separate. Aceste documente trebuie să prevadă obligații privind confidențialitatea, securitatea, limitarea utilizării datelor, asistența în cazul solicitărilor persoanelor vizate și notificarea incidentelor.",
-        "Compania trebuie să verifice dacă datele sunt transmise în alte țări sau dacă prestatorii folosesc platforme externe care pot implica asemenea transferuri. În astfel de cazuri, trebuie analizate condițiile legale aplicabile și documentele necesare.",
-        "De asemenea, este utilă crearea unei evidențe interne a prestatorilor care au acces la date personale. Această evidență poate fi simplă, dar trebuie actualizată atunci când apare un nou prestator, se schimbă serviciile sau se modifică tipurile de date transmise.",
-        "O regulă practică este ca datele să fie transmise doar atunci când este necesar, doar către persoane sau companii autorizate și doar în baza unor condiții clare. Astfel, compania își păstrează controlul asupra datelor și reduce riscul utilizării necorespunzătoare a acestora.",
+      uk: [
+        "Компанія повинна визначити всіх партнерів, постачальників і зовнішніх виконавців, які отримують персональні дані або мають до них доступ. Такий аналіз повинен включати як очевидні види співпраці, наприклад бухгалтерію та IT-послуги, так і менш помітні взаємодії, такі як хмарні платформи, маркетинг, послуги доставки, супровід програмного забезпечення або зовнішнє консультування.",
+        "По кожному постачальнику послуг необхідно встановити, які дані він отримує, з якою метою, на підставі якого договору, хто має доступ до даних, чи може постачальник залучати субпідрядників і що відбувається з даними після припинення співпраці.",
+        "Рекомендується, щоб відносини з постачальниками послуг, які обробляють персональні дані, регулювалися положеннями про захист даних або окремими угодами. Ці документи повинні передбачати обов'язки, пов'язані з конфіденційністю, безпекою, обмеженням використання даних, сприянням у випадку запитів суб'єктів даних та повідомленням про інциденти.",
+        "Компанія повинна перевірити, чи передаються дані в інші країни або чи використовують постачальники зовнішні платформи, які можуть передбачати такі передачі. У подібних випадках необхідно проаналізувати застосовні законні умови та необхідні документи.",
+        "Також корисно створити внутрішній облік постачальників послуг, які мають доступ до персональних даних. Такий облік може бути простим, але повинен оновлюватися при появі нового постачальника, зміні послуг або зміні типів даних, що передаються.",
+        "Практичне правило полягає в тому, щоб дані передавалися лише тоді, коли це необхідно, лише уповноваженим особам або компаніям і лише на підставі чітких умов. Таким чином компанія зберігає контроль над даними та знижує ризик їх неналежного використання.",
       ],
       ru: [
         "Компания должна определить всех партнеров, поставщиков и внешних исполнителей, которые получают персональные данные или имеют к ним доступ. Такой анализ должен включать как очевидные виды сотрудничества, например бухгалтерию и IT-услуги, так и менее заметные взаимодействия, такие как облачные платформы, маркетинг, услуги доставки, сопровождение программного обеспечения или внешнее консультирование.",
@@ -400,14 +400,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 8,
     title: {
-      ro: "Sistem de supraveghere video și GPS",
+      uk: "Система відеоспостереження та GPS",
       ru: "Система видеонаблюдения и GPS",
     },
     intro: {
-      ro: [
-        "Acest bloc arată dacă în cadrul companiei sunt utilizate camere video sau sisteme GPS pentru monitorizarea automobilelor. Aceste instrumente pot avea un scop legitim, cum ar fi securitatea bunurilor, protecția persoanelor, prevenirea incidentelor sau organizarea activității profesionale. Totuși, ele implică monitorizarea directă sau indirectă a persoanelor și trebuie gestionate cu atenție.",
-        "Supravegherea video poate viza angajați, clienți, vizitatori, furnizori sau alte persoane care intră în spațiile companiei. Monitorizarea GPS poate viza angajații care folosesc automobile de serviciu sau, în anumite cazuri, automobile utilizate și în scop personal.",
-        "Din perspectiva GDPR, aceste instrumente trebuie analizate nu doar tehnic, ci și juridic. Compania trebuie să poată explica de ce folosește supravegherea video sau GPS, ce date colectează, cine are acces la ele și cât timp sunt păstrate.",
+      uk: [
+        "Даний блок показує, чи використовуються в компанії відеокамери або GPS-системи для моніторингу автомобілів. Ці інструменти можуть мати законну мету, наприклад забезпечення збереження майна, захист осіб, запобігання інцидентам або організацію професійної діяльності. Однак вони передбачають прямий або опосередкований моніторинг осіб і повинні управлятися уважно.",
+        "Відеоспостереження може стосуватися співробітників, клієнтів, відвідувачів, постачальників або інших осіб, які входять до приміщень компанії. GPS-моніторинг може стосуватися співробітників, які використовують службові автомобілі, а в окремих випадках — автомобілі, що використовуються також в особистих цілях.",
+        "З точки зору GDPR ці інструменти повинні аналізуватися не лише технічно, але й юридично. Компанія повинна бути здатною пояснити, чому вона використовує відеоспостереження або GPS, які дані збирає, хто має до них доступ і як довго вони зберігаються.",
       ],
       ru: [
         "Данный блок показывает, используются ли в компании видеокамеры или GPS-системы для мониторинга автомобилей. Эти инструменты могут иметь законную цель, например обеспечение сохранности имущества, защиту лиц, предотвращение инцидентов или организацию профессиональной деятельности. Однако они предполагают прямой или косвенный мониторинг лиц и должны управляться внимательно.",
@@ -416,16 +416,16 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un risc important apare atunci când camerele video sunt instalate fără o informare corespunzătoare. Persoanele care intră într-un birou, magazin, spațiu comercial sau spațiu de producție trebuie să știe că zona este supravegheată video, cine operează sistemul și în ce scop sunt utilizate imaginile.",
-        "Dacă nu există indicatoare vizibile sau o informare completă, compania poate fi acuzată că monitorizează persoanele fără transparență. Acest risc este mai mare în spațiile unde persoanele nu se așteaptă să fie supravegheate sau unde supravegherea poate fi considerată excesivă.",
-        "Un alt risc ține de amplasarea camerelor. Camerele trebuie instalate doar acolo unde există un scop justificat. Supravegherea permanentă și disproporționată a angajaților poate crea probleme, mai ales dacă scopul real nu este securitatea, ci controlul excesiv al activității acestora.",
-        "De asemenea, trebuie evitată instalarea camerelor în zone în care persoanele au o așteptare ridicată de intimitate. Chiar și atunci când compania urmărește un scop legitim, mijloacele folosite trebuie să fie proporționale.",
-        "În cazul sistemelor GPS, riscurile apar mai ales atunci când automobilele sunt utilizate și în scop personal. Dacă monitorizarea continuă și în afara programului de lucru sau în afara scopului profesional, aceasta poate afecta viața privată a angajaților. În asemenea cazuri, compania trebuie să stabilească reguli clare privind când și cum este activă monitorizarea.",
-        "Un risc frecvent este lipsa unei politici interne privind CCTV și GPS. Dacă nu există reguli scrise, angajații pot să nu știe ce se monitorizează, cine are acces la date, cât timp sunt păstrate imaginile sau informațiile de localizare și în ce situații pot fi utilizate.",
-        "Accesul necontrolat la înregistrările video sau la datele GPS este un alt risc important. Dacă prea multe persoane pot vedea imaginile sau traseele automobilelor, compania poate încălca principiul accesului limitat. Aceste date trebuie accesate doar de persoane autorizate și doar atunci când există un motiv concret.",
-        "Păstrarea excesivă a imaginilor video sau a datelor GPS poate crea probleme suplimentare. Dacă datele sunt păstrate mai mult decât este necesar, compania acumulează inutil informații despre persoane și crește riscul ca acestea să fie accesate sau folosite necorespunzător.",
-        "În cazul unui incident, lipsa regulilor clare poate face dificilă justificarea utilizării înregistrărilor. De exemplu, dacă imaginile video sunt folosite într-un conflict de muncă sau într-o dispută cu un client, compania trebuie să poată demonstra că sistemul a fost folosit legal și proporțional.",
+      uk: [
+        "Важливий ризик виникає тоді, коли відеокамери встановлені без належного інформування. Особи, які входять до офісу, магазину, комерційного приміщення або виробничого простору, повинні знати, що зона перебуває під відеоспостереженням, хто керує системою та з якою метою використовуються зображення.",
+        "Якщо відсутні видимі попереджувальні таблички або повне інформування, компанію можуть звинуватити в непрозорому моніторингу осіб. Цей ризик вищий у приміщеннях, де особи не очікують, що за ними буде здійснюватися спостереження, або де спостереження може вважатися надмірним.",
+        "Ще один ризик пов'язаний з розміщенням камер. Камери повинні встановлюватися лише там, де існує обґрунтована мета. Постійне та непропорційне спостереження за співробітниками може створювати проблеми, особливо якщо реальною метою є не безпека, а надмірний контроль їхньої діяльності.",
+        "Також необхідно уникати встановлення камер у зонах, де особи мають підвищене очікування приватності. Навіть коли компанія переслідує законну мету, використовувані засоби повинні бути пропорційними.",
+        "У випадку GPS-систем ризики виникають насамперед тоді, коли автомобілі використовуються також в особистих цілях. Якщо моніторинг триває поза робочим часом або поза професійною метою, це може зачіпати приватне життя співробітників. У таких випадках компанія повинна встановити чіткі правила щодо того, коли і яким чином моніторинг є активним.",
+        "Поширений ризик — відсутність внутрішньої політики щодо CCTV і GPS. Якщо відсутні письмові правила, співробітники можуть не знати, що саме відстежується, хто має доступ до даних, як довго зберігаються зображення або дані про місцезнаходження та в яких ситуаціях вони можуть використовуватися.",
+        "Неконтрольований доступ до відеозаписів або GPS-даних є ще одним важливим ризиком. Якщо надто багато осіб можуть переглядати зображення або маршрути автомобілів, компанія може порушити принцип обмеженого доступу. Ці дані повинні бути доступні лише уповноваженим особам і лише за наявності конкретної підстави.",
+        "Надмірне зберігання відеозаписів або GPS-даних може створювати додаткові проблеми. Якщо дані зберігаються довше, ніж необхідно, компанія без необхідності накопичує інформацію про осіб і збільшує ризик того, що вона буде доступна або використана неналежним чином.",
+        "У випадку інциденту відсутність чітких правил може ускладнити обґрунтування використання записів. Наприклад, якщо відеозаписи використовуються в трудовому конфлікті або спорі з клієнтом, компанія повинна мати можливість довести, що система використовувалася законно та пропорційно.",
       ],
       ru: [
         "Важный риск возникает тогда, когда видеокамеры установлены без надлежащего информирования. Лица, входящие в офис, магазин, коммерческое помещение или производственное пространство, должны знать, что зона находится под видеонаблюдением, кто управляет системой и в каких целях используются изображения.",
@@ -440,15 +440,15 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să stabilească în mod clar scopul pentru care folosește camere video sau sisteme GPS. Acest scop trebuie să fie real, necesar și proporțional. De exemplu, securitatea spațiilor, protecția bunurilor, investigarea incidentelor sau gestionarea automobilelor de serviciu pot fi scopuri justificate, dacă sunt documentate corespunzător.",
-        "În cazul supravegherii video, compania trebuie să verifice unde sunt amplasate camerele, ce zone acoperă, dacă există indicatoare vizibile și cine are acces la înregistrări. Este recomandat ca supravegherea să fie limitată la zonele necesare și să nu depășească scopul declarat.",
-        "Compania trebuie să informeze persoanele vizate despre utilizarea camerelor video. Informarea poate include indicatoare la intrare și o notă de informare mai detaliată, disponibilă pentru persoanele interesate. Aceasta trebuie să explice cine administrează sistemul, scopul supravegherii, durata de păstrare a imaginilor și drepturile persoanelor vizate.",
-        "În cazul GPS, compania trebuie să stabilească dacă automobilele sunt folosite exclusiv în scop profesional sau și în scop personal. Dacă există utilizare personală, trebuie analizate măsuri suplimentare pentru a evita monitorizarea excesivă în afara programului sau în afara scopului profesional.",
-        "Este recomandată adoptarea unei politici interne privind utilizarea sistemelor CCTV și GPS. Aceasta trebuie să prevadă scopul monitorizării, categoriile de persoane vizate, durata de păstrare, persoanele care au acces, situațiile în care datele pot fi verificate și modul de gestionare a solicitărilor sau incidentelor.",
-        "Accesul la imaginile video și la datele GPS trebuie limitat la persoane desemnate. Este utilă ținerea unei evidențe a accesărilor, mai ales atunci când datele sunt consultate pentru investigarea unui incident sau pentru soluționarea unei situații concrete.",
-        "Compania trebuie să stabilească termene clare de păstrare pentru înregistrările video și datele GPS. Acestea nu trebuie păstrate pe termen nedeterminat, ci doar atât timp cât este necesar pentru scopul pentru care au fost colectate.",
-        "O gestionare corectă a sistemelor CCTV și GPS permite companiei să folosească aceste instrumente în mod eficient, dar fără a afecta nejustificat viața privată a angajaților, clienților sau altor persoane.",
+      uk: [
+        "Компанія повинна чітко встановити мету, для якої вона використовує відеокамери або GPS-системи. Ця мета повинна бути реальною, необхідною та пропорційною. Наприклад, безпека приміщень, захист майна, розслідування інцидентів або управління службовими автомобілями можуть бути обґрунтованими цілями, якщо вони належним чином задокументовані.",
+        "У випадку відеоспостереження компанія повинна перевірити, де розміщені камери, які зони вони охоплюють, чи є видимі попереджувальні таблички та хто має доступ до записів. Рекомендується, щоб спостереження було обмежене необхідними зонами та не виходило за межі заявленої мети.",
+        "Компанія повинна інформувати суб'єктів даних про використання відеокамер. Інформування може включати попереджувальні таблички біля входу та детальніше інформаційне повідомлення, доступне заінтересованим особам. Воно повинно пояснювати, хто адмініструє систему, мету спостереження, строк зберігання зображень і права суб'єктів даних.",
+        "У випадку GPS компанія повинна встановити, чи використовуються автомобілі виключно в професійних цілях, чи також в особистих цілях. Якщо допускається особисте використання, необхідно проаналізувати додаткові заходи, щоб уникнути надмірного моніторингу поза робочим часом або поза професійною метою.",
+        "Рекомендується прийняти внутрішню політику про використання систем CCTV і GPS. Вона повинна передбачати мету моніторингу, категорії суб'єктів даних, строк зберігання, осіб, які мають доступ, ситуації, в яких дані можуть бути перевірені, а також порядок управління запитами або інцидентами.",
+        "Доступ до відеозаписів і GPS-даних повинен бути обмежений призначеними особами. Корисно вести облік доступів, особливо коли дані переглядаються для розслідування інциденту або вирішення конкретної ситуації.",
+        "Компанія повинна встановити чіткі строки зберігання відеозаписів і GPS-даних. Вони не повинні зберігатися протягом невизначеного строку, а лише стільки, скільки необхідно для мети, для якої вони були зібрані.",
+        "Коректне управління системами CCTV і GPS дозволяє компанії ефективно використовувати ці інструменти, не зачіпаючи необґрунтовано приватне життя співробітників, клієнтів або інших осіб.",
       ],
       ru: [
         "Компания должна четко установить цель, для которой она использует видеокамеры или GPS-системы. Эта цель должна быть реальной, необходимой и соразмерной. Например, безопасность помещений, защита имущества, расследование инцидентов или управление служебными автомобилями могут быть обоснованными целями, если они надлежащим образом документированы.",
@@ -465,14 +465,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 9,
     title: {
-      ro: "Persoană responsabilă pentru protecția datelor",
+      uk: "Особа, відповідальна за захист даних",
       ru: "Лицо, ответственное за защиту данных",
     },
     intro: {
-      ro: [
-        "Acest bloc arată dacă în cadrul companiei există o persoană responsabilă pentru protecția datelor cu caracter personal. Aceasta poate fi o persoană desemnată oficial cu titlu de DPO sau o persoană internă care, fără a avea acest titlu, coordonează practic aspectele legate de protecția datelor.",
-        "Existența unei persoane responsabile este importantă deoarece GDPR nu înseamnă doar documente, politici sau formulare, ci și o gestionare continuă a modului în care datele personale sunt colectate, păstrate, utilizate, transmise și șterse.",
-        "În practică, chiar și companiile care nu au obligația legală de a desemna un DPO au nevoie de o persoană care să cunoască procesele interne și să poată coordona subiectele legate de datele personale. Fără o asemenea persoană, responsabilitatea rămâne dispersată între mai multe departamente, iar problemele sunt observate, de regulă, doar atunci când apare o plângere, un incident sau o solicitare urgentă.",
+      uk: [
+        "Даний блок показує, чи існує в компанії особа, відповідальна за захист персональних даних. Це може бути особа, офіційно призначена як DPO, або внутрішня відповідальна особа, яка, не маючи такого формального статусу, на практиці координує питання, пов'язані із захистом даних.",
+        "Наявність відповідальної особи важлива, оскільки GDPR — це не лише документи, політики або форми, але й постійне управління тим, як персональні дані збираються, зберігаються, використовуються, передаються та видаляються.",
+        "На практиці навіть компанії, які не мають законного обов'язку призначати DPO, потребують особи, яка знає внутрішні процеси та може координувати питання, пов'язані з персональними даними. Без такої особи відповідальність залишається розподіленою між кількома відділами, а проблеми, як правило, виявляються лише тоді, коли з'являється скарга, інцидент або терміновий запит.",
       ],
       ru: [
         "Данный блок показывает, существует ли в компании лицо, ответственное за защиту персональных данных. Это может быть лицо, официально назначенное в качестве DPO, либо внутреннее ответственное лицо, которое, не имея такого формального статуса, на практике координирует вопросы, связанные с защитой данных.",
@@ -481,14 +481,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un prim risc apare atunci când nimeni nu este responsabil în mod clar de protecția datelor. În această situație, compania poate avea anumite reguli sau documente, dar acestea nu sunt aplicate consecvent, nu sunt actualizate și nu sunt cunoscute de angajați.",
-        "De exemplu, departamentul HR poate gestiona datele angajaților, contabilitatea poate gestiona date financiare, prestatorul IT poate avea acces la sisteme, iar marketingul poate lucra cu datele clienților. Dacă nu există o persoană care să vadă imaginea de ansamblu, fiecare zonă acționează separat, iar compania poate pierde controlul asupra fluxurilor de date.",
-        "Un risc important apare atunci când se primesc solicitări din partea persoanelor vizate: acces la date, rectificare, ștergere, opoziție sau alte cereri similare. Dacă nu este clar cine trebuie să primească și să gestioneze aceste solicitări, răspunsurile pot fi întârziate, incomplete sau neunitare.",
-        "De asemenea, în cazul unui incident de securitate, lipsa unei persoane responsabile poate duce la reacții întârziate. De exemplu, dacă se pierde un laptop, se transmite un email greșit, se accesează date fără autorizație sau apare o scurgere de informații, compania trebuie să poată reacționa rapid. Fără o coordonare clară, incidentul poate fi tratat informal sau poate fi ignorat până când produce consecințe mai grave.",
-        "Un alt risc ține de relația cu prestatorii externi. Dacă nimeni nu verifică contractele, accesul la date, clauzele de confidențialitate sau obligațiile prestatorilor, compania poate transmite date către terți fără garanții suficiente. În cazul unei probleme, compania va trebui să explice de ce a permis accesul la date și ce măsuri de control a aplicat.",
-        "În lipsa unei persoane responsabile, compania poate rata și schimbările care apar în activitatea sa. De exemplu, lansarea unui nou site, implementarea unui CRM, introducerea supravegherii video, utilizarea GPS sau transmiterea datelor către un nou prestator pot crea obligații suplimentare. Dacă aceste schimbări nu sunt analizate din perspectiva protecției datelor, riscurile se acumulează treptat.",
-        "Pe termen lung, absența unei responsabilități clare poate crea impresia că protecția datelor este doar o formalitate. În realitate, conformitatea GDPR presupune verificări periodice, actualizarea documentelor, instruirea angajaților și reacții corecte la situațiile concrete.",
+      uk: [
+        "Перший ризик виникає тоді, коли ніхто чітко не відповідає за захист даних. У такій ситуації компанія може мати певні правила або документи, однак вони не застосовуються послідовно, не оновлюються та невідомі співробітникам.",
+        "Наприклад, HR-відділ може керувати даними співробітників, бухгалтерія — фінансовими даними, IT-постачальник може мати доступ до систем, а маркетинг може працювати з даними клієнтів. Якщо відсутня особа, яка бачить загальну картину, кожна зона діє окремо, і компанія може втратити контроль над потоками даних.",
+        "Важливий ризик виникає при отриманні запитів від суб'єктів даних: доступ до даних, виправлення, видалення, заперечення або інші аналогічні запити. Якщо неясно, хто повинен приймати та обробляти такі запити, відповіді можуть бути затриманими, неповними або неузгодженими.",
+        "Також у випадку інциденту безпеки відсутність відповідальної особи може призвести до запізнілої реакції. Наприклад, якщо втрачено ноутбук, помилково надіслано електронний лист, дані були доступні без дозволу або відбувся витік інформації, компанія повинна мати можливість швидко відреагувати. Без чіткої координації інцидент може бути розглянутий неформально або проігнорований доти, доки не призведе до серйозніших наслідків.",
+        "Ще один ризик пов'язаний з відносинами із зовнішніми постачальниками. Якщо ніхто не перевіряє договори, доступ до даних, положення про конфіденційність або обов'язки постачальників, компанія може передавати дані третім особам без достатніх гарантій. У випадку виникнення проблеми компанія повинна буде пояснити, чому вона допустила доступ до даних і які заходи контролю застосувала.",
+        "За відсутності відповідальної особи компанія також може упустити зміни, що відбуваються в її діяльності. Наприклад, запуск нового сайту, впровадження CRM, введення відеоспостереження, використання GPS або передача даних новому постачальнику можуть створювати додаткові обов'язки. Якщо ці зміни не аналізуються з точки зору захисту даних, ризики поступово накопичуються.",
+        "У довгостроковій перспективі відсутність чіткої відповідальності може створити враження, що захист даних є лише формальністю. Насправді відповідність GDPR передбачає періодичні перевірки, оновлення документів, навчання співробітників і правильну реакцію на конкретні ситуації.",
       ],
       ru: [
         "Первый риск возникает тогда, когда никто четко не отвечает за защиту данных. В такой ситуации у компании могут быть определенные правила или документы, однако они не применяются последовательно, не обновляются и неизвестны сотрудникам.",
@@ -501,14 +501,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să stabilească dacă are obligația de a desemna un DPO sau dacă este suficientă desemnarea unei persoane responsabile intern pentru protecția datelor. Această analiză trebuie făcută în funcție de activitatea companiei, volumul datelor prelucrate, tipurile de date și gradul de monitorizare a persoanelor.",
-        "Dacă este desemnat un DPO, rolul acestuia trebuie să fie clar, documentat și comunicat în interiorul companiei. Persoanele din companie trebuie să știe cine este responsabil de protecția datelor și când trebuie să se adreseze acestei persoane.",
-        "Dacă nu este necesară desemnarea unui DPO, compania poate desemna un responsabil intern care să coordoneze aspectele practice. Această persoană poate urmări documentele interne, poate centraliza întrebările legate de datele personale, poate comunica cu prestatorii externi și poate coordona răspunsurile la solicitările persoanelor vizate.",
-        "Este recomandat ca desemnarea persoanei responsabile să fie făcută în scris, printr-o decizie internă sau printr-un document similar. În acest document pot fi indicate atribuțiile de bază: monitorizarea respectării regulilor interne, actualizarea documentelor, evidența incidentelor, coordonarea instruirilor și comunicarea cu conducerea companiei.",
-        "De asemenea, persoana responsabilă trebuie să fie implicată atunci când compania introduce procese noi care presupun prelucrarea datelor personale. De exemplu, înainte de lansarea unui nou formular online, implementarea unui nou sistem IT, instalarea camerelor video sau transmiterea datelor către un nou prestator, este util ca această persoană să verifice dacă sunt respectate cerințele minime de protecție a datelor.",
-        "Compania trebuie să evite situația în care responsabilitatea există doar formal. Persoana desemnată trebuie să aibă acces la informațiile necesare, să poată comunica cu departamentele relevante și să poată semnala conducerii riscurile identificate.",
-        "O persoană responsabilă bine aleasă ajută compania să trateze protecția datelor ca pe un proces organizat, nu ca pe o reacție de moment în caz de problemă.",
+      uk: [
+        "Компанія повинна встановити, чи зобов'язана вона призначити DPO, чи достатньо призначити внутрішню особу, відповідальну за захист даних. Такий аналіз повинен проводитися з урахуванням діяльності компанії, обсягу оброблюваних даних, типів даних і ступеня моніторингу осіб.",
+        "Якщо призначається DPO, його роль повинна бути чіткою, задокументованою та доведеною до відома всередині компанії. Особи в компанії повинні знати, хто відповідає за захист даних і коли необхідно звертатися до цієї особи.",
+        "Якщо призначення DPO не вимагається, компанія може призначити внутрішню відповідальну особу, яка координуватиме практичні питання. Ця особа може відстежувати внутрішні документи, централізувати питання, пов'язані з персональними даними, взаємодіяти із зовнішніми постачальниками та координувати відповіді на запити суб'єктів даних.",
+        "Рекомендується оформити призначення відповідальної особи письмово, за допомогою внутрішнього рішення або аналогічного документа. У цьому документі можуть бути зазначені основні обов'язки: контроль дотримання внутрішніх правил, оновлення документів, облік інцидентів, координація інструктажів і комунікація з керівництвом компанії.",
+        "Також відповідальна особа повинна залучатися, коли компанія впроваджує нові процеси, що передбачають обробку персональних даних. Наприклад, перед запуском нової онлайн-форми, впровадженням нової IT-системи, встановленням відеокамер або передачею даних новому постачальнику корисно, щоб ця особа перевірила дотримання мінімальних вимог із захисту даних.",
+        "Компанія повинна уникати ситуації, коли відповідальність існує лише формально. Призначена особа повинна мати доступ до необхідної інформації, мати можливість взаємодіяти з відповідними відділами та повідомляти керівництву про виявлені ризики.",
+        "Правильно обрана відповідальна особа допомагає компанії розглядати захист даних як організований процес, а не як ситуативну реакцію у випадку виникнення проблеми.",
       ],
       ru: [
         "Компания должна установить, обязана ли она назначить DPO или достаточно назначить внутреннее лицо, ответственное за защиту данных. Такой анализ должен проводиться с учетом деятельности компании, объема обрабатываемых данных, типов данных и степени мониторинга лиц.",
@@ -524,14 +524,14 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
   {
     order: 10,
     title: {
-      ro: "Incidente și evaluări de risc",
+      uk: "Інциденти та оцінка ризиків",
       ru: "Инциденты и оценка рисков",
     },
     intro: {
-      ro: [
-        "Acest bloc arată dacă în companie există măsuri interne pentru protecția datelor și dacă au existat incidente de securitate. Prin incidente se înțeleg situații precum pierderea unui laptop, transmiterea greșită a unui email, accesul neautorizat la date, pierderea unor documente, divulgarea accidentală a informațiilor sau scurgerea unor date către persoane neautorizate.",
-        "Această secțiune este importantă deoarece protecția datelor nu presupune doar prevenirea problemelor, ci și capacitatea companiei de a reacționa corect atunci când o problemă apare. Chiar și companiile bine organizate pot avea incidente. Diferența apare în modul în care acestea sunt identificate, documentate, analizate și soluționate.",
-        "De asemenea, evaluarea riscurilor ajută compania să înțeleagă care sunt zonele vulnerabile: accesul la date, securitatea IT, instruirea angajaților, transmiterea datelor către prestatori, utilizarea emailului, păstrarea documentelor sau monitorizarea prin CCTV și GPS.",
+      uk: [
+        "Даний блок показує, чи існують у компанії внутрішні заходи із захисту даних і чи мали місце інциденти безпеки. Під інцидентами розуміються такі ситуації, як втрата ноутбука, помилкове надсилання електронного листа, несанкціонований доступ до даних, втрата документів, випадкове розкриття інформації або витік даних до неуповноважених осіб.",
+        "Цей розділ важливий, оскільки захист даних передбачає не лише запобігання проблемам, але й здатність компанії правильно реагувати, коли проблема виникає. Навіть добре організовані компанії можуть стикатися з інцидентами. Різниця полягає в тому, як такі інциденти виявляються, документуються, аналізуються та усуваються.",
+        "Також оцінка ризиків допомагає компанії зрозуміти, які зони є вразливими: доступ до даних, IT-безпека, навчання співробітників, передача даних постачальникам послуг, використання електронної пошти, зберігання документів або моніторинг через CCTV і GPS.",
       ],
       ru: [
         "Данный блок показывает, существуют ли в компании внутренние меры по защите данных и имели ли место инциденты безопасности. Под инцидентами понимаются такие ситуации, как потеря ноутбука, ошибочная отправка электронного письма, несанкционированный доступ к данным, потеря документов, случайное раскрытие информации или утечка данных к неуполномоченным лицам.",
@@ -540,15 +540,15 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     risk: {
-      ro: [
-        "Un risc important apare atunci când compania nu are proceduri interne clare privind protecția datelor. În lipsa acestor reguli, fiecare angajat reacționează după propria înțelegere. Unii pot raporta o problemă, alții o pot ignora, iar alții pot încerca să o rezolve informal, fără ca incidentul să fie documentat.",
-        "De exemplu, dacă un email cu date personale este transmis unei persoane greșite, compania trebuie să înțeleagă ce date au fost trimise, cui au fost trimise, dacă persoana greșită le-a accesat și ce măsuri trebuie luate. Dacă nu există o procedură, incidentul poate fi tratat ca o simplă greșeală administrativă, deși poate avea consecințe juridice.",
-        "Un alt risc apare în cazul pierderii sau furtului unui dispozitiv. Dacă un laptop, telefon sau stick USB conține date personale și nu este protejat corespunzător, compania poate pierde controlul asupra acestor date. În asemenea situații, contează foarte mult dacă dispozitivul avea parolă, criptare, acces limitat sau posibilitate de blocare la distanță.",
-        "Lipsa instruirii angajaților este una dintre cele mai frecvente cauze ale incidentelor. Multe probleme nu apar din intenție rea, ci din neatenție: trimiterea documentelor către destinatar greșit, utilizarea parolelor slabe, păstrarea documentelor pe desktop, folosirea conturilor personale, transmiterea datelor prin aplicații nesecurizate sau accesarea datelor fără necesitate.",
-        "Un risc suplimentar apare atunci când incidentele nu sunt evidențiate. Dacă nu există un registru intern al incidentelor, compania nu poate demonstra că a analizat situațiile apărute și că a luat măsuri. În cazul unui control sau al unei plângeri, lipsa documentării poate fi interpretată ca lipsă de control intern.",
-        "De asemenea, dacă nu se face o evaluare periodică a riscurilor, compania poate să nu observe vulnerabilitățile din timp. De exemplu, accesul prea larg la CRM, lipsa backupurilor, lipsa politicilor interne, contractele incomplete cu prestatorii sau păstrarea excesivă a datelor pot deveni probleme doar atunci când apare un incident.",
-        "În cazul unor incidente mai grave, compania poate avea obligația de a notifica autoritatea competentă sau chiar persoanele afectate. Dacă nu există o procedură clară, compania poate pierde timp important și poate reacționa prea târziu.",
-        "Consecințele pot fi atât juridice, cât și reputaționa le. Pe lângă eventuale sancțiuni, compania poate pierde încrederea angajaților, clienților sau partenerilor dacă nu gestionează corect datele personale.",
+      uk: [
+        "Важливий ризик виникає тоді, коли у компанії відсутні чіткі внутрішні процедури із захисту даних. За відсутності таких правил кожен співробітник реагує виходячи з власного розуміння. Одні можуть повідомити про проблему, інші — проігнорувати її, а треті — спробувати вирішити її неформально, без документування інциденту.",
+        "Наприклад, якщо електронний лист із персональними даними надіслано не тому адресату, компанія повинна зрозуміти, які дані були надіслані, кому вони були надіслані, чи отримав помилковий адресат до них доступ і які заходи необхідно вжити. Якщо процедури немає, інцидент може бути сприйнятий як проста адміністративна помилка, хоча він може мати юридичні наслідки.",
+        "Ще один ризик виникає у випадку втрати або крадіжки пристрою. Якщо ноутбук, телефон або USB-накопичувач містить персональні дані та не захищений належним чином, компанія може втратити контроль над цими даними. У таких ситуаціях велике значення має те, чи були на пристрої пароль, шифрування, обмежений доступ або можливість віддаленого блокування.",
+        "Відсутність навчання співробітників є однією з найчастіших причин інцидентів. Багато проблем виникають не через злий умисел, а через неуважність: надсилання документів неправильному адресату, використання слабких паролів, зберігання документів на робочому столі комп'ютера, використання особистих облікових записів, передача даних через небезпечні застосунки або доступ до даних без необхідності.",
+        "Додатковий ризик виникає тоді, коли інциденти не обліковуються. Якщо відсутній внутрішній реєстр інцидентів, компанія не може довести, що вона проаналізувала ситуації, які виникли, і вжила заходів. У випадку перевірки або скарги відсутність документування може бути витлумачена як відсутність внутрішнього контролю.",
+        "Також, якщо не проводиться періодична оцінка ризиків, компанія може не помітити вразливості вчасно. Наприклад, надто широкий доступ до CRM, відсутність резервних копій, відсутність внутрішніх політик, неповні договори з постачальниками послуг або надмірне зберігання даних можуть стати проблемами лише тоді, коли станеться інцидент.",
+        "У випадку серйозніших інцидентів у компанії може виникнути обов'язок повідомити компетентний орган або навіть зачеплених осіб. Якщо відсутня чітка процедура, компанія може втратити важливий час і відреагувати надто пізно.",
+        "Наслідки можуть бути як юридичними, так і репутаційними. Крім можливих санкцій, компанія може втратити довіру співробітників, клієнтів або партнерів, якщо не буде належним чином управляти персональними даними.",
       ],
       ru: [
         "Важный риск возникает тогда, когда у компании отсутствуют четкие внутренние процедуры по защите данных. При отсутствии таких правил каждый сотрудник реагирует исходя из собственного понимания. Одни могут сообщить о проблеме, другие — проигнорировать ее, а третьи — попытаться решить ее неформально, без документирования инцидента.",
@@ -562,15 +562,15 @@ export const GDPR_EXPLANATIONS: GdprExplanation[] = [
       ],
     },
     action: {
-      ro: [
-        "Compania trebuie să implementeze măsuri interne clare privind protecția datelor. Aceste măsuri pot include politici interne, instrucțiuni pentru angajați, reguli privind accesul la date, reguli privind utilizarea emailului, proceduri pentru incidente și instruiri periodice.",
-        "Este recomandat ca angajații să știe ce trebuie să facă atunci când observă o problemă. De exemplu, dacă trimit un email greșit, pierd un document, observă acces neautorizat sau primesc o solicitare privind datele personale, trebuie să știe cui raportează și în ce termen.",
-        "Compania trebuie să instituie un registru intern al incidentelor. Acesta nu trebuie să fie complicat, dar trebuie să permită documentarea situației: data incidentului, descrierea problemei, datele afectate, persoanele implicate, măsurile luate și concluzia finală.",
-        "De asemenea, este recomandată realizarea periodică a unei evaluări de risc. Aceasta poate porni de la întrebări simple: unde sunt cele mai multe date personale, cine are acces la ele, ce prestatori le primesc, ce sisteme sunt vulnerabile, ce date sunt sensibile și ce s-ar întâmpla dacă acestea ar fi pierdute sau divulgate.",
-        "Compania trebuie să verifice măsurile minime de securitate: parole individuale, acces limitat, backupuri, protecție antivirus, actualizarea sistemelor, blocarea dispozitivelor, reguli privind documentele fizice și controlul accesului la platformele digitale.",
-        "Este utilă și instruirea periodică a angajaților. Instruirea nu trebuie să fie complicată, dar trebuie să explice clar ce sunt datele personale, ce greșeli trebuie evitate și cum trebuie raportate incidentele.",
-        "În cazul în care apare un incident, compania trebuie să îl analizeze rapid și să decidă dacă este necesară notificarea autorității sau a persoanelor afectate. Această decizie trebuie documentată, chiar și atunci când se concluzionează că notificarea nu este necesară.",
-        "O companie care are proceduri, evidențe și angajați instruiți poate demonstra că tratează protecția datelor în mod responsabil și că este pregătită să reacționeze organizat în cazul unei probleme.",
+      uk: [
+        "Компанія повинна впровадити чіткі внутрішні заходи із захисту даних. Ці заходи можуть включати внутрішні політики, інструкції для співробітників, правила доступу до даних, правила використання електронної пошти, процедури реагування на інциденти та періодичне навчання.",
+        "Рекомендується, щоб співробітники знали, що необхідно робити, коли вони помічають проблему. Наприклад, якщо вони надіслали лист неправильному адресату, втратили документ, помітили несанкціонований доступ або отримали запит, що стосується персональних даних, вони повинні знати, кому повідомляти про це та в який строк.",
+        "Компанія повинна запровадити внутрішній реєстр інцидентів. Він не повинен бути складним, але повинен дозволяти документувати ситуацію: дату інциденту, опис проблеми, зачеплені дані, залучених осіб, вжиті заходи та підсумковий висновок.",
+        "Також рекомендується періодично проводити оцінку ризиків. Вона може починатися з простих запитань: де знаходиться найбільший обсяг персональних даних, хто має до них доступ, які постачальники послуг їх отримують, які системи є вразливими, які дані є чутливими та що станеться, якщо вони будуть втрачені або розкриті.",
+        "Компанія повинна перевірити мінімальні заходи безпеки: індивідуальні паролі, обмежений доступ, резервні копії, антивірусний захист, оновлення систем, блокування пристроїв, правила щодо фізичних документів і контроль доступу до цифрових платформ.",
+        "Корисно також проводити періодичне навчання співробітників. Навчання не повинно бути складним, але повинно чітко пояснювати, що таке персональні дані, яких помилок необхідно уникати та як слід повідомляти про інциденти.",
+        "У випадку виникнення інциденту компанія повинна швидко його проаналізувати та вирішити, чи потрібне повідомлення органу влади або зачеплених осіб. Це рішення повинно бути задокументоване, навіть якщо компанія доходить висновку, що повідомлення не потрібне.",
+        "Компанія, яка має процедури, облік і навчених співробітників, може довести, що вона відповідально ставиться до захисту даних і готова організовано реагувати у випадку виникнення проблеми.",
       ],
       ru: [
         "Компания должна внедрить четкие внутренние меры по защите данных. Эти меры могут включать внутренние политики, инструкции для сотрудников, правила доступа к данным, правила использования электронной почты, процедуры реагирования на инциденты и периодическое обучение.",

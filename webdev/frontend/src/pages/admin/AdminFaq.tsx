@@ -28,7 +28,7 @@ export default function AdminFaq() {
   }
 
   async function onDelete(f: AdminFaqItem) {
-    if (!confirm(`Ștergi întrebarea "${f.question_ro || f.question_ru}"?`)) return;
+    if (!confirm(`Видалити запитання "${f.question_uk || f.question_ru}"?`)) return;
     await adminApi.deleteFaq(f.id);
     await load();
   }
@@ -36,26 +36,26 @@ export default function AdminFaq() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>❓ Întrebări frecvente</h2>
-        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Adaugă întrebare</button>
+        <h2>❓ Часті запитання</h2>
+        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Додати запитання</button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
-      {!loading && items.length === 0 && <div className="admin-empty">Nicio întrebare încă.</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
+      {!loading && items.length === 0 && <div className="admin-empty">Ще немає запитань.</div>}
 
       {items.map((f, idx) => (
         <div className="admin-test-card" key={f.id} style={{ padding: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, color: 'var(--text2)', fontFamily: 'monospace', marginBottom: 4 }}>
-                #{String(idx + 1).padStart(2, '0')} · ordine: {f.order_index}
+                #{String(idx + 1).padStart(2, '0')} · порядок: {f.order_index}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-                {f.question_ro || '—'}
+                {f.question_uk || '—'}
               </div>
               {f.question_ru && <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>{f.question_ru}</div>}
-              {f.answer_ro && <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>{f.answer_ro}</div>}
+              {f.answer_uk && <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>{f.answer_uk}</div>}
             </div>
             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
               {f.is_active
@@ -82,9 +82,9 @@ interface ModalProps {
 }
 
 function FaqModal({ initial, onClose, onSave }: ModalProps) {
-  const [qro, setQro] = useState(initial?.question_ro ?? '');
+  const [quk, setQro] = useState(initial?.question_uk ?? '');
   const [qru, setQru] = useState(initial?.question_ru ?? '');
-  const [aro, setAro] = useState(initial?.answer_ro ?? '');
+  const [auk, setAro] = useState(initial?.answer_uk ?? '');
   const [aru, setAru] = useState(initial?.answer_ru ?? '');
   const [orderIndex, setOrderIndex] = useState(initial?.order_index ?? 0);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
@@ -94,12 +94,12 @@ function FaqModal({ initial, onClose, onSave }: ModalProps) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!qro.trim() && !qru.trim()) { setError('Cel puțin o întrebare (RO sau RU)'); return; }
+    if (!quk.trim() && !qru.trim()) { setError('Потрібне щонайменше одне запитання (UA або RU)'); return; }
     setBusy(true);
     try {
       await onSave({
-        question_ro: qro.trim(), question_ru: qru.trim(),
-        answer_ro: aro.trim(), answer_ru: aru.trim(),
+        question_uk: quk.trim(), question_ru: qru.trim(),
+        answer_uk: auk.trim(), answer_ru: aru.trim(),
         order_index: Number(orderIndex) || 0,
         is_active: isActive,
       }, initial?.id ?? null);
@@ -110,40 +110,40 @@ function FaqModal({ initial, onClose, onSave }: ModalProps) {
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
       <form className="admin-modal" onClick={e => e.stopPropagation()} onSubmit={onSubmit}>
-        <h3>{initial ? 'Editează întrebarea' : 'Adaugă întrebarea'}</h3>
+        <h3>{initial ? 'Редагувати запитання' : 'Додати запитання'}</h3>
 
         <div className="admin-form-group">
-          <label>Întrebare (RO) *</label>
-          <input value={qro} maxLength={500} onChange={e => setQro(e.target.value)} placeholder="Ex: Este gratuit?" autoFocus />
+          <label>Запитання (UA) *</label>
+          <input value={quk} maxLength={500} onChange={e => setQro(e.target.value)} placeholder="Напр.: Це безкоштовно?" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Întrebare (RU)</label>
+          <label>Запитання (RU)</label>
           <input value={qru} maxLength={500} onChange={e => setQru(e.target.value)} placeholder="Напр.: Это бесплатно?" />
         </div>
         <div className="admin-form-group">
-          <label>Răspuns (RO)</label>
-          <textarea value={aro} maxLength={3000} onChange={e => setAro(e.target.value)} placeholder="Răspunsul detaliat..." style={{ minHeight: 100 }} />
+          <label>Відповідь (UA)</label>
+          <textarea value={auk} maxLength={3000} onChange={e => setAro(e.target.value)} placeholder="Детальна відповідь..." style={{ minHeight: 100 }} />
         </div>
         <div className="admin-form-group">
-          <label>Răspuns (RU)</label>
+          <label>Відповідь (RU)</label>
           <textarea value={aru} maxLength={3000} onChange={e => setAru(e.target.value)} placeholder="Развёрнутый ответ..." style={{ minHeight: 100 }} />
         </div>
         <div className="admin-form-group">
-          <label>Ordine</label>
+          <label>Порядок</label>
           <input type="number" min={0} value={orderIndex} onChange={e => setOrderIndex(+e.target.value)} />
         </div>
         <div className="admin-form-group">
           <label className="admin-checkbox-row">
             <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-            ✅ Activ
+            ✅ Активний
           </label>
         </div>
 
         {error && <div className="admin-error">⚠️ {error}</div>}
 
         <div className="admin-modal-actions">
-          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Anulează</button>
-          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Salvează'}</button>
+          <button type="button" className="admin-btn admin-btn-ghost" onClick={onClose} disabled={busy}>Скасувати</button>
+          <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Зберегти'}</button>
         </div>
       </form>
     </div>

@@ -51,11 +51,11 @@ def _configured() -> bool:
     return bool(_env("SALES_BOT_TOKEN") and _env("SALES_CHAT_ID"))
 
 
-def _zone_label_ro(score: int) -> str:
-    if score >= 80: return "Risc scăzut"
-    if score >= 70: return "Risc moderat"
-    if score >= 65: return "Risc ridicat"
-    return "Risc critic"
+def _zone_label_uk(score: int) -> str:
+    if score >= 80: return "Низький ризик"
+    if score >= 70: return "Помірний ризик"
+    if score >= 65: return "Високий ризик"
+    return "Критичний ризик"
 
 
 def _esc(s) -> str:
@@ -77,7 +77,7 @@ def _tg_contact_line(sub: dict) -> str:
         return f'<a href="https://t.me/{u}">@{_esc(u)}</a>'
     chat_id = sub.get("tg_chat_id")
     if chat_id:
-        return f'<a href="tg://user?id={chat_id}">scrie-i pe Telegram</a> (ID {_esc(chat_id)})'
+        return f'<a href="tg://user?id={chat_id}">написати в Telegram</a> (ID {_esc(chat_id)})'
     return "—"
 
 
@@ -89,13 +89,13 @@ def _build_keyboard(sub: dict):
     chat_id = sub.get("tg_chat_id")
     if user:
         u = str(user).lstrip("@")
-        rows.append([{"text": "💬 Scrie pe Telegram", "url": f"https://t.me/{u}"}])
+        rows.append([{"text": "💬 Написати в Telegram", "url": f"https://t.me/{u}"}])
     elif chat_id:
-        rows.append([{"text": "💬 Scrie pe Telegram", "url": f"tg://user?id={chat_id}"}])
+        rows.append([{"text": "💬 Написати в Telegram", "url": f"tg://user?id={chat_id}"}])
     email = sub.get("email")
     if email and "@" in str(email):
         to = urllib.parse.quote(str(email))
-        rows.append([{"text": "✉️ Scrie email", "url": f"https://mail.google.com/mail/?view=cm&fs=1&to={to}"}])
+        rows.append([{"text": "✉️ Написати email", "url": f"https://mail.google.com/mail/?view=cm&fs=1&to={to}"}])
     return {"inline_keyboard": rows} if rows else None
 
 
@@ -108,7 +108,7 @@ def _build_caption(sub: dict, test_name: str) -> str:
     score = sub.get("total_score")
     try:
         score_int = int(round(float(score)))
-        score_line = f"{score_int}% — {_zone_label_ro(score_int)}"
+        score_line = f"{score_int}% — {_zone_label_uk(score_int)}"
     except (TypeError, ValueError):
         score_line = "—"
 
@@ -117,19 +117,19 @@ def _build_caption(sub: dict, test_name: str) -> str:
 
     sep = "➖➖➖➖➖➖➖➖➖➖"
     return (
-        "🆕 <b>Lead nou pe bizcheck.md</b>\n\n"
+        "🆕 <b>Новий лід на bizcheck.md</b>\n\n"
         f"👤 <b>{_esc(name)}</b>\n"
         f"✉️ {_esc(email)}\n"
         f"📞 {_esc(phone)}\n"
         f"✈️ {tg_line}\n\n"
-        f"🧪 Test: <b>{_esc(test_name or '—')}</b>\n"
-        f"📊 Scor: <b>{_esc(score_line)}</b>\n\n"
+        f"🧪 Тест: <b>{_esc(test_name or '—')}</b>\n"
+        f"📊 Оцінка: <b>{_esc(score_line)}</b>\n\n"
         f"{sep}\n"
-        "🏢 <b>Companie</b>\n"
-        f"• Sector: {_esc(sector)}\n"
-        f"• Cifră de afaceri: {_esc(revenue)}\n\n"
+        "🏢 <b>Компанія</b>\n"
+        f"• Сектор: {_esc(sector)}\n"
+        f"• Оборот: {_esc(revenue)}\n\n"
         f"{sep}\n"
-        f'📄 PDF & detalii complete → <a href="{_admin_url()}">panou admin</a>'
+        f'📄 PDF та повні деталі → <a href="{_admin_url()}">панель адміністратора</a>'
     )
 
 
@@ -246,7 +246,7 @@ def _resolve_test_name(sub: dict) -> str:
         if tid:
             t = Test.find_by_id(tid)
             if t:
-                return t.get("name_ro") or t.get("name_ru") or ""
+                return t.get("name_uk") or t.get("name_ru") or ""
     except Exception:
         pass
     return ""

@@ -5,17 +5,17 @@
 
   <url>
     <loc>https://bizcheck.md/</loc>
-    <lastmod>2026-05-27</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ro" href="https://bizcheck.md/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://bizcheck.md/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://bizcheck.md/"/>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bizcheck.md/"/>
   </url>
   <url>
     <loc>https://bizcheck.md/confidentialitate</loc>
-    <lastmod>2026-05-27</lastmod>
+    <lastmod>2026-07-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

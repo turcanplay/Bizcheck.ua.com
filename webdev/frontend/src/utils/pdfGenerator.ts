@@ -142,10 +142,15 @@ export async function generateFullPdf({
     const fetchOpts: RequestInit = { cache: 'no-store' };
 
     // ── 4. Fetch static preview PDF for the selected language ──
-    const previewUrl = `/pdf/preview_${lang}.pdf${cacheBust}`;
-    const previewResponse = await fetch(previewUrl, fetchOpts);
-
-    const contentType = previewResponse.headers.get('content-type') || '';
+    // TODO(i18n): public/pdf/preview_uk.pdf does not exist yet. Until the Ukrainian
+    // cover is designed, fall back to the RU cover so the report keeps its 2 preview
+    // pages instead of silently losing them.
+    let previewResponse = await fetch(`/pdf/preview_${lang}.pdf${cacheBust}`, fetchOpts);
+    let contentType = previewResponse.headers.get('content-type') || '';
+    if (!previewResponse.ok || !contentType.includes('application/pdf')) {
+      previewResponse = await fetch(`/pdf/preview_ru.pdf${cacheBust}`, fetchOpts);
+      contentType = previewResponse.headers.get('content-type') || '';
+    }
     const hasPreview = previewResponse.ok && contentType.includes('application/pdf');
 
     // ── 5. Merge: preview pages + report page + outro page ──

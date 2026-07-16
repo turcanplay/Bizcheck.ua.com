@@ -89,7 +89,7 @@ export default function AdminTests() {
   }
 
   async function onDelete(t: AdminTest) {
-    if (!confirm(`Ștergi testul "${t.name_ro}"? Toate blocurile și întrebările legate se vor șterge.`)) return;
+    if (!confirm(`Видалити тест "${t.name_uk}"? Усі пов'язані блоки та запитання буде видалено.`)) return;
     await adminApi.deleteTest(t.id);
     await load();
   }
@@ -99,26 +99,26 @@ export default function AdminTests() {
     navigator.clipboard.writeText(url).then(() => {
       // Lightweight feedback without extra deps
       // eslint-disable-next-line no-alert
-      alert(`Link copiat: ${url}`);
+      alert(`Посилання скопійовано: ${url}`);
     });
   }
 
   return (
     <>
       <div className="admin-section-header">
-        <h2>🧪 Teste</h2>
-        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Adaugă Test</button>
+        <h2>🧪 Тести</h2>
+        <button className="admin-btn admin-btn-accent" onClick={() => setCreating(true)}>+ Додати тест</button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
       {!loading && tests.length === 0 && (
-        <div className="admin-empty">Niciun test încă. Apasă „+ Adaugă Test" ca să creezi unul.</div>
+        <div className="admin-empty">Ще немає тестів. Натисніть „+ Додати тест", щоб створити.</div>
       )}
 
       {!loading && tests.length > 0 && (
         <div className="admin-empty" style={{ textAlign: 'left', padding: '4px 2px 10px', opacity: 0.75 }}>
-          ⠿ Trage testele de mâner ca să le reordonezi. Cele active apar primele, cele inactive după.
+          ⠿ Перетягуйте тести за маркер, щоб змінити порядок. Активні відображаються першими, неактивні — після них.
         </div>
       )}
 
@@ -139,46 +139,46 @@ export default function AdminTests() {
                 draggable
                 onDragStart={e => onDragStart(e, t.id)}
                 onDragEnd={onDragEnd}
-                title="Trage ca să reordonezi"
-                aria-label="Trage ca să reordonezi"
+                title="Перетягніть, щоб змінити порядок"
+                aria-label="Перетягніть, щоб змінити порядок"
               >
                 ⠿
               </span>
               <div style={{ flex: 1, minWidth: 260 }}>
-                <div className="admin-test-card__title">{t.name_ro}</div>
+                <div className="admin-test-card__title">{t.name_uk}</div>
                 {t.name_ru && <div className="admin-test-card__subtitle">{t.name_ru}</div>}
-                {t.description_ro && <div className="admin-test-card__desc">{t.description_ro}</div>}
+                {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
               </div>
               <div className="admin-test-card__actions">
-                <Link to={`/admin_bizcheck_md_crowe/tests/${t.slug}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Deschide</Link>
-                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setEditing(t)}>✏️ Editează</button>
-                <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(t)}>🗑 Șterge</button>
+                <Link to={`/admin_bizcheck_md_crowe/tests/${t.slug}`} className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>📂 Відкрити</Link>
+                <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setEditing(t)}>✏️ Редагувати</button>
+                <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(t)}>🗑 Видалити</button>
               </div>
             </div>
 
             <div className="admin-test-card__link-bar">
-              <span>🔗 Link:</span>
+              <span>🔗 Посилання:</span>
               <code>{url}</code>
-              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => copyLink(t.slug)}>📋 Copiază</button>
-              <a href={url} target="_blank" rel="noreferrer" className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>🚀 Deschide testul</a>
+              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => copyLink(t.slug)}>📋 Копіювати</button>
+              <a href={url} target="_blank" rel="noreferrer" className="admin-btn admin-btn-accent admin-btn-sm" style={{ textDecoration: 'none' }}>🚀 Відкрити тест</a>
             </div>
 
             <div className="admin-test-card__meta">
-              <span>🟢 Safe: ≥{zones.safe}%</span>
-              <span>🟡 Mediu: ≥{zones.developing}%</span>
-              <span>🟠 Scăzut: ≥{zones.warn}%</span>
+              <span>🟢 Безпечно: ≥{zones.safe}%</span>
+              <span>🟡 Середній: ≥{zones.developing}%</span>
+              <span>🟠 Низький: ≥{zones.warn}%</span>
               {t.is_coming_soon
-                ? <span className="admin-badge admin-badge-blue">⏳ În curând</span>
+                ? <span className="admin-badge admin-badge-blue">⏳ Незабаром</span>
                 : t.is_active
-                ? <span className="admin-badge admin-badge-green">✅ Activ</span>
-                : <span className="admin-badge admin-badge-muted">⏸ Inactiv</span>}
+                ? <span className="admin-badge admin-badge-green">✅ Активний</span>
+                : <span className="admin-badge admin-badge-muted">⏸ Неактивний</span>}
               {t.is_paid
                 ? (
                   <span className="admin-badge admin-badge-gold">
-                    💰 {t.price != null ? `${t.price} ${t.currency}` : 'Cu plată (preț nesetat)'}
+                    💰 {t.price != null ? `${t.price} ${t.currency}` : 'Платний (ціну не вказано)'}
                   </span>
                 )
-                : <span className="admin-badge admin-badge-blue">🆓 Gratuit</span>}
+                : <span className="admin-badge admin-badge-blue">🆓 Безкоштовний</span>}
               <span className="admin-badge admin-badge-muted">slug: {t.slug}</span>
             </div>
           </div>

@@ -16,7 +16,7 @@ function inferDelivery(s: AdminSubmission): Delivery {
 function deliveryLabel(d: Delivery): string {
   if (d === 'telegram') return 'Telegram';
   if (d === 'email') return 'Email';
-  return 'PDF download';
+  return 'Завантаження PDF';
 }
 
 function deliveryBadgeClass(d: Delivery): string {
@@ -74,7 +74,7 @@ export default function AdminTestReports({ testId }: Props) {
 
   async function authedDownload(path: string, fallbackName: string) {
     const res = await adminFetch(path);
-    if (!res.ok) { alert('Descărcare eșuată'); return; }
+    if (!res.ok) { alert('Помилка завантаження'); return; }
     const disposition = res.headers.get('content-disposition') || '';
     const m = disposition.match(/filename="?([^"]+)"?/);
     const filename = m?.[1] || fallbackName;
@@ -91,7 +91,7 @@ export default function AdminTestReports({ testId }: Props) {
 
   async function openPdf(s: AdminSubmission) {
     const res = await adminFetch(`/submissions/${s.id}/pdf`);
-    if (!res.ok) { alert('PDF indisponibil'); return; }
+    if (!res.ok) { alert('PDF недоступний'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener');
@@ -102,7 +102,7 @@ export default function AdminTestReports({ testId }: Props) {
   // so an expired session shows a friendly error instead of raw JSON in a tab.
   async function openReport(s: AdminSubmission) {
     const res = await adminFetch(`/submissions/${s.id}/report`);
-    if (!res.ok) { alert('Raport indisponibil'); return; }
+    if (!res.ok) { alert('Звіт недоступний'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener');
@@ -123,7 +123,7 @@ export default function AdminTestReports({ testId }: Props) {
         marginBottom: 14,
       }}>
         <input
-          placeholder="🔎 Caută după nume, email, telefon, TG..."
+          placeholder="🔎 Пошук за іменем, email, телефоном, TG..."
           value={qText}
           onChange={e => setQText(e.target.value)}
           style={{
@@ -134,25 +134,25 @@ export default function AdminTestReports({ testId }: Props) {
         />
         <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
           style={{ padding: '8px 10px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)', fontSize: 13 }}
-          title="De la data"
+          title="Від дати"
         />
         <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
           style={{ padding: '8px 10px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)', fontSize: 13 }}
-          title="Până la data"
+          title="До дати"
         />
         <select
           value={deliveryFilter}
           onChange={e => setDeliveryFilter(e.target.value as '' | Delivery)}
           style={{ padding: '8px 10px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text)', fontSize: 13 }}
         >
-          <option value="">Toate canalele</option>
-          <option value="pdf">PDF download</option>
+          <option value="">Усі канали</option>
+          <option value="pdf">Завантаження PDF</option>
           <option value="email">Email</option>
           <option value="telegram">Telegram</option>
         </select>
         <label style={{ display: 'inline-flex', gap: 6, alignItems: 'center', fontSize: 13, color: 'var(--text2)', whiteSpace: 'nowrap' }}>
           <input type="checkbox" checked={onlyWithPdf} onChange={e => setOnlyWithPdf(e.target.checked)} />
-          doar cu PDF
+          лише з PDF
         </label>
       </div>
 
@@ -164,43 +164,43 @@ export default function AdminTestReports({ testId }: Props) {
             `/submissions/tests/${testId}/export/excel-combined`,
             `BizCheck_test_${testId}_combined.xlsx`,
           )}
-        >📊 Excel combinat (o filă per user)</button>
+        >📊 Об'єднаний Excel (по вкладці на користувача)</button>
         <button
           className="admin-btn admin-btn-ghost"
           onClick={() => authedDownload(
             `/submissions/tests/${testId}/export/excels-zip`,
             `BizCheck_test_${testId}_excels.zip`,
           )}
-        >🗂 Excel per user (ZIP)</button>
+        >🗂 Excel по користувачу (ZIP)</button>
         <button
           className="admin-btn admin-btn-ghost"
           onClick={() => authedDownload(
             `/submissions/tests/${testId}/export/pdfs-zip`,
             `BizCheck_test_${testId}_pdfs.zip`,
           )}
-        >📦 Toate PDF-urile (ZIP)</button>
+        >📦 Усі PDF-файли (ZIP)</button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
 
       {!loading && filtered.length === 0 && (
         <div className="admin-empty">
-          {submissions.length === 0 ? 'Nimeni nu a completat acest test încă.' : 'Niciun rezultat pentru filtrele curente.'}
+          {submissions.length === 0 ? 'Ще ніхто не пройшов цей тест.' : 'Немає результатів за поточними фільтрами.'}
         </div>
       )}
 
       {!loading && filtered.length > 0 && (
         <>
           <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 8 }}>
-            {filtered.length} / {submissions.length} rapoarte
+            {filtered.length} / {submissions.length} звітів
           </div>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>ID</th><th>Nume</th><th>Contact</th><th>Scor</th>
-                  <th>Canal ales</th><th>Data</th><th>PDF</th><th>Excel</th>
+                  <th>ID</th><th>Ім'я</th><th>Контакт</th><th>Оцінка</th>
+                  <th>Обраний канал</th><th>Дата</th><th>PDF</th><th>Excel</th>
                 </tr>
               </thead>
               <tbody>
@@ -226,12 +226,12 @@ export default function AdminTestReports({ testId }: Props) {
                           <div style={{ display: 'flex', gap: 4 }}>
                             <button
                               className="admin-btn admin-btn-ghost admin-btn-sm"
-                              title="Deschide PDF"
+                              title="Відкрити PDF"
                               onClick={() => openPdf(s)}
                             >👁</button>
                             <button
                               className="admin-btn admin-btn-ghost admin-btn-sm"
-                              title="Descarcă PDF"
+                              title="Завантажити PDF"
                               onClick={() => authedDownload(
                                 `/submissions/${s.id}/pdf`,
                                 `BizCheck_${nameOf(s).replace(/\s+/g, '_')}.pdf`,
@@ -244,12 +244,12 @@ export default function AdminTestReports({ testId }: Props) {
                         <div style={{ display: 'flex', gap: 4 }}>
                           <button
                             className="admin-btn admin-btn-ghost admin-btn-sm"
-                            title="Vezi raport (mereu disponibil)"
+                            title="Переглянути звіт (завжди доступний)"
                             onClick={() => openReport(s)}
                           >📄</button>
                           <button
                             className="admin-btn admin-btn-ghost admin-btn-sm"
-                            title="Descarcă Excel individual"
+                            title="Завантажити окремий Excel"
                             onClick={() => authedDownload(
                               `/submissions/${s.id}/export/excel`,
                               `BizCheck_${nameOf(s).replace(/\s+/g, '_')}.xlsx`,
