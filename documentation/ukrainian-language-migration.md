@@ -1,10 +1,15 @@
-# Ukrainian language migration — deploy & handoff
+# Language migration — deploy & handoff
 
-**What this is:** the web app (`webdev/`) language set changed from **Romanian + Russian (RO/RU)** to **Ukrainian + Russian (UK/RU)**. Romanian is gone from the app; Ukrainian is the new default.
+**What this is:** the web app (`webdev/`) language set was migrated **twice**, in two commits:
 
-**Commit:** `i18n(webdev): replace Romanian with Ukrainian across the web app` (branch `main`).
+1. **RO → UK** — Romanian replaced by Ukrainian.
+2. **RU → EN** — Russian replaced by English.
 
-**TL;DR for deploy:** pull `main`, then `docker compose up -d --build backend frontend tgbot groupbot`. The DB migration runs **automatically** at backend boot — do **not** run SQL by hand. Then do the [verification](#5-verify-after-deploy) checks.
+**End state: the app is bilingual Ukrainian + English (`uk` / `en`), default `uk`.** Romanian and Russian are both gone. Ukrainian is untouched by the second migration.
+
+**TL;DR for deploy:** pull `main`, then `docker compose up -d --build backend frontend tgbot groupbot`. **Two** DB migrations run automatically at backend boot, in order — do **not** run SQL by hand. Then do the [verification](#5-verify-after-deploy) checks.
+
+> If you are deploying both migrations in a single pull (the DB has never seen either), the boot runs `migrate_ro_to_uk` then `migrate_ru_to_en` — `_ro`→`_uk` and `_ru`→`_en` — ending at `_uk` + `_en` columns. Both are idempotent, so a DB already partway through is fine.
 
 ---
 
@@ -12,91 +17,90 @@
 
 | Layer | Change |
 |---|---|
-| **Frontend UI** | `i18n/translations.ts` is now UK+RU. `Lang = 'uk' \| 'ru'`. Default language is **UK** (was RU). |
-| **Report prose** | `blockExplanations.ts`, `gdprExplanations.ts` translated to real Ukrainian. |
-| **Privacy policy** | `privacyContent.ts` restructured from RO-only to **bilingual UK+RU**; the page renders per selected language. |
-| **Admin panel** | All 19 `Admin*.tsx` screens translated RO → UK. |
-| **SEO / meta** | `index.html`, `Seo.tsx`, `sitemap.xml`, hreflang/OG locale → Ukrainian. |
-| **Backend services** | email templates, feedback prompts, report email, sales notification, Excel/PDF export → UK. Validators/whitelists/defaults now `'uk'`. |
-| **Database** | Every bilingual `*_ro` column renamed to `*_uk`; stored `'ro'` language values relabeled to `'uk'`. Done by an **idempotent boot migration** (see §3). |
-| **Telegram** | `webdev/tgbot/` (client bot) and `groupbot/` (team bot) strings → UK. |
-| **Tests** | Suite updated to the UK contract; new `test_unit_migration.py` covers rename idempotency. Frontend build + **251 backend tests green** at commit time. |
+| **Frontend UI** | `i18n/translations.ts` is UK+EN. `Lang = 'uk' \| 'en'`. Default **UK**. Language switcher shows **UA / EN**. |
+| **Report prose** | `blockExplanations.ts`, `gdprExplanations.ts` — Ukrainian + English. |
+| **Privacy policy** | `privacyContent.ts` is bilingual UK+EN; the page renders per language. |
+| **Admin panel** | All `Admin*.tsx` editors: chrome in Ukrainian, per-item fields are **(UA)** + **(EN)**. |
+| **SEO / meta** | `index.html`, `Seo.tsx`, `sitemap.xml` → `uk` + `en` (hreflang, `og:locale` `uk_UA` / `en_US`). |
+| **Backend services** | email, feedback prompts, report email, sales notification, Excel/PDF export → UK/EN. Validators whitelist is `('uk','en')`. |
+| **Database** | Bilingual columns are `*_uk` + `*_en`. Two idempotent boot migrations do the renames (see §3). |
+| **Telegram** | `webdev/tgbot/` (client bot) and `groupbot/` (team bot) → UK/EN. |
+| **PDF covers** | `preview_ru.pdf`/`outro_ru.pdf` renamed to `*_en.pdf`. EN users get them directly; UK falls back to `preview_en.pdf` until `preview_uk.pdf` is designed. |
+| **Tests** | Suite on the UK/EN contract; migration idempotency covered for **both** renames. Frontend build + **259 backend tests** green. No Romanian or Russian text remains. |
 
-The two standalone codebases are **not** affected: `src/` (original standalone bot) has its own DB and language and was left untouched.
+The standalone `src/` bot (own DB, own language) is **not** affected.
 
 ---
 
 ## 2. Deploy steps
 
-All commands from `~/BIZZCHECK_BOT/webdev` (adjust to your server path).
+From `~/BIZZCHECK_BOT/webdev` (adjust to your server path):
 
 ```bash
-# 1. Get the code
 git pull origin main
 
-# 2. Rebuild the services that changed (db is untouched).
-#    NOTE: this is broader than ./deploy.sh — that script only rebuilds
-#    backend + groupbot, but frontend and tgbot ALSO changed this time.
+# Rebuild everything that changed (db container is untouched).
+# NOTE: broader than ./deploy.sh (which only does backend + groupbot) —
+# frontend and tgbot changed too.
 docker compose up -d --build backend frontend tgbot groupbot
 
-# 3. Watch the backend come up — the migration logs here.
+# Watch the backend boot — both migrations log here.
 docker compose logs -f backend
 ```
 
-The backend runs `migrate()` at every boot (`webdev/backend/database/db.py`), which calls `migrate_ro_to_uk()`. No manual SQL, no separate migration command.
+No manual SQL, no separate migration command. `migrate()` runs at every boot from `webdev/backend/database/db.py`.
 
 ---
 
-## 3. The database migration (what it does, why it's safe)
+## 3. The database migrations (what they do, why they're safe)
 
-Function: `migrate_ro_to_uk(cur)` in `webdev/backend/database/db.py`, called from `migrate()` under `pg_advisory_xact_lock(1)` (serializes concurrent boots / multiple gunicorn workers).
+Both live in `webdev/backend/database/db.py` and are called in order from `migrate()` under `pg_advisory_xact_lock(1)` (serializes concurrent boots / gunicorn workers):
 
-It does two things:
+```python
+migrate_ro_to_uk(cur)   # *_ro -> *_uk, stored 'ro' -> 'uk'
+migrate_ru_to_en(cur)   # *_ru -> *_en, stored 'ru' -> 'en'
+```
 
-1. **Renames columns** `*_ro → *_uk** on every bilingual table (tests, blocks, questions, answers, templates, content, etc.). Before each rename it checks `information_schema.columns`: it only renames when `*_ro` exists **and** `*_uk` does not. So:
-   - First boot on the old DB → renames everything.
-   - Any later boot → sees `*_uk` already there → does nothing.
-   - Half-migrated / stale `*_ro` lingering next to a real `*_uk` → left alone (never renames twice).
-2. **Relabels stored values** from `'ro'` to `'uk'`: `submissions.language`, `testimonials.lang`, `tg_outreach.lang`, and the `site_settings` feedback-prompt key `feedback_prompt_ro → feedback_prompt_uk`.
+Each one:
 
-**Idempotent** — safe to run on every boot and across replicas. This is unit-tested (`test_unit_migration.py`: legacy DB renames all, second run is a no-op, half-migrated is left alone, missing table is skipped, stored values relabeled, prompt key renamed).
+1. **Renames columns** on every bilingual table (tests, blocks, questions, answers, templates, testimonials, faq_items). Before each rename it checks `information_schema.columns` and only renames when the old column exists **and** the new one does not. So a fresh DB (created with `_uk`/`_en` directly) matches nothing, a re-boot matches nothing, and a stale old column sitting next to a real new one is left alone. Both functions reuse the same `RO_TO_UK_COLUMNS` table/column list.
+2. **Relabels stored values**: `submissions.language`, `testimonials.lang`, `tg_outreach.lang`, and the `site_settings` feedback-prompt key (`feedback_prompt_ro→_uk`, `feedback_prompt_ru→_en`).
 
-> ⚠️ **Not yet exercised against a live Postgres** — it was developed with Docker down, so the first real boot on the production DB is the true proof. Watch the backend logs on first deploy (§5). The design is defensive (guarded, idempotent), but confirm the first boot is clean before assuming done.
+**Idempotent** — safe on every boot and across replicas. Unit-tested in `webdev/backend/tests/test_unit_migration.py` (both `TestRoToUkMigration` and `TestRuToEnMigration`: legacy DB renames all, second run is a no-op, half-migrated left alone, missing table skipped, stored values relabeled, prompt key renamed).
 
-**Rollback note:** the migration only **renames** columns and **relabels** rows — it never drops data. If you must roll back the code, the old code expects `*_ro` columns; you'd rename them back (`ALTER TABLE ... RENAME COLUMN <col>_uk TO <col>_ro`) and relabel `'uk' → 'ro'`. Prefer rolling forward.
+> ⚠️ **Not yet exercised against a live Postgres** (developed with Docker down). The first real boot on the production DB is the true proof — watch the backend logs (§5). The design is defensive, but confirm the first boot is clean before assuming done.
+
+**Rollback note:** the migrations only **rename** columns and **relabel** rows — no data is dropped. Rolling back the code would require renaming columns back and relabeling values; prefer rolling forward.
 
 ---
 
 ## 4. Still pending (needs the team)
 
-1. **PDF cover assets** — drop two designed files into `webdev/frontend/public/pdf/`:
-   - `preview_uk.pdf` (2-page cover)
-   - `outro_uk.pdf` (closing page)
-
-   Until they exist, the report PDF **falls back to the Russian covers** (`pdfGenerator.ts`) — nothing breaks, the report just shows the RU cover art. No code change needed when the files land; they're picked up by filename.
-2. **Quiz content** (the actual test blocks/questions/answers stored in Postgres) is **not** translated — this was deliberately scoped out. Those rows still hold their original text under the renamed `*_uk` columns. Translating them is a separate content pass (best done via the admin panel or a seed update).
+1. **PDF cover assets** — drop `preview_uk.pdf` and `outro_uk.pdf` into `webdev/frontend/public/pdf/`. Until then UK reports fall back to the `*_en.pdf` covers (the old designed covers, renamed) — nothing breaks. Picked up by filename, no code change needed.
+2. **Quiz content** (the test blocks/questions/answers rows in Postgres) is **not** translated — deliberately scoped out. Those rows keep their text under the renamed `*_uk` / `*_en` columns. A separate content pass (admin panel or seed) handles them.
 
 ---
 
 ## 5. Verify after deploy
 
-1. **Backend boot log** shows no error from `migrate_ro_to_uk` (no `column "..._ro" does not exist`, no rename exception). A clean second `docker compose restart backend` should log nothing new from the migration.
+1. **Backend boot log**: no error from `migrate_ro_to_uk` or `migrate_ru_to_en` (no `column "..._ro"/"..._ru" does not exist`). A second `docker compose restart backend` should log nothing new from either migration.
 2. **DB spot-check** (optional):
    ```sql
-   -- should return the *_uk columns, and zero *_ro columns
+   -- expect *_uk and *_en columns, and zero *_ro / *_ru
    SELECT column_name FROM information_schema.columns
    WHERE table_name = 'blocks' AND column_name LIKE 'title\_%';
-   -- no rows should remain tagged 'ro'
+   -- stored language values should be only uk / en
    SELECT DISTINCT language FROM submissions;
    ```
-3. **Public site** (`https://bizcheck.md`): loads in Ukrainian by default; the RU/UK switch works; the report, the privacy policy (`/confidentialitate`), and the quiz render with no Romanian.
-4. **Admin panel** (`/admin_bizcheck_md_crowe/`): UI is Ukrainian; the field-language markers read `(UA)` / `(RU)`.
-5. **Telegram**: client bot messages and the group bot (`/excel`, `/pdf`) reply in Ukrainian.
+3. **Public site** (`https://bizcheck.md`): loads in Ukrainian by default; the **UA / EN** switch works; report, privacy policy (`/confidentialitate`) and quiz show no Romanian or Russian.
+4. **Admin panel** (`/admin_bizcheck_md_crowe/`): UI is Ukrainian; per-item field markers read **(UA)** / **(EN)**.
+5. **Telegram**: client bot and the group bot (`/excel`, `/pdf`) reply in Ukrainian.
 
 ---
 
 ## 6. Notes / caveats
 
-- **Romanian code comments** were intentionally left in place (developer-facing only, ~30 spots). They don't affect users. Cleaning them is cosmetic and can be a follow-up.
-- `TemplatesShowcase` (marketplace section) is a placeholder feature and renders **Ukrainian only** by design (no RU branch yet) — unchanged behavior, just no longer Romanian.
-- If a new external domain is ever added, remember the CSP lives in `webdev/nginx.conf`, not Flask (unchanged by this migration).
+- **Romanian code comments** (developer-facing, not user-facing) were intentionally left in place. Cosmetic; can be a follow-up.
+- `TemplatesShowcase` (marketplace section) renders **Ukrainian only** by design.
+- Adding a language later means the DB carries **two** bilingual slots by design (`_uk` + `_en`); a third would need new columns and 3-way frontend logic.
+- CSP lives in `webdev/nginx.conf` (not Flask), unchanged by these migrations.

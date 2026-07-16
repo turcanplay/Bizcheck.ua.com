@@ -25,13 +25,14 @@ each one is scoped to a single subsystem so you never load context you won't use
 | Crowe brand design system — palette tokens, amber buttons, typography | [`frontend/05-design-system.md`](frontend/05-design-system.md) |
 | The web-flow Telegram bot service | [`telegram-bot.md`](telegram-bot.md) |
 | Docker, nginx, Dockerfiles, env vars, scripts, build tooling | [`deployment.md`](deployment.md) |
-| Ukrainian language migration (RO→UK) — what changed, how to deploy, the DB rename migration | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
+| Language migration (RO→UK, then RU→EN) — what changed, how to deploy, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
 
 ## Conventions used in these docs
 
-- **Bilingual fields** carry `_uk` (Ukrainian) / `_ru` (Russian) suffixes everywhere
+- **Bilingual fields** carry `_uk` (Ukrainian) / `_en` (English) suffixes everywhere
   (tests, blocks, questions, answers, templates, testimonials, FAQ). Romanian (`_ro`)
-  was replaced by Ukrainian — see [`ukrainian-language-migration.md`](ukrainian-language-migration.md).
+  became Ukrainian, then Russian (`_ru`) became English — see
+  [`ukrainian-language-migration.md`](ukrainian-language-migration.md).
 - **Obscured paths** are intentional, do not "normalize" them:
   - API base: `/api_crowe_bizcheck/`
   - Admin SPA: `/admin_bizcheck_md_crowe/`
