@@ -14,8 +14,8 @@ def _serialize(t):
     return t
 
 
-def _auto_slug(name_uk, name_ru):
-    base = (name_uk or name_ru or "").lower().strip()
+def _auto_slug(name_uk, name_en):
+    base = (name_uk or name_en or "").lower().strip()
     base = re.sub(r"[^a-z0-9]+", "-", base).strip("-")
     return (base or "test")[:64]
 
@@ -100,16 +100,16 @@ def _norm_order(value, default=0):
         return default
 
 
-def create_test(slug, name_uk, name_ru, description_uk="", description_ru="",
+def create_test(slug, name_uk, name_en, description_uk="", description_en="",
                 is_active=True, is_paid=False, price=None, currency="MDL",
                 category=None, features=None, scoring_zones=None, zone_recommendations=None,
                 report_type="bizcheck", is_coming_soon=False, order_index=0):
     name_uk = (name_uk or "").strip()
-    name_ru = (name_ru or "").strip()
-    if not name_uk and not name_ru:
+    name_en = (name_en or "").strip()
+    if not name_uk and not name_en:
         raise ValueError("At least one name (RO or RU) is required")
 
-    slug = (slug or "").strip().lower() or _auto_slug(name_uk, name_ru)
+    slug = (slug or "").strip().lower() or _auto_slug(name_uk, name_en)
     if not _SLUG_RE.match(slug):
         raise ValueError("Invalid slug (lowercase letters, digits, _ and -, max 64 chars)")
     if Test.find_by_slug(slug):
@@ -119,9 +119,9 @@ def create_test(slug, name_uk, name_ru, description_uk="", description_ru="",
     norm_currency = _norm_currency(currency)
 
     return _serialize(Test.create(
-        slug, name_uk[:255], name_ru[:255],
+        slug, name_uk[:255], name_en[:255],
         (description_uk or "").strip(),
-        (description_ru or "").strip(),
+        (description_en or "").strip(),
         bool(is_active), bool(is_paid),
         norm_price, norm_currency,
         _norm_category(category),
@@ -155,11 +155,11 @@ def update_test(test_id, data):
         test_id,
         slug,
         (data.get("name_uk") or existing["name_uk"]).strip()[:255],
-        (data.get("name_ru") or existing["name_ru"]).strip()[:255],
+        (data.get("name_en") or existing["name_en"]).strip()[:255],
         (data.get("description_uk") if data.get("description_uk") is not None
             else existing["description_uk"]).strip(),
-        (data.get("description_ru") if data.get("description_ru") is not None
-            else existing["description_ru"]).strip(),
+        (data.get("description_en") if data.get("description_en") is not None
+            else existing["description_en"]).strip(),
         bool(data.get("is_active", existing["is_active"])),
         is_paid,
         price, currency,

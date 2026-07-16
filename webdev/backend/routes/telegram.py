@@ -209,7 +209,7 @@ def save_tg_contact(token):
     try:
         from services.feedback import maybe_schedule_auto
         lang_row = query("SELECT language FROM submissions WHERE id = %s", (row["id"],), fetch_one=True)
-        maybe_schedule_auto(tg_chat_id, (lang_row or {}).get("language") or "ru")
+        maybe_schedule_auto(tg_chat_id, (lang_row or {}).get("language") or "en")
     except Exception:
         pass
 

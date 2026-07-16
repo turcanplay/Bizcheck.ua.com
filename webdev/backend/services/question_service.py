@@ -21,18 +21,18 @@ def get_all_questions():
     return _serialize(Question.find_all())
 
 
-def create_question(block_id, text_uk, text_ru, note_uk, note_ru, order_index, answers_list, parent_question_id=None):
+def create_question(block_id, text_uk, text_en, note_uk, note_en, order_index, answers_list, parent_question_id=None):
     if not answers_list or len(answers_list) < 2:
         raise ValueError("At least 2 answer options are required")
 
-    question = Question.create(block_id, text_uk, text_ru, note_uk, note_ru, order_index, parent_question_id)
+    question = Question.create(block_id, text_uk, text_en, note_uk, note_en, order_index, parent_question_id)
     answers = Answer.create_many(question["id"], answers_list)
     question["answers"] = answers
     question["created_at"] = str(question["created_at"])
     return question
 
 
-def update_question(question_id, block_id, text_uk, text_ru, note_uk, note_ru, order_index, answers_list, parent_question_id=None):
+def update_question(question_id, block_id, text_uk, text_en, note_uk, note_en, order_index, answers_list, parent_question_id=None):
     existing = Question.find_by_id(question_id)
     if not existing:
         raise ValueError("Question not found")
@@ -44,9 +44,9 @@ def update_question(question_id, block_id, text_uk, text_ru, note_uk, note_ru, o
         question_id,
         block_id or existing["block_id"],
         text_uk or existing["text_uk"],
-        text_ru or existing["text_ru"],
+        text_en or existing["text_en"],
         note_uk if note_uk is not None else existing["note_uk"],
-        note_ru if note_ru is not None else existing["note_ru"],
+        note_en if note_en is not None else existing["note_en"],
         order_index if order_index is not None else existing["order_index"],
         parent_question_id,
     )

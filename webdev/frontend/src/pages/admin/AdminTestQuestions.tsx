@@ -90,14 +90,14 @@ export default function AdminTestQuestions({ testId }: Props) {
     return map;
   }, [blocks, questionsByBlock]);
 
-  async function saveBlock(data: { title_uk: string; title_ru: string; order_index: number }, id: number | null) {
+  async function saveBlock(data: { title_uk: string; title_en: string; order_index: number }, id: number | null) {
     if (id === null) await adminApi.createBlock({ test_id: testId, ...data });
     else await adminApi.updateBlock(id, data);
     setBlockModal(null);
     await load();
   }
   async function deleteBlock(b: AdminBlock) {
-    if (!confirm(`Видалити блок "${b.title_uk || b.title_ru}"? Усі питання в ньому також буде видалено.`)) return;
+    if (!confirm(`Видалити блок "${b.title_uk || b.title_en}"? Усі питання в ньому також буде видалено.`)) return;
     await adminApi.deleteBlock(b.id);
     await load();
   }
@@ -239,11 +239,11 @@ export default function AdminTestQuestions({ testId }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 600 }}>
-                  📦 {b.title_uk || b.title_ru}
+                  📦 {b.title_uk || b.title_en}
                   <span className="admin-badge admin-badge-muted" style={{ marginLeft: 8 }}>{blockQuestions.length} питань</span>
                 </div>
-                {b.title_ru && b.title_uk && (
-                  <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{b.title_ru}</div>
+                {b.title_en && b.title_uk && (
+                  <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{b.title_en}</div>
                 )}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -404,13 +404,13 @@ function QuestionRow({
                 fontWeight: 700,
                 minWidth: 32,
               }}>{number}.</span>
-              <span>{q.text_uk || q.text_ru}</span>
+              <span>{q.text_uk || q.text_en}</span>
               {level === 1 && (
                 <span className="admin-badge admin-badge-gold">під-питання</span>
               )}
             </div>
-            {q.text_ru && q.text_uk && (
-              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6, marginLeft: 52 }}>{q.text_ru}</div>
+            {q.text_en && q.text_uk && (
+              <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 6, marginLeft: 52 }}>{q.text_en}</div>
             )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 52 }}>
               {q.answers.map(a => (
@@ -421,7 +421,7 @@ function QuestionRow({
                     background: 'var(--surface2)', border: '1px solid var(--border)',
                   }}
                 >
-                  {a.text_uk || a.text_ru}
+                  {a.text_uk || a.text_en}
                   <span style={{ color: 'var(--accent)', marginLeft: 6, fontWeight: 600 }}>{a.score}</span>
                   {a.next_question_id && (
                     <span style={{ color: 'var(--blue)', marginLeft: 6, fontSize: 11 }}>

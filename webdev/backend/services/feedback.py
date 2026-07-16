@@ -7,7 +7,7 @@ message" hint we append, sending the question, scheduling an auto follow-up, and
 the background scheduler that fires due auto rows.
 
 Config (all in site_settings, admin-editable):
-    feedback_prompt_ro / feedback_prompt_ru   the question text
+    feedback_prompt_uk / feedback_prompt_en   the question text
     feedback_auto_enabled                      "1"/"0" — send automatically after delivery
     feedback_auto_delay_min                    minutes to wait (default 60)
 """
@@ -24,7 +24,7 @@ from services.telegram_send import send_message
 
 log = logging.getLogger(__name__)
 
-PROMPT_KEYS = {"uk": "feedback_prompt_uk", "ru": "feedback_prompt_ru"}
+PROMPT_KEYS = {"uk": "feedback_prompt_uk", "en": "feedback_prompt_en"}
 AUTO_ENABLED_KEY = "feedback_auto_enabled"
 AUTO_DELAY_KEY = "feedback_auto_delay_min"
 
@@ -33,14 +33,14 @@ MIN_DELAY_MIN = 1
 MAX_DELAY_MIN = 10080  # 7 days
 
 DEFAULT_PROMPT = {
-    "ru": (
-        "Привет! \n"
-        "Вы проходили BizCheck — и мы хотели бы спросить об одном.\n"
-        "Продолжите две фразы своими словами:\n\n"
-        "1️⃣ «Для меня BizCheck — это...»\n"
-        "2️⃣ «Когда я увидел(а) результат, я почувствовал(а)...»\n\n"
-        "Напишите прямо здесь — любыми словами, как есть. Даже одно слово — уже "
-        "ценно и очень важно для нас, чтобы делать наши продукты лучше."
+    "en": (
+        "Hi! \n"
+        "You took BizCheck — and we'd like to ask you about one thing.\n"
+        "Complete two sentences in your own words:\n\n"
+        "1️⃣ \"For me, BizCheck is...\"\n"
+        "2️⃣ \"When I saw the result, I felt...\"\n\n"
+        "Write right here — in any words, just as they are. Even a single word is "
+        "already valuable and very important to us in making our products better."
     ),
     "uk": (
         "Вітаємо! \n"
@@ -57,17 +57,17 @@ DEFAULT_PROMPT = {
 # person to put their whole answer in a single message.
 REPLY_HINT = {
     "uk": "📩 Будь ласка, напишіть усю відповідь одним повідомленням.",
-    "ru": "📩 Пожалуйста, напишите весь ответ одним сообщением.",
+    "en": "📩 Please write your entire answer in a single message.",
 }
 
 THANKS = {
     "uk": "Щиро дякуємо! Ваш відгук дуже допомагає нам. 🙏",
-    "ru": "Спасибо вам большое! Ваш отзыв очень помогает нам. 🙏",
+    "en": "Thank you so much! Your feedback really helps us. 🙏",
 }
 
 
 def norm_lang(v):
-    return v if v in ("uk", "ru") else "ru"
+    return v if v in ("uk", "en") else "en"
 
 
 def get_prompt(lang):

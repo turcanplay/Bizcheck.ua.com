@@ -10,9 +10,9 @@ interface Props {
 export default function AdminTemplateModal({ initial, onClose, onSave }: Props) {
   const editing = !!initial;
   const [titleUk, setTitleUk] = useState(initial?.title_uk ?? '');
-  const [titleRu, setTitleRu] = useState(initial?.title_ru ?? '');
+  const [titleEn, setTitleEn] = useState(initial?.title_en ?? '');
   const [descUk, setDescUk] = useState(initial?.description_uk ?? '');
-  const [descRu, setDescRu] = useState(initial?.description_ru ?? '');
+  const [descEn, setDescEn] = useState(initial?.description_en ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
   // Three-state visibility — see AdminTestModal for the rationale.
   type Visibility = 'active' | 'coming_soon' | 'hidden';
@@ -38,8 +38,8 @@ export default function AdminTemplateModal({ initial, onClose, onSave }: Props) 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!titleUk.trim() && !titleRu.trim()) {
-      setError('Принаймні одна назва (UK або RU) є обовʼязковою');
+    if (!titleUk.trim() && !titleEn.trim()) {
+      setError('Принаймні одна назва (UK або EN) є обовʼязковою');
       return;
     }
     setBusy(true);
@@ -62,9 +62,9 @@ export default function AdminTemplateModal({ initial, onClose, onSave }: Props) 
       await onSave({
         slug: slug.trim() || undefined,
         title_uk: titleUk.trim(),
-        title_ru: titleRu.trim() || undefined,
+        title_en: titleEn.trim() || undefined,
         description_uk: descUk,
-        description_ru: descRu,
+        description_en: descEn,
         is_active: visibility !== 'hidden',
         is_coming_soon: visibility === 'coming_soon',
         is_paid: isPaid,
@@ -90,16 +90,16 @@ export default function AdminTemplateModal({ initial, onClose, onSave }: Props) 
           <input value={titleUk} maxLength={255} onChange={e => setTitleUk(e.target.value)} placeholder="напр.: Трудовий договір" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Назва (RU) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
-          <input value={titleRu} maxLength={255} onChange={e => setTitleRu(e.target.value)} placeholder="напр.: Трудовой договор" />
+          <label>Назва (EN) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
+          <input value={titleEn} maxLength={255} onChange={e => setTitleEn(e.target.value)} placeholder="e.g.: Employment contract" />
         </div>
         <div className="admin-form-group">
           <label>Опис (UA) — базові поняття</label>
           <textarea value={descUk} maxLength={2000} onChange={e => setDescUk(e.target.value)} placeholder="Опис шаблону, для чого він використовується..." />
         </div>
         <div className="admin-form-group">
-          <label>Опис (RU)</label>
-          <textarea value={descRu} maxLength={2000} onChange={e => setDescRu(e.target.value)} placeholder="Описание шаблона..." />
+          <label>Опис (EN)</label>
+          <textarea value={descEn} maxLength={2000} onChange={e => setDescEn(e.target.value)} placeholder="Template description..." />
         </div>
         <div className="admin-form-group">
           <label>Slug (URL) — залиште порожнім для автогенерації <small style={{ color: 'var(--text2)' }}>(макс. 64)</small></label>

@@ -136,10 +136,10 @@ export default function StartPage() {
                       UA
                     </button>
                     <button
-                      className={`start-form__lang-btn ${lang === 'ru' ? 'start-form__lang-btn--active' : ''}`}
-                      onClick={() => setLang('ru')}
+                      className={`start-form__lang-btn ${lang === 'en' ? 'start-form__lang-btn--active' : ''}`}
+                      onClick={() => setLang('en')}
                     >
-                      RU
+                      EN
                     </button>
                   </div>
                 </div>
@@ -151,8 +151,8 @@ export default function StartPage() {
 
               <div className="start-form__test-grid">
                 {tests.map(tt => {
-                  const name = lang === 'uk' ? tt.name_uk : tt.name_ru;
-                  const desc = lang === 'uk' ? tt.description_uk : tt.description_ru;
+                  const name = lang === 'uk' ? tt.name_uk : tt.name_en;
+                  const desc = lang === 'uk' ? tt.description_uk : tt.description_en;
                   return (
                     <button
                       key={tt.slug}
@@ -190,10 +190,10 @@ export default function StartPage() {
                       UA
                     </button>
                     <button
-                      className={`start-form__lang-btn ${lang === 'ru' ? 'start-form__lang-btn--active' : ''}`}
-                      onClick={() => setLang('ru')}
+                      className={`start-form__lang-btn ${lang === 'en' ? 'start-form__lang-btn--active' : ''}`}
+                      onClick={() => setLang('en')}
                     >
-                      RU
+                      EN
                     </button>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function StartPage() {
                 {lang === 'uk' ? (
                   <>✓ Можна обрати <strong>кілька</strong> напрямів, не лише один.</>
                 ) : (
-                  <>✓ Можно выбрать <strong>несколько</strong> направлений, не только одно.</>
+                  <>✓ You can select <strong>several</strong> areas, not just one.</>
                 )}
               </p>
 

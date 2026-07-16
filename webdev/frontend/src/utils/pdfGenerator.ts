@@ -143,12 +143,12 @@ export async function generateFullPdf({
 
     // ── 4. Fetch static preview PDF for the selected language ──
     // TODO(i18n): public/pdf/preview_uk.pdf does not exist yet. Until the Ukrainian
-    // cover is designed, fall back to the RU cover so the report keeps its 2 preview
-    // pages instead of silently losing them.
+    // cover is designed, fall back to preview_en.pdf (the legacy cover asset) so the
+    // report keeps its 2 preview pages instead of silently losing them.
     let previewResponse = await fetch(`/pdf/preview_${lang}.pdf${cacheBust}`, fetchOpts);
     let contentType = previewResponse.headers.get('content-type') || '';
     if (!previewResponse.ok || !contentType.includes('application/pdf')) {
-      previewResponse = await fetch(`/pdf/preview_ru.pdf${cacheBust}`, fetchOpts);
+      previewResponse = await fetch(`/pdf/preview_en.pdf${cacheBust}`, fetchOpts);
       contentType = previewResponse.headers.get('content-type') || '';
     }
     const hasPreview = previewResponse.ok && contentType.includes('application/pdf');

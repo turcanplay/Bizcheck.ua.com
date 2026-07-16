@@ -71,18 +71,18 @@ export default function WhyBizcheck() {
       <div className="why__header">
         <span className="why__eyebrow">
           <span className="why__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ПЕРЕВАГИ' : 'ПРЕИМУЩЕСТВА'}
+          {lang === 'uk' ? 'ПЕРЕВАГИ' : 'ADVANTAGES'}
         </span>
         <h2 className="why__title">
           {lang === 'uk' ? (
             <>Чому <span className="why__title-accent">Bizcheck</span>?</>
           ) : (
-            <>Почему <span className="why__title-accent">Bizcheck</span>?</>
+            <>Why <span className="why__title-accent">Bizcheck</span>?</>
           )}
         </h2>
         <p className="why__subtitle">{lang === 'uk'
           ? 'Усе для бізнес-документів в одному місці.'
-          : 'Всё для бизнес-документов в одном месте.'}</p>
+          : 'Everything for business documents in one place.'}</p>
       </div>
 
       <div className="why__grid">

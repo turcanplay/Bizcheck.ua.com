@@ -25,8 +25,8 @@ def _serialize_file(f):
     return f
 
 
-def _auto_slug(title_uk, title_ru):
-    base = (title_uk or title_ru or "").lower().strip()
+def _auto_slug(title_uk, title_en):
+    base = (title_uk or title_en or "").lower().strip()
     base = re.sub(r"[^a-z0-9]+", "-", base).strip("-")
     return (base or "sablon")[:64]
 
@@ -89,14 +89,14 @@ def _norm_features(value):
     return items[:20]
 
 
-def create_template(slug, title_uk, title_ru, description_uk="", description_ru="",
+def create_template(slug, title_uk, title_en, description_uk="", description_en="",
                     is_active=True, is_paid=False, price=None, currency="MDL",
                     category=None, features=None, is_coming_soon=False):
     title_uk = (title_uk or "").strip()
-    title_ru = (title_ru or "").strip()
-    if not title_uk and not title_ru:
+    title_en = (title_en or "").strip()
+    if not title_uk and not title_en:
         raise ValueError("At least one title (RO or RU) is required")
-    slug = (slug or "").strip().lower() or _auto_slug(title_uk, title_ru)
+    slug = (slug or "").strip().lower() or _auto_slug(title_uk, title_en)
     if not _SLUG_RE.match(slug):
         raise ValueError("Invalid slug (lowercase letters, digits, _ and -, max 64 chars)")
     if Template.find_by_slug(slug):
@@ -106,9 +106,9 @@ def create_template(slug, title_uk, title_ru, description_uk="", description_ru=
     norm_currency = _norm_currency(currency)
 
     return _serialize(Template.create(
-        slug, title_uk[:255], title_ru[:255],
+        slug, title_uk[:255], title_en[:255],
         (description_uk or "").strip(),
-        (description_ru or "").strip(),
+        (description_en or "").strip(),
         bool(is_active), bool(is_paid),
         norm_price, norm_currency,
         _norm_category(category),
@@ -139,11 +139,11 @@ def update_template(template_id, data):
         template_id,
         slug,
         (data.get("title_uk") or existing["title_uk"]).strip()[:255],
-        (data.get("title_ru") or existing["title_ru"]).strip()[:255],
+        (data.get("title_en") or existing["title_en"]).strip()[:255],
         (data.get("description_uk") if data.get("description_uk") is not None
             else existing["description_uk"]).strip(),
-        (data.get("description_ru") if data.get("description_ru") is not None
-            else existing["description_ru"]).strip(),
+        (data.get("description_en") if data.get("description_en") is not None
+            else existing["description_en"]).strip(),
         bool(data.get("is_active", existing["is_active"])),
         is_paid, price, currency,
         _norm_category(data.get("category") if "category" in data else existing.get("category")),

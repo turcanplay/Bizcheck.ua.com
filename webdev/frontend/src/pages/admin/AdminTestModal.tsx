@@ -10,9 +10,9 @@ interface Props {
 export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   const editing = !!initial;
   const [nameUk, setNameUk] = useState(initial?.name_uk ?? '');
-  const [nameRu, setNameRu] = useState(initial?.name_ru ?? '');
+  const [nameEn, setNameEn] = useState(initial?.name_en ?? '');
   const [descUk, setDescUk] = useState(initial?.description_uk ?? '');
-  const [descRu, setDescRu] = useState(initial?.description_ru ?? '');
+  const [descEn, setDescEn] = useState(initial?.description_en ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [safe, setSafe] = useState(initial?.scoring_zones?.safe ?? 80);
   const [developing, setDeveloping] = useState(initial?.scoring_zones?.developing ?? 70);
@@ -68,9 +68,9 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         .slice(0, 20);
       const input: AdminTestInput = {
         name_uk: nameUk.trim(),
-        name_ru: nameRu.trim() || undefined,
+        name_en: nameEn.trim() || undefined,
         description_uk: descUk,
-        description_ru: descRu,
+        description_en: descEn,
         slug: slug.trim() || undefined,
         is_active: visibility !== 'hidden',
         is_coming_soon: visibility === 'coming_soon',
@@ -106,16 +106,16 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
           <input value={nameUk} maxLength={255} onChange={e => setNameUk(e.target.value)} placeholder="напр.: Аудит HR GDPR" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Заголовок (RU) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
-          <input value={nameRu} maxLength={255} onChange={e => setNameRu(e.target.value)} placeholder="напр.: Аудит HR GDPR" />
+          <label>Заголовок (EN) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
+          <input value={nameEn} maxLength={255} onChange={e => setNameEn(e.target.value)} placeholder="напр.: HR GDPR Audit" />
         </div>
         <div className="admin-form-group">
           <label>Опис (UA)</label>
           <textarea value={descUk} maxLength={2000} onChange={e => setDescUk(e.target.value)} placeholder="Опис тесту..." />
         </div>
         <div className="admin-form-group">
-          <label>Опис (RU)</label>
-          <textarea value={descRu} maxLength={2000} onChange={e => setDescRu(e.target.value)} placeholder="Описание теста..." />
+          <label>Опис (EN)</label>
+          <textarea value={descEn} maxLength={2000} onChange={e => setDescEn(e.target.value)} placeholder="Test description..." />
         </div>
         <div className="admin-form-group">
           <label>Slug (URL) — залиште порожнім для автогенерації <small style={{ color: 'var(--text2)' }}>(макс. 64, a-z 0-9 _ -)</small></label>
@@ -204,7 +204,7 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
               { v: 'premium',  icon: '💎', title: 'Premium',
                 desc: 'Лише підсумок — обкладинка, підсумок за блоками, 4 зони ризику. Без детальних сторінок.' },
               { v: 'gdpr',     icon: '🛡️', title: 'Звіт GDPR',
-                desc: 'Одна сторінка на запитання: запитання + відповідь угорі, потім пояснення (вступ / ризик / що робити) UA/RU.' },
+                desc: 'Одна сторінка на запитання: запитання + відповідь угорі, потім пояснення (вступ / ризик / що робити) UA/EN.' },
             ] as const).map(opt => (
               <label
                 key={opt.v}

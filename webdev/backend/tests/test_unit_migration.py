@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from psycopg2 import sql  # noqa: E402
 
-from database.db import RO_TO_UK_COLUMNS, migrate_ro_to_uk  # noqa: E402
+from database.db import RO_TO_UK_COLUMNS, migrate_ro_to_uk, migrate_ru_to_en  # noqa: E402
 
 
 def _render(query):
@@ -122,5 +122,72 @@ class TestRoToUkMigration:
         migrate_ro_to_uk(cur)
         assert any(
             "feedback_prompt_uk" in q and "feedback_prompt_ro" in q
+            for q in cur.executed
+        )
+
+
+def _post_en_db():
+    """A database after ru->en has run: bilingual columns are `_uk` + `_en`."""
+    return {t: {f"{c}_uk" for c in cols} | {f"{c}_en" for c in cols}
+            for t, cols in RO_TO_UK_COLUMNS}
+
+
+class TestRuToEnMigration:
+    """Mirror of the ro->uk suite for the second rename (Russian -> English).
+
+    `_fresh_db()` (columns `_uk` + `_ru`) is the pre-migration state here, i.e.
+    a database on which ro->uk has already run and ru->en has not yet.
+    """
+
+    def test_ru_db_renames_every_ru_column(self):
+        cur = FakeCursor(_fresh_db())
+        migrate_ru_to_en(cur)
+
+        expected = sum(len(cols) for _, cols in RO_TO_UK_COLUMNS)
+        renames = _renames(cur)
+        assert len(renames) == expected
+
+        for table, cols in RO_TO_UK_COLUMNS:
+            for col in cols:
+                assert any(
+                    f'"{table}"' in q and f'"{col}_ru"' in q and f'"{col}_en"' in q
+                    for q in renames
+                ), f"{table}.{col}_ru was not renamed"
+
+    def test_second_run_is_a_noop(self):
+        cur = FakeCursor(_post_en_db())
+        migrate_ru_to_en(cur)
+        assert _renames(cur) == []
+
+    def test_half_migrated_column_is_not_renamed_twice(self):
+        cols = {t: {f"{c}_ru" for c in cs} | {f"{c}_en" for c in cs}
+                for t, cs in RO_TO_UK_COLUMNS}
+        cur = FakeCursor(cols)
+        migrate_ru_to_en(cur)
+        assert _renames(cur) == []
+
+    def test_missing_table_is_skipped(self):
+        cur = FakeCursor({})
+        migrate_ru_to_en(cur)
+        assert _renames(cur) == []
+
+    @pytest.mark.parametrize("table,col", [
+        ("submissions", "language"),
+        ("testimonials", "lang"),
+        ("tg_outreach", "lang"),
+    ])
+    def test_stored_ru_values_are_relabelled(self, table, col):
+        cur = FakeCursor(_post_en_db())
+        migrate_ru_to_en(cur)
+        assert any(
+            f"UPDATE {table}" in q and "'en'" in q and "'ru'" in q
+            for q in cur.executed
+        ), f"{table}.{col} rows still say 'ru'"
+
+    def test_feedback_prompt_key_is_renamed(self):
+        cur = FakeCursor(_post_en_db())
+        migrate_ru_to_en(cur)
+        assert any(
+            "feedback_prompt_en" in q and "feedback_prompt_ru" in q
             for q in cur.executed
         )

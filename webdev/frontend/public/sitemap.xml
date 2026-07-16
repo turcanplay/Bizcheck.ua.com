@@ -9,7 +9,7 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="uk" href="https://bizcheck.md/"/>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://bizcheck.md/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bizcheck.md/"/>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bizcheck.md/"/>
   </url>

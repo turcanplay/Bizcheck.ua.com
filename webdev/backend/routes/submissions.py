@@ -86,7 +86,7 @@ def create():
         # Fără asta, un input cu caractere speciale e expandat de bleach (ex. " → &quot;),
         # depășește VARCHAR(5) și PostgreSQL aruncă „value too long" → HTTP 500.
         lang_in = data.get("language")
-        language = lang_in if lang_in in ("uk", "ru") else "uk"
+        language = lang_in if lang_in in ("uk", "en") else "uk"
         if sub and language:
             updated = update_submission(sub["id"], {"language": language})
             if updated:
@@ -112,7 +112,7 @@ def update(sub_id):
             filtered[str_field] = clean_text(filtered[str_field], max_len=mx)
     # language: whitelist strict (coloana VARCHAR(5); doar ro/ru).
     if "language" in filtered:
-        filtered["language"] = filtered["language"] if filtered["language"] in ("uk", "ru") else "uk"
+        filtered["language"] = filtered["language"] if filtered["language"] in ("uk", "en") else "uk"
     if "first_name" in filtered and isinstance(filtered["first_name"], str):
         filtered["first_name"] = clean_optional(filtered["first_name"], max_len=30)
     if "last_name" in filtered and isinstance(filtered["last_name"], str):

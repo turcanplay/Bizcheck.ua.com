@@ -28,7 +28,7 @@ export default function AdminFaq() {
   }
 
   async function onDelete(f: AdminFaqItem) {
-    if (!confirm(`Видалити запитання "${f.question_uk || f.question_ru}"?`)) return;
+    if (!confirm(`Видалити запитання "${f.question_uk || f.question_en}"?`)) return;
     await adminApi.deleteFaq(f.id);
     await load();
   }
@@ -54,7 +54,7 @@ export default function AdminFaq() {
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
                 {f.question_uk || '—'}
               </div>
-              {f.question_ru && <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>{f.question_ru}</div>}
+              {f.question_en && <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 6 }}>{f.question_en}</div>}
               {f.answer_uk && <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5 }}>{f.answer_uk}</div>}
             </div>
             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
@@ -83,9 +83,9 @@ interface ModalProps {
 
 function FaqModal({ initial, onClose, onSave }: ModalProps) {
   const [quk, setQro] = useState(initial?.question_uk ?? '');
-  const [qru, setQru] = useState(initial?.question_ru ?? '');
+  const [qen, setQen] = useState(initial?.question_en ?? '');
   const [auk, setAro] = useState(initial?.answer_uk ?? '');
-  const [aru, setAru] = useState(initial?.answer_ru ?? '');
+  const [aen, setAen] = useState(initial?.answer_en ?? '');
   const [orderIndex, setOrderIndex] = useState(initial?.order_index ?? 0);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [error, setError] = useState('');
@@ -94,12 +94,12 @@ function FaqModal({ initial, onClose, onSave }: ModalProps) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!quk.trim() && !qru.trim()) { setError('Потрібне щонайменше одне запитання (UA або RU)'); return; }
+    if (!quk.trim() && !qen.trim()) { setError('Потрібне щонайменше одне запитання (UA або EN)'); return; }
     setBusy(true);
     try {
       await onSave({
-        question_uk: quk.trim(), question_ru: qru.trim(),
-        answer_uk: auk.trim(), answer_ru: aru.trim(),
+        question_uk: quk.trim(), question_en: qen.trim(),
+        answer_uk: auk.trim(), answer_en: aen.trim(),
         order_index: Number(orderIndex) || 0,
         is_active: isActive,
       }, initial?.id ?? null);
@@ -117,16 +117,16 @@ function FaqModal({ initial, onClose, onSave }: ModalProps) {
           <input value={quk} maxLength={500} onChange={e => setQro(e.target.value)} placeholder="Напр.: Це безкоштовно?" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Запитання (RU)</label>
-          <input value={qru} maxLength={500} onChange={e => setQru(e.target.value)} placeholder="Напр.: Это бесплатно?" />
+          <label>Запитання (EN)</label>
+          <input value={qen} maxLength={500} onChange={e => setQen(e.target.value)} placeholder="e.g.: Is it free?" />
         </div>
         <div className="admin-form-group">
           <label>Відповідь (UA)</label>
           <textarea value={auk} maxLength={3000} onChange={e => setAro(e.target.value)} placeholder="Детальна відповідь..." style={{ minHeight: 100 }} />
         </div>
         <div className="admin-form-group">
-          <label>Відповідь (RU)</label>
-          <textarea value={aru} maxLength={3000} onChange={e => setAru(e.target.value)} placeholder="Развёрнутый ответ..." style={{ minHeight: 100 }} />
+          <label>Відповідь (EN)</label>
+          <textarea value={aen} maxLength={3000} onChange={e => setAen(e.target.value)} placeholder="Detailed answer..." style={{ minHeight: 100 }} />
         </div>
         <div className="admin-form-group">
           <label>Порядок</label>

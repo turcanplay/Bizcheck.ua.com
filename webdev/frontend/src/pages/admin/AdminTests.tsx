@@ -146,7 +146,7 @@ export default function AdminTests() {
               </span>
               <div style={{ flex: 1, minWidth: 260 }}>
                 <div className="admin-test-card__title">{t.name_uk}</div>
-                {t.name_ru && <div className="admin-test-card__subtitle">{t.name_ru}</div>}
+                {t.name_en && <div className="admin-test-card__subtitle">{t.name_en}</div>}
                 {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
               </div>
               <div className="admin-test-card__actions">

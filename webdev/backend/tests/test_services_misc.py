@@ -92,8 +92,8 @@ class TestFeedback:
     def test_norm_lang(self):
         from services import feedback as fb
         assert fb.norm_lang("uk") == "uk"
-        assert fb.norm_lang("ru") == "ru"
-        assert fb.norm_lang("xx") == "ru"      # default is ru here
+        assert fb.norm_lang("en") == "en"
+        assert fb.norm_lang("xx") == "en"      # default is ru here
 
     def test_get_prompt_uses_default_when_unset(self, monkeypatch):
         from services import feedback as fb

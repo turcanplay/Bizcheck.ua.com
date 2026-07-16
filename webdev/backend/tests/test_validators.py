@@ -106,7 +106,7 @@ class TestCleanFloat:
 
 
 class TestCleanLang:
-    @pytest.mark.parametrize("val,expected", [("uk", "uk"), ("RU", "ru"), ("Uk", "uk")])
+    @pytest.mark.parametrize("val,expected", [("uk", "uk"), ("EN", "en"), ("Uk", "uk")])
     def test_whitelisted(self, val, expected):
         assert v.clean_lang(val) == expected
 
@@ -114,7 +114,7 @@ class TestCleanLang:
         assert v.clean_lang("fr") == "uk"
 
     def test_custom_default(self):
-        assert v.clean_lang("de", default="ru") == "ru"
+        assert v.clean_lang("de", default="en") == "en"
 
     def test_none_is_default(self):
         assert v.clean_lang(None) == "uk"

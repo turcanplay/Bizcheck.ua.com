@@ -14,9 +14,9 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
   const editing = !!initial;
   const [blockId, setBlockId] = useState<number>(initial?.block_id ?? defaultBlockId);
   const [textUk, setTextUk] = useState(initial?.text_uk ?? '');
-  const [textRu, setTextRu] = useState(initial?.text_ru ?? '');
+  const [textEn, setTextEn] = useState(initial?.text_en ?? '');
   const [noteUk, setNoteUk] = useState(initial?.note_uk ?? '');
-  const [noteRu, setNoteRu] = useState(initial?.note_ru ?? '');
+  const [noteEn, setNoteEn] = useState(initial?.note_en ?? '');
   // Order can be typed as "1", "1.1", "2,3" — comma auto-converted to dot.
   // Stored DB column is INTEGER, so "1.1" means: sub-question of question at main-index 1, in 1st sub slot.
   const [orderText, setOrderText] = useState(String(initial?.order_index ?? 0));
@@ -24,13 +24,13 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
   const [answers, setAnswers] = useState<AdminAnswerInput[]>(() => {
     if (initial?.answers && initial.answers.length > 0) {
       return initial.answers.map(a => ({
-        text_uk: a.text_uk, text_ru: a.text_ru,
+        text_uk: a.text_uk, text_en: a.text_en,
         score: a.score, next_question_id: a.next_question_id,
       }));
     }
     return [
-      { text_uk: 'Так', text_ru: 'Да', score: 1, next_question_id: null },
-      { text_uk: 'Ні', text_ru: 'Нет', score: 0, next_question_id: null },
+      { text_uk: 'Так', text_en: 'Yes', score: 1, next_question_id: null },
+      { text_uk: 'Ні', text_en: 'No', score: 0, next_question_id: null },
     ];
   });
   const [error, setError] = useState('');
@@ -43,17 +43,17 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
     setAnswers(prev => prev.filter((_, idx) => idx !== i));
   }
   function addAnswer() {
-    setAnswers(prev => [...prev, { text_uk: '', text_ru: '', score: 0, next_question_id: null }]);
+    setAnswers(prev => [...prev, { text_uk: '', text_en: '', score: 0, next_question_id: null }]);
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
     if (!blockId) { setError('Оберіть блок'); return; }
-    if (!textUk.trim() && !textRu.trim()) { setError('Обов\'язковий щонайменше один текст (UA або RU)'); return; }
+    if (!textUk.trim() && !textEn.trim()) { setError('Обов\'язковий щонайменше один текст (UA або EN)'); return; }
     if (answers.length < 2) { setError('Мінімум 2 варіанти відповіді'); return; }
     for (const a of answers) {
-      if (!a.text_uk.trim() && !a.text_ru.trim()) { setError('Кожна відповідь повинна мати текст (UA або RU)'); return; }
+      if (!a.text_uk.trim() && !a.text_en.trim()) { setError('Кожна відповідь повинна мати текст (UA або EN)'); return; }
     }
     setBusy(true);
     try {
@@ -82,13 +82,13 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
       const data: AdminQuestionInput = {
         block_id: blockId,
         text_uk: textUk.trim(),
-        text_ru: textRu.trim(),
+        text_en: textEn.trim(),
         note_uk: noteUk.trim() || null,
-        note_ru: noteRu.trim() || null,
+        note_en: noteEn.trim() || null,
         order_index,
         parent_question_id: parent_override !== undefined ? parent_override : parentId,
         answers: answers.map(a => ({
-          text_uk: a.text_uk.trim(), text_ru: a.text_ru.trim(),
+          text_uk: a.text_uk.trim(), text_en: a.text_en.trim(),
           score: Number(a.score) || 0,
           next_question_id: a.next_question_id ?? null,
         })),
@@ -130,7 +130,7 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
 
   const labelFor = (q: AdminQuestion) => {
     const num = questionNumberById.get(q.id) ?? `#${q.id}`;
-    const preview = (q.text_uk || q.text_ru || '').slice(0, 50);
+    const preview = (q.text_uk || q.text_en || '').slice(0, 50);
     return `${num}: ${preview}`;
   };
 
@@ -142,7 +142,7 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
         <div className="admin-form-group">
           <label>Блок *</label>
           <select value={blockId} onChange={e => setBlockId(+e.target.value)}>
-            {blocks.map(b => <option key={b.id} value={b.id}>{b.title_uk || b.title_ru}</option>)}
+            {blocks.map(b => <option key={b.id} value={b.id}>{b.title_uk || b.title_en}</option>)}
           </select>
         </div>
 
@@ -152,16 +152,16 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
             <textarea value={textUk} onChange={e => setTextUk(e.target.value)} />
           </div>
           <div className="admin-form-group">
-            <label>Текст запитання (RU)</label>
-            <textarea value={textRu} onChange={e => setTextRu(e.target.value)} />
+            <label>Текст запитання (EN)</label>
+            <textarea value={textEn} onChange={e => setTextEn(e.target.value)} />
           </div>
           <div className="admin-form-group">
             <label>Примітка (UA) — необов'язково</label>
             <textarea value={noteUk} onChange={e => setNoteUk(e.target.value)} />
           </div>
           <div className="admin-form-group">
-            <label>Примітка (RU) — необов'язково</label>
-            <textarea value={noteRu} onChange={e => setNoteRu(e.target.value)} />
+            <label>Примітка (EN) — необов'язково</label>
+            <textarea value={noteEn} onChange={e => setNoteEn(e.target.value)} />
           </div>
         </div>
 
@@ -203,7 +203,7 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <input placeholder="Текст (UA)" value={a.text_uk} onChange={e => updateAnswer(i, { text_uk: e.target.value })} style={inputStyle} />
-              <input placeholder="Текст (RU)" value={a.text_ru} onChange={e => updateAnswer(i, { text_ru: e.target.value })} style={inputStyle} />
+              <input placeholder="Текст (EN)" value={a.text_en} onChange={e => updateAnswer(i, { text_en: e.target.value })} style={inputStyle} />
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <label style={{ fontSize: 12, color: 'var(--text2)' }}>Бал:</label>

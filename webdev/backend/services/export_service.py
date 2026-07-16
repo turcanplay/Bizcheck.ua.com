@@ -680,5 +680,5 @@ def single_pdf_filename(sub) -> str:
 def export_basename(test_id, kind) -> str:
     """Base filename (no extension) for a test export: Виписка_<kind>_<test>_<date>."""
     test = Test.find_by_id(test_id) or {}
-    name = test.get("name_uk") or test.get("name_ru") or f"Test {test_id}"
+    name = test.get("name_uk") or test.get("name_en") or f"Test {test_id}"
     return f"Виписка_{kind}_{_safe_filename(name)}_{date.today().isoformat()}"

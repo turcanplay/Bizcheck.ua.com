@@ -52,7 +52,7 @@ def _guard():
 def list_tests():
     tests = Test.find_all() or []
     return jsonify([
-        {"id": t["id"], "name": t.get("name_uk") or t.get("name_ru") or f"Test {t['id']}"}
+        {"id": t["id"], "name": t.get("name_uk") or t.get("name_en") or f"Test {t['id']}"}
         for t in tests
     ])
 
