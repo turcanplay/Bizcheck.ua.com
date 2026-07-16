@@ -54,10 +54,10 @@ def render(
     download_url: str | None = None,
     reply_to: str = "office@bizcheck.md",
     site_url: str = "https://crowe-tm.md",
-    privacy_url: str = "https://bizcheck.md/confidentialitate",
+    privacy_url: str = "https://bizcheck.ua.com/confidentialitate",
     telegram_url: str = "https://t.me/CROWE_TM",
     telegram_handle: str = "@CROWE_TM",
-    bizcheck_url: str = "https://bizcheck.md",
+    bizcheck_url: str = "https://bizcheck.ua.com",
 ) -> tuple[str, str, str]:
     """Return (subject, html_body, text_body) for the given language.
 

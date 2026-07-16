@@ -16,7 +16,13 @@ interface SeoProps {
   ogType?: 'website' | 'article' | 'product';
 }
 
-const SITE = 'https://bizcheck.md';
+/** Canonical origin of the public site. Single source of truth — import as
+ *  `SITE_URL` anywhere a full absolute URL is needed (JSON-LD, OG images).
+ *  Not build-time env: this frontend has no `args:` block in docker-compose and
+ *  its VITE_* vars are never passed at build time, so a literal is the only
+ *  thing that actually ships. */
+export const SITE_URL = 'https://bizcheck.ua.com';
+const SITE = SITE_URL;
 const DEFAULT_IMAGE = `${SITE}/android-chrome-512x512.png`;
 const DEFAULT_TITLE_UK = 'Bizcheck.md · Оцінка ризиків бізнесу · Crowe';
 const DEFAULT_TITLE_EN = 'Bizcheck.md · Business Risk Assessment · Crowe';

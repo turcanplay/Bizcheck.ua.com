@@ -43,7 +43,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Otherwise a report delivery token.
         await _send_report(update, context, token=arg)
     else:
-        # User opened the bot directly without a token — default to RO welcome
+        # User opened the bot directly without a token — no language known yet,
+        # so fall back to the Ukrainian welcome.
         await update.message.reply_text(
             _t("uk", "welcome"),
             parse_mode="Markdown",
@@ -67,9 +68,18 @@ async def _feedback_open(update: Update, token: str) -> None:
         "lang": "en",
     }
     try:
-        await backend.feedback_open(payload)
+        resp = await backend.feedback_open(payload)
     except httpx.RequestError as exc:
         logger.warning("feedback/open backend unreachable: %s", exc)
+        await update.message.reply_text(_t("uk", "feedback_error"))
+        return
+
+    # On success the backend sends the question itself, so there is nothing to
+    # say here. On any failure the user would otherwise be left staring at an
+    # empty chat after tapping their personal link — tell them instead.
+    if resp.status_code != 200:
+        logger.warning("feedback/open returned %s", resp.status_code)
+        await update.message.reply_text(_t("uk", "feedback_error"))
 
 
 # ---------------------------------------------------------------------------

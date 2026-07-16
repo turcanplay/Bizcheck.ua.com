@@ -16,17 +16,3 @@ def _zone(score: int, lang: str = "uk") -> tuple[str, str]:
     if score >= 65:
         return "🟠", _t(lang, "zone_warn")
     return "🔴", _t(lang, "zone_low")
-
-
-def _bar(score: int) -> str:
-    """5-cell emoji progress bar (currently unused; kept for report summaries)."""
-    filled = round(score / 20)   # 0-5 cells
-    if score >= 80:
-        char = "🟢"
-    elif score >= 70:
-        char = "🟡"
-    elif score >= 65:
-        char = "🟠"
-    else:
-        char = "🔴"
-    return char * filled + "⬜" * (5 - filled)

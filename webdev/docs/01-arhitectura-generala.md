@@ -6,7 +6,7 @@ Repo-ul conține două aplicații independente, care NU împart cod:
 
 - `src/` — botul Telegram standalone (proiect separat, nu este subiectul acestor docs).
 - `webdev/` — aplicația web publică: **Flask** (backend) + **React/Vite** (SPA) + **nginx**
-  + doi boți Telegram. Aceasta este aplicația de la https://bizcheck.md și este ce
+  + doi boți Telegram. Aceasta este aplicația de la https://bizcheck.ua.com și este ce
   documentăm aici.
 
 ## Două identități de bot (două tokenuri)

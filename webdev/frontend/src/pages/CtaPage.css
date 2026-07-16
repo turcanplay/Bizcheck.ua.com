@@ -448,6 +448,13 @@
   margin: 0;
 }
 
+/* ── PDF not persisted yet (pdf_ready=false) — informational, not an error ── */
+.cta-page__tg-pending {
+  font-size: 13px;
+  color: #F5A800;
+  margin: 0;
+}
+
 /* ── Telegram button ── */
 .cta-page__tg-btn {
   display: flex;

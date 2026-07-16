@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
+import { useTelegramLink } from '@/hooks/useTelegramLink';
 import { API_BASE } from '@/config/api';
 import { publicApi } from '@/api/public';
 import { generateFullPdf } from '@/utils/pdfGenerator';
@@ -27,8 +28,7 @@ export default function CtaPage() {
   const { t, lang } = useLang();
   const reportRef = useRef<HTMLDivElement>(null);
   const [pdfDone, setPdfDone] = useState(false);
-  const [tgLoading, setTgLoading] = useState(false);
-  const [tgError, setTgError] = useState(false);
+  const { tgLoading, tgError, tgPending, openTelegram, resetTelegram } = useTelegramLink(submissionId, submissionToken);
   const [pdfError, setPdfError] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -214,14 +214,14 @@ export default function CtaPage() {
     setSelectedMethod(m);
     setFormWarn('');
     setDownloadDone(false);
-    setTgError(false);
+    resetTelegram();
   }
 
   function handleBackToMethods() {
     setSelectedMethod(null);
     setFormWarn('');
     setDownloadDone(false);
-    setTgError(false);
+    resetTelegram();
   }
 
   function warn(key: string) {
@@ -327,39 +327,12 @@ export default function CtaPage() {
     }
   }
 
-  async function handleOpenTelegram() {
-    const fallback = 'https://t.me/CROWE_BIZCHECK_bot';
-
-    if (!submissionId) {
-      window.location.href = fallback;
-      return;
-    }
-
-    setTgLoading(true);
-    setTgError(false);
-
-    try {
-      const res = await fetch(`${API_BASE}/tg/link/${submissionId}`, {
-        method: 'POST',
-        headers: submissionToken ? { 'X-Submission-Token': submissionToken } : {},
-      });
-      if (!res.ok) throw new Error('failed');
-      const data = await res.json();
-      window.location.href = data.url;
-    } catch {
-      setTgError(true);
-      window.location.href = fallback;
-    } finally {
-      setTgLoading(false);
-    }
-  }
-
   async function handleSubmitTelegram() {
     const { first } = splitFullName(formFullName);
     if (!first) { warn('formWarnFullName'); return; }
     if (!formConsent) { warn('formWarnConsent'); return; }
     commitContact();
-    await handleOpenTelegram();
+    await openTelegram();
   }
 
   if (!report) return null;
@@ -734,6 +707,10 @@ export default function CtaPage() {
 
             {selectedMethod === 'telegram' && tgError && (
               <p className="cta-page__tg-error">{t('telegramError')}</p>
+            )}
+
+            {selectedMethod === 'telegram' && tgPending && (
+              <p className="cta-page__tg-pending">{t('telegramPdfPending')}</p>
             )}
           </div>
         )}

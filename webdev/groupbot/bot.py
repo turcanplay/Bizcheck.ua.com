@@ -1,24 +1,43 @@
 """
 BizCheck Group Bot — the team's internal Telegram bot.
 
-Lives in the private sales/team group (a forum / topics group) and serves two
+Lives in the private sales/team group (a forum / topics group) and serves a few
 on-demand commands. It is SEPARATE from the client-facing report bot:
 
   • Notifications (test completed) are posted by the backend itself
     (services/sales_notify.py) into a per-test topic — this bot does NOT send them.
-  • /excel — pick a test (inline buttons) → bot fetches the combined Excel for
-              that test from the backend and drops it into the same topic.
-  • /pdf   — pick a test (inline buttons) → bot fetches the ZIP archive of every
-              stored PDF for that test and drops it into the same topic.
+  • /excel    — pick a test (inline buttons) → pick a period → bot fetches the
+                Excel for that test from the backend and drops it into the topic.
+  • /pdf      — points at the admin panel for the full archive; /client for one person.
+  • /client   — pick a test → pick a person → fetch that person's PDF.
+  • /register — register THIS group as the destination for sales notifications.
+  • /unregister — clear that registration.
+
+Registration flow
+-----------------
+The notification destination no longer has to be hardcoded in SALES_CHAT_ID.
+The group's OWNER runs /register inside the group; the bot stores the chat id
+in the backend (POST /tg/group/register) and the backend posts notifications
+there, creating a separate topic per test automatically. /unregister clears it.
+
+  • /register and /unregister are gated by an owner check (get_chat_member ==
+    "creator"), NOT by _allowed() — the group is not registered yet when
+    /register runs.
+  • _allowed() prefers the SALES_CHAT_ID env var when set (env wins); otherwise
+    it consults GET /tg/group/registered (cached ~60s). Nothing registered and
+    no env → deny. It fails closed.
+  • /register deliberately does NOT store message_thread_id: notifications must
+    land in the per-test topics the backend creates (sales_notify._topic_thread_id).
 
 Token: SALES_BOT_TOKEN (the SAME bot the backend uses to post notifications;
 the backend only *sends*, this process *polls* — no getUpdates conflict).
 
-Security: commands are honored ONLY inside the configured group (SALES_CHAT_ID).
-The backend export endpoints are guarded by BOT_SHARED_SECRET (strict).
+Security: data commands are honored ONLY inside the allowed group (env or
+registered). The backend endpoints are guarded by BOT_SHARED_SECRET (strict).
 """
 import io
 import os
+import time
 import logging
 
 import httpx
@@ -42,24 +61,73 @@ BACKEND_URL       = os.getenv("BACKEND_URL", "http://backend:4001")
 BOT_TOKEN         = os.getenv("SALES_BOT_TOKEN", "")
 ALLOWED_CHAT_ID   = (os.getenv("SALES_CHAT_ID", "") or "").strip()
 BOT_SHARED_SECRET = os.getenv("BOT_SHARED_SECRET", "")
-ADMIN_PANEL_URL   = os.getenv("ADMIN_PANEL_URL", "https://bizcheck.md/admin_bizcheck_md_crowe/")
+ADMIN_PANEL_URL   = os.getenv("ADMIN_PANEL_URL", "https://bizcheck.ua.com/admin_bizcheck_md_crowe/")
 
 EXPORTS = f"{BACKEND_URL}/api_crowe_bizcheck/tg/exports"
+GROUP   = f"{BACKEND_URL}/api_crowe_bizcheck/tg/group"
 
 # Telegram bots can upload files up to 50 MB. Stay just under it.
 _MAX_UPLOAD = 49_000_000
+
+# In-process cache for the registered chat id so we do not hit the backend on
+# every single group message. monotonic() — immune to wall-clock jumps/NTP.
+_REG_TTL = 60.0
+_reg_cache: dict = {"chat_id": None, "at": 0.0}
 
 
 def _headers() -> dict:
     return {"X-Bot-Secret": BOT_SHARED_SECRET} if BOT_SHARED_SECRET else {}
 
 
-def _allowed(update: Update) -> bool:
-    """Honor commands only inside the configured team group."""
+async def _registered_chat_id() -> str | None:
+    """Registered chat id from the backend, cached ~60s. None on error/unset."""
+    now = time.monotonic()
+    if _reg_cache["at"] and (now - _reg_cache["at"]) < _REG_TTL:
+        return _reg_cache["chat_id"]
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"{GROUP}/registered", headers=_headers())
+    except httpx.RequestError as exc:
+        logger.warning("registered-group lookup failed (backend unreachable): %s", exc)
+        return None
+    if resp.status_code != 200:
+        logger.warning("registered-group lookup failed (code %s)", resp.status_code)
+        return None
+
+    try:
+        chat_id = (resp.json() or {}).get("chat_id")
+    except ValueError as exc:
+        logger.warning("registered-group lookup returned invalid JSON: %s", exc)
+        return None
+
+    chat_id = str(chat_id).strip() if chat_id is not None else None
+    _reg_cache["chat_id"] = chat_id or None
+    _reg_cache["at"] = now
+    return _reg_cache["chat_id"]
+
+
+def _invalidate_reg_cache() -> None:
+    """Drop the cached registration so the next check re-reads the backend."""
+    _reg_cache["chat_id"] = None
+    _reg_cache["at"] = 0.0
+
+
+async def _allowed(update: Update) -> bool:
+    """Honor data commands only inside the allowed group. Fails closed.
+
+    SALES_CHAT_ID env wins when set; otherwise the group registered via
+    /register is used. Nothing set and nothing registered → deny.
+    """
     chat = update.effective_chat
-    if not ALLOWED_CHAT_ID:
-        return True  # not locked down (dev) — backend secret still gates the data
-    return bool(chat and str(chat.id) == ALLOWED_CHAT_ID)
+    if not chat:
+        return False
+    if ALLOWED_CHAT_ID:
+        return str(chat.id) == ALLOWED_CHAT_ID
+    registered = await _registered_chat_id()
+    if not registered:
+        return False
+    return str(chat.id) == registered
 
 
 def _thread_id(update: Update):
@@ -94,11 +162,128 @@ def _too_big_text(data) -> str:
 
 
 # ---------------------------------------------------------------------------
+# /register, /unregister → set this group as the notification destination
+#
+# NOT gated by _allowed() (the group is not registered yet when /register runs)
+# — gated by a strict owner check instead.
+# ---------------------------------------------------------------------------
+
+_GROUP_TYPES = {"group", "supergroup"}
+
+
+async def _owner_gate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    """True only if this is a group AND the issuer is its creator (owner).
+
+    Strictly "creator" — an administrator is not enough. Any error from
+    get_chat_member denies: fail closed, never fail open.
+    """
+    chat = update.effective_chat
+    user = update.effective_user
+    if not chat or chat.type not in _GROUP_TYPES:
+        await update.message.reply_text("Ця команда працює лише в групі.")
+        return False
+    if not user:
+        return False
+
+    try:
+        member = await context.bot.get_chat_member(chat.id, user.id)
+    except Exception as exc:
+        logger.warning("get_chat_member failed for chat=%s user=%s: %s", chat.id, user.id, exc)
+        await update.message.reply_text(
+            "Не вдалося перевірити ваші права. Спробуйте ще раз."
+        )
+        return False
+
+    if member.status != "creator":
+        await update.message.reply_text(
+            "Лише власник групи може виконати цю команду."
+        )
+        return False
+    return True
+
+
+def _issuer(update: Update) -> str:
+    """Username (@handle) of the issuing user, else their numeric id."""
+    user = update.effective_user
+    if not user:
+        return "unknown"
+    return f"@{user.username}" if user.username else str(user.id)
+
+
+async def cmd_register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Register THIS group as the destination for sales notifications."""
+    if not await _owner_gate(update, context):
+        return
+    chat = update.effective_chat
+
+    # NOTE: message_thread_id is deliberately NOT sent. The backend creates a
+    # separate topic per test (sales_notify._topic_thread_id); pinning the
+    # thread this command was typed in would defeat that.
+    payload = {
+        "chat_id": chat.id,
+        "title": chat.title or "",
+        "registered_by": _issuer(update),
+    }
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(f"{GROUP}/register", json=payload, headers=_headers())
+    except httpx.RequestError as exc:
+        logger.warning("group register backend unreachable: %s", exc)
+        await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
+        return
+
+    if resp.status_code == 403:
+        await update.message.reply_text(
+            "BOT_SHARED_SECRET не налаштований на сервері. Зверніться до адміністратора."
+        )
+        return
+    if resp.status_code != 200:
+        await update.message.reply_text(f"Не вдалося зареєструвати групу (код {resp.status_code}).")
+        return
+
+    _invalidate_reg_cache()
+    await update.message.reply_text(
+        "✅ Групу зареєстровано для сповіщень про завершені тести.\n"
+        "Для кожного тесту автоматично створюватиметься окрема тема.",
+        message_thread_id=_thread_id(update),
+    )
+
+
+async def cmd_unregister(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Clear the registered notification destination."""
+    if not await _owner_gate(update, context):
+        return
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(f"{GROUP}/unregister", json={}, headers=_headers())
+    except httpx.RequestError as exc:
+        logger.warning("group unregister backend unreachable: %s", exc)
+        await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
+        return
+
+    if resp.status_code == 403:
+        await update.message.reply_text(
+            "BOT_SHARED_SECRET не налаштований на сервері. Зверніться до адміністратора."
+        )
+        return
+    if resp.status_code != 200:
+        await update.message.reply_text(f"Не вдалося скасувати реєстрацію (код {resp.status_code}).")
+        return
+
+    _invalidate_reg_cache()
+    await update.message.reply_text(
+        "🚫 Реєстрацію скасовано. Сповіщення більше не надходитимуть у цю групу.",
+        message_thread_id=_thread_id(update),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Commands → show the inline test picker
 # ---------------------------------------------------------------------------
 
 async def _send_menu(update: Update, kind: str) -> None:
-    if not _allowed(update):
+    if not await _allowed(update):
         return
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
@@ -136,7 +321,7 @@ async def cmd_excel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cmd_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not _allowed(update):
+    if not await _allowed(update):
         return
     await update.message.reply_text(
         "📄 PDF-архів усіх користувачів завантажується з адмін-панелі:\n"
@@ -170,7 +355,7 @@ async def on_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Test chosen for Excel → show the period picker (no download yet)."""
     query = update.callback_query
     await query.answer()
-    if not _allowed(update):
+    if not await _allowed(update):
         return
 
     kind, _, tid = (query.data or "").partition(":")
@@ -234,7 +419,7 @@ async def on_excel_period(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     """Period chosen → download & send that period's Excel (callback xp:<id>:<period>)."""
     query = update.callback_query
     await query.answer()
-    if not _allowed(update):
+    if not await _allowed(update):
         return
 
     parts = (query.data or "").split(":")
@@ -261,7 +446,7 @@ def _subs_keyboard(subs: list) -> InlineKeyboardMarkup:
 async def on_client_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
-    if not _allowed(update):
+    if not await _allowed(update):
         return
 
     _, _, tid = (query.data or "").partition(":")
@@ -300,7 +485,7 @@ async def on_client_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
-    if not _allowed(update):
+    if not await _allowed(update):
         return
 
     _, _, sid = (query.data or "").partition(":")
@@ -351,7 +536,7 @@ async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def on_client_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not _allowed(update):
+    if not await _allowed(update):
         return
     tid = context.user_data.get("client_test")
     if not tid:
@@ -416,6 +601,9 @@ def main() -> None:
     app.add_handler(CommandHandler("excel", cmd_excel))
     app.add_handler(CommandHandler("pdf", cmd_pdf))
     app.add_handler(CommandHandler("client", cmd_client))
+    # Owner-gated, NOT _allowed()-gated — the group is not registered yet here.
+    app.add_handler(CommandHandler("register", cmd_register))
+    app.add_handler(CommandHandler("unregister", cmd_unregister))
     # Callback dispatch via disjoint, colon-anchored patterns so they cannot
     # overlap (^xls: vs ^xp:, ^cl: vs ^clp:).
     app.add_handler(CallbackQueryHandler(on_choice, pattern=r"^xls:"))

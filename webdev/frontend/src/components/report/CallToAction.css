@@ -71,7 +71,16 @@
   cursor: wait;
 }
 
+/* ── Error ── */
 .cta__telegram-error {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #E5634F;
+  margin: 0;
+}
+
+/* ── PDF not persisted yet (pdf_ready=false) — informational, not an error ── */
+.cta__telegram-pending {
   font-family: var(--font-sans);
   font-size: 12px;
   color: #F5A800;

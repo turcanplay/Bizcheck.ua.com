@@ -1,7 +1,7 @@
 """
 Sales-team Telegram notification.
 
-When a visitor completes a test on bizcheck.md and leaves contact details, a
+When a visitor completes a test on bizcheck.ua.com and leaves contact details, a
 TEXT notification is posted to a private Telegram group (a forum / topics group)
 where the sales people sit. The message carries the lead's name, phone, email,
 Telegram (if they chose the Telegram delivery), which test was completed + score.
@@ -21,7 +21,14 @@ atomically (see Submission.claim_sales_notification) so concurrent PATCH /
 
 Configuration (env vars — set on the server, NOT in code):
     SALES_BOT_TOKEN    bot token of the notifier bot (BotFather)
-    SALES_CHAT_ID      id of the sales group (negative, e.g. -1001234567890)
+    SALES_CHAT_ID      OPTIONAL id of the sales group (negative, e.g.
+                       -1001234567890). When set it WINS over whatever
+                       /register bound — it is an operator kill-switch that
+                       pins leads to a known-good group and cannot be
+                       overridden from Telegram. Normally left EMPTY: the group
+                       then registers itself at runtime with /register (see
+                       webdev/groupbot/ and routes/tg_group.py) and the id is
+                       read from the `sales_chat_id` key in site_settings.
 
 Not configured? The notification is silently skipped (logged at info level).
 Uses only the Python standard library (urllib) — no extra dependency.
@@ -47,8 +54,35 @@ def _env(name: str, default: str = "") -> str:
     return (os.getenv(name) or default).strip()
 
 
+def _sales_chat_id() -> str:
+    """Id-ul grupului de vânzări: întâi env (SALES_CHAT_ID), apoi /register.
+
+    Precedence: the SALES_CHAT_ID env var WINS whenever it is set; the chat
+    registered from Telegram with /register is used only when the env var is
+    empty/unset.
+
+    Rationale: whoever can edit `.env` on the server is a higher authority than
+    a Telegram group owner who can type /register. SALES_CHAT_ID must work as an
+    operator kill-switch that pins leads to a known-good group and cannot be
+    overridden from Telegram — an operator setting it to recover from a bad or
+    hostile /register has to find it effective, not silently ignored.
+
+    Import lazy (ca peste tot în acest modul) ca să evităm importuri circulare.
+    In the DB branch there is no env to fall back to, so any DB error → "".
+    """
+    env_chat_id = _env("SALES_CHAT_ID")
+    if env_chat_id:
+        return env_chat_id
+    try:
+        from models.site_settings import SiteSettings
+        return (SiteSettings.get("sales_chat_id", "") or "").strip()
+    except Exception:
+        log.exception("[sales] could not read sales_chat_id from settings — no env to fall back to")
+        return ""
+
+
 def _configured() -> bool:
-    return bool(_env("SALES_BOT_TOKEN") and _env("SALES_CHAT_ID"))
+    return bool(_env("SALES_BOT_TOKEN") and _sales_chat_id())
 
 
 def _zone_label_uk(score: int) -> str:
@@ -65,7 +99,7 @@ def _esc(s) -> str:
 
 
 def _admin_url() -> str:
-    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.md").rstrip("/")
+    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.ua.com").rstrip("/")
     return f"{base}/admin_bizcheck_md_crowe/"
 
 
@@ -117,7 +151,7 @@ def _build_caption(sub: dict, test_name: str) -> str:
 
     sep = "➖➖➖➖➖➖➖➖➖➖"
     return (
-        "🆕 <b>Новий лід на bizcheck.md</b>\n\n"
+        "🆕 <b>Новий лід на bizcheck.ua.com</b>\n\n"
         f"👤 <b>{_esc(name)}</b>\n"
         f"✉️ {_esc(email)}\n"
         f"📞 {_esc(phone)}\n"
@@ -156,7 +190,7 @@ _topics_disabled = False
 def _create_forum_topic(name: str):
     """Create a forum topic in the sales group; return its message_thread_id or None."""
     global _topics_disabled
-    chat_id = _env("SALES_CHAT_ID")
+    chat_id = _sales_chat_id()
     try:
         resp = _post_json("createForumTopic", {"chat_id": chat_id, "name": name[:128]})
         return ((resp or {}).get("result") or {}).get("message_thread_id")
@@ -252,11 +286,37 @@ def _resolve_test_name(sub: dict) -> str:
     return ""
 
 
+def _forget_topic_id(sub: dict) -> None:
+    """Drop the cached tests.tg_topic_id after Telegram said the topic is gone.
+
+    Without this, every later lead for the same test repeats the identical
+    doomed send + General fallback forever. Clearing it makes the NEXT lead
+    create a fresh topic.
+
+    Skipped when SALES_TOPIC_ID pins a fixed topic: the thread we just failed on
+    came from the env var, not from the per-test cache, so that cache entry is
+    innocent and must not be collateral damage.
+
+    Never raises — failing to clear the cache must not lose the lead.
+    """
+    if _env("SALES_TOPIC_ID"):
+        return
+    tid = sub.get("test_id")
+    if not tid:
+        return
+    try:
+        from models.test import Test
+        Test.set_topic_id(tid, None)      # tests.tg_topic_id is nullable
+        log.warning("[sales] cleared stale topic id for test %s — next lead will recreate it", tid)
+    except Exception:
+        log.exception("[sales] could not clear stale topic id for test %s", tid)
+
+
 def _do_send(sub: dict, test_name: str, thread_id):
     """Send the text notification into the test's topic (or General).
     Returns (ok, msg_id). Retries 429 a few times; on a missing topic falls
     back once to the General thread so the lead still lands."""
-    chat_id = _env("SALES_CHAT_ID")
+    chat_id = _sales_chat_id()
     caption = _build_caption(sub, test_name)
     payload = {"chat_id": chat_id, "text": caption, "parse_mode": "HTML"}
     kb = _build_keyboard(sub)
@@ -282,10 +342,13 @@ def _do_send(sub: dict, test_name: str, thread_id):
                 log.warning("[sales] 429 for submission %s; sleeping %ss then retry", sub.get("id"), wait)
                 time.sleep(wait)
                 continue
-            # Topic was deleted on the group side → retry once into General.
+            # Topic was deleted on the group side → retry once into General AND
+            # forget the dead topic id, so the next lead for this test creates a
+            # fresh topic instead of repeating this same failing round-trip.
             if payload.get("message_thread_id") and b"thread not found" in body.lower():
                 log.warning("[sales] topic missing for submission %s — retrying in General", sub.get("id"))
                 payload.pop("message_thread_id", None)
+                _forget_topic_id(sub)
                 continue
             log.error("[sales] Telegram API error for submission %s: %s %s",
                       sub.get("id"), e.code, body[:300])
@@ -314,7 +377,18 @@ def _process_send(submission_id: int) -> None:
             Submission.set_sales_message(submission_id, msg_id, False)
         except Exception:
             pass
-    elif not ok:
+    elif ok:
+        # Delivered, but the response carried no message_id (Telegram always
+        # returns one on success, so this should never happen). The lead HAS
+        # reached the group, so we deliberately KEEP the claim: releasing it
+        # would make the next write send a duplicate, which is worse than the
+        # cost below. The cost: with no stored msg_id, later contact updates
+        # cannot edit this notification in place and are silently dropped.
+        log.warning(
+            "[sales] submission %s sent but Telegram returned no message_id — "
+            "keeping the claim (no duplicate), but in-place updates are not "
+            "possible for this submission", submission_id)
+    else:
         # Real failure → release the claim so a later write retries instead of
         # the lead being lost forever.
         try:
@@ -332,7 +406,7 @@ def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
         sub = None
     if not sub:
         return
-    chat_id = _env("SALES_CHAT_ID")
+    chat_id = _sales_chat_id()
     caption = _build_caption(sub, _resolve_test_name(sub))
     method = "editMessageCaption" if is_doc else "editMessageText"
     text_field = "caption" if is_doc else "text"

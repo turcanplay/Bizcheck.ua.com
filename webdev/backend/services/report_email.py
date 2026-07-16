@@ -18,7 +18,7 @@ from models.submission import Submission
 log = logging.getLogger(__name__)
 
 # Base URL used to build the report download link inside the email.
-PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.md").rstrip("/")
+PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.ua.com").rstrip("/")
 
 _EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$')
 

@@ -22,7 +22,7 @@ import { dirname, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = resolve(__dirname, '..', 'dist');
-const SITE = (process.env.SITEMAP_BASE_URL || 'https://bizcheck.md').replace(/\/$/, '');
+const SITE = (process.env.SITEMAP_BASE_URL || 'https://bizcheck.ua.com').replace(/\/$/, '');
 
 const ROUTES = [
   {

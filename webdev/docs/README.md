@@ -6,7 +6,7 @@ Excel/PDF, **endpoint-urile backend** care îi deservesc, **baza de date**, aspe
 **securitate** și **deploy**-ul.
 
 > Atenție: documentația se referă DOAR la codebase-ul `webdev/` (aplicația web de la
-> https://bizcheck.md). Botul standalone din `src/` este un proiect separat și NU este
+> https://bizcheck.ua.com). Botul standalone din `src/` este un proiect separat și NU este
 > documentat aici.
 
 ## Cuprins

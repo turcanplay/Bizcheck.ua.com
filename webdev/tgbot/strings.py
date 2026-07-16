@@ -17,6 +17,10 @@ _STRINGS = {
             "З питань або для персональної пропозиції "
             "напишіть нам у будь-який час: *office@crowe-tm.md*."
         ),
+        "feedback_error": (
+            "Не вдалося відкрити опитування. Будь ласка, натисніть посилання ще раз "
+            "за кілька хвилин. Якщо проблема не зникає — напишіть нам на office@crowe-tm.md."
+        ),
         "preparing": "Готуємо ваш звіт, це займе кілька секунд…",
         "server_error": (
             "Зараз наш сервер не відповідає. Будь ласка, спробуйте ще раз за "
@@ -87,6 +91,10 @@ _STRINGS = {
             "• Come back here and press *START* — your report will arrive automatically\n\n"
             "For any questions or a personalised offer, "
             "write to us anytime: *office@crowe-tm.md*."
+        ),
+        "feedback_error": (
+            "We couldn't open the survey. Please tap the link again in a few minutes. "
+            "If the problem persists, write to us at office@crowe-tm.md."
         ),
         "preparing": "Preparing your report, this will take a few seconds…",
         "server_error": (
