@@ -188,7 +188,7 @@ export default function AdminFeedback() {
                 {r.username
                   ? <b style={{ fontSize: 14 }}>@{r.username}</b>
                   : <span style={{ fontSize: 13, color: 'var(--text2)' }}>(без username)</span>}
-                <span className="admin-badge admin-badge-muted">{(r.lang || 'ru').toUpperCase()}</span>
+                <span className="admin-badge admin-badge-muted">{(r.lang || 'en').toUpperCase()}</span>
                 {r.answered_at && (
                   <span style={{ fontSize: 12, color: 'var(--text2)' }}>{r.answered_at.slice(0, 16).replace('T', ' ')}</span>
                 )}
@@ -215,7 +215,7 @@ export default function AdminFeedback() {
 // ──────────────────────────────────────────────────────────────
 function PromptEditor() {
   const [uk, setUk] = useState('');
-  const [ru, setRu] = useState('');
+  const [en, setEn] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -223,7 +223,7 @@ function PromptEditor() {
 
   useEffect(() => {
     adminApi.getFeedbackPrompt()
-      .then(p => { setUk(p.uk); setRu(p.ru); })
+      .then(p => { setUk(p.uk); setEn(p.en); })
       .catch(e => setError(e instanceof Error ? e.message : 'Load failed'))
       .finally(() => setLoading(false));
   }, []);
@@ -232,8 +232,8 @@ function PromptEditor() {
     e.preventDefault();
     setBusy(true); setSaved(false); setError('');
     try {
-      const p = await adminApi.updateFeedbackPrompt({ uk, ru });
-      setUk(p.uk); setRu(p.ru);
+      const p = await adminApi.updateFeedbackPrompt({ uk, en });
+      setUk(p.uk); setEn(p.en);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { setError(e instanceof Error ? e.message : 'Save failed'); }
@@ -246,15 +246,15 @@ function PromptEditor() {
     <form className="admin-test-card" style={{ padding: 16, marginBottom: 20 }} onSubmit={save}>
       <h3 style={{ margin: '0 0 4px' }}>📝 Текст запитання (передвстановлений)</h3>
       <p style={{ color: 'var(--text2)', fontSize: 12, margin: '0 0 12px' }}>
-        Мова обирається автоматично за особою (запасний варіант — RU). Емодзі та нові рядки зберігаються.
+        Мова обирається автоматично за особою (запасний варіант — EN). Емодзі та нові рядки зберігаються.
       </p>
       <div className="admin-form-group">
         <label>Текст (UA)</label>
         <textarea value={uk} maxLength={4000} onChange={e => setUk(e.target.value)} style={{ minHeight: 150 }} />
       </div>
       <div className="admin-form-group">
-        <label>Текст (RU)</label>
-        <textarea value={ru} maxLength={4000} onChange={e => setRu(e.target.value)} style={{ minHeight: 150 }} />
+        <label>Текст (EN)</label>
+        <textarea value={en} maxLength={4000} onChange={e => setEn(e.target.value)} style={{ minHeight: 150 }} />
       </div>
       {error && <div className="admin-error">⚠️ {error}</div>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -270,7 +270,7 @@ function PromptEditor() {
 // ──────────────────────────────────────────────────────────────
 function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => void }) {
   const [raw, setRaw] = useState('');
-  const [lang, setLang] = useState<'auto' | 'uk' | 'ru'>('auto');
+  const [lang, setLang] = useState<'auto' | 'uk' | 'en'>('auto');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState<FeedbackSendResult[] | null>(null);
@@ -313,7 +313,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
       <div className="admin-form-group">
         <label>Мова</label>
         <div style={{ display: 'flex', gap: 8 }}>
-          {(['auto', 'uk', 'ru'] as const).map(l => (
+          {(['auto', 'uk', 'en'] as const).map(l => (
             <label key={l} className={`admin-btn admin-btn-sm ${lang === l ? 'admin-btn-accent' : 'admin-btn-ghost'}`} style={{ cursor: 'pointer' }}>
               <input type="radio" name="fblang" checked={lang === l} onChange={() => setLang(l)} style={{ display: 'none' }} />
               {l === 'auto' ? 'Авто' : l.toUpperCase()}

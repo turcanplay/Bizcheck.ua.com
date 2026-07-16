@@ -193,6 +193,52 @@ def migrate_ro_to_uk(cur):
     )
 
 
+def migrate_ru_to_en(cur):
+    """Rename every `*_ru` column to `*_en` and relabel stored 'ru' values.
+
+    Russian was replaced by English; this is the exact mirror of
+    migrate_ro_to_uk and runs right after it on boot. Reuses the same
+    table/column list (the bilingual tables are identical). Idempotent and
+    guarded on both sides: a fresh database already has `_en` columns (nothing
+    matches) and a second gunicorn worker racing through boot renames nothing.
+    """
+    for table, cols in RO_TO_UK_COLUMNS:
+        for col in cols:
+            old, new = f"{col}_ru", f"{col}_en"
+            cur.execute(
+                """
+                SELECT
+                  bool_or(column_name = %(old)s) AS has_old,
+                  bool_or(column_name = %(new)s) AS has_new
+                FROM information_schema.columns
+                WHERE table_name = %(t)s
+                """,
+                {"t": table, "old": old, "new": new},
+            )
+            row = cur.fetchone() or (None, None)
+            has_old, has_new = row[0], row[1]
+            if has_old and not has_new:
+                cur.execute(
+                    sql.SQL("ALTER TABLE {} RENAME COLUMN {} TO {}").format(
+                        sql.Identifier(table), sql.Identifier(old), sql.Identifier(new)
+                    )
+                )
+
+    # Rows still tagged 'ru' become 'en' (English replaced Russian).
+    cur.execute("UPDATE submissions  SET language = 'en' WHERE language = 'ru';")
+    cur.execute("UPDATE testimonials SET lang     = 'en' WHERE lang     = 'ru';")
+    cur.execute("UPDATE tg_outreach  SET lang     = 'en' WHERE lang     = 'ru';")
+    cur.execute(
+        """
+        UPDATE site_settings SET key = 'feedback_prompt_en'
+         WHERE key = 'feedback_prompt_ru'
+           AND NOT EXISTS (
+               SELECT 1 FROM site_settings s2 WHERE s2.key = 'feedback_prompt_en'
+           );
+        """
+    )
+
+
 def migrate():
     """Create the full BizCheck schema in one shot.
 
@@ -229,9 +275,9 @@ def migrate():
                     id                    SERIAL       PRIMARY KEY,
                     slug                  VARCHAR(100) UNIQUE NOT NULL,
                     name_uk               VARCHAR(255) NOT NULL,
-                    name_ru               VARCHAR(255) NOT NULL DEFAULT '',
+                    name_en               VARCHAR(255) NOT NULL DEFAULT '',
                     description_uk        TEXT         NOT NULL DEFAULT '',
-                    description_ru        TEXT         NOT NULL DEFAULT '',
+                    description_en        TEXT         NOT NULL DEFAULT '',
                     scoring_zones         JSONB        NOT NULL DEFAULT '{"safe": 80, "developing": 70, "warn": 65, "risk": 0}',
                     zone_recommendations  JSONB        DEFAULT NULL,
                     is_active             BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -276,7 +322,7 @@ def migrate():
                     id          SERIAL       PRIMARY KEY,
                     test_id     INTEGER      NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
                     title_uk    VARCHAR(255) NOT NULL,
-                    title_ru    VARCHAR(255) NOT NULL,
+                    title_en    VARCHAR(255) NOT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
                     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
                 );
@@ -287,13 +333,13 @@ def migrate():
                     block_id           INTEGER     NOT NULL REFERENCES blocks(id) ON DELETE CASCADE,
                     parent_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
                     text_uk            TEXT        NOT NULL,
-                    text_ru            TEXT        NOT NULL,
+                    text_en            TEXT        NOT NULL,
                     note_uk            TEXT        DEFAULT NULL,
-                    note_ru            TEXT        DEFAULT NULL,
+                    note_en            TEXT        DEFAULT NULL,
                     purpose_uk         TEXT        DEFAULT NULL,
-                    purpose_ru         TEXT        DEFAULT NULL,
+                    purpose_en         TEXT        DEFAULT NULL,
                     example_uk         TEXT        DEFAULT NULL,
-                    example_ru         TEXT        DEFAULT NULL,
+                    example_en         TEXT        DEFAULT NULL,
                     order_index        INTEGER     NOT NULL DEFAULT 0,
                     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
@@ -305,12 +351,12 @@ def migrate():
                     question_id      INTEGER     NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
                     next_question_id INTEGER     DEFAULT NULL REFERENCES questions(id) ON DELETE SET NULL,
                     text_uk          TEXT        NOT NULL,
-                    text_ru          TEXT        NOT NULL,
+                    text_en          TEXT        NOT NULL,
                     score            REAL        NOT NULL DEFAULT 0,
                     explanation_uk   TEXT        DEFAULT NULL,
-                    explanation_ru   TEXT        DEFAULT NULL,
+                    explanation_en   TEXT        DEFAULT NULL,
                     risk_uk          TEXT        DEFAULT NULL,
-                    risk_ru          TEXT        DEFAULT NULL,
+                    risk_en          TEXT        DEFAULT NULL,
                     created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
                 CREATE INDEX IF NOT EXISTS idx_answers_question ON answers(question_id);
@@ -399,9 +445,9 @@ def migrate():
                     id             SERIAL        PRIMARY KEY,
                     slug           VARCHAR(100)  UNIQUE NOT NULL,
                     title_uk       VARCHAR(255)  NOT NULL,
-                    title_ru       VARCHAR(255)  NOT NULL DEFAULT '',
+                    title_en       VARCHAR(255)  NOT NULL DEFAULT '',
                     description_uk TEXT          NOT NULL DEFAULT '',
-                    description_ru TEXT          NOT NULL DEFAULT '',
+                    description_en TEXT          NOT NULL DEFAULT '',
                     is_active      BOOLEAN       NOT NULL DEFAULT TRUE,
                     is_coming_soon BOOLEAN       NOT NULL DEFAULT FALSE,
                     is_paid        BOOLEAN       NOT NULL DEFAULT FALSE,
@@ -432,7 +478,7 @@ def migrate():
                     name        VARCHAR(100) NOT NULL,
                     role        VARCHAR(150) DEFAULT NULL,
                     quote_uk    TEXT         NOT NULL DEFAULT '',
-                    quote_ru    TEXT         NOT NULL DEFAULT '',
+                    quote_en    TEXT         NOT NULL DEFAULT '',
                     rating      SMALLINT     NOT NULL DEFAULT 5,
                     avatar_url  VARCHAR(500) DEFAULT NULL,
                     order_index INTEGER      NOT NULL DEFAULT 0,
@@ -444,9 +490,9 @@ def migrate():
                 CREATE TABLE IF NOT EXISTS faq_items (
                     id          SERIAL      PRIMARY KEY,
                     question_uk TEXT        NOT NULL,
-                    question_ru TEXT        NOT NULL DEFAULT '',
+                    question_en TEXT        NOT NULL DEFAULT '',
                     answer_uk   TEXT        NOT NULL DEFAULT '',
-                    answer_ru   TEXT        NOT NULL DEFAULT '',
+                    answer_en   TEXT        NOT NULL DEFAULT '',
                     order_index INTEGER     NOT NULL DEFAULT 0,
                     is_active   BOOLEAN     NOT NULL DEFAULT TRUE,
                     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -484,7 +530,7 @@ def migrate():
                     mode        VARCHAR(10)  NOT NULL DEFAULT 'contact',
                     username    VARCHAR(100) DEFAULT NULL,
                     tg_chat_id  BIGINT       DEFAULT NULL,
-                    lang        VARCHAR(5)   NOT NULL DEFAULT 'ru',
+                    lang        VARCHAR(5)   NOT NULL DEFAULT 'en',
                     token       VARCHAR(64)  UNIQUE NOT NULL,
                     status      VARCHAR(20)  NOT NULL DEFAULT 'pending',
                     prompt_sent TEXT         DEFAULT NULL,
@@ -506,6 +552,7 @@ def migrate():
             """)
 
             migrate_ro_to_uk(cur)
+            migrate_ru_to_en(cur)
 
             conn.commit()
     except Exception:

@@ -246,7 +246,7 @@ def _resolve_test_name(sub: dict) -> str:
         if tid:
             t = Test.find_by_id(tid)
             if t:
-                return t.get("name_uk") or t.get("name_ru") or ""
+                return t.get("name_uk") or t.get("name_en") or ""
     except Exception:
         pass
     return ""

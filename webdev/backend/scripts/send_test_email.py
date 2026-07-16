@@ -8,7 +8,7 @@ Usage (inside the backend dir / container):
 
     venv/Scripts/python -m scripts.send_test_email --to you@gmail.com
     # or:
-    python -m scripts.send_test_email --to you@gmail.com --lang ru --score 72
+    python -m scripts.send_test_email --to you@gmail.com --lang en --score 72
 
 Send to a few providers (gmail.com, outlook.com, yahoo, a corporate one) and
 check the Spam folder in each — that tells you the real inbox placement.
@@ -25,7 +25,7 @@ from services.email_service import send_report_email_sync, _smtp_configured, _en
 def main() -> int:
     p = argparse.ArgumentParser(description="Send a BizCheck test report email.")
     p.add_argument("--to", required=True, help="Recipient email address")
-    p.add_argument("--lang", default="uk", choices=["uk", "ru"], help="Email language")
+    p.add_argument("--lang", default="uk", choices=["uk", "en"], help="Email language")
     p.add_argument("--name", default="Test", help="First name in the greeting")
     p.add_argument("--score", type=int, default=78, help="Score shown in the ring (0-100)")
     p.add_argument(
@@ -49,8 +49,8 @@ def main() -> int:
         print("Run this inside the backend container where the real .env is loaded.")
         return 2
 
-    date_str = "4 червня 2026" if args.lang == "uk" else "4 июня 2026"
-    test_name = "Звіт BizCheck — ТЕСТ" if args.lang == "uk" else "Отчёт BizCheck — ТЕСТ"
+    date_str = "4 червня 2026" if args.lang == "uk" else "4 June 2026"
+    test_name = "Звіт BizCheck — ТЕСТ" if args.lang == "uk" else "BizCheck Report — TEST"
 
     print(f"Sending test email to {args.to} (lang={args.lang}, score={args.score}) ...")
     ok = send_report_email_sync(

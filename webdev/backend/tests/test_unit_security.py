@@ -717,9 +717,9 @@ class TestNumericAndLangValidators:
 
     def test_clean_lang_whitelist(self):
         from utils.validators import clean_lang
-        assert clean_lang("ru") == "ru"
+        assert clean_lang("en") == "en"
         assert clean_lang("UK") == "uk"
-        assert clean_lang("en") == "uk"       # unknown → default
+        assert clean_lang("ru") == "uk"       # unknown → default
         assert clean_lang("<script>") == "uk"
         assert clean_lang(None) == "uk"
 
@@ -739,7 +739,7 @@ def app_with_public_reviews(monkeypatch):
         row = {
             "id": len(saved) + 1, "name": name, "role": role,
             "quote_uk": quote if lang == "uk" else "",
-            "quote_ru": quote if lang == "ru" else "",
+            "quote_en": quote if lang == "en" else "",
             "rating": rating, "avatar_url": None, "order_index": 0,
             "is_active": True, "lang": lang, "is_user_submitted": True,
             "created_at": "2026-01-01",
@@ -766,13 +766,13 @@ class TestPublicReviewSubmit:
         assert r.status_code == 201
         row = r.get_json()["testimonial"]
         assert row["is_user_submitted"] is True
-        assert row["quote_uk"] == "Foarte util!" and row["quote_ru"] == ""
+        assert row["quote_uk"] == "Foarte util!" and row["quote_en"] == ""
 
     def test_review_stored_in_single_language(self, app_with_public_reviews):
         app, saved = app_with_public_reviews
         c = app.test_client()
-        c.post(self.URL, json={"name": "Ион", "quote": "Отлично", "rating": 4, "lang": "ru"})
-        assert saved[-1]["quote_ru"] == "Отлично" and saved[-1]["quote_uk"] == ""
+        c.post(self.URL, json={"name": "John", "quote": "Excellent", "rating": 4, "lang": "en"})
+        assert saved[-1]["quote_en"] == "Excellent" and saved[-1]["quote_uk"] == ""
 
     def test_missing_name_rejected(self, app_with_public_reviews):
         app, _ = app_with_public_reviews

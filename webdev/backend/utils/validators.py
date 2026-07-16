@@ -106,7 +106,7 @@ def clean_float(value, *, min_value: float | None = None, max_value: float | Non
     return round(n, 1)
 
 
-_LANGS = ("uk", "ru")
+_LANGS = ("uk", "en")
 
 def clean_lang(value, default: str = "uk") -> str:
     """Whitelist a UI language code. Anything unknown falls back to default."""

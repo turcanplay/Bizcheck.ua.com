@@ -64,7 +64,7 @@ async def _feedback_open(update: Update, token: str) -> None:
         "token": token,
         "chat_id": tg_user.id,
         "username": tg_user.username or "",
-        "lang": "ru",
+        "lang": "en",
     }
     try:
         await backend.feedback_open(payload)
@@ -205,7 +205,7 @@ def _start_flow(context, flow: str, lang: str, token: str) -> str:
     Preserves the phone-share context (ctok/clng) so the request_contact reply
     keyboard offered after the report keeps working even mid-flow.
     """
-    lng = lang if lang in ("uk", "ru") else "uk"
+    lng = lang if lang in ("uk", "en") else "uk"
     ctok = context.user_data.get("ctok")
     clng = context.user_data.get("clng")
     context.user_data.clear()
@@ -276,7 +276,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = (update.message.text or "").strip()
 
     # Dismiss the phone-share reply keyboard if the user chose "later".
-    if text in (_STRINGS["uk"]["phone_later_btn"], _STRINGS["ru"]["phone_later_btn"]):
+    if text in (_STRINGS["uk"]["phone_later_btn"], _STRINGS["en"]["phone_later_btn"]):
         lng = context.user_data.get("clng", context.user_data.get("lng", "uk"))
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lng, "phone_later_ack"), reply_markup=ReplyKeyboardRemove())

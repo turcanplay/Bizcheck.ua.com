@@ -14,7 +14,7 @@ def _prep_json(v):
 
 class Test:
     @staticmethod
-    def create(slug, name_uk, name_ru, description_uk="", description_ru="",
+    def create(slug, name_uk, name_en, description_uk="", description_en="",
                is_active=True, is_paid=False, price=None, currency="MDL",
                category=None, features=None, scoring_zones=None, zone_recommendations=None,
                report_type="bizcheck", is_coming_soon=False, order_index=0):
@@ -24,12 +24,12 @@ class Test:
         zr = _prep_json(zone_recommendations)
         ft = _prep_json(features) if features is not None else json.dumps([])
         return execute(
-            """INSERT INTO tests (slug, name_uk, name_ru, description_uk, description_ru,
+            """INSERT INTO tests (slug, name_uk, name_en, description_uk, description_en,
                                    is_active, is_coming_soon, is_paid, price, currency, category, features,
                                    scoring_zones, zone_recommendations, report_type, order_index)
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s)
                RETURNING *""",
-            (slug, name_uk, name_ru, description_uk, description_ru,
+            (slug, name_uk, name_en, description_uk, description_en,
              is_active, is_coming_soon, is_paid, price, currency, category, ft, sz, zr, report_type, order_index),
         )
 
@@ -53,7 +53,7 @@ class Test:
         return query("SELECT * FROM tests ORDER BY order_index ASC, id ASC", fetch_all=True)
 
     @staticmethod
-    def update(test_id, slug, name_uk, name_ru, description_uk, description_ru,
+    def update(test_id, slug, name_uk, name_en, description_uk, description_en,
                is_active, is_paid=False, price=None, currency="MDL",
                category=None, features=None, scoring_zones=None, zone_recommendations=None,
                report_type=None, is_coming_soon=False, order_index=None):
@@ -62,8 +62,8 @@ class Test:
         ft = _prep_json(features)
         return execute(
             """UPDATE tests
-               SET slug = %s, name_uk = %s, name_ru = %s,
-                   description_uk = %s, description_ru = %s,
+               SET slug = %s, name_uk = %s, name_en = %s,
+                   description_uk = %s, description_en = %s,
                    is_active = %s, is_coming_soon = %s, is_paid = %s,
                    price = %s, currency = %s, category = %s,
                    features             = COALESCE(%s::jsonb, features),
@@ -72,7 +72,7 @@ class Test:
                    report_type          = COALESCE(%s, report_type),
                    order_index          = COALESCE(%s, order_index)
                WHERE id = %s RETURNING *""",
-            (slug, name_uk, name_ru, description_uk, description_ru,
+            (slug, name_uk, name_en, description_uk, description_en,
              is_active, is_coming_soon, is_paid, price, currency, category, ft, sz, zr, report_type, order_index, test_id),
         )
 

@@ -1,894 +1,894 @@
-export type Lang = 'uk' | 'ru';
+export type Lang = 'uk' | 'en';
 
 export const translations = {
   // Header
   headerRight: {
     uk: 'Оцінка ризиків · 2026',
-    ru: 'Оценка рисков · 2026',
+    en: 'Risk assessment · 2026',
   },
 
   // Start page — Hero
   heroEyebrow: {
     uk: 'Інструмент самодіагностики',
-    ru: 'Инструмент самодиагностики',
+    en: 'Self-assessment tool',
   },
   heroTitle1: {
     uk: 'Оцінка ризиків',
-    ru: 'Оценка рисков',
+    en: 'Risk assessment',
   },
   heroTitle2: {
     uk: 'вашого бізнесу',
-    ru: 'вашего бизнеса',
+    en: 'for your business',
   },
   heroDesc: {
     uk: 'Професійна діагностика за методологією Crowe. Дайте відповіді на запитання за {blocks} ключовими блоками — отримайте детальний звіт про зони ризику та ефективності.',
-    ru: 'Профессиональная диагностика по методологии Crowe. Ответьте на вопросы по {blocks} ключевым блокам — получите детальный отчёт о зонах риска и эффективности.',
+    en: 'Professional diagnostics based on the Crowe methodology. Answer questions across {blocks} key blocks and get a detailed report on your risk and efficiency areas.',
   },
   metaBlocks: {
     uk: 'блоків аналізу',
-    ru: 'блоков анализа',
+    en: 'analysis blocks',
   },
   metaQuestions: {
     uk: 'запитань',
-    ru: 'вопросов',
+    en: 'questions',
   },
   metaMinutes: {
     uk: 'хвилин',
-    ru: 'минут',
+    en: 'minutes',
   },
 
   // Start page — Test selection (Step 0)
   step0: {
     uk: 'Крок 0',
-    ru: 'Шаг 0',
+    en: 'Step 0',
   },
   step0Title: {
     uk: 'Оберіть тип аудиту',
-    ru: 'Выберите тип аудита',
+    en: 'Choose the type of audit',
   },
   step0Hint: {
     uk: 'Кожен аудит має свій набір запитань, адаптований під напрям.',
-    ru: 'У каждого аудита свой набор вопросов, адаптированный под направление.',
+    en: 'Each audit has its own set of questions tailored to the area.',
   },
   formWarnTest: {
     uk: 'Будь ласка, оберіть аудит, щоб продовжити.',
-    ru: 'Пожалуйста, выберите аудит, чтобы продолжить.',
+    en: 'Please select an audit to continue.',
   },
 
   // Start page — Personal info (Step 1)
   step1: {
     uk: 'Крок 1',
-    ru: 'Шаг 1',
+    en: 'Step 1',
   },
   step1Title: {
     uk: 'Контактні дані для отримання первинної оцінки ризиків',
-    ru: 'Контактные данные для получения первичной оценки рисков',
+    en: 'Contact details to receive your initial risk assessment',
   },
   labelFirstName: {
     uk: 'Ім\'я',
-    ru: 'Имя',
+    en: 'First name',
   },
   labelLastName: {
     uk: 'Прізвище',
-    ru: 'Фамилия',
+    en: 'Last name',
   },
   labelFullName: {
     uk: 'Повне ім\'я',
-    ru: 'Полное имя',
+    en: 'Full name',
   },
   placeholderFullName: {
     uk: 'Іван Іванов',
-    ru: 'Иван Иванов',
+    en: 'John Smith',
   },
   labelEmail: {
     uk: 'Електронна пошта',
-    ru: 'Электронная почта',
+    en: 'Email',
   },
   labelPhone: {
     uk: 'Номер телефону',
-    ru: 'Номер телефона',
+    en: 'Phone number',
   },
   consentText: {
     uk: 'Я згоден на обробку своїх персональних даних',
-    ru: 'Я согласен на обработку моих персональных данных',
+    en: 'I agree to the processing of my personal data',
   },
   placeholderFirstName: {
     uk: 'Іван',
-    ru: 'Иван',
+    en: 'John',
   },
   placeholderLastName: {
     uk: 'Іванов',
-    ru: 'Иванов',
+    en: 'Smith',
   },
   placeholderEmail: {
     uk: 'Office@bizcheck.md',
-    ru: 'Office@bizcheck.md',
+    en: 'Office@bizcheck.md',
   },
   placeholderPhone: {
     uk: '+373 XX XXX XXX',
-    ru: '+373 XX XXX XXX',
+    en: '+373 XX XXX XXX',
   },
 
   // Start page — Company info (Step 2)
   step2: {
     uk: 'Крок 2',
-    ru: 'Шаг 2',
+    en: 'Step 2',
   },
   step2Title: {
     uk: 'Інформація про компанію',
-    ru: 'Информация о компании',
+    en: 'Company information',
   },
   labelSector: {
     uk: 'Сфера діяльності',
-    ru: 'Сфера деятельности',
+    en: 'Field of activity',
   },
   labelSize: {
     uk: 'Кількість співробітників',
-    ru: 'Количество сотрудников',
+    en: 'Number of employees',
   },
   labelAge: {
     uk: 'Скільки років існує ваша компанія?',
-    ru: 'Сколько лет существует ваша компания?',
+    en: 'How many years has your company been operating?',
   },
   labelRevenue: {
     uk: 'Доходи від продажів',
-    ru: 'Доходы от продаж',
+    en: 'Sales revenue',
   },
   formWarnPersonal: {
     uk: 'Будь ласка, заповніть усі обов\'язкові поля та надайте згоду на обробку даних.',
-    ru: 'Пожалуйста, заполните все обязательные поля и дайте согласие на обработку данных.',
+    en: 'Please fill in all required fields and give your consent to data processing.',
   },
   formWarnEmail: {
     uk: 'Неправильна адреса електронної пошти.',
-    ru: 'Неверный адрес электронной почты.',
+    en: 'Invalid email address.',
   },
   formWarnPhone: {
     uk: 'Неправильний номер телефону (мінімум 7 цифр).',
-    ru: 'Неверный номер телефона (минимум 7 цифр).',
+    en: 'Invalid phone number (minimum 7 digits).',
   },
   formWarnFullName: {
     uk: 'Будь ласка, заповніть.',
-    ru: 'Пожалуйста, заполните.',
+    en: 'Please fill this in.',
   },
 
   // CTA — delivery frames (per-method form)
   ctaFrameBack: {
     uk: '← Назад до варіантів',
-    ru: '← Назад к вариантам',
+    en: '← Back to options',
   },
   ctaFrameDownloadSub: {
     uk: 'Заповніть контактні дані, щоб завантажити звіт.',
-    ru: 'Заполните контактные данные, чтобы скачать отчёт.',
+    en: 'Fill in your contact details to download the report.',
   },
   ctaFrameEmailSub: {
     uk: 'Введіть адресу ел. пошти, куди надішлемо звіт.',
-    ru: 'Введите адрес эл. почты, куда отправим отчёт.',
+    en: 'Enter the email address where we should send the report.',
   },
   ctaFrameTelegramSub: {
     uk: 'Ми перенаправимо вас у Telegram для отримання звіту.',
-    ru: 'Мы перенаправим вас в Telegram для получения отчёта.',
+    en: 'We will redirect you to Telegram to receive the report.',
   },
   ctaConsentPrefix: {
     uk: 'Я згоден(на) з',
-    ru: 'Я согласен(на) с',
+    en: 'I agree to the',
   },
   ctaConsentLink: {
     uk: 'політикою конфіденційності, cookies та обробкою персональних даних',
-    ru: 'политикой конфиденциальности, cookies и обработкой персональных данных',
+    en: 'privacy policy, cookies and processing of personal data',
   },
   formWarnConsent: {
     uk: 'Підтвердьте згоду з політикою конфіденційності.',
-    ru: 'Подтвердите согласие с политикой конфиденциальности.',
+    en: 'Please confirm your agreement with the privacy policy.',
   },
   formWarnServer: {
     uk: 'Помилка збереження даних. Перевірте email або телефон і спробуйте знову.',
-    ru: 'Ошибка сохранения данных. Проверьте email или телефон и попробуйте снова.',
+    en: 'Error saving data. Check your email or phone and try again.',
   },
   formWarnCompany: {
     uk: 'Будь ласка, оберіть сферу діяльності, кількість співробітників та час існування компанії.',
-    ru: 'Пожалуйста, выберите сферу деятельности, количество сотрудников и возраст компании.',
+    en: 'Please select the field of activity, number of employees and the company\'s age.',
   },
   btnNext: {
     uk: 'Далі',
-    ru: 'Далее',
+    en: 'Next',
   },
   startBtn: {
     uk: 'Почати оцінку',
-    ru: 'Начать оценку',
+    en: 'Start assessment',
   },
 
   // Sectors
   sectors: {
     uk: ['Виробництво', 'Торгівля', 'Послуги / Консалтинг', 'HoReCa', 'IT / Цифрові сервіси', 'Сільське господарство', 'Транспорт і логістика', 'Медицина / Фармацевтика', 'Інша сфера'],
-    ru: ['Производство', 'Торговля', 'Услуги / Консалтинг', 'HoReCa', 'IT / Цифровые сервисы', 'Сельское хозяйство', 'Транспорт и логистика', 'Медицина / Фармацевтика', 'Другая сфера'],
+    en: ['Manufacturing', 'Trade', 'Services / Consulting', 'HoReCa', 'IT / Digital services', 'Agriculture', 'Transport and logistics', 'Healthcare / Pharmaceuticals', 'Other field'],
   },
   sizes: {
     uk: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
-    ru: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
+    en: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
   },
   ages: {
     uk: ['Менше 1 року', '1–2 роки', '3–5 років', '6–10 років', 'Понад 10 років'],
-    ru: ['Менее 1 года', '1–2 года', '3–5 лет', '6–10 лет', 'Более 10 лет'],
+    en: ['Less than 1 year', '1–2 years', '3–5 years', '6–10 years', 'More than 10 years'],
   },
   revenues: {
     uk: ['До 50 млн', '50–100 млн', '100–150 млн', '150–200 млн', '200–500 млн', '500 млн і більше'],
-    ru: ['До 50 млн', '50–100 млн', '100–150 млн', '150–200 млн', '200–500 млн', '500 млн и более'],
+    en: ['Up to 50M', '50–100M', '100–150M', '150–200M', '200–500M', '500M and above'],
   },
 
   // Quiz
   questionOf: {
     uk: 'Запитання {current} з {total}',
-    ru: 'Вопрос {current} из {total}',
+    en: 'Question {current} of {total}',
   },
   btnBack: {
     uk: 'Назад',
-    ru: 'Назад',
+    en: 'Back',
   },
   btnGetReport: {
     uk: 'Отримати звіт',
-    ru: 'Получить отчёт',
+    en: 'Get report',
   },
   progressQuestion: {
     uk: 'Запитання',
-    ru: 'Вопрос',
+    en: 'Question',
   },
 
   // Quiz transition
   blockCompleted: {
     uk: 'Блок завершено!',
-    ru: 'Блок завершён!',
+    en: 'Block completed!',
   },
   blockLabel: {
     uk: 'Блок',
-    ru: 'Блок',
+    en: 'Block',
   },
   nextLabel: {
     uk: 'Наступний:',
-    ru: 'Следующий:',
+    en: 'Next:',
   },
   btnContinue: {
     uk: 'Продовжити',
-    ru: 'Продолжить',
+    en: 'Continue',
   },
 
   // Block detail page labels
   // Standard report — per-question checklist
   checklistTitle: {
     uk: 'Деталі за запитаннями',
-    ru: 'Детали по вопросам',
+    en: 'Details by question',
   },
   checklistSubtitle: {
     uk: 'Оцінка за кожним запитанням · Відповідає / Не відповідає нормі',
-    ru: 'Оценка по каждому вопросу · Соответствует / Не соответствует норме',
+    en: 'Assessment for each question · Compliant / Non-compliant',
   },
   checklistPass: {
     uk: 'Відповідає нормі',
-    ru: 'Соответствует норме',
+    en: 'Compliant',
   },
   checklistFail: {
     uk: 'Не відповідає нормі',
-    ru: 'Не соответствует норме',
+    en: 'Non-compliant',
   },
   checklistPartial: {
     uk: 'Частково',
-    ru: 'Частично',
+    en: 'Partially',
   },
   checklistYourAnswer: {
     uk: 'Ваша відповідь',
-    ru: 'Ваш ответ',
+    en: 'Your answer',
   },
   checklistNoAnswer: {
     uk: '(не показано — запитання пропущено)',
-    ru: '(не показана — вопрос пропущен)',
+    en: '(not shown — question skipped)',
   },
 
   // GDPR report — per-question explanation page
   gdprQuestionLabel: {
     uk: 'Запитання',
-    ru: 'Вопрос',
+    en: 'Question',
   },
 
   blockEssenceLabel: {
     uk: 'Суть',
-    ru: 'Суть',
+    en: 'Essence',
   },
   blockRiskLabel: {
     uk: 'Ризик і наслідки',
-    ru: 'Риск и последствия',
+    en: 'Risk and consequences',
   },
   blockActionLabel: {
     uk: 'Що робити',
-    ru: 'Что делать',
+    en: 'What to do',
   },
   blockRegulatoryLabel: {
     uk: 'Нормативна основа',
-    ru: 'Нормативная основа',
+    en: 'Regulatory basis',
   },
 
   // Report
   reportTitle: {
     uk: 'Звіт Bizcheck.md',
-    ru: 'Отчёт Bizcheck.md',
+    en: 'Bizcheck.md Report',
   },
   reportSubtitle: {
     uk: 'Аналіз за категоріями · Оцінка ризиків бізнесу',
-    ru: 'Анализ по категориям · Оценка рисков бизнеса',
+    en: 'Analysis by category · Business risk assessment',
   },
   overallResult: {
     uk: 'Загальний результат',
-    ru: 'Общий результат',
+    en: 'Overall result',
   },
   resultsByCategory: {
     uk: 'Результати за категоріями',
-    ru: 'Результаты по категориям',
+    en: 'Results by category',
   },
   conclusion: {
     uk: 'Висновок',
-    ru: 'Заключение',
+    en: 'Conclusion',
   },
   conclusionHigh: {
     uk: 'Ваш бізнес демонструє високий рівень зрілості. Продовжуйте підтримувати найкращі практики.',
-    ru: 'Ваш бизнес демонстрирует высокий уровень зрелости. Продолжайте поддерживать лучшие практики.',
+    en: 'Your business demonstrates a high level of maturity. Keep maintaining these best practices.',
   },
   conclusionMid: {
     uk: 'Є зони для покращення. Рекомендуємо звернути увагу на блоки з низькими показниками.',
-    ru: 'Есть зоны для улучшения. Рекомендуем обратить внимание на блоки с низкими показателями.',
+    en: 'There is room for improvement. We recommend paying attention to the blocks with low scores.',
   },
   conclusionWarning: {
     uk: 'Нестабільна ситуація із суттєвими вразливостями. Рекомендується детальний аналіз проблемних зон.',
-    ru: 'Нестабильная ситуация с существенными уязвимостями. Рекомендуется детальный анализ проблемных зон.',
+    en: 'An unstable situation with significant vulnerabilities. A detailed analysis of the problem areas is recommended.',
   },
   conclusionLow: {
     uk: 'Виявлено критичні зони ризику. Рекомендується професійна консультація.',
-    ru: 'Выявлены критические зоны риска. Рекомендуется профессиональная консультация.',
+    en: 'Critical risk areas have been identified. A professional consultation is recommended.',
   },
   onPathTo: {
     uk: 'Ви на {pct}% шляху до ідеального бізнесу.',
-    ru: 'Вы на {pct}% пути к идеальному бизнесу.',
+    en: 'You are {pct}% of the way to an ideal business.',
   },
   verdictHigh: {
     uk: 'Бізнес у хорошій формі.',
-    ru: 'Бизнес в хорошей форме.',
+    en: 'The business is in good shape.',
   },
   verdictMid: {
     uk: 'Допустимий рівень, але потребує доопрацювання.',
-    ru: 'Допустимый уровень, но требует доработки.',
+    en: 'An acceptable level, but it needs some refinement.',
   },
   verdictWarning: {
     uk: 'Ситуація нестабільна. Суттєві вразливості.',
-    ru: 'Ситуация нестабильна. Существенные уязвимости.',
+    en: 'The situation is unstable. Significant vulnerabilities.',
   },
   verdictLow: {
     uk: 'Критичні ризики. Потрібна консультація.',
-    ru: 'Критические риски. Требуется консультация.',
+    en: 'Critical risks. A consultation is needed.',
   },
   indicator: {
     uk: 'Показник:',
-    ru: 'Показатель:',
+    en: 'Score:',
   },
 
   // Legend
   legendTitle: {
     uk: 'Легенда оцінки ризиків:',
-    ru: 'Легенда оценки рисков:',
+    en: 'Risk assessment legend:',
   },
   legendGreen: {
     uk: '80% – 100%',
-    ru: '80% – 100%',
+    en: '80% – 100%',
   },
   legendGreenDesc: {
     uk: 'Низький ризик. Стабільна зона, система працює коректно.',
-    ru: 'Низкий риск. Стабильная зона, система работает корректно.',
+    en: 'Low risk. A stable zone; the system is working correctly.',
   },
   legendYellow: {
     uk: '70% – 79%',
-    ru: '70% – 79%',
+    en: '70% – 79%',
   },
   legendYellowDesc: {
     uk: 'Помірний ризик. Допустимий рівень, але потребує контролю та доопрацювання.',
-    ru: 'Умеренный риск. Допустимый уровень, но требует контроля и доработки.',
+    en: 'Moderate risk. An acceptable level, but it requires monitoring and refinement.',
   },
   legendOrange: {
     uk: '65% – 69%',
-    ru: '65% – 69%',
+    en: '65% – 69%',
   },
   legendOrangeDesc: {
     uk: 'Небезпечний рівень ризику. Ситуація нестабільна, наявні суттєві вразливості.',
-    ru: 'Опасный уровень риска. Ситуация нестабильна, присутствуют существенные уязвимости.',
+    en: 'A dangerous level of risk. The situation is unstable, with significant vulnerabilities present.',
   },
   legendRed: {
     uk: '0% – 64%',
-    ru: '0% – 64%',
+    en: '0% – 64%',
   },
   legendRedDesc: {
     uk: 'Високий рівень ризику. Критична зона, потрібні увага та втручання.',
-    ru: 'Высокий уровень риска. Критическая зона, требуется внимание и вмешательство.',
+    en: 'A high level of risk. A critical zone that requires attention and intervention.',
   },
 
   // Zones
   zoneSafe: {
     uk: 'Низький ризик',
-    ru: 'Низкий риск',
+    en: 'Low risk',
   },
   zoneDeveloping: {
     uk: 'Помірний ризик',
-    ru: 'Умеренный риск',
+    en: 'Moderate risk',
   },
   zoneWarning: {
     uk: 'Небезпечний рівень ризику',
-    ru: 'Опасный уровень риска',
+    en: 'Dangerous level of risk',
   },
   zoneRisk: {
     uk: 'Високий рівень ризику',
-    ru: 'Высокий уровень риска',
+    en: 'High level of risk',
   },
   zoneDescRisk: {
     uk: 'Критична зона, потрібні увага та втручання.',
-    ru: 'Критическая зона, требуется внимание и вмешательство.',
+    en: 'A critical zone that requires attention and intervention.',
   },
   zoneDescWarning: {
     uk: 'Ситуація нестабільна, наявні суттєві вразливості.',
-    ru: 'Ситуация нестабильна, присутствуют существенные уязвимости.',
+    en: 'The situation is unstable, with significant vulnerabilities present.',
   },
   zoneDescDeveloping: {
     uk: 'Допустимий рівень, але потребує контролю та доопрацювання.',
-    ru: 'Допустимый уровень, но требует контроля и доработки.',
+    en: 'An acceptable level, but it requires monitoring and refinement.',
   },
   zoneDescSafe: {
     uk: 'Стабільна зона. Рекомендуємо підтримувати цей рівень.',
-    ru: 'Стабильная зона. Рекомендуем поддерживать этот уровень.',
+    en: 'A stable zone. We recommend maintaining this level.',
   },
 
   // CTA
   ctaTitle: {
     uk: 'Потрібна повна діагностика?',
-    ru: 'Нужна полная диагностика?',
+    en: 'Need a full diagnostic?',
   },
   ctaSubtitle: {
     uk: 'Експерти Crowe допоможуть провести глибокий аналіз ризиків і розробити стратегію підвищення ефективності вашого бізнесу.',
-    ru: 'Эксперты Crowe помогут провести глубокий анализ рисков и разработать стратегию повышения эффективности вашего бизнеса.',
+    en: 'Crowe experts will help you carry out an in-depth risk analysis and develop a strategy to improve the efficiency of your business.',
   },
   ctaNote: {
     uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
-    ru: 'В ближайшее время наши специалисты свяжутся с вами для обсуждения результатов и следующих шагов.',
+    en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   ctaBtn: {
     uk: 'Запросити консультацію',
-    ru: 'Запросить консультацию',
+    en: 'Request a consultation',
   },
   ctaRestart: {
     uk: 'Пройти заново',
-    ru: 'Пройти заново',
+    en: 'Start over',
   },
-  ctaEmailLabel:    { uk: 'EMAIL',    ru: 'EMAIL' },
-  ctaTelegramLabel: { uk: 'TELEGRAM', ru: 'TELEGRAM' },
-  ctaWebLabel:      { uk: 'ВЕБ',      ru: 'ВЕБ' },
-  ctaEmailValue:    { uk: 'office@bizcheck.md', ru: 'office@bizcheck.md' },
-  ctaTelegramValue: { uk: '@CROWE_TM', ru: '@CROWE_TM' },
-  ctaWebValue:      { uk: 'crowe-tm.md', ru: 'crowe-tm.md' },
-  ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
+  ctaEmailLabel:    { uk: 'EMAIL',    en: 'EMAIL' },
+  ctaTelegramLabel: { uk: 'TELEGRAM', en: 'TELEGRAM' },
+  ctaWebLabel:      { uk: 'ВЕБ',      en: 'WEB' },
+  ctaEmailValue:    { uk: 'office@bizcheck.md', en: 'office@bizcheck.md' },
+  ctaTelegramValue: { uk: '@CROWE_TM', en: '@CROWE_TM' },
+  ctaWebValue:      { uk: 'crowe-tm.md', en: 'crowe-tm.md' },
+  ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   ctaDisclaimer: {
     uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
-    ru: 'Отчёт сформирован автоматически платформой Bizcheck.md и носит исключительно информационный характер. Он не является официальным профессиональным, юридическим, финансовым или иным заключением и не может считаться оценкой деятельности, уровня «здоровья» или компетенций компании.\n\nПлатформа не гарантирует полноту и точность результатов. Для принятия решений рекомендуется проведение отдельного анализа с привлечением профильных специалистов.',
+    en: 'This report is generated automatically by the Bizcheck.md platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
   // Loading / empty states
   loading: {
     uk: 'Завантаження...',
-    ru: 'Загрузка...',
+    en: 'Loading...',
   },
   noQuestions: {
     uk: 'Наразі запитання недоступні. Будь ласка, поверніться пізніше.',
-    ru: 'В настоящее время вопросы недоступны. Пожалуйста, вернитесь позже.',
+    en: 'Questions are currently unavailable. Please come back later.',
   },
 
   // PDF download
   downloadPdf: {
     uk: 'Завантажити звіт PDF',
-    ru: 'Скачать отчёт PDF',
+    en: 'Download PDF report',
   },
   telegramCta: {
     uk: 'Натисніть кнопку, відкрийте Telegram і натисніть START — PDF-звіт буде надіслано безпосередньо в чат.',
-    ru: 'Нажмите кнопку, откройте Telegram и нажмите START — PDF-отчёт будет отправлен прямо в чат.',
+    en: 'Tap the button, open Telegram and press START — the PDF report will be sent directly to the chat.',
   },
   telegramBtn: {
     uk: 'Надіслати звіт у Telegram',
-    ru: 'Отправить отчёт в Telegram',
+    en: 'Send report to Telegram',
   },
   telegramLoading: {
     uk: 'Підготовка...',
-    ru: 'Подготовка...',
+    en: 'Preparing...',
   },
   telegramError: {
     uk: 'Тимчасова помилка. Відкрито напряму.',
-    ru: 'Временная ошибка. Открыто напрямую.',
+    en: 'Temporary error. Opened directly.',
   },
 
   // CTA success page (after quiz, before bot)
   ctaSuccessTitle: {
     uk: 'Тест завершено!',
-    ru: 'Тест завершён!',
+    en: 'Test completed!',
   },
   ctaSuccessSubtitle: {
     uk: 'Ваш детальний звіт готовий',
-    ru: 'Ваш детальный отчёт готов',
+    en: 'Your detailed report is ready',
   },
   ctaSuccessName: {
     uk: 'Підготовлено для {name}',
-    ru: 'Подготовлено для {name}',
+    en: 'Prepared for {name}',
   },
   ctaStep1Label: {
     uk: 'Тест пройдено',
-    ru: 'Тест пройден',
+    en: 'Test completed',
   },
   ctaStep2Label: {
     uk: 'Відкрийте бота',
-    ru: 'Откройте бота',
+    en: 'Open the bot',
   },
   ctaStep3Label: {
     uk: 'Отримайте PDF',
-    ru: 'Получите PDF',
+    en: 'Get the PDF',
   },
   ctaInstruction: {
     uk: 'Натисніть кнопку нижче, відкрийте Telegram і натисніть START — PDF-звіт буде надіслано протягом кількох секунд.',
-    ru: 'Нажмите кнопку ниже, откройте Telegram и нажмите START — PDF-отчёт будет отправлен в течение нескольких секунд.',
+    en: 'Tap the button below, open Telegram and press START — the PDF report will be sent within a few seconds.',
   },
   ctaPdfPreparing: {
     uk: 'Звіт готується...',
-    ru: 'Отчёт готовится...',
+    en: 'The report is being prepared...',
   },
   ctaPdfReady: {
     uk: 'Звіт готовий. Відкрийте бота, щоб його отримати.',
-    ru: 'Отчёт готов. Откройте бота, чтобы его получить.',
+    en: 'The report is ready. Open the bot to receive it.',
   },
   ctaPdfError: {
     uk: 'Помилка генерації PDF.',
-    ru: 'Ошибка генерации PDF.',
+    en: 'PDF generation error.',
   },
   ctaPdfRetry: {
     uk: 'Спробувати знову',
-    ru: 'Попробовать снова',
+    en: 'Try again',
   },
   // CTA — contact gate (shown before delivery options)
   ctaContactTitle: {
     uk: 'Останній крок — ваші контактні дані',
-    ru: 'Последний шаг — ваши контактные данные',
+    en: 'Last step — your contact details',
   },
   ctaContactDesc: {
     uk: 'Залиште ім\'я та номер телефону, щоб ми могли зв\'язатися з вами й обговорити результати.',
-    ru: 'Оставьте имя и номер телефона, чтобы мы могли связаться с вами и обсудить результаты.',
+    en: 'Leave your name and phone number so we can contact you and discuss the results.',
   },
   ctaContactSubmitBtn: {
     uk: 'Продовжити',
-    ru: 'Продолжить',
+    en: 'Continue',
   },
   ctaContactWarn: {
     uk: 'Будь ласка, введіть ім\'я, номер телефону та надайте згоду на обробку даних.',
-    ru: 'Пожалуйста, введите имя, номер телефона и дайте согласие на обработку данных.',
+    en: 'Please enter your name and phone number and give your consent to data processing.',
   },
   ctaEmailPromptTitle: {
     uk: 'Введіть адресу електронної пошти',
-    ru: 'Введите адрес электронной почты',
+    en: 'Enter your email address',
   },
   ctaEmailPromptDesc: {
     uk: 'Ми надішлемо звіт на цю адресу.',
-    ru: 'Мы отправим отчёт на этот адрес.',
+    en: 'We will send the report to this address.',
   },
 
   ctaDeliveryTitle: {
     uk: 'Як ви хочете отримати звіт?',
-    ru: 'Как вы хотите получить отчёт?',
+    en: 'How would you like to receive the report?',
   },
   ctaDeliverySubtitle: {
     uk: 'Оберіть один із варіантів нижче.',
-    ru: 'Выберите один из вариантов ниже.',
+    en: 'Choose one of the options below.',
   },
-  ctaDownloadTitle:    { uk: 'Завантажити PDF', ru: 'Скачать PDF' },
+  ctaDownloadTitle:    { uk: 'Завантажити PDF', en: 'Download PDF' },
   ctaDownloadDesc:     { uk: 'Зберегти звіт на пристрій',
-                          ru: 'Сохранить отчёт на устройство' },
-  ctaDownloadBtn:      { uk: 'Завантажити', ru: 'Скачать' },
+                          en: 'Save the report to your device' },
+  ctaDownloadBtn:      { uk: 'Завантажити', en: 'Download' },
 
-  ctaEmailTitle:       { uk: 'Надіслати на email', ru: 'Отправить на email' },
+  ctaEmailTitle:       { uk: 'Надіслати на email', en: 'Send to email' },
   ctaEmailDesc:        { uk: 'Отримайте звіт на свою електронну пошту',
-                          ru: 'Получите отчёт на свою электронную почту' },
-  ctaEmailPlaceholder: { uk: 'адреса@email.com', ru: 'адрес@email.ru' },
-  ctaEmailBtn:         { uk: 'Надіслати', ru: 'Отправить' },
+                          en: 'Get the report to your email' },
+  ctaEmailPlaceholder: { uk: 'адреса@email.com', en: 'address@email.com' },
+  ctaEmailBtn:         { uk: 'Надіслати', en: 'Send' },
   ctaEmailSent:        { uk: 'Звіт уже в дорозі!',
-                          ru: 'Отчёт уже в пути!' },
+                          en: 'The report is on its way!' },
   ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.md (PDF). Перевірте також папку Спам.',
-                          ru: 'Через несколько секунд вы получите письмо на {email} с кнопкой для открытия отчёта Bizcheck.md (PDF). Проверьте также папку Спам.' },
-  ctaEmailResend:      { uk: 'Надіслати ще раз', ru: 'Отправить ещё раз' },
-  ctaEmailResent:      { uk: 'Надіслано ще раз ✓', ru: 'Отправлено ещё раз ✓' },
-  ctaEmailComingSoon:  { uk: 'Незабаром', ru: 'Скоро' },
+                          en: 'In a few seconds you will receive an email at {email} with a button to open your Bizcheck.md report (PDF). Also check your Spam folder.' },
+  ctaEmailResend:      { uk: 'Надіслати ще раз', en: 'Send again' },
+  ctaEmailResent:      { uk: 'Надіслано ще раз ✓', en: 'Sent again ✓' },
+  ctaEmailComingSoon:  { uk: 'Незабаром', en: 'Coming soon' },
   ctaEmailSoonDesc:    { uk: 'Незабаром буде доступно й цим способом. Поки що використовуйте Telegram.',
-                          ru: 'Скоро будет доступно и этим способом. Пока используйте Telegram.' },
+                          en: 'This option will be available soon. For now, please use Telegram.' },
 
   // Save-gate — background verification that all answers reached the server.
   ctaSavingTitle:      { uk: 'Перепрошуємо — зберігаємо ваші відповіді.',
-                          ru: 'Приносим извинения — сохраняем ваши ответы.' },
+                          en: 'One moment — we are saving your answers.' },
   ctaSavingText:       { uk: 'Одну секунду, ми переконуємося, що всі відповіді збережено. Будь ласка, не закривайте сторінку.',
-                          ru: 'Одну секунду, мы убеждаемся, что все ответы сохранены. Пожалуйста, не закрывайте страницу.' },
+                          en: 'Just a second — we are making sure all your answers are saved. Please do not close the page.' },
   ctaSaveFailTitle:    { uk: 'Нестабільне з\'єднання',
-                          ru: 'Нестабильное соединение' },
+                          en: 'Unstable connection' },
   ctaSaveFailText:     { uk: 'Деякі відповіді поки не вдалося підтвердити. Ми збережемо їх автоматично у фоні, щойно повернеться зв\'язок — не закривайте сторінку надто швидко.',
-                          ru: 'Некоторые ответы пока не удалось подтвердить. Мы сохраним их автоматически в фоне, как только вернётся связь — не закрывайте страницу слишком быстро.' },
+                          en: 'Some answers could not be confirmed yet. We will save them automatically in the background as soon as the connection returns — please do not close the page too quickly.' },
 
   // Prominent "check Spam" notice on the email-sent success screen.
   ctaSpamNoticeTitle:  { uk: 'Перевірте папку СПАМ',
-                          ru: 'Проверьте папку СПАМ' },
+                          en: 'Check your SPAM folder' },
   ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.md.',
-                          ru: 'Иногда письмо попадает в Спам или Промоакции. Если не видите отчёт во «Входящих» через несколько минут, поищите там письмо от Bizcheck.md.' },
+                          en: 'Sometimes the email lands in Spam or Promotions. If you do not see the report in your Inbox after a few minutes, look there for an email from Bizcheck.md.' },
 
   // Download done state — shown after PDF saved + email dispatched
   ctaDownloadDoneTitle: {
     uk: 'Звіт завантажено!',
-    ru: 'Отчёт скачан!',
+    en: 'Report downloaded!',
   },
   ctaDownloadDoneSub: {
     uk: 'Перевірте папку Завантажень і поштову скриньку {email} — ми також надіслали копію на email про всяк випадок.',
-    ru: 'Проверьте папку Загрузок и почтовый ящик {email} — мы также отправили копию на email на всякий случай.',
+    en: 'Check your Downloads folder and your {email} inbox — we also sent a copy to your email just in case.',
   },
 
-  ctaTelegramTitle:    { uk: 'Telegram', ru: 'Telegram' },
+  ctaTelegramTitle:    { uk: 'Telegram', en: 'Telegram' },
   ctaTelegramDesc:     { uk: 'Відкрийте бота й отримайте звіт миттєво',
-                          ru: 'Откройте бота и получите отчёт мгновенно' },
-  ctaTelegramBtn:      { uk: 'Відкрити Telegram', ru: 'Открыть Telegram' },
+                          en: 'Open the bot and get the report instantly' },
+  ctaTelegramBtn:      { uk: 'Відкрити Telegram', en: 'Open Telegram' },
 
   // PDF Footer
   pdfFooterTitle: {
     uk: 'Потрібна повна діагностика?',
-    ru: 'Нужна полная диагностика?',
+    en: 'Need a full diagnostic?',
   },
   pdfFooterDesc: {
     uk: 'Експерти Crowe допоможуть провести глибокий аналіз ризиків і розробити стратегію підвищення ефективності вашого бізнесу.',
-    ru: 'Эксперты Crowe помогут провести глубокий анализ рисков и разработать стратегию повышения эффективности вашего бизнеса.',
+    en: 'Crowe experts will help you carry out an in-depth risk analysis and develop a strategy to improve the efficiency of your business.',
   },
   pdfFooterContact: {
     uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
-    ru: 'В ближайшее время наши специалисты свяжутся с вами для обсуждения результатов и следующих шагов.',
+    en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   pdfFooterConfidential: {
     uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
-    ru: 'Отчёт сформирован автоматически платформой Bizcheck.md и носит исключительно ознакомительный характер. Он не является профессиональным, юридическим, финансовым или иным заключением и не может рассматриваться как оценка деятельности, уровня «здоровья» или компетенций компании.',
+    en: 'This report is generated automatically by the Bizcheck.md platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
   },
   pdfFooterGenerated: {
     uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу за участю профільних фахівців.',
-    ru: 'Платформа не гарантирует полноту и точность результатов. Для принятия решений рекомендуется проведение отдельного анализа с участием профильных специалистов.',
+    en: 'The platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
   // ============ LANDING PAGE ============
 
   // Hero
-  heroNavLogin:  { uk: 'Увійти',  ru: 'Войти' },
-  heroNavSignup: { uk: 'Реєстрація', ru: 'Регистрация' },
-  heroSearchPh:  { uk: 'Пошук тестів і шаблонів', ru: 'Поиск тестов и шаблонов' },
-  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 У МОЛДОВІ', ru: 'ПЛАТФОРМА #1 В МОЛДОВЕ' },
-  heroTitleLine1: { uk: 'Bizcheck.md', ru: 'Bizcheck.md' },
-  heroTitleLine2: { uk: 'Чек-ап бізнесу', ru: 'Чек-ап бизнеса' },
+  heroNavLogin:  { uk: 'Увійти',  en: 'Log in' },
+  heroNavSignup: { uk: 'Реєстрація', en: 'Sign up' },
+  heroSearchPh:  { uk: 'Пошук тестів і шаблонів', en: 'Search tests and templates' },
+  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 У МОЛДОВІ', en: 'THE #1 PLATFORM IN MOLDOVA' },
+  heroTitleLine1: { uk: 'Bizcheck.md', en: 'Bizcheck.md' },
+  heroTitleLine2: { uk: 'Чек-ап бізнесу', en: 'Business check-up' },
   heroDescLanding: {
     uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
-    ru: 'Профессиональные тесты и шаблоны для развития и соответствия вашего бизнеса.',
+    en: 'Professional tests and templates for the growth and compliance of your business.',
   },
-  heroCta:           { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
-  heroTrustTitle:    { uk: 'Понад 130+ компаній', ru: 'Более 130+ компаний' },
-  heroTrustSub:      { uk: 'довіряють Crowe Turcan Mikhailenko', ru: 'доверяют Crowe Turcan Mikhailenko' },
-  heroRatingSub:     { uk: 'із 230+ відгуків', ru: 'из 230+ отзывов' },
-  heroPurchasesSub:  { uk: 'активних компаній', ru: 'активных компаний' },
+  heroCta:           { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
+  heroTrustTitle:    { uk: 'Понад 130+ компаній', en: 'Over 130+ companies' },
+  heroTrustSub:      { uk: 'довіряють Crowe Turcan Mikhailenko', en: 'trust Crowe Turcan Mikhailenko' },
+  heroRatingSub:     { uk: 'із 230+ відгуків', en: 'from 230+ reviews' },
+  heroPurchasesSub:  { uk: 'активних компаній', en: 'active companies' },
 
   // About platform
-  aboutTitle: { uk: 'Про платформу', ru: 'О платформе' },
+  aboutTitle: { uk: 'Про платформу', en: 'About the platform' },
   aboutP1: {
     uk: 'Bizcheck — цифрова платформа для підприємців і компаній, які хочуть оптимізувати процеси та дотримуватися вимог законодавства.',
-    ru: 'Bizcheck — цифровая платформа для предпринимателей и компаний, которые хотят оптимизировать процессы и соблюдать требования законодательства.',
+    en: 'Bizcheck is a digital platform for entrepreneurs and companies that want to optimize their processes and comply with legal requirements.',
   },
   aboutP2: {
     uk: 'Ми пропонуємо інтерактивні тести та професійні шаблони, створені для спрощення бізнес-процесів й економії часу.',
-    ru: 'Мы предлагаем интерактивные тесты и профессиональные шаблоны, созданные для упрощения бизнес-процессов и экономии времени.',
+    en: 'We offer interactive tests and professional templates designed to simplify business processes and save time.',
   },
   aboutP3: {
     uk: 'Усі ресурси прості у використанні, редаговані та адаптовані до будь-якого типу компанії.',
-    ru: 'Все ресурсы просты в использовании, редактируемы и адаптируемы к любому типу компании.',
+    en: 'All resources are easy to use, editable and adaptable to any type of company.',
   },
-  aboutCta: { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
+  aboutCta: { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
   aboutIllustrationAlt: {
     uk: 'Bizcheck на ноутбуці, планшеті й телефоні',
-    ru: 'Bizcheck на ноутбуке, планшете и телефоне',
+    en: 'Bizcheck on a laptop, tablet and phone',
   },
 
   // Why Bizcheck
-  whyTitle:           { uk: 'Чому Bizcheck?',   ru: 'Почему Bizcheck?' },
-  whyFastTitle:       { uk: 'Швидко й просто',   ru: 'Быстро и просто' },
+  whyTitle:           { uk: 'Чому Bizcheck?',   en: 'Why Bizcheck?' },
+  whyFastTitle:       { uk: 'Швидко й просто',   en: 'Fast and simple' },
   whyFastDesc:        {
     uk: 'Прості процеси, без складнощів і технічних знань.',
-    ru: 'Простые процессы, без сложностей и технических знаний.',
+    en: 'Simple processes, with no complexity or technical knowledge required.',
   },
-  whyDocsTitle:       { uk: 'Професійні документи', ru: 'Профессиональные документы' },
+  whyDocsTitle:       { uk: 'Професійні документи', en: 'Professional documents' },
   whyDocsDesc:        {
     uk: 'Шаблони, створені відповідно до бізнес-стандартів.',
-    ru: 'Шаблоны, созданные в соответствии с бизнес-стандартами.',
+    en: 'Templates created in line with business standards.',
   },
-  whyBusinessTitle:   { uk: 'Для будь-якого бізнесу', ru: 'Для любого бизнеса' },
+  whyBusinessTitle:   { uk: 'Для будь-якого бізнесу', en: 'For any business' },
   whyBusinessDesc:    {
     uk: 'Рішення для стартапів, фрилансерів і будь-яких типів компаній.',
-    ru: 'Решения для стартапов, фрилансеров и любых типов компаний.',
+    en: 'Solutions for startups, freelancers and companies of every type.',
   },
-  whyLegalTitle:      { uk: 'Відповідає законодавству', ru: 'Соответствует законодательству' },
+  whyLegalTitle:      { uk: 'Відповідає законодавству', en: 'Legally compliant' },
   whyLegalDesc:       {
     uk: 'Документи, оновлені відповідно до чинних вимог.',
-    ru: 'Документы, обновлённые в соответствии с действующими требованиями.',
+    en: 'Documents updated in accordance with current requirements.',
   },
 
   // Catalog
-  catalogTitle:       { uk: 'Пройти Чек-ап бізнесу', ru: 'Пройти Чек-ап бизнеса' },
-  catalogSearchPh:    { uk: 'Пошук...', ru: 'Поиск...' },
-  catalogTabAll:      { uk: 'Усі',    ru: 'Все' },
-  catalogTabTests:    { uk: 'Тести',    ru: 'Тесты' },
-  catalogTabTemplates:{ uk: 'Шаблони', ru: 'Шаблоны' },
-  catalogFiltersLbl:  { uk: 'Фільтри',       ru: 'Фильтры' },
-  catalogCategories:  { uk: 'Категорії',    ru: 'Категории' },
-  catalogType:        { uk: 'Тип',          ru: 'Тип' },
-  catalogPrice:       { uk: 'Ціна',         ru: 'Цена' },
-  catalogPriceFree:   { uk: 'Безкоштовно',      ru: 'Бесплатно' },
-  catalogPricePaid:   { uk: 'Платно',     ru: 'Платно' },
-  catalogBadgeBasic:  { uk: 'Basic',        ru: 'Basic' },
-  catalogBadgePremium:{ uk: 'Premium',      ru: 'Premium' },
-  catalogStartTest:   { uk: 'Почати тест', ru: 'Начать тест' },
-  catalogDownload:    { uk: 'Завантажити',     ru: 'Скачать' },
-  catalogViewDetails: { uk: 'Детальніше', ru: 'Подробнее' },
-  catalogComingSoon:  { uk: 'Незабаром',    ru: 'Скоро' },
-  catalogComingSoonBadge: { uk: 'Незабаром стане доступним', ru: 'Скоро станет доступным' },
+  catalogTitle:       { uk: 'Пройти Чек-ап бізнесу', en: 'Take the business check-up' },
+  catalogSearchPh:    { uk: 'Пошук...', en: 'Search...' },
+  catalogTabAll:      { uk: 'Усі',    en: 'All' },
+  catalogTabTests:    { uk: 'Тести',    en: 'Tests' },
+  catalogTabTemplates:{ uk: 'Шаблони', en: 'Templates' },
+  catalogFiltersLbl:  { uk: 'Фільтри',       en: 'Filters' },
+  catalogCategories:  { uk: 'Категорії',    en: 'Categories' },
+  catalogType:        { uk: 'Тип',          en: 'Type' },
+  catalogPrice:       { uk: 'Ціна',         en: 'Price' },
+  catalogPriceFree:   { uk: 'Безкоштовно',      en: 'Free' },
+  catalogPricePaid:   { uk: 'Платно',     en: 'Paid' },
+  catalogBadgeBasic:  { uk: 'Basic',        en: 'Basic' },
+  catalogBadgePremium:{ uk: 'Premium',      en: 'Premium' },
+  catalogStartTest:   { uk: 'Почати тест', en: 'Start test' },
+  catalogDownload:    { uk: 'Завантажити',     en: 'Download' },
+  catalogViewDetails: { uk: 'Детальніше', en: 'View details' },
+  catalogComingSoon:  { uk: 'Незабаром',    en: 'Coming soon' },
+  catalogComingSoonBadge: { uk: 'Незабаром стане доступним', en: 'Available soon' },
   catalogEmpty:       { uk: 'Нічого не знайдено за обраними фільтрами.',
-                        ru: 'Ничего не найдено по выбранным фильтрам.' },
-  catalogSectionTests:     { uk: 'Тести',    ru: 'Тесты' },
-  catalogSectionTemplates: { uk: 'Шаблони', ru: 'Шаблоны' },
+                        en: 'Nothing found for the selected filters.' },
+  catalogSectionTests:     { uk: 'Тести',    en: 'Tests' },
+  catalogSectionTemplates: { uk: 'Шаблони', en: 'Templates' },
 
   // Testimonials & FAQ
-  testimonialsTitle: { uk: 'Що кажуть наші клієнти?', ru: 'Что говорят наши клиенты?' },
-  faqTitle:          { uk: 'Часті запитання',      ru: 'Частые вопросы' },
-  testimonialsEmpty: { uk: 'Поки що немає відгуків.', ru: 'Пока нет отзывов.' },
-  faqEmpty:          { uk: 'Поки що немає запитань.',    ru: 'Пока нет вопросов.' },
+  testimonialsTitle: { uk: 'Що кажуть наші клієнти?', en: 'What do our clients say?' },
+  faqTitle:          { uk: 'Часті запитання',      en: 'Frequently asked questions' },
+  testimonialsEmpty: { uk: 'Поки що немає відгуків.', en: 'No reviews yet.' },
+  faqEmpty:          { uk: 'Поки що немає запитань.',    en: 'No questions yet.' },
 
   // Public "leave a review" form
-  reviewLeave:       { uk: 'Залишити відгук',            ru: 'Оставить отзыв' },
-  reviewFormTitle:   { uk: 'Поділіться своїм досвідом', ru: 'Поделитесь своим опытом' },
-  reviewFormSubtitle:{ uk: 'Ваш відгук з\'явиться на сайті одразу.', ru: 'Ваш отзыв появится на сайте сразу.' },
-  reviewName:        { uk: 'Ваше ім\'я',                 ru: 'Ваше имя' },
-  reviewNamePh:      { uk: 'Напр.: Влад Р.',                ru: 'Напр.: Влад Р.' },
-  reviewRole:        { uk: 'Посада / компанія (необов\'язково)',  ru: 'Должность / компания (необязательно)' },
-  reviewRolePh:      { uk: 'Напр.: CEO @ Фірма SRL',        ru: 'Напр.: CEO @ Фирма SRL' },
-  reviewRating:      { uk: 'Ваша оцінка',                    ru: 'Ваша оценка' },
-  reviewText:        { uk: 'Ваш відгук',                ru: 'Ваш отзыв' },
-  reviewTextPh:      { uk: 'Розкажіть про ваш досвід...', ru: 'Расскажите о вашем опыте...' },
-  reviewSubmit:      { uk: 'Надіслати відгук',           ru: 'Отправить отзыв' },
-  reviewSending:     { uk: 'Надсилання...',              ru: 'Отправка...' },
-  reviewThanks:      { uk: 'Дякуємо! Ваш відгук опубліковано. 🎉', ru: 'Спасибо! Ваш отзыв опубликован. 🎉' },
-  reviewErrName:     { uk: 'Вкажіть ваше ім\'я (мін. 2 символи).', ru: 'Укажите ваше имя (мин. 2 символа).' },
-  reviewErrText:     { uk: 'Відгук занадто короткий (мін. 3 символи).', ru: 'Отзыв слишком короткий (мин. 3 символа).' },
-  reviewErrRate:     { uk: 'Забагато відгуків. Спробуйте пізніше.', ru: 'Слишком много отзывов. Попробуйте позже.' },
-  reviewErrGeneric:  { uk: 'Не вдалося надіслати відгук. Спробуйте знову.', ru: 'Не удалось отправить отзыв. Попробуйте снова.' },
+  reviewLeave:       { uk: 'Залишити відгук',            en: 'Leave a review' },
+  reviewFormTitle:   { uk: 'Поділіться своїм досвідом', en: 'Share your experience' },
+  reviewFormSubtitle:{ uk: 'Ваш відгук з\'явиться на сайті одразу.', en: 'Your review will appear on the site right away.' },
+  reviewName:        { uk: 'Ваше ім\'я',                 en: 'Your name' },
+  reviewNamePh:      { uk: 'Напр.: Влад Р.',                en: 'E.g.: Vlad R.' },
+  reviewRole:        { uk: 'Посада / компанія (необов\'язково)',  en: 'Position / company (optional)' },
+  reviewRolePh:      { uk: 'Напр.: CEO @ Фірма SRL',        en: 'E.g.: CEO @ Company SRL' },
+  reviewRating:      { uk: 'Ваша оцінка',                    en: 'Your rating' },
+  reviewText:        { uk: 'Ваш відгук',                en: 'Your review' },
+  reviewTextPh:      { uk: 'Розкажіть про ваш досвід...', en: 'Tell us about your experience...' },
+  reviewSubmit:      { uk: 'Надіслати відгук',           en: 'Submit review' },
+  reviewSending:     { uk: 'Надсилання...',              en: 'Sending...' },
+  reviewThanks:      { uk: 'Дякуємо! Ваш відгук опубліковано. 🎉', en: 'Thank you! Your review has been published. 🎉' },
+  reviewErrName:     { uk: 'Вкажіть ваше ім\'я (мін. 2 символи).', en: 'Please enter your name (min. 2 characters).' },
+  reviewErrText:     { uk: 'Відгук занадто короткий (мін. 3 символи).', en: 'The review is too short (min. 3 characters).' },
+  reviewErrRate:     { uk: 'Забагато відгуків. Спробуйте пізніше.', en: 'Too many reviews. Please try again later.' },
+  reviewErrGeneric:  { uk: 'Не вдалося надіслати відгук. Спробуйте знову.', en: 'Failed to submit the review. Please try again.' },
 
   // Final CTA band
   finalCtaTitle:    { uk: 'Почніть оптимізувати свій бізнес уже зараз',
-                      ru: 'Начните оптимизировать свой бизнес уже сейчас' },
+                      en: 'Start optimizing your business right now' },
   finalCtaSubtitle: { uk: 'Інтерактивні тести. Професійні шаблони. Спрощені процеси.',
-                      ru: 'Интерактивные тесты. Профессиональные шаблоны. Упрощённые процессы.' },
-  finalCtaButton:   { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
+                      en: 'Interactive tests. Professional templates. Simplified processes.' },
+  finalCtaButton:   { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
 
   // Hero search & menu
-  searchRecent:        { uk: 'Останні запити',     ru: 'Недавние запросы' },
-  searchSuggestions:   { uk: 'Підказки',            ru: 'Подсказки' },
-  searchNoResults:     { uk: 'Нічого не знайдено',         ru: 'Ничего не найдено' },
-  searchSeeAll:        { uk: 'Показати всі результати', ru: 'Показать все результаты' },
-  menuJumpAbout:       { uk: 'Про платформу',    ru: 'О платформе' },
-  menuJumpWhy:         { uk: 'Чому Bizcheck',      ru: 'Почему Bizcheck' },
-  menuJumpCatalog:     { uk: 'Повний каталог',     ru: 'Полный каталог' },
-  menuJumpTests:       { uk: 'Лише Тести',          ru: 'Только Тесты' },
-  menuJumpTemplates:   { uk: 'Лише Шаблони',       ru: 'Только Шаблоны' },
-  menuJumpTestimonials:{ uk: 'Відгуки',        ru: 'Отзывы' },
-  menuJumpFaq:         { uk: 'Часті запитання', ru: 'Частые вопросы' },
+  searchRecent:        { uk: 'Останні запити',     en: 'Recent searches' },
+  searchSuggestions:   { uk: 'Підказки',            en: 'Suggestions' },
+  searchNoResults:     { uk: 'Нічого не знайдено',         en: 'Nothing found' },
+  searchSeeAll:        { uk: 'Показати всі результати', en: 'Show all results' },
+  menuJumpAbout:       { uk: 'Про платформу',    en: 'About the platform' },
+  menuJumpWhy:         { uk: 'Чому Bizcheck',      en: 'Why Bizcheck' },
+  menuJumpCatalog:     { uk: 'Повний каталог',     en: 'Full catalog' },
+  menuJumpTests:       { uk: 'Лише Тести',          en: 'Tests only' },
+  menuJumpTemplates:   { uk: 'Лише Шаблони',       en: 'Templates only' },
+  menuJumpTestimonials:{ uk: 'Відгуки',        en: 'Reviews' },
+  menuJumpFaq:         { uk: 'Часті запитання', en: 'Frequently asked questions' },
 
   // Footer
-  footerResources:     { uk: 'Ресурси',   ru: 'Ресурсы' },
-  footerLinkTests:     { uk: 'Тести',     ru: 'Тесты' },
-  footerLinkTemplates: { uk: 'Шаблони',  ru: 'Шаблоны' },
-  footerLegal:         { uk: 'Правова інформація',     ru: 'Правовая информация' },
-  footerTerms:         { uk: 'Умови та положення',         ru: 'Условия и положения' },
-  footerPrivacy:       { uk: 'Політика конфіденційності', ru: 'Политика конфиденциальности' },
-  footerCookies:       { uk: 'Політика cookies',            ru: 'Политика cookies' },
-  footerContacts:      { uk: 'Контакти',                    ru: 'Контакты' },
-  footerHours:         { uk: 'Пн-Пт: 9:00 - 18:00',           ru: 'Пн-Пт: 9:00 - 18:00' },
-  footerCopyright:     { uk: 'Усі права захищені',  ru: 'Все права защищены' },
-  footerOfficial:      { uk: 'Офіційні сайти',           ru: 'Официальные сайты' },
-  footerLinkTurcan:    { uk: 'ЦУРКАН Іван',                 ru: 'ЦУРКАН Иван' },
-  footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    ru: 'Crowe Turcan Mikhailenko' },
+  footerResources:     { uk: 'Ресурси',   en: 'Resources' },
+  footerLinkTests:     { uk: 'Тести',     en: 'Tests' },
+  footerLinkTemplates: { uk: 'Шаблони',  en: 'Templates' },
+  footerLegal:         { uk: 'Правова інформація',     en: 'Legal information' },
+  footerTerms:         { uk: 'Умови та положення',         en: 'Terms and conditions' },
+  footerPrivacy:       { uk: 'Політика конфіденційності', en: 'Privacy policy' },
+  footerCookies:       { uk: 'Політика cookies',            en: 'Cookie policy' },
+  footerContacts:      { uk: 'Контакти',                    en: 'Contacts' },
+  footerHours:         { uk: 'Пн-Пт: 9:00 - 18:00',           en: 'Mon-Fri: 9:00 - 18:00' },
+  footerCopyright:     { uk: 'Усі права захищені',  en: 'All rights reserved' },
+  footerOfficial:      { uk: 'Офіційні сайти',           en: 'Official websites' },
+  footerLinkTurcan:    { uk: 'ЦУРКАН Іван',                 en: 'TURCAN Ivan' },
+  footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    en: 'Crowe Turcan Mikhailenko' },
 
   // Crowe / founder block (landing, after Hero)
-  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.MD', ru: 'КТО СТОИТ ЗА BIZCHECK.MD' },
-  croweTitle:   { uk: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
+  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.MD', en: 'WHO IS BEHIND BIZCHECK.MD' },
+  croweTitle:   { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweBody1: {
     uk: 'Crowe Turcan Mikhailenko є частиною міжнародної мережі Crowe Global — однієї з провідних світових мереж у сфері аудиту, консалтингу та корпоративних рішень.',
-    ru: 'Crowe Turcan Mikhailenko является частью международной сети Crowe Global — одной из ведущих мировых сетей в области аудита, консалтинга и корпоративных решений.',
+    en: 'Crowe Turcan Mikhailenko is part of the international Crowe Global network — one of the world\'s leading networks in audit, consulting and corporate solutions.',
   },
   croweBody2: {
     uk: 'Ми працюємо з місцевими та міжнародними компаніями, надаючи підтримку, адаптовану до юридичних, податкових і комерційних реалій Республіки Молдова.',
-    ru: 'Мы работаем с местными и международными компаниями, предоставляя поддержку, адаптированную к юридическим, налоговым и коммерческим реалиям Республики Молдова.',
+    en: 'We work with local and international companies, providing support tailored to the legal, tax and commercial realities of the Republic of Moldova.',
   },
   croweBody3: {
     uk: 'Ми орієнтовані на практичні, зрозумілі й застосовні рішення, щоб наші клієнти могли ухвалювати впевнені та обґрунтовані рішення.',
-    ru: 'Мы ориентированы на практичные, понятные и применимые решения, чтобы наши клиенты могли принимать уверенные и обоснованные решения.',
+    en: 'We focus on practical, clear and applicable solutions so that our clients can make confident and well-founded decisions.',
   },
-  croweName: { uk: 'ЦУРКАН ІВАН', ru: 'ЦУРКАН ИВАН' },
-  croweRole: { uk: 'Засновник · Crowe Turcan Mikhailenko', ru: 'Основатель · Crowe Turcan Mikhailenko' },
-  croweBtnTurcan: { uk: 'Іван Цуркан', ru: 'Иван Цуркан' },
-  croweBtnCrowe:  { uk: 'Crowe Mikhailenko', ru: 'Crowe Mikhailenko' },
-  croweVisitHint: { uk: 'Перейти на офіційний сайт', ru: 'Перейти на официальный сайт' },
+  croweName: { uk: 'ЦУРКАН ІВАН', en: 'IVAN TURCAN' },
+  croweRole: { uk: 'Засновник · Crowe Turcan Mikhailenko', en: 'Founder · Crowe Turcan Mikhailenko' },
+  croweBtnTurcan: { uk: 'Іван Цуркан', en: 'Ivan Turcan' },
+  croweBtnCrowe:  { uk: 'Crowe Mikhailenko', en: 'Crowe Mikhailenko' },
+  croweVisitHint: { uk: 'Перейти на офіційний сайт', en: 'Go to the official website' },
   croweCtaHint: {
     uk: 'Задля деталей відвідайте офіційні сайти та познайомтеся з нами:',
-    ru: 'Для подробностей посетите официальные сайты и познакомьтесь с нами:',
+    en: 'For details, visit the official websites and get to know us:',
   },
 
   // Cookie banner
   cookieTitle: {
     uk: 'Цей сайт використовує cookie-файли',
-    ru: 'Этот сайт использует cookie-файлы',
+    en: 'This website uses cookies',
   },
   cookieDesc: {
     uk: 'Ми використовуємо необхідні cookie-файли для роботи сайту та, за бажанням, файли аналітики й маркетингу для покращення досвіду. Ви можете прийняти всі, відмовитися від необов\'язкових або обрати індивідуально.',
-    ru: 'Мы используем необходимые cookie-файлы для работы сайта и, по желанию, файлы аналитики и маркетинга для улучшения опыта. Вы можете принять все, отказаться от необязательных или выбрать индивидуально.',
+    en: 'We use necessary cookies to run the site and, optionally, analytics and marketing cookies to improve your experience. You can accept all, reject the optional ones, or choose individually.',
   },
-  cookieAcceptAll: { uk: 'Прийняти всі', ru: 'Принять все' },
-  cookieRejectAll: { uk: 'Відхилити необов\'язкові', ru: 'Отклонить необязательные' },
-  cookieCustomize: { uk: 'Налаштування', ru: 'Настройки' },
-  cookieSave:      { uk: 'Зберегти налаштування', ru: 'Сохранить настройки' },
-  cookieBack:      { uk: 'Назад', ru: 'Назад' },
-  cookiePolicyLink: { uk: 'Політика конфіденційності', ru: 'Политика конфиденциальности' },
+  cookieAcceptAll: { uk: 'Прийняти всі', en: 'Accept all' },
+  cookieRejectAll: { uk: 'Відхилити необов\'язкові', en: 'Reject optional' },
+  cookieCustomize: { uk: 'Налаштування', en: 'Settings' },
+  cookieSave:      { uk: 'Зберегти налаштування', en: 'Save settings' },
+  cookieBack:      { uk: 'Назад', en: 'Back' },
+  cookiePolicyLink: { uk: 'Політика конфіденційності', en: 'Privacy policy' },
 
-  cookieCatNecessaryTitle: { uk: 'Строго необхідні', ru: 'Строго необходимые' },
+  cookieCatNecessaryTitle: { uk: 'Строго необхідні', en: 'Strictly necessary' },
   cookieCatNecessaryDesc: {
     uk: 'Необхідні для автентифікації, сесії тесту та безпеки. Не можуть бути вимкнені.',
-    ru: 'Необходимы для аутентификации, сессии теста и безопасности. Не могут быть отключены.',
+    en: 'Required for authentication, the test session and security. These cannot be disabled.',
   },
-  cookieCatAnalyticsTitle: { uk: 'Аналітика', ru: 'Аналитика' },
+  cookieCatAnalyticsTitle: { uk: 'Аналітика', en: 'Analytics' },
   cookieCatAnalyticsDesc: {
     uk: 'Анонімна статистика трафіку сайту — допомагає нам покращувати контент.',
-    ru: 'Анонимная статистика трафика сайта — помогает нам улучшать контент.',
+    en: 'Anonymous site traffic statistics — they help us improve our content.',
   },
-  cookieCatMarketingTitle: { uk: 'Маркетинг', ru: 'Маркетинг' },
+  cookieCatMarketingTitle: { uk: 'Маркетинг', en: 'Marketing' },
   cookieCatMarketingDesc: {
     uk: 'Дозволяють показувати релевантні пропозиції через зовнішніх партнерів (соцмережі, реклама).',
-    ru: 'Позволяют показывать релевантные предложения через внешних партнёров (соцсети, реклама).',
+    en: 'Allow us to show relevant offers through external partners (social media, advertising).',
   },
-  cookieAlwaysOn: { uk: 'Завжди увімкнено', ru: 'Всегда включено' },
+  cookieAlwaysOn: { uk: 'Завжди увімкнено', en: 'Always on' },
 
-  footerCookieSettings: { uk: 'Налаштування cookies', ru: 'Настройки cookies' },
+  footerCookieSettings: { uk: 'Налаштування cookies', en: 'Cookie settings' },
 
   // Header quick-jump
-  navTests: { uk: 'Тести', ru: 'Тесты' },
+  navTests: { uk: 'Тести', en: 'Tests' },
 
   // Company-data recovery — shown only when the save-gate failed to confirm.
   ctaRecoveryTitle: {
     uk: 'Підтвердьте дані компанії',
-    ru: 'Подтвердите данные компании',
+    en: 'Confirm your company details',
   },
   ctaRecoveryIntro: {
     uk: 'Перепрошуємо — можливо, дані про вашу компанію не збереглися. Будь ласка, підтвердьте їх нижче.',
-    ru: 'Приносим извинения — возможно, данные о вашей компании не сохранились. Пожалуйста, подтвердите их ниже.',
+    en: 'We apologize — your company details may not have been saved. Please confirm them below.',
   },
   ctaRecoverySave: {
     uk: 'Зберегти дані',
-    ru: 'Сохранить данные',
+    en: 'Save details',
   },
   ctaRecoverySaving: {
     uk: 'Зберігаємо…',
-    ru: 'Сохраняем…',
+    en: 'Saving…',
   },
   ctaRecoverySaved: {
     uk: 'Збережено ✓',
-    ru: 'Сохранено ✓',
+    en: 'Saved ✓',
   },
   ctaRecoverySupport: {
     uk: 'Якщо проблема зберігається, будь ласка, повідомте нам на',
-    ru: 'Если проблема сохраняется, пожалуйста, сообщите нам на',
+    en: 'If the problem persists, please let us know at',
   },
 } as const;
 

@@ -11,9 +11,9 @@ class TestZoneHelpers:
     def test_zone_color_boundaries(self, score, color):
         assert et._zone_color(score) == color
 
-    def test_zone_label_uk_vs_ru(self):
+    def test_zone_label_uk_vs_en(self):
         assert et._zone_label(90, "uk") == "Низький ризик"
-        assert et._zone_label(90, "ru") == "Низкий риск"
+        assert et._zone_label(90, "en") == "Low risk"
 
     def test_zone_label_critical(self):
         assert et._zone_label(20, "uk") == "Критичний ризик"
@@ -48,10 +48,10 @@ class TestRender:
         assert "буде доступний найближчим часом" in html
         assert "буде доступний найближчим часом" in text
 
-    def test_ru_language_switches_copy(self):
-        subject, html, _ = self._render(lang="ru")
-        assert "готов" in subject
-        assert 'lang="ru"' in html
+    def test_en_language_switches_copy(self):
+        subject, html, _ = self._render(lang="en")
+        assert "ready" in subject
+        assert 'lang="en"' in html
 
     def test_unknown_lang_falls_back_to_uk(self):
         subject, _, _ = self._render(lang="fr")
@@ -67,6 +67,6 @@ class TestRender:
         _, html, _ = self._render(first_name="")
         assert "Клієнт" in html
 
-    def test_empty_first_name_uses_default_ru(self):
-        _, html, _ = self._render(lang="ru", first_name="")
-        assert "Клиент" in html
+    def test_empty_first_name_uses_default_en(self):
+        _, html, _ = self._render(lang="en", first_name="")
+        assert "Client" in html

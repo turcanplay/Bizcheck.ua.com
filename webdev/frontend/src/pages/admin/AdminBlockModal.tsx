@@ -5,13 +5,13 @@ interface Props {
   initial: AdminBlock | null;
   testId: number;
   onClose: () => void;
-  onSave: (data: { title_uk: string; title_ru: string; order_index: number }, id: number | null) => Promise<void>;
+  onSave: (data: { title_uk: string; title_en: string; order_index: number }, id: number | null) => Promise<void>;
 }
 
 export default function AdminBlockModal({ initial, onClose, onSave }: Props) {
   const editing = !!initial;
   const [titleUk, setTitleUk] = useState(initial?.title_uk ?? '');
-  const [titleRu, setTitleRu] = useState(initial?.title_ru ?? '');
+  const [titleEn, setTitleEn] = useState(initial?.title_en ?? '');
   const [orderIndex, setOrderIndex] = useState(initial?.order_index ?? 0);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -19,11 +19,11 @@ export default function AdminBlockModal({ initial, onClose, onSave }: Props) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-    if (!titleUk.trim() && !titleRu.trim()) { setError('Принаймні одна назва (UK або RU) є обовʼязковою'); return; }
+    if (!titleUk.trim() && !titleEn.trim()) { setError('Принаймні одна назва (UK або EN) є обовʼязковою'); return; }
     setBusy(true);
     try {
       await onSave(
-        { title_uk: titleUk.trim(), title_ru: titleRu.trim(), order_index: Number(orderIndex) || 0 },
+        { title_uk: titleUk.trim(), title_en: titleEn.trim(), order_index: Number(orderIndex) || 0 },
         initial?.id ?? null,
       );
     } catch (e) {
@@ -43,8 +43,8 @@ export default function AdminBlockModal({ initial, onClose, onSave }: Props) {
           <input value={titleUk} maxLength={255} onChange={e => setTitleUk(e.target.value)} placeholder="напр.: Відповідність HR" autoFocus />
         </div>
         <div className="admin-form-group">
-          <label>Назва (RU) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
-          <input value={titleRu} maxLength={255} onChange={e => setTitleRu(e.target.value)} placeholder="напр.: Соответствие HR" />
+          <label>Назва (EN) <small style={{ color: 'var(--text2)' }}>(макс. 255)</small></label>
+          <input value={titleEn} maxLength={255} onChange={e => setTitleEn(e.target.value)} placeholder="e.g.: HR Compliance" />
         </div>
         <div className="admin-form-group">
           <label>Порядок</label>

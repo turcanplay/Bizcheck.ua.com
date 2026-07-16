@@ -48,13 +48,13 @@ export default function QuizApp() {
   }, [slug, selectedTestSlug, phase, submissionId, restartQuiz, selectTest]);
 
   const test = tests.find(t => t.slug === selectedTestSlug);
-  const testName = test ? (lang === 'ru' ? test.name_ru : test.name_uk) : '';
+  const testName = test ? (lang === 'en' ? test.name_en : test.name_uk) : '';
   const seoTitle = testName
     ? `${testName} · Bizcheck.md · Crowe`
-    : (lang === 'ru' ? 'Тест Bizcheck.md · Crowe' : 'Тест Bizcheck.md · Crowe');
+    : (lang === 'en' ? 'Test Bizcheck.md · Crowe' : 'Тест Bizcheck.md · Crowe');
   const seoDesc = testName
-    ? (lang === 'ru'
-        ? `Пройдите тест "${testName}" на Bizcheck.md и получите детальный отчёт о рисках вашего бизнеса.`
+    ? (lang === 'en'
+        ? `Take the "${testName}" test on Bizcheck.md and get a detailed report on your business risks.`
         : `Пройдіть тест «${testName}» на Bizcheck.md і отримайте детальний звіт про ризики вашого бізнесу.`)
     : undefined;
 

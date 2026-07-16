@@ -1,5 +1,5 @@
 """
-Bilingual bot copy (uk / ru) and the translation helper.
+Bilingual bot copy (uk / en) and the translation helper.
 
 All user-facing text lives here. `_t(lang, key, **kwargs)` returns the string
 for the requested language, falling back to Ukrainian.
@@ -77,76 +77,76 @@ _STRINGS = {
         "phone_later_ack": "Гаразд. Ви можете залишити контакти будь-якої миті за допомогою кнопок вище.",
         "phone_error": "Не вдалося зберегти номер. Спробуйте пізніше або напишіть на office@bizcheck.md.",
     },
-    "ru": {
+    "en": {
         "welcome": (
-            "Здравствуйте! Добро пожаловать на *Bizcheck.md* — инструмент диагностики "
-            "от Crowe Turcan Mikhailenko.\n\n"
-            "Чтобы получить отчёт прямо здесь, в Telegram:\n\n"
-            "• Пройдите тест на сайте Bizcheck.md\n"
-            "• На последнем шаге выберите *Отправить в Telegram*\n"
-            "• Вернитесь сюда и нажмите *START* — отчёт придёт автоматически\n\n"
-            "По вопросам или для персонального предложения "
-            "напишите нам в любое время: *office@crowe-tm.md*."
+            "Hello! Welcome to *Bizcheck.md* — a diagnostics tool "
+            "by Crowe Turcan Mikhailenko.\n\n"
+            "To get your report right here in Telegram:\n\n"
+            "• Take the test on the Bizcheck.md website\n"
+            "• On the final step, choose *Send to Telegram*\n"
+            "• Come back here and press *START* — your report will arrive automatically\n\n"
+            "For any questions or a personalised offer, "
+            "write to us anytime: *office@crowe-tm.md*."
         ),
-        "preparing": "Готовим ваш отчёт, это займёт несколько секунд…",
+        "preparing": "Preparing your report, this will take a few seconds…",
         "server_error": (
-            "Сейчас наш сервер не отвечает. Пожалуйста, попробуйте ещё раз через "
-            "несколько секунд. Если проблема не уходит — напишите нам на office@crowe-tm.md."
+            "Our server isn't responding right now. Please try again in "
+            "a few seconds. If the problem persists — write to us at office@crowe-tm.md."
         ),
         "expired": (
-            "Ссылка устарела или уже была использована.\n\n"
-            "Вернитесь на страницу отчёта и снова нажмите *Отправить в Telegram*. "
-            "Если возникнут трудности — мы поможем: office@crowe-tm.md."
+            "This link has expired or has already been used.\n\n"
+            "Go back to the report page and press *Send to Telegram* again. "
+            "If you run into any trouble — we're happy to help: office@crowe-tm.md."
         ),
         "server_fail": (
-            "К сожалению, произошла непредвиденная ошибка. Попробуйте, пожалуйста, "
-            "ещё раз. Для быстрой помощи: office@crowe-tm.md."
+            "Unfortunately, an unexpected error occurred. Please try "
+            "again. For quick assistance: office@crowe-tm.md."
         ),
-        "report_header": "📊 *Отчёт Bizcheck.md для {first_name} {last_name}*\n",
-        "score_line": "Общий балл: *{score}%*",
-        "blocks_header": "*Оценённые блоки:*",
-        "pdf_footer": "Ниже прилагаем полный отчёт в формате PDF.",
+        "report_header": "📊 *Bizcheck.md report for {first_name} {last_name}*\n",
+        "score_line": "Overall score: *{score}%*",
+        "blocks_header": "*Assessed blocks:*",
+        "pdf_footer": "The full report in PDF format is attached below.",
         "pdf_caption": (
-            "Отчёт Bizcheck.md · Crowe Turcan Mikhailenko\n\n"
-            "Наши специалисты свяжутся с вами в ближайшее время для обсуждения "
-            "результатов. По дополнительным вопросам или для персонального предложения — "
+            "Bizcheck.md report · Crowe Turcan Mikhailenko\n\n"
+            "Our specialists will contact you shortly to discuss "
+            "the results. For any further questions or a personalised offer — "
             "office@crowe-tm.md."
         ),
         "pdf_pending": (
-            "PDF-отчёт ещё формируется на сайте. Пожалуйста, вернитесь на страницу "
-            "отчёта и снова нажмите *Отправить в Telegram* — это занимает несколько "
-            "секунд после завершения теста.\n\n"
-            "Поддержка: office@crowe-tm.md."
+            "The PDF report is still being generated on the website. Please go back to the "
+            "report page and press *Send to Telegram* again — this takes a few "
+            "seconds after you finish the test.\n\n"
+            "Support: office@crowe-tm.md."
         ),
-        "zone_high": "Низкий риск",
-        "zone_mid":  "Умеренный риск",
-        "zone_warn": "Повышенный риск",
-        "zone_low":  "Критический риск",
-        "actions_msg": "Можете получить отчёт на почту или оставить контакты для персонального предложения:",
-        "email_button": "📧 Получить отчёт на почту",
-        "email_prompt": "Напишите адрес эл. почты, куда отправить отчёт:",
-        "email_invalid": "Адрес эл. почты выглядит неверным. Попробуйте ещё раз:",
-        "email_sent": "✓ Отчёт отправлен на {email}. Проверьте также папку Спам.",
-        "email_pending": "Отчёт ещё готовится. Вернитесь через несколько секунд и нажмите кнопку снова.",
-        "email_expired": "Ссылка устарела. Вернитесь на страницу отчёта и снова отправьте в Telegram.",
-        "email_error": "Не удалось отправить письмо. Попробуйте позже или напишите на office@bizcheck.md.",
-        "lead_button": "📝 Оставить контакты",
-        "lead_ask_email": "Напишите ваш адрес эл. почты:",
-        "lead_ask_phone": "Теперь напишите номер телефона (напр.: +373 60 123 456):",
-        "lead_invalid_email": "Адрес эл. почты выглядит неверным. Попробуйте ещё раз:",
-        "lead_invalid_phone": "Номер телефона выглядит неверным. Попробуйте ещё раз (напр.: +373 60 123 456):",
-        "lead_saved": "✓ Спасибо! Мы сохранили данные и свяжемся с вами в ближайшее время.",
-        "lead_expired": "Ссылка устарела. Вернитесь на страницу отчёта и снова отправьте в Telegram.",
-        "lead_error": "Не удалось сохранить данные. Попробуйте позже или напишите на office@bizcheck.md.",
+        "zone_high": "Low risk",
+        "zone_mid":  "Moderate risk",
+        "zone_warn": "Elevated risk",
+        "zone_low":  "Critical risk",
+        "actions_msg": "You can get the report by email or leave your contacts for a personalised offer:",
+        "email_button": "📧 Get the report by email",
+        "email_prompt": "Enter the email address where we should send the report:",
+        "email_invalid": "That email address doesn't look right. Please try again:",
+        "email_sent": "✓ The report has been sent to {email}. Please also check your Spam folder.",
+        "email_pending": "The report is still being prepared. Come back in a few seconds and tap the button again.",
+        "email_expired": "The link has expired. Go back to the report page and send it to Telegram again.",
+        "email_error": "We couldn't send the email. Please try again later or write to office@bizcheck.md.",
+        "lead_button": "📝 Leave your contacts",
+        "lead_ask_email": "Enter your email address:",
+        "lead_ask_phone": "Now enter your phone number (e.g.: +373 60 123 456):",
+        "lead_invalid_email": "That email address doesn't look right. Please try again:",
+        "lead_invalid_phone": "That phone number doesn't look right. Please try again (e.g.: +373 60 123 456):",
+        "lead_saved": "✓ Thank you! We've saved your details and will get in touch with you shortly.",
+        "lead_expired": "The link has expired. Go back to the report page and send it to Telegram again.",
+        "lead_error": "We couldn't save your details. Please try again later or write to office@bizcheck.md.",
         "phone_intro": (
-            "📱 Чтобы мы могли связаться с вами напрямую — даже если у вас нет имени "
-            "пользователя в Telegram — поделитесь номером телефона одним нажатием:"
+            "📱 So we can reach you directly — even if you don't have a Telegram "
+            "username — share your phone number with a single tap:"
         ),
-        "phone_share_btn": "📱 Поделиться номером",
-        "phone_later_btn": "Позже",
-        "phone_saved": "✓ Спасибо! Мы сохранили номер телефона и свяжемся с вами в ближайшее время.",
-        "phone_later_ack": "Хорошо. Вы можете оставить контакты в любой момент с помощью кнопок выше.",
-        "phone_error": "Не удалось сохранить номер. Попробуйте позже или напишите на office@bizcheck.md.",
+        "phone_share_btn": "📱 Share my number",
+        "phone_later_btn": "Later",
+        "phone_saved": "✓ Thank you! We've saved your phone number and will get in touch with you shortly.",
+        "phone_later_ack": "No problem. You can leave your contacts anytime using the buttons above.",
+        "phone_error": "We couldn't save your number. Please try again later or write to office@bizcheck.md.",
     },
 }
 

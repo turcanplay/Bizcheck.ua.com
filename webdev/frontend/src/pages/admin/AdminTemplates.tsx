@@ -75,7 +75,7 @@ export default function AdminTemplates() {
           <div className="admin-test-card__head">
             <div style={{ flex: 1, minWidth: 260 }}>
               <div className="admin-test-card__title">📄 {t.title_uk}</div>
-              {t.title_ru && <div className="admin-test-card__subtitle">{t.title_ru}</div>}
+              {t.title_en && <div className="admin-test-card__subtitle">{t.title_en}</div>}
               {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
             </div>
             <div className="admin-test-card__actions">

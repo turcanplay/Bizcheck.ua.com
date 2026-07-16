@@ -14,9 +14,9 @@ interface UnifiedItem {
   id: number;
   slug: string;
   title_uk: string;
-  title_ru: string;
+  title_en: string;
   desc_uk: string;
-  desc_ru: string;
+  desc_en: string;
   is_paid: boolean;
   is_active: boolean;
   is_coming_soon: boolean;
@@ -29,16 +29,16 @@ interface UnifiedItem {
 function toUnified(tests: PublicTest[], templates: PublicTemplate[]): UnifiedItem[] {
   const a: UnifiedItem[] = tests.map(t => ({
     kind: 'test', id: t.id, slug: t.slug,
-    title_uk: t.name_uk, title_ru: t.name_ru,
-    desc_uk: t.description_uk, desc_ru: t.description_ru,
+    title_uk: t.name_uk, title_en: t.name_en,
+    desc_uk: t.description_uk, desc_en: t.description_en,
     is_paid: t.is_paid, is_active: t.is_active, is_coming_soon: t.is_coming_soon ?? false,
     price: t.price, currency: t.currency, category: t.category,
     features: t.features ?? [],
   }));
   const b: UnifiedItem[] = templates.map(t => ({
     kind: 'template', id: t.id, slug: t.slug,
-    title_uk: t.title_uk, title_ru: t.title_ru,
-    desc_uk: t.description_uk, desc_ru: t.description_ru,
+    title_uk: t.title_uk, title_en: t.title_en,
+    desc_uk: t.description_uk, desc_en: t.description_en,
     is_paid: t.is_paid, is_active: t.is_active, is_coming_soon: t.is_coming_soon ?? false,
     price: t.price, currency: t.currency, category: t.category,
     features: t.features ?? [],
@@ -100,7 +100,7 @@ export default function CatalogSection() {
       if (tab === 'templates' && x.kind !== 'template') return false;
       // Search on title + desc in both languages
       if (q) {
-        const hay = [x.title_uk, x.title_ru, x.desc_uk, x.desc_ru, x.category ?? '']
+        const hay = [x.title_uk, x.title_en, x.desc_uk, x.desc_en, x.category ?? '']
           .join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
@@ -153,7 +153,7 @@ export default function CatalogSection() {
       <div className="catalog__header">
         <span className="catalog__eyebrow">
           <span className="catalog__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'МАРКЕТПЛЕЙС' : 'МАРКЕТПЛЕЙС'}
+          {lang === 'uk' ? 'МАРКЕТПЛЕЙС' : 'MARKETPLACE'}
         </span>
         <h2 className="catalog__title">
           {(() => {
@@ -166,7 +166,7 @@ export default function CatalogSection() {
         <p className="catalog__subtitle-intro">
           {lang === 'uk'
             ? 'Тести та шаблони в одному місці.'
-            : 'Тесты и шаблоны в одном месте.'}
+            : 'Tests and templates in one place.'}
         </p>
         <button type="button" className="catalog__cta" onClick={handleCatalogCta}>
           {t('heroCta')}
@@ -337,7 +337,7 @@ export default function CatalogSection() {
 
 interface CatalogGroupProps {
   items: UnifiedItem[];
-  lang: 'uk' | 'ru';
+  lang: 'uk' | 'en';
   onClickItem: (x: UnifiedItem) => void;
   cta: string;
   ctaPaid?: string;
@@ -398,7 +398,7 @@ function CatalogGroup({ items, lang, onClickItem, cta, ctaPaid, badgeBasic, badg
 
 interface CardProps {
   item: UnifiedItem;
-  lang: 'uk' | 'ru';
+  lang: 'uk' | 'en';
   onClick: () => void;
   cta: string;
   badgeBasic: string;
@@ -407,11 +407,11 @@ interface CardProps {
 }
 
 function Card({ item, lang, onClick, cta, badgeBasic, badgePremium, freeLabel }: CardProps) {
-  const title = lang === 'uk' ? item.title_uk : item.title_ru;
-  const desc  = lang === 'uk' ? item.desc_uk  : item.desc_ru;
+  const title = lang === 'uk' ? item.title_uk : item.title_en;
+  const desc  = lang === 'uk' ? item.desc_uk  : item.desc_en;
   const premium = item.is_paid;
   const comingSoon = item.is_coming_soon;
-  const comingSoonCta = lang === 'uk' ? 'Незабаром' : 'Скоро';
+  const comingSoonCta = lang === 'uk' ? 'Незабаром' : 'Soon';
   return (
     <div className={`catalog-card ${premium ? 'catalog-card--premium' : 'catalog-card--basic'}${comingSoon ? ' catalog-card--inactive' : ''}`}>
       {comingSoon && (

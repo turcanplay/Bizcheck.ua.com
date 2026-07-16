@@ -87,7 +87,7 @@ function TestimonialModal({ initial, onClose, onSave }: ModalProps) {
   const [name, setName] = useState(initial?.name ?? '');
   const [role, setRole] = useState(initial?.role ?? '');
   const [quoteUk, setQuoteUk] = useState(initial?.quote_uk ?? '');
-  const [quoteRu, setQuoteRu] = useState(initial?.quote_ru ?? '');
+  const [quoteEn, setQuoteEn] = useState(initial?.quote_en ?? '');
   const [rating, setRating] = useState(initial?.rating ?? 5);
   const [avatar, setAvatar] = useState(initial?.avatar_url ?? '');
   const [orderIndex, setOrderIndex] = useState(initial?.order_index ?? 0);
@@ -105,7 +105,7 @@ function TestimonialModal({ initial, onClose, onSave }: ModalProps) {
         name: name.trim(),
         role: role.trim() || null,
         quote_uk: quoteUk.trim(),
-        quote_ru: quoteRu.trim(),
+        quote_en: quoteEn.trim(),
         rating: Math.max(1, Math.min(5, Math.round((Number(rating) || 5) * 2) / 2)),
         avatar_url: avatar.trim() || null,
         order_index: Number(orderIndex) || 0,
@@ -133,8 +133,8 @@ function TestimonialModal({ initial, onClose, onSave }: ModalProps) {
           <textarea value={quoteUk} maxLength={1000} onChange={e => setQuoteUk(e.target.value)} style={{ minHeight: 80 }} />
         </div>
         <div className="admin-form-group">
-          <label>Цитата (RU)</label>
-          <textarea value={quoteRu} maxLength={1000} onChange={e => setQuoteRu(e.target.value)} style={{ minHeight: 80 }} />
+          <label>Цитата (EN)</label>
+          <textarea value={quoteEn} maxLength={1000} onChange={e => setQuoteEn(e.target.value)} style={{ minHeight: 80 }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div className="admin-form-group">

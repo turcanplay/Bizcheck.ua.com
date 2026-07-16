@@ -110,16 +110,16 @@ export default function Hero() {
 
     const all: Array<UnifiedHit & { _score: number }> = [];
     tests.forEach(t => {
-      const haystack = [t.name_uk, t.name_ru, t.description_uk, t.description_ru,
+      const haystack = [t.name_uk, t.name_en, t.description_uk, t.description_en,
                         t.category ?? '', (t.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'uk' ? t.name_uk : t.name_ru, is_paid: t.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'uk' ? t.name_uk : t.name_en, is_paid: t.is_paid, _score: sc });
     });
     templates.forEach(tp => {
-      const haystack = [tp.title_uk, tp.title_ru, tp.description_uk, tp.description_ru,
+      const haystack = [tp.title_uk, tp.title_en, tp.description_uk, tp.description_en,
                         tp.category ?? '', (tp.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'uk' ? tp.title_uk : tp.title_ru, is_paid: tp.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'uk' ? tp.title_uk : tp.title_en, is_paid: tp.is_paid, _score: sc });
     });
     return all.sort((a, b) => b._score - a._score).slice(0, 8);
   }, [query, tests, templates, lang]);
@@ -300,7 +300,7 @@ export default function Hero() {
           </button>
           <div className="hero__lang">
             <button className={`hero__lang-btn ${lang === 'uk' ? 'is-active' : ''}`} onClick={() => setLang('uk')}>UA</button>
-            <button className={`hero__lang-btn ${lang === 'ru' ? 'is-active' : ''}`} onClick={() => setLang('ru')}>RU</button>
+            <button className={`hero__lang-btn ${lang === 'en' ? 'is-active' : ''}`} onClick={() => setLang('en')}>EN</button>
           </div>
         </div>
       </nav>
@@ -365,10 +365,10 @@ export default function Hero() {
             <div className="hero__badge-num">{ratingStats.avg}<span>/5</span></div>
             <div className="hero__badge-sub">
               {ratingStats.count === 0
-                ? (lang === 'uk' ? 'відгуки незабаром' : 'отзывы скоро')
+                ? (lang === 'uk' ? 'відгуки незабаром' : 'reviews coming soon')
                 : (lang === 'uk'
                     ? `з ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} відгуків`
-                    : `из ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} отзывов`)}
+                    : `from ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} reviews`)}
             </div>
           </div>
 

@@ -32,9 +32,9 @@ export interface TestOption {
   id: number;
   slug: string;
   name_uk: string;
-  name_ru: string;
+  name_en: string;
   description_uk: string;
-  description_ru: string;
+  description_en: string;
   report_type?: 'standard' | 'premium' | 'bizcheck' | 'gdpr';
 }
 

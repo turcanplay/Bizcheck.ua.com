@@ -26,8 +26,8 @@ def seed():
     block_map = {}  # json id -> db id
     for i, b in enumerate(data["blocuri"]):
         block = execute(
-            "INSERT INTO blocks (title_uk, title_ru, order_index) VALUES (%s, %s, %s) RETURNING id",
-            (b["name_uk"], b["name_ru"], i),
+            "INSERT INTO blocks (title_uk, title_en, order_index) VALUES (%s, %s, %s) RETURNING id",
+            (b["name_uk"], b["name_en"], i),
         )
         block_map[b["id"]] = block["id"]
         print(f"  Block {block['id']}: {b['name_uk']}")
@@ -38,9 +38,9 @@ def seed():
         db_block_id = block_map[q["bloc_id"]]
         note_uk = q.get("_nota", None)
         row = execute(
-            "INSERT INTO questions (block_id, text_uk, text_ru, note_uk, note_ru, order_index) "
+            "INSERT INTO questions (block_id, text_uk, text_en, note_uk, note_en, order_index) "
             "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-            (db_block_id, q["text_uk"], q["text_ru"], note_uk, None, q["ordine"]),
+            (db_block_id, q["text_uk"], q["text_en"], note_uk, None, q["ordine"]),
         )
         question_map[q["id"]] = row["id"]
 
@@ -53,9 +53,9 @@ def seed():
             if opt.get("next_intrebare_id") is not None:
                 next_q_db_id = question_map.get(opt["next_intrebare_id"])
             execute(
-                "INSERT INTO answers (question_id, text_uk, text_ru, score, next_question_id) "
+                "INSERT INTO answers (question_id, text_uk, text_en, score, next_question_id) "
                 "VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                (db_q_id, opt["text_uk"], opt["text_ru"], opt["valoare"], next_q_db_id),
+                (db_q_id, opt["text_uk"], opt["text_en"], opt["valoare"], next_q_db_id),
             )
             total_a += 1
 

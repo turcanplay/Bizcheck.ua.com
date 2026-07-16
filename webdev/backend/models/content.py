@@ -5,14 +5,14 @@ from database.db import query, execute
 
 class Testimonial:
     @staticmethod
-    def create(name, role, quote_uk, quote_ru, rating, avatar_url, order_index, is_active,
+    def create(name, role, quote_uk, quote_en, rating, avatar_url, order_index, is_active,
                lang="uk", is_user_submitted=False):
         return execute(
             """INSERT INTO testimonials
-                   (name, role, quote_uk, quote_ru, rating, avatar_url, order_index,
+                   (name, role, quote_uk, quote_en, rating, avatar_url, order_index,
                     is_active, lang, is_user_submitted)
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *""",
-            (name, role, quote_uk, quote_ru, rating, avatar_url, order_index,
+            (name, role, quote_uk, quote_en, rating, avatar_url, order_index,
              is_active, lang, is_user_submitted),
         )
 
@@ -21,18 +21,18 @@ class Testimonial:
         """A review submitted by an end user from the public site.
 
         Stored in ONE language only (`lang`): the text goes into the matching
-        quote_uk / quote_ru column, the other stays empty. Goes live immediately
+        quote_uk / quote_en column, the other stays empty. Goes live immediately
         (is_active=TRUE) and is flagged is_user_submitted so the admin can tell
         public reviews apart from curated ones.
         """
         quote_uk = quote if lang == "uk" else ""
-        quote_ru = quote if lang == "ru" else ""
+        quote_en = quote if lang == "en" else ""
         return execute(
             """INSERT INTO testimonials
-                   (name, role, quote_uk, quote_ru, rating, avatar_url, order_index,
+                   (name, role, quote_uk, quote_en, rating, avatar_url, order_index,
                     is_active, lang, is_user_submitted)
                VALUES (%s, %s, %s, %s, %s, NULL, 0, TRUE, %s, TRUE) RETURNING *""",
-            (name, role, quote_uk, quote_ru, rating, lang),
+            (name, role, quote_uk, quote_en, rating, lang),
         )
 
     @staticmethod
@@ -54,17 +54,17 @@ class Testimonial:
         )
 
     @staticmethod
-    def update(tid, name, role, quote_uk, quote_ru, rating, avatar_url, order_index, is_active,
+    def update(tid, name, role, quote_uk, quote_en, rating, avatar_url, order_index, is_active,
                lang=None):
         # lang is only changed when provided (admin editing a public review);
         # COALESCE keeps the stored value otherwise.
         return execute(
             """UPDATE testimonials
-               SET name=%s, role=%s, quote_uk=%s, quote_ru=%s,
+               SET name=%s, role=%s, quote_uk=%s, quote_en=%s,
                    rating=%s, avatar_url=%s, order_index=%s, is_active=%s,
                    lang=COALESCE(%s, lang)
                WHERE id=%s RETURNING *""",
-            (name, role, quote_uk, quote_ru, rating, avatar_url, order_index, is_active, lang, tid),
+            (name, role, quote_uk, quote_en, rating, avatar_url, order_index, is_active, lang, tid),
         )
 
     @staticmethod
@@ -74,11 +74,11 @@ class Testimonial:
 
 class FaqItem:
     @staticmethod
-    def create(question_uk, question_ru, answer_uk, answer_ru, order_index, is_active):
+    def create(question_uk, question_en, answer_uk, answer_en, order_index, is_active):
         return execute(
-            """INSERT INTO faq_items (question_uk, question_ru, answer_uk, answer_ru, order_index, is_active)
+            """INSERT INTO faq_items (question_uk, question_en, answer_uk, answer_en, order_index, is_active)
                VALUES (%s, %s, %s, %s, %s, %s) RETURNING *""",
-            (question_uk, question_ru, answer_uk, answer_ru, order_index, is_active),
+            (question_uk, question_en, answer_uk, answer_en, order_index, is_active),
         )
 
     @staticmethod
@@ -100,13 +100,13 @@ class FaqItem:
         )
 
     @staticmethod
-    def update(fid, question_uk, question_ru, answer_uk, answer_ru, order_index, is_active):
+    def update(fid, question_uk, question_en, answer_uk, answer_en, order_index, is_active):
         return execute(
             """UPDATE faq_items
-               SET question_uk=%s, question_ru=%s, answer_uk=%s, answer_ru=%s,
+               SET question_uk=%s, question_en=%s, answer_uk=%s, answer_en=%s,
                    order_index=%s, is_active=%s
                WHERE id=%s RETURNING *""",
-            (question_uk, question_ru, answer_uk, answer_ru, order_index, is_active, fid),
+            (question_uk, question_en, answer_uk, answer_en, order_index, is_active, fid),
         )
 
     @staticmethod

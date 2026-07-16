@@ -47,19 +47,19 @@ export default function Testimonials() {
       <div className="testimonials__header">
         <span className="testimonials__eyebrow">
           <span className="testimonials__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ВІДГУКИ' : 'ОТЗЫВЫ'}
+          {lang === 'uk' ? 'ВІДГУКИ' : 'REVIEWS'}
         </span>
         <h2 className="testimonials__title">
           {lang === 'uk' ? (
             <>Що кажуть наші <span className="testimonials__title-accent">клієнти</span>?</>
           ) : (
-            <>Что говорят наши <span className="testimonials__title-accent">клиенты</span>?</>
+            <>What our <span className="testimonials__title-accent">clients</span> say?</>
           )}
         </h2>
         <p className="testimonials__subtitle">
           {lang === 'uk'
             ? 'Реальний досвід компаній, які використовують Bizcheck.'
-            : 'Реальный опыт компаний, использующих Bizcheck.'}
+            : 'Real experience from companies using Bizcheck.'}
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export default function Testimonials() {
 
           <div className="testimonials__cards" ref={cardsRef} onScroll={updateEdges}>
             {items.map(t => {
-              const quote = (lang === 'uk' ? t.quote_uk : t.quote_ru) || t.quote_uk || t.quote_ru;
+              const quote = (lang === 'uk' ? t.quote_uk : t.quote_en) || t.quote_uk || t.quote_en;
               const initials = t.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
               return (
                 <div key={t.id} className="testimonial-card">

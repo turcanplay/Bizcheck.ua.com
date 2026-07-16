@@ -37,7 +37,7 @@ export default function AboutPlatform() {
 
   const title = t('aboutTitle');
   const [titleFirst, titleLast] = splitTitle(title);
-  const eyebrow = lang === 'uk' ? 'ПРО НАС' : 'О НАС';
+  const eyebrow = lang === 'uk' ? 'ПРО НАС' : 'ABOUT US';
   const totalResources = counts?.total ?? 0;
   const stats = lang === 'uk'
     ? [
@@ -46,9 +46,9 @@ export default function AboutPlatform() {
         { value: '8 хв', label: 'Час на тест' },
       ]
     : [
-        { value: formatCount(totalResources), label: 'Шаблонов и тестов' },
-        { value: '24/7', label: 'Онлайн-доступ' },
-        { value: '8 мин', label: 'Время на тест' },
+        { value: formatCount(totalResources), label: 'Templates & tests' },
+        { value: '24/7', label: 'Online access' },
+        { value: '8 min', label: 'Test time' },
       ];
 
   return (
@@ -111,12 +111,12 @@ export default function AboutPlatform() {
             </div>
             <div>
               <div className="about__visual-check-title">
-                {lang === 'uk' ? 'Перевірено юристами' : 'Проверено юристами'}
+                {lang === 'uk' ? 'Перевірено юристами' : 'Verified by lawyers'}
               </div>
               <div className="about__visual-check-sub">
                 {lang === 'uk'
                   ? 'реальні документи від професіоналів'
-                  : 'реальные документы от профессионалов'}
+                  : 'real documents from professionals'}
               </div>
             </div>
           </div>

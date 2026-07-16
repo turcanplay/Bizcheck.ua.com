@@ -79,7 +79,7 @@ function clearSavedState() {
 /* ---- Bilingual API types ---- */
 interface ApiAnswer {
   label_uk: string;
-  label_ru: string;
+  label_en: string;
   key: string;
   score: number;
   next_question_id: number | null;
@@ -89,31 +89,31 @@ interface ApiQuestion {
   db_id: number;
   parent_question_id: number | null;
   text_uk: string;
-  text_ru: string;
+  text_en: string;
   note_uk: string | null;
-  note_ru: string | null;
+  note_en: string | null;
   options: ApiAnswer[];
 }
 interface ApiBlock {
   id: number;
   title_uk: string;
-  title_ru: string;
+  title_en: string;
   questions: ApiQuestion[];
 }
 
 /** Resolve bilingual API data to single-language Block[] */
-function resolveBlocks(apiBlocks: ApiBlock[], lang: 'uk' | 'ru'): Block[] {
+function resolveBlocks(apiBlocks: ApiBlock[], lang: 'uk' | 'en'): Block[] {
   return apiBlocks.map(b => ({
     id: b.id,
-    title: lang === 'uk' ? b.title_uk : b.title_ru,
+    title: lang === 'uk' ? b.title_uk : b.title_en,
     questions: b.questions.map(q => ({
       id: q.id,
       db_id: q.db_id,
       parent_question_id: q.parent_question_id,
-      text: lang === 'uk' ? q.text_uk : q.text_ru,
-      note: lang === 'uk' ? q.note_uk : q.note_ru,
+      text: lang === 'uk' ? q.text_uk : q.text_en,
+      note: lang === 'uk' ? q.note_uk : q.note_en,
       options: q.options.map(o => ({
-        label: lang === 'uk' ? o.label_uk : o.label_ru,
+        label: lang === 'uk' ? o.label_uk : o.label_en,
         key: o.key,
         score: o.score,
         next_question_id: o.next_question_id,
