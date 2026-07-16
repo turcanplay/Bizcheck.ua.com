@@ -24,7 +24,7 @@ from services.telegram_send import send_message
 
 log = logging.getLogger(__name__)
 
-PROMPT_KEYS = {"ro": "feedback_prompt_ro", "ru": "feedback_prompt_ru"}
+PROMPT_KEYS = {"uk": "feedback_prompt_uk", "ru": "feedback_prompt_ru"}
 AUTO_ENABLED_KEY = "feedback_auto_enabled"
 AUTO_DELAY_KEY = "feedback_auto_delay_min"
 
@@ -42,33 +42,32 @@ DEFAULT_PROMPT = {
         "Напишите прямо здесь — любыми словами, как есть. Даже одно слово — уже "
         "ценно и очень важно для нас, чтобы делать наши продукты лучше."
     ),
-    "ro": (
-        "Bună! \n"
-        "Ați trecut prin BizCheck — și am vrea să vă întrebăm un singur lucru.\n"
-        "Continuați două fraze cu cuvintele dumneavoastră:\n\n"
-        "1️⃣ «Pentru mine, BizCheck este...»\n"
-        "2️⃣ «Când am văzut rezultatul, am simțit...»\n\n"
-        "Scrieți direct aici — în orice cuvinte, așa cum este. Chiar și un singur "
-        "cuvânt este deja valoros și foarte important pentru noi, ca să ne facem "
-        "produsele mai bune."
+    "uk": (
+        "Вітаємо! \n"
+        "Ви проходили BizCheck — і ми хотіли б запитати про одне.\n"
+        "Продовжіть дві фрази своїми словами:\n\n"
+        "1️⃣ «Для мене BizCheck — це...»\n"
+        "2️⃣ «Коли я побачив(ла) результат, я відчув(ла)...»\n\n"
+        "Напишіть прямо тут — будь-якими словами, як є. Навіть одне слово — уже "
+        "цінно й дуже важливо для нас, щоб робити наші продукти кращими."
     ),
 }
 
 # Appended to every sent question: we only capture the FIRST reply, so we ask the
 # person to put their whole answer in a single message.
 REPLY_HINT = {
-    "ro": "📩 Vă rugăm să scrieți tot răspunsul într-un singur mesaj.",
+    "uk": "📩 Будь ласка, напишіть усю відповідь одним повідомленням.",
     "ru": "📩 Пожалуйста, напишите весь ответ одним сообщением.",
 }
 
 THANKS = {
-    "ro": "Vă mulțumim din suflet! Feedback-ul dumneavoastră ne ajută enorm. 🙏",
+    "uk": "Щиро дякуємо! Ваш відгук дуже допомагає нам. 🙏",
     "ru": "Спасибо вам большое! Ваш отзыв очень помогает нам. 🙏",
 }
 
 
 def norm_lang(v):
-    return v if v in ("ro", "ru") else "ru"
+    return v if v in ("uk", "ru") else "ru"
 
 
 def get_prompt(lang):

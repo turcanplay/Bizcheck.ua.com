@@ -83,12 +83,12 @@ def _filename_from_headers(resp, fallback: str) -> str:
 
 
 def _too_big_text(data) -> str:
-    """RO message for a 413 'too big' JSON payload from the backend."""
+    """UK message for a 413 'too big' JSON payload from the backend."""
     admin_url = ""
     if isinstance(data, dict):
         admin_url = data.get("admin_url") or ""
     return (
-        "⚠️ Fișierul e prea mare pentru Telegram. Descarcă-l din panoul admin:\n"
+        "⚠️ Файл завеликий для Telegram. Завантажте його з адмін-панелі:\n"
         f"{admin_url}"
     )
 
@@ -105,25 +105,25 @@ async def _send_menu(update: Update, kind: str) -> None:
             resp = await client.get(f"{EXPORTS}/tests", headers=_headers())
     except httpx.RequestError as exc:
         logger.warning("tests list backend unreachable: %s", exc)
-        await update.message.reply_text("Backend indisponibil. Încercați din nou.")
+        await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
         return
     if resp.status_code != 200:
-        await update.message.reply_text(f"Nu pot prelua lista testelor (cod {resp.status_code}).")
+        await update.message.reply_text(f"Не вдалося отримати список тестів (код {resp.status_code}).")
         return
     tests = resp.json() or []
     if not tests:
-        await update.message.reply_text("Nu există teste configurate.")
+        await update.message.reply_text("Немає налаштованих тестів.")
         return
 
-    kb = [[InlineKeyboardButton((t.get("name") or f"Test {t['id']}")[:60],
+    kb = [[InlineKeyboardButton((t.get("name") or f"Тест {t['id']}")[:60],
                                  callback_data=f"{kind}:{t['id']}")]
           for t in tests]
     if kind == "xls":
-        prompt = "Alegeți testul pentru care doriți Excel:"
+        prompt = "Оберіть тест, для якого потрібен Excel:"
     elif kind == "pdf":
-        prompt = "Alegeți testul pentru care doriți arhiva PDF:"
+        prompt = "Оберіть тест, для якого потрібен PDF-архів:"
     else:  # cl
-        prompt = "Alegeți testul pentru a vedea o persoană:"
+        prompt = "Оберіть тест, щоб переглянути особу:"
     await update.message.reply_text(
         prompt,
         reply_markup=InlineKeyboardMarkup(kb),
@@ -139,9 +139,9 @@ async def cmd_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not _allowed(update):
         return
     await update.message.reply_text(
-        "📄 Arhiva PDF a tuturor utilizatorilor se descarcă din panoul admin:\n"
+        "📄 PDF-архів усіх користувачів завантажується з адмін-панелі:\n"
         + ADMIN_PANEL_URL
-        + "\n\nPentru PDF-ul unei singure persoane, folosește /client.",
+        + "\n\nЩоб отримати PDF однієї особи, скористайтеся /client.",
         message_thread_id=_thread_id(update),
     )
 
@@ -157,11 +157,11 @@ async def cmd_client(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 def _period_menu(test_id) -> InlineKeyboardMarkup:
     """Period picker for a chosen test → callbacks xp:<test_id>:<period>."""
     kb = [
-        [InlineKeyboardButton("Azi",              callback_data=f"xp:{test_id}:today")],
-        [InlineKeyboardButton("Ultimele 7 zile",  callback_data=f"xp:{test_id}:7d")],
-        [InlineKeyboardButton("Ultimele 30 zile", callback_data=f"xp:{test_id}:30d")],
-        [InlineKeyboardButton("Luna curentă",     callback_data=f"xp:{test_id}:month")],
-        [InlineKeyboardButton("Tot",              callback_data=f"xp:{test_id}:all")],
+        [InlineKeyboardButton("Сьогодні",          callback_data=f"xp:{test_id}:today")],
+        [InlineKeyboardButton("Останні 7 днів",    callback_data=f"xp:{test_id}:7d")],
+        [InlineKeyboardButton("Останні 30 днів",   callback_data=f"xp:{test_id}:30d")],
+        [InlineKeyboardButton("Поточний місяць",   callback_data=f"xp:{test_id}:month")],
+        [InlineKeyboardButton("Усе",               callback_data=f"xp:{test_id}:all")],
     ]
     return InlineKeyboardMarkup(kb)
 
@@ -180,7 +180,7 @@ async def on_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat = query.message.chat
 
     await chat.send_message(
-        "Pentru ce perioadă vrei Excel-ul?",
+        "За який період потрібен Excel?",
         reply_markup=_period_menu(tid),
         message_thread_id=thread_id,
     )
@@ -188,7 +188,7 @@ async def on_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def _send_excel(chat, thread_id, test_id, period) -> None:
     """Fetch the period-scoped Excel for a test and drop it into the topic."""
-    note = await chat.send_message("Generez Excel-ul…", message_thread_id=thread_id)
+    note = await chat.send_message("Генерую Excel…", message_thread_id=thread_id)
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.get(
@@ -198,28 +198,28 @@ async def _send_excel(chat, thread_id, test_id, period) -> None:
             )
     except httpx.RequestError as exc:
         logger.warning("export backend unreachable: %s", exc)
-        await note.edit_text("Backend indisponibil. Încercați din nou.")
+        await note.edit_text("Бекенд недоступний. Спробуйте ще раз.")
         return
 
     if resp.status_code == 413:
         await note.edit_text(_too_big_text(resp.json()))
         return
     if resp.status_code != 200:
-        await note.edit_text(f"Eroare la generare (cod {resp.status_code}).")
+        await note.edit_text(f"Помилка під час генерації (код {resp.status_code}).")
         return
 
     data = resp.content
     if not data:
-        await note.edit_text("Nu există date pentru această perioadă.")
+        await note.edit_text("Немає даних за цей період.")
         return
     if len(data) > _MAX_UPLOAD:
         await note.edit_text(
-            f"Fișierul e prea mare pentru Telegram ({len(data)//1_000_000} MB > 50 MB). "
-            "Restrânge perioada sau descarcă-l din panoul admin."
+            f"Файл завеликий для Telegram ({len(data)//1_000_000} МБ > 50 МБ). "
+            "Звузьте період або завантажте його з адмін-панелі."
         )
         return
 
-    fname = _filename_from_headers(resp, f"Extras_Excel_{test_id}_{period}.xlsx")
+    fname = _filename_from_headers(resp, f"Vytiah_Excel_{test_id}_{period}.xlsx")
     f = io.BytesIO(data)
     f.name = fname
     try:
@@ -227,7 +227,7 @@ async def _send_excel(chat, thread_id, test_id, period) -> None:
         await note.delete()
     except Exception as exc:
         logger.warning("send_document failed: %s", exc)
-        await note.edit_text("Nu am putut trimite fișierul. Încercați din nou.")
+        await note.edit_text("Не вдалося надіслати файл. Спробуйте ще раз.")
 
 
 async def on_excel_period(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -275,23 +275,23 @@ async def on_client_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             resp = await client.get(f"{EXPORTS}/submissions/{tid}", headers=_headers())
     except httpx.RequestError as exc:
         logger.warning("submissions list backend unreachable: %s", exc)
-        await chat.send_message("Backend indisponibil. Încercați din nou.",
+        await chat.send_message("Бекенд недоступний. Спробуйте ще раз.",
                                 message_thread_id=thread_id)
         return
     if resp.status_code != 200:
-        await chat.send_message(f"Nu pot prelua submisiile (cod {resp.status_code}).",
+        await chat.send_message(f"Не вдалося отримати заявки (код {resp.status_code}).",
                                 message_thread_id=thread_id)
         return
 
     subs = resp.json() or []
     if not subs:
-        await chat.send_message("Nu există submisii pentru acest test.",
+        await chat.send_message("Немає заявок для цього тесту.",
                                 message_thread_id=thread_id)
         return
 
     context.user_data["client_test"] = int(tid)
     await chat.send_message(
-        "Alege persoana (sau scrie un nume ca să cauți):",
+        "Оберіть особу (або введіть ім'я для пошуку):",
         reply_markup=_subs_keyboard(subs),
         message_thread_id=thread_id,
     )
@@ -309,33 +309,33 @@ async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     thread_id = getattr(query.message, "message_thread_id", None) if query.message else None
     chat = query.message.chat
 
-    note = await chat.send_message("Pregătesc PDF-ul…", message_thread_id=thread_id)
+    note = await chat.send_message("Готую PDF…", message_thread_id=thread_id)
     try:
         async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.get(f"{EXPORTS}/pdf/{sid}", headers=_headers())
     except httpx.RequestError as exc:
         logger.warning("pdf backend unreachable: %s", exc)
-        await note.edit_text("Backend indisponibil. Încercați din nou.")
+        await note.edit_text("Бекенд недоступний. Спробуйте ще раз.")
         return
 
     if resp.status_code == 404:
-        await note.edit_text("Această persoană nu are PDF salvat.")
+        await note.edit_text("Ця особа не має збереженого PDF.")
         return
     if resp.status_code == 413:
         await note.edit_text(_too_big_text(resp.json()))
         return
     if resp.status_code != 200:
-        await note.edit_text(f"Eroare la generare (cod {resp.status_code}).")
+        await note.edit_text(f"Помилка під час генерації (код {resp.status_code}).")
         return
 
     data = resp.content
     if not data:
-        await note.edit_text("Această persoană nu are PDF salvat.")
+        await note.edit_text("Ця особа не має збереженого PDF.")
         return
     if len(data) > _MAX_UPLOAD:
         await note.edit_text(
-            f"Fișierul e prea mare pentru Telegram ({len(data)//1_000_000} MB > 50 MB). "
-            "Descărcați-l din panoul admin."
+            f"Файл завеликий для Telegram ({len(data)//1_000_000} МБ > 50 МБ). "
+            "Завантажте його з адмін-панелі."
         )
         return
 
@@ -347,7 +347,7 @@ async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await note.delete()
     except Exception as exc:
         logger.warning("send_document failed: %s", exc)
-        await note.edit_text("Nu am putut trimite fișierul. Încercați din nou.")
+        await note.edit_text("Не вдалося надіслати файл. Спробуйте ще раз.")
 
 
 async def on_client_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -367,22 +367,22 @@ async def on_client_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                                     params={"q": q}, headers=_headers())
     except httpx.RequestError as exc:
         logger.warning("submissions search backend unreachable: %s", exc)
-        await update.message.reply_text("Backend indisponibil. Încercați din nou.",
+        await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.",
                                         message_thread_id=_thread_id(update))
         return
     if resp.status_code != 200:
-        await update.message.reply_text(f"Nu pot căuta (cod {resp.status_code}).",
+        await update.message.reply_text(f"Не вдалося виконати пошук (код {resp.status_code}).",
                                         message_thread_id=_thread_id(update))
         return
 
     subs = resp.json() or []
     if not subs:
-        await update.message.reply_text(f"Nicio potrivire pentru «{q}».",
+        await update.message.reply_text(f"Немає збігів для «{q}».",
                                         message_thread_id=_thread_id(update))
         return
 
     await update.message.reply_text(
-        "Alege persoana:",
+        "Оберіть особу:",
         reply_markup=_subs_keyboard(subs),
         message_thread_id=_thread_id(update),
     )

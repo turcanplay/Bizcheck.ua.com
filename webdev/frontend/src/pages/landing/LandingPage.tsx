@@ -11,9 +11,9 @@ import FinalCta from './sections/FinalCta';
 import Footer from './sections/Footer';
 import './LandingPage.css';
 
-const LANDING_TITLE_RO = 'Bizcheck.md · Evaluarea riscurilor afacerii · Crowe Turcan Mikhailenko';
+const LANDING_TITLE_UK = 'Bizcheck.md · Оцінка ризиків бізнесу · Crowe Turcan Mikhailenko';
 const LANDING_TITLE_RU = 'Bizcheck.md · Оценка рисков бизнеса · Crowe Turcan Mikhailenko';
-const LANDING_DESC_RO  = 'Diagnosticați riscurile afacerii prin metodologia Crowe. Test online gratuit, raport detaliat în PDF, șabloane juridice și consultanță pentru IMM-uri din Republica Moldova.';
+const LANDING_DESC_UK  = 'Діагностика ризиків бізнесу за методологією Crowe. Безкоштовний онлайн-тест, детальний звіт у PDF, юридичні шаблони та консультації для МСБ.';
 const LANDING_DESC_RU  = 'Диагностика рисков бизнеса по методологии Crowe. Бесплатный онлайн-тест, детальный отчёт в PDF, юридические шаблоны и консультации для МСБ Республики Молдова.';
 
 export default function LandingPage() {
@@ -22,8 +22,8 @@ export default function LandingPage() {
   return (
     <div className="landing">
       <Seo
-        title={lang === 'ru' ? LANDING_TITLE_RU : LANDING_TITLE_RO}
-        description={lang === 'ru' ? LANDING_DESC_RU : LANDING_DESC_RO}
+        title={lang === 'ru' ? LANDING_TITLE_RU : LANDING_TITLE_UK}
+        description={lang === 'ru' ? LANDING_DESC_RU : LANDING_DESC_UK}
         path="/"
       />
       <Hero />

@@ -13,9 +13,9 @@ interface UnifiedItem {
   kind: 'test' | 'template';
   id: number;
   slug: string;
-  title_ro: string;
+  title_uk: string;
   title_ru: string;
-  desc_ro: string;
+  desc_uk: string;
   desc_ru: string;
   is_paid: boolean;
   is_active: boolean;
@@ -29,16 +29,16 @@ interface UnifiedItem {
 function toUnified(tests: PublicTest[], templates: PublicTemplate[]): UnifiedItem[] {
   const a: UnifiedItem[] = tests.map(t => ({
     kind: 'test', id: t.id, slug: t.slug,
-    title_ro: t.name_ro, title_ru: t.name_ru,
-    desc_ro: t.description_ro, desc_ru: t.description_ru,
+    title_uk: t.name_uk, title_ru: t.name_ru,
+    desc_uk: t.description_uk, desc_ru: t.description_ru,
     is_paid: t.is_paid, is_active: t.is_active, is_coming_soon: t.is_coming_soon ?? false,
     price: t.price, currency: t.currency, category: t.category,
     features: t.features ?? [],
   }));
   const b: UnifiedItem[] = templates.map(t => ({
     kind: 'template', id: t.id, slug: t.slug,
-    title_ro: t.title_ro, title_ru: t.title_ru,
-    desc_ro: t.description_ro, desc_ru: t.description_ru,
+    title_uk: t.title_uk, title_ru: t.title_ru,
+    desc_uk: t.description_uk, desc_ru: t.description_ru,
     is_paid: t.is_paid, is_active: t.is_active, is_coming_soon: t.is_coming_soon ?? false,
     price: t.price, currency: t.currency, category: t.category,
     features: t.features ?? [],
@@ -100,7 +100,7 @@ export default function CatalogSection() {
       if (tab === 'templates' && x.kind !== 'template') return false;
       // Search on title + desc in both languages
       if (q) {
-        const hay = [x.title_ro, x.title_ru, x.desc_ro, x.desc_ru, x.category ?? '']
+        const hay = [x.title_uk, x.title_ru, x.desc_uk, x.desc_ru, x.category ?? '']
           .join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
@@ -153,7 +153,7 @@ export default function CatalogSection() {
       <div className="catalog__header">
         <span className="catalog__eyebrow">
           <span className="catalog__eyebrow-dot" aria-hidden />
-          {lang === 'ro' ? 'MARKETPLACE' : 'МАРКЕТПЛЕЙС'}
+          {lang === 'uk' ? 'МАРКЕТПЛЕЙС' : 'МАРКЕТПЛЕЙС'}
         </span>
         <h2 className="catalog__title">
           {(() => {
@@ -164,8 +164,8 @@ export default function CatalogSection() {
           })()}
         </h2>
         <p className="catalog__subtitle-intro">
-          {lang === 'ro'
-            ? 'Teste și șabloane profesionale într-un singur loc.'
+          {lang === 'uk'
+            ? 'Тести та шаблони в одному місці.'
             : 'Тесты и шаблоны в одном месте.'}
         </p>
         <button type="button" className="catalog__cta" onClick={handleCatalogCta}>
@@ -208,7 +208,7 @@ export default function CatalogSection() {
               value={search}
               maxLength={120}
               onChange={e => setSearch(sanitizeOneLine(e.target.value, 120))}
-              aria-label="Caută"
+              aria-label="Пошук"
             />
           </div>
 
@@ -337,7 +337,7 @@ export default function CatalogSection() {
 
 interface CatalogGroupProps {
   items: UnifiedItem[];
-  lang: 'ro' | 'ru';
+  lang: 'uk' | 'ru';
   onClickItem: (x: UnifiedItem) => void;
   cta: string;
   ctaPaid?: string;
@@ -398,7 +398,7 @@ function CatalogGroup({ items, lang, onClickItem, cta, ctaPaid, badgeBasic, badg
 
 interface CardProps {
   item: UnifiedItem;
-  lang: 'ro' | 'ru';
+  lang: 'uk' | 'ru';
   onClick: () => void;
   cta: string;
   badgeBasic: string;
@@ -407,11 +407,11 @@ interface CardProps {
 }
 
 function Card({ item, lang, onClick, cta, badgeBasic, badgePremium, freeLabel }: CardProps) {
-  const title = lang === 'ro' ? item.title_ro : item.title_ru;
-  const desc  = lang === 'ro' ? item.desc_ro  : item.desc_ru;
+  const title = lang === 'uk' ? item.title_uk : item.title_ru;
+  const desc  = lang === 'uk' ? item.desc_uk  : item.desc_ru;
   const premium = item.is_paid;
   const comingSoon = item.is_coming_soon;
-  const comingSoonCta = lang === 'ro' ? 'În curând' : 'Скоро';
+  const comingSoonCta = lang === 'uk' ? 'Незабаром' : 'Скоро';
   return (
     <div className={`catalog-card ${premium ? 'catalog-card--premium' : 'catalog-card--basic'}${comingSoon ? ' catalog-card--inactive' : ''}`}>
       {comingSoon && (

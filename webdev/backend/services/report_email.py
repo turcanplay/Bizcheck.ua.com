@@ -22,8 +22,8 @@ PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.md").rstrip
 
 _EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$')
 
-_RO_MONTHS = ["ianuarie", "februarie", "martie", "aprilie", "mai", "iunie",
-              "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"]
+_UK_MONTHS = ["січня", "лютого", "березня", "квітня", "травня", "червня",
+              "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"]
 _RU_MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня",
               "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
@@ -52,7 +52,7 @@ def dispatch_report_email(sub_id):
     if not pdf_bytes or len(pdf_bytes) < 1024:
         return False, "pdf_not_ready"
 
-    lang = (sub.get("language") or "ro").lower()
+    lang = (sub.get("language") or "uk").lower()
 
     # Test name in the user's language.
     test_name = ""
@@ -61,7 +61,7 @@ def dispatch_report_email(sub_id):
         try:
             t = get_test_by_id(test_id)
             if t:
-                test_name = (t.get("name_ru") if lang == "ru" else t.get("name_ro")) or t.get("name_ro") or ""
+                test_name = (t.get("name_ru") if lang == "ru" else t.get("name_uk")) or t.get("name_uk") or ""
         except Exception:
             pass
 
@@ -71,7 +71,7 @@ def dispatch_report_email(sub_id):
         dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00")) if created_at else datetime.utcnow()
     except Exception:
         dt = datetime.utcnow()
-    months = _RU_MONTHS if lang == "ru" else _RO_MONTHS
+    months = _RU_MONTHS if lang == "ru" else _UK_MONTHS
     date_str = f"{dt.day} {months[dt.month - 1]} {dt.year}"
 
     score = int(round(float(sub.get("total_score") or 0)))
@@ -93,9 +93,9 @@ def dispatch_report_email(sub_id):
     try:
         send_report_email_async(
             to_email=to_email,
-            first_name=first or ("Client" if lang != "ru" else "Клиент"),
+            first_name=first or ("Клієнт" if lang != "ru" else "Клиент"),
             lang=lang,
-            test_name=test_name or ("Raport BizCheck" if lang != "ru" else "Отчёт BizCheck"),
+            test_name=test_name or ("Звіт BizCheck" if lang != "ru" else "Отчёт BizCheck"),
             date_str=date_str,
             score=score,
             download_url=download_url,

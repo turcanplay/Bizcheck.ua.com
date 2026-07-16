@@ -16,21 +16,21 @@ def get_all_blocks(test_id=None):
     return [_serialize_block(b) for b in blocks]
 
 
-def create_block(test_id, title_ro, title_ru, order_index=0):
+def create_block(test_id, title_uk, title_ru, order_index=0):
     if not test_id:
         raise ValueError("test_id is required")
     if not Test.find_by_id(test_id):
         raise ValueError("Test not found")
-    if not title_ro or not title_ro.strip():
+    if not title_uk or not title_uk.strip():
         raise ValueError("Block title (RO) is required")
     if not title_ru or not title_ru.strip():
         raise ValueError("Block title (RU) is required")
     return _serialize_block(
-        Block.create(test_id, title_ro.strip(), title_ru.strip(), order_index)
+        Block.create(test_id, title_uk.strip(), title_ru.strip(), order_index)
     )
 
 
-def update_block(block_id, title_ro, title_ru, order_index, test_id=None):
+def update_block(block_id, title_uk, title_ru, order_index, test_id=None):
     existing = Block.find_by_id(block_id)
     if not existing:
         raise ValueError("Block not found")
@@ -38,7 +38,7 @@ def update_block(block_id, title_ro, title_ru, order_index, test_id=None):
         raise ValueError("Test not found")
     return _serialize_block(Block.update(
         block_id,
-        title_ro or existing["title_ro"],
+        title_uk or existing["title_uk"],
         title_ru or existing["title_ru"],
         order_index if order_index is not None else existing["order_index"],
         test_id=test_id,
@@ -96,7 +96,7 @@ def get_quiz_data(test_slug=None, test_id=None):
         for q in questions_by_block.get(b["id"], []):
             options = [
                 {
-                    "label_ro": a["text_ro"],
+                    "label_uk": a["text_uk"],
                     "label_ru": a["text_ru"],
                     "key": f"a{a['id']}",
                     "score": float(a["score"]),
@@ -109,16 +109,16 @@ def get_quiz_data(test_slug=None, test_id=None):
                 "id": f"b{b['id']}q{q['id']}",
                 "db_id": q["id"],
                 "parent_question_id": q.get("parent_question_id"),
-                "text_ro": q["text_ro"],
+                "text_uk": q["text_uk"],
                 "text_ru": q["text_ru"],
-                "note_ro": q["note_ro"],
+                "note_uk": q["note_uk"],
                 "note_ru": q["note_ru"],
                 "options": options,
             })
 
         result.append({
             "id": b["id"],
-            "title_ro": b["title_ro"],
+            "title_uk": b["title_uk"],
             "title_ru": b["title_ru"],
             "questions": questions,
         })
@@ -128,7 +128,7 @@ def get_quiz_data(test_slug=None, test_id=None):
         "test": {
             "id": test["id"],
             "slug": test["slug"],
-            "name_ro": test["name_ro"],
+            "name_uk": test["name_uk"],
             "name_ru": test["name_ru"],
         },
     }

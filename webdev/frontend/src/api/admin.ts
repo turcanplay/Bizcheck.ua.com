@@ -117,9 +117,9 @@ export const adminApi = {
     request<{ message: string }>(`/submissions`, { method: 'DELETE' }),
   listBlocks: (testId?: number) =>
     request<{ blocks: AdminBlock[] }>(`/blocks${testId ? `?test_id=${testId}` : ''}`),
-  createBlock: (data: { test_id: number; title_ro: string; title_ru: string; order_index?: number }) =>
+  createBlock: (data: { test_id: number; title_uk: string; title_ru: string; order_index?: number }) =>
     request<{ block: AdminBlock }>('/blocks', { method: 'POST', body: JSON.stringify(data) }),
-  updateBlock: (id: number, data: Partial<{ title_ro: string; title_ru: string; order_index: number }>) =>
+  updateBlock: (id: number, data: Partial<{ title_uk: string; title_ru: string; order_index: number }>) =>
     request<{ block: AdminBlock }>(`/blocks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBlock: (id: number) =>
     request<{ message: string }>(`/blocks/${id}`, { method: 'DELETE' }),
@@ -199,16 +199,16 @@ export const adminApi = {
   feedbackContacts: () =>
     request<{ contacts: TgContact[] }>('/admin/feedback/contacts'),
   // Bulk: send the preset question to many targets at once (username/tgId/link).
-  sendFeedback: (data: { targets: string[]; lang?: 'auto' | 'ro' | 'ru' }) =>
+  sendFeedback: (data: { targets: string[]; lang?: 'auto' | 'uk' | 'ru' }) =>
     request<FeedbackSendResponse>('/admin/feedback/send', {
       method: 'POST', body: JSON.stringify(data),
     }),
   deleteFeedback: (id: number) =>
     request<{ ok: boolean }>(`/admin/feedback/${id}`, { method: 'DELETE' }),
   getFeedbackPrompt: () =>
-    request<{ ro: string; ru: string }>('/admin/feedback/prompt'),
-  updateFeedbackPrompt: (data: { ro?: string; ru?: string }) =>
-    request<{ ro: string; ru: string }>('/admin/feedback/prompt', {
+    request<{ uk: string; ru: string }>('/admin/feedback/prompt'),
+  updateFeedbackPrompt: (data: { uk?: string; ru?: string }) =>
+    request<{ uk: string; ru: string }>('/admin/feedback/prompt', {
       method: 'PUT', body: JSON.stringify(data),
     }),
   // Automatic feedback: send the question N minutes after a report is delivered in TG.
@@ -255,9 +255,9 @@ export type ReportType = 'standard' | 'premium' | 'bizcheck' | 'gdpr';
 export interface AdminTest {
   id: number;
   slug: string;
-  name_ro: string;
+  name_uk: string;
   name_ru: string;
-  description_ro: string;
+  description_uk: string;
   description_ru: string;
   is_active: boolean;
   is_coming_soon: boolean;
@@ -275,9 +275,9 @@ export interface AdminTest {
 
 export interface AdminTestInput {
   slug?: string;
-  name_ro: string;
+  name_uk: string;
   name_ru?: string;
-  description_ro?: string;
+  description_uk?: string;
   description_ru?: string;
   is_active?: boolean;
   is_coming_soon?: boolean;
@@ -314,7 +314,7 @@ export interface AdminSubmission {
 export interface AdminBlock {
   id: number;
   test_id: number;
-  title_ro: string;
+  title_uk: string;
   title_ru: string;
   order_index: number;
   created_at: string;
@@ -323,13 +323,13 @@ export interface AdminBlock {
 export interface AdminAnswer {
   id: number;
   question_id: number;
-  text_ro: string;
+  text_uk: string;
   text_ru: string;
   score: number;
   next_question_id: number | null;
-  explanation_ro?: string | null;
+  explanation_uk?: string | null;
   explanation_ru?: string | null;
-  risk_ro?: string | null;
+  risk_uk?: string | null;
   risk_ru?: string | null;
 }
 
@@ -337,9 +337,9 @@ export interface AdminQuestion {
   id: number;
   block_id: number;
   parent_question_id: number | null;
-  text_ro: string;
+  text_uk: string;
   text_ru: string;
-  note_ro: string | null;
+  note_uk: string | null;
   note_ru: string | null;
   order_index: number;
   answers: AdminAnswer[];
@@ -347,7 +347,7 @@ export interface AdminQuestion {
 }
 
 export interface AdminAnswerInput {
-  text_ro: string;
+  text_uk: string;
   text_ru: string;
   score: number;
   next_question_id?: number | null;
@@ -355,9 +355,9 @@ export interface AdminAnswerInput {
 
 export interface AdminQuestionInput {
   block_id: number;
-  text_ro: string;
+  text_uk: string;
   text_ru: string;
-  note_ro?: string | null;
+  note_uk?: string | null;
   note_ru?: string | null;
   order_index?: number;
   parent_question_id?: number | null;
@@ -367,9 +367,9 @@ export interface AdminQuestionInput {
 export interface AdminTemplate {
   id: number;
   slug: string;
-  title_ro: string;
+  title_uk: string;
   title_ru: string;
-  description_ro: string;
+  description_uk: string;
   description_ru: string;
   is_active: boolean;
   is_coming_soon: boolean;
@@ -384,9 +384,9 @@ export interface AdminTemplate {
 
 export interface AdminTemplateInput {
   slug?: string;
-  title_ro: string;
+  title_uk: string;
   title_ru?: string;
-  description_ro?: string;
+  description_uk?: string;
   description_ru?: string;
   is_active?: boolean;
   is_coming_soon?: boolean;
@@ -410,7 +410,7 @@ export interface AdminTestimonial {
   id: number;
   name: string;
   role: string | null;
-  quote_ro: string;
+  quote_uk: string;
   quote_ru: string;
   rating: number;
   avatar_url: string | null;
@@ -424,7 +424,7 @@ export interface AdminTestimonial {
 export interface AdminTestimonialInput {
   name: string;
   role?: string | null;
-  quote_ro?: string;
+  quote_uk?: string;
   quote_ru?: string;
   rating?: number;
   avatar_url?: string | null;
@@ -435,9 +435,9 @@ export interface AdminTestimonialInput {
 
 export interface AdminFaqItem {
   id: number;
-  question_ro: string;
+  question_uk: string;
   question_ru: string;
-  answer_ro: string;
+  answer_uk: string;
   answer_ru: string;
   order_index: number;
   is_active: boolean;
@@ -445,9 +445,9 @@ export interface AdminFaqItem {
 }
 
 export interface AdminFaqInput {
-  question_ro?: string;
+  question_uk?: string;
   question_ru?: string;
-  answer_ro?: string;
+  answer_uk?: string;
   answer_ru?: string;
   order_index?: number;
   is_active?: boolean;

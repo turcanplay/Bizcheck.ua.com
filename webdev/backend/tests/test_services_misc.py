@@ -91,7 +91,7 @@ class TestSubmissionService:
 class TestFeedback:
     def test_norm_lang(self):
         from services import feedback as fb
-        assert fb.norm_lang("ro") == "ro"
+        assert fb.norm_lang("uk") == "uk"
         assert fb.norm_lang("ru") == "ru"
         assert fb.norm_lang("xx") == "ru"      # default is ru here
 
@@ -99,15 +99,15 @@ class TestFeedback:
         from services import feedback as fb
         monkeypatch.setattr("models.site_settings.SiteSettings.get",
                             staticmethod(lambda k, d="": ""))
-        assert fb.get_prompt("ro") == fb.DEFAULT_PROMPT["ro"]
+        assert fb.get_prompt("uk") == fb.DEFAULT_PROMPT["uk"]
 
     def test_compose_message_appends_hint(self, monkeypatch):
         from services import feedback as fb
         monkeypatch.setattr("models.site_settings.SiteSettings.get",
                             staticmethod(lambda k, d="": "PROMPT"))
-        msg = fb.compose_message("ro")
+        msg = fb.compose_message("uk")
         assert msg.startswith("PROMPT")
-        assert fb.REPLY_HINT["ro"] in msg
+        assert fb.REPLY_HINT["uk"] in msg
 
     def test_auto_delay_clamps_and_defaults(self, monkeypatch):
         from services import feedback as fb
@@ -130,7 +130,7 @@ class TestFeedback:
         called = {"n": 0}
         monkeypatch.setattr("models.tg_outreach.TgOutreach.create",
                             staticmethod(lambda **k: called.__setitem__("n", called["n"] + 1)))
-        fb.maybe_schedule_auto(123, "ro")
+        fb.maybe_schedule_auto(123, "uk")
         assert called["n"] == 0
 
     def test_maybe_schedule_skips_when_already_scheduled(self, monkeypatch):
@@ -141,7 +141,7 @@ class TestFeedback:
         created = {"n": 0}
         monkeypatch.setattr("models.tg_outreach.TgOutreach.create",
                             staticmethod(lambda **k: created.__setitem__("n", created["n"] + 1)))
-        fb.maybe_schedule_auto(123, "ro")
+        fb.maybe_schedule_auto(123, "uk")
         assert created["n"] == 0
 
     def test_maybe_schedule_creates_when_new(self, monkeypatch):
@@ -153,10 +153,10 @@ class TestFeedback:
         seen = {}
         monkeypatch.setattr("models.tg_outreach.TgOutreach.create",
                             staticmethod(lambda **k: seen.update(k)))
-        fb.maybe_schedule_auto(123, "ro")
+        fb.maybe_schedule_auto(123, "uk")
         assert seen["tg_chat_id"] == 123
         assert seen["mode"] == "auto"
-        assert seen["lang"] == "ro"
+        assert seen["lang"] == "uk"
 
 
 # ---------------------------------------------------------------------------

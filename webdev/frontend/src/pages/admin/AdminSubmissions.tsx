@@ -30,30 +30,30 @@ export default function AdminSubmissions() {
   function testName(id: number | null) {
     if (!id) return '—';
     const t = tests.find(x => x.id === id);
-    return t ? t.name_ro : `#${id}`;
+    return t ? t.name_uk : `#${id}`;
   }
 
   async function onDelete(id: number) {
-    if (!confirm('Ștergi acest răspuns?')) return;
+    if (!confirm('Видалити цю відповідь?')) return;
     await adminApi.deleteSubmission(id);
     await load();
   }
 
   async function onDeleteAll() {
     if (submissions.length === 0) return;
-    // Ștergere în masă, IREVERSIBILĂ (toate testele) — confirmare obligatorie.
-    if (!confirm(`Ștergi TOATE cele ${submissions.length} răspunsuri din toate testele?\n\nAcțiunea este IREVERSIBILĂ.`)) return;
+    // Масове видалення, НЕЗВОРОТНЕ (усі тести) — обовʼязкове підтвердження.
+    if (!confirm(`Видалити ВСІ ${submissions.length} відповідей з усіх тестів?\n\nДія є НЕЗВОРОТНОЮ.`)) return;
     try {
       await adminApi.deleteAllSubmissions();
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Ștergere eșuată');
+      alert(e instanceof Error ? e.message : 'Помилка видалення');
     }
   }
 
   async function exportExcel() {
     const res = await adminFetch(`/submissions/export/excel`);
-    if (!res.ok) { alert('Export eșuat'); return; }
+    if (!res.ok) { alert('Помилка експорту'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -67,7 +67,7 @@ export default function AdminSubmissions() {
 
   async function openPdf(s: AdminSubmission, download = false) {
     const res = await adminFetch(`/submissions/${s.id}/pdf`);
-    if (!res.ok) { alert('PDF indisponibil'); return; }
+    if (!res.ok) { alert('PDF недоступний'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     if (download) {
@@ -88,7 +88,7 @@ export default function AdminSubmissions() {
   // so an expired session shows a friendly error instead of raw JSON in a tab.
   async function openReport(s: AdminSubmission) {
     const res = await adminFetch(`/submissions/${s.id}/report`);
-    if (!res.ok) { alert('Raport indisponibil'); return; }
+    if (!res.ok) { alert('Звіт недоступний'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener');
@@ -106,36 +106,36 @@ export default function AdminSubmissions() {
             value={testFilter}
             onChange={e => { const v = e.target.value ? Number(e.target.value) : ''; setTestFilter(v); load(v); }}
           >
-            <option value="">Toate testele</option>
-            {tests.map(t => <option value={t.id} key={t.id}>{t.name_ro}</option>)}
+            <option value="">Усі тести</option>
+            {tests.map(t => <option value={t.id} key={t.id}>{t.name_uk}</option>)}
           </select>
           <button className="admin-btn admin-btn-accent" onClick={exportExcel}>📥 Export Excel</button>
           {submissions.length > 0 && (
-            <button className="admin-btn admin-btn-danger" onClick={onDeleteAll}>🗑 Șterge tot</button>
+            <button className="admin-btn admin-btn-danger" onClick={onDeleteAll}>🗑 Видалити все</button>
           )}
         </div>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
 
-      {!loading && submissions.length === 0 && <div className="admin-empty">Niciun răspuns încă.</div>}
+      {!loading && submissions.length === 0 && <div className="admin-empty">Поки що немає відповідей.</div>}
 
       {!loading && submissions.length > 0 && (
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Nr.</th><th>Test</th><th>Nume</th><th>Email</th><th>Telefon</th>
-                <th>Scor</th><th>Status</th><th>Data</th><th>TG</th><th>PDF</th><th></th>
+                <th>№</th><th>Тест</th><th>Імʼя</th><th>Email</th><th>Телефон</th>
+                <th>Бал</th><th>Статус</th><th>Дата</th><th>TG</th><th>PDF</th><th></th>
               </tr>
             </thead>
             <tbody>
               {submissions.map((s, i) => (
                 <tr key={s.id}>
-                  {/* Număr de ordine afișat (nu ID-ul din DB). Lista vine newest-first,
-                      deci cea mai veche aplicație = 1, cea mai nouă = numărul cel mai mare.
-                      Se recalculează automat la fiecare load, inclusiv după ștergere. */}
+                  {/* Порядковий номер, що відображається (не ID з БД). Список надходить newest-first,
+                      тож найстаріша заявка = 1, найновіша = найбільший номер.
+                      Перераховується автоматично при кожному завантаженні, зокрема після видалення. */}
                   <td>{submissions.length - i}</td>
                   <td>{testName(s.test_id)}</td>
                   <td>{[s.first_name, s.last_name].filter(Boolean).join(' ')}</td>
@@ -161,12 +161,12 @@ export default function AdminSubmissions() {
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button
                           className="admin-btn admin-btn-ghost admin-btn-sm"
-                          title="Deschide PDF"
+                          title="Відкрити PDF"
                           onClick={() => openPdf(s, false)}
                         >👁</button>
                         <button
                           className="admin-btn admin-btn-ghost admin-btn-sm"
-                          title="Descarcă PDF"
+                          title="Завантажити PDF"
                           onClick={() => openPdf(s, true)}
                         >⬇</button>
                       </div>
@@ -176,7 +176,7 @@ export default function AdminSubmissions() {
                     <div style={{ display: 'flex', gap: 4 }}>
                       <button
                         className="admin-btn admin-btn-ghost admin-btn-sm"
-                        title="Vezi raport (mereu disponibil)"
+                        title="Переглянути звіт (завжди доступний)"
                         onClick={() => openReport(s)}
                       >📄</button>
                       <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(s.id)}>🗑</button>

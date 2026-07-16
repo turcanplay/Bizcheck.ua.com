@@ -18,36 +18,36 @@ function Guide() {
   return (
     <div className="admin-test-card" style={{ padding: 16, marginBottom: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0 }}>📖 Cum funcționează (ghid)</h3>
+        <h3 style={{ margin: 0 }}>📖 Як це працює (інструкція)</h3>
         <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setOpen(o => !o)}>
-          {open ? 'Ascunde' : 'Arată'}
+          {open ? 'Сховати' : 'Показати'}
         </button>
       </div>
 
       {open && (
         <div style={{ marginTop: 12, display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           <div style={card}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>✋ Manual — trimit eu acum</div>
-            <div style={step}><span style={num}>1</span><span>Scrii/editezi <b>textul întrebării</b> (RO + RU) mai jos.</span></div>
-            <div style={step}><span style={num}>2</span><span>În „Trimite la mai mulți" lipești <b>@username</b>, <b>ID Telegram</b> sau link <b>t.me/...</b> — câte unul pe linie.</span></div>
-            <div style={step}><span style={num}>3</span><span>Apeși <b>Trimite</b>. Cine a folosit deja botul → primește mesajul <b>imediat</b>.</span></div>
-            <div style={step}><span style={num}>4</span><span>Pentru cine nu poate fi contactat direct → primești un <b>link personal</b> de copiat și trimis manual.</span></div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>✋ Вручну — надсилаю зараз сам</div>
+            <div style={step}><span style={num}>1</span><span>Пишете/редагуєте <b>текст запитання</b> (UA + RU) нижче.</span></div>
+            <div style={step}><span style={num}>2</span><span>У „Надіслати кільком" вставляєте <b>@username</b>, <b>ID Telegram</b> або посилання <b>t.me/...</b> — по одному на рядок.</span></div>
+            <div style={step}><span style={num}>3</span><span>Натискаєте <b>Надіслати</b>. Хто вже користувався ботом → отримає повідомлення <b>одразу</b>.</span></div>
+            <div style={step}><span style={num}>4</span><span>Для тих, з ким не можна зв'язатися напряму → отримаєте <b>персональне посилання</b>, щоб скопіювати й надіслати вручну.</span></div>
           </div>
 
           <div style={card}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>🤖 Automat — se trimite singur</div>
-            <div style={step}><span style={num}>1</span><span>Activezi <b>„Trimitere automată"</b> și alegi <b>după câte minute</b> de la livrarea raportului în Telegram.</span></div>
-            <div style={step}><span style={num}>2</span><span>Când un client își ia raportul în TG, sistemul programează automat întrebarea.</span></div>
-            <div style={step}><span style={num}>3</span><span>După timpul setat, botul îi trimite singur aceeași întrebare presetată.</span></div>
-            <div style={step}><span style={num}>4</span><span>Funcționează o singură dată per client (nu se repetă).</span></div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>🤖 Автоматично — надсилається саме</div>
+            <div style={step}><span style={num}>1</span><span>Вмикаєте <b>„Автоматичне надсилання"</b> і обираєте, <b>через скільки хвилин</b> після доставки звіту в Telegram.</span></div>
+            <div style={step}><span style={num}>2</span><span>Коли клієнт отримує свій звіт у TG, система автоматично планує запитання.</span></div>
+            <div style={step}><span style={num}>3</span><span>Після заданого часу бот сам надсилає йому те саме передвстановлене запитання.</span></div>
+            <div style={step}><span style={num}>4</span><span>Спрацьовує лише один раз на клієнта (не повторюється).</span></div>
           </div>
 
           <div style={card}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>💬 Răspunsul</div>
-            <div style={step}><span style={num}>•</span><span>Îi cerem clientului să scrie tot <b>într-un singur mesaj</b> (adăugăm automat acest rând la text).</span></div>
-            <div style={step}><span style={num}>•</span><span>Salvăm <b>primul mesaj</b> pe care îl scrie după întrebare.</span></div>
-            <div style={step}><span style={num}>•</span><span>Apare în lista <b>„Răspunsuri primite"</b> de jos.</span></div>
-            <div style={{ ...step, marginBottom: 0 }}><span style={num}>!</span><span>Nu păstrăm lista de destinatari — <b>doar răspunsurile</b>.</span></div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>💬 Відповідь</div>
+            <div style={step}><span style={num}>•</span><span>Просимо клієнта написати все <b>одним повідомленням</b> (цей рядок додаємо до тексту автоматично).</span></div>
+            <div style={step}><span style={num}>•</span><span>Зберігаємо <b>перше повідомлення</b>, яке він напише після запитання.</span></div>
+            <div style={step}><span style={num}>•</span><span>Воно з'являється у списку <b>„Отримані відповіді"</b> нижче.</span></div>
+            <div style={{ ...step, marginBottom: 0 }}><span style={num}>!</span><span>Ми не зберігаємо список одержувачів — <b>лише відповіді</b>.</span></div>
           </div>
         </div>
       )}
@@ -87,39 +87,39 @@ function AutoSettings() {
 
   return (
     <div className="admin-test-card" style={{ padding: 16, marginBottom: 20 }}>
-      <h3 style={{ margin: '0 0 4px' }}>🤖 Trimitere automată</h3>
+      <h3 style={{ margin: '0 0 4px' }}>🤖 Автоматичне надсилання</h3>
       <p style={{ color: 'var(--text2)', fontSize: 12, margin: '0 0 12px' }}>
-        Trimite întrebarea singur, după ce un client își ia raportul în Telegram.
+        Надсилає запитання самостійно після того, як клієнт отримає свій звіт у Telegram.
       </p>
 
       <label className="admin-checkbox-row" style={{ marginBottom: 14 }}>
         <input type="checkbox" checked={enabled} disabled={busy}
           onChange={e => { setEnabled(e.target.checked); save(e.target.checked, delay); }} />
-        <b>{enabled ? '✅ Activă' : '⏸ Oprită'}</b>
+        <b>{enabled ? '✅ Увімкнено' : '⏸ Вимкнено'}</b>
       </label>
 
       <div className="admin-form-group" style={{ maxWidth: 360 }}>
-        <label>După câte minute de la livrare se trimite?</label>
+        <label>Через скільки хвилин після доставки надсилати?</label>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <input type="number" min={1} max={10080} value={delay}
             onChange={e => setDelay(Math.max(1, Math.min(10080, +e.target.value || 1)))}
             style={{ width: 110 }} />
-          <span style={{ color: 'var(--text2)', fontSize: 13 }}>minute</span>
+          <span style={{ color: 'var(--text2)', fontSize: 13 }}>хвилин</span>
           {[30, 60, 120, 1440].map(m => (
             <button key={m} type="button"
               className={`admin-btn admin-btn-sm ${delay === m ? 'admin-btn-accent' : 'admin-btn-ghost'}`}
               onClick={() => setDelay(m)}>
-              {m === 1440 ? '1 zi' : m === 60 ? '1 oră' : `${m} min`}
+              {m === 1440 ? '1 день' : m === 60 ? '1 година' : `${m} хв`}
             </button>
           ))}
           <button type="button" className="admin-btn admin-btn-accent admin-btn-sm" disabled={busy}
             onClick={() => save(enabled, delay)}>
-            {busy ? '...' : 'Salvează'}
+            {busy ? '...' : 'Зберегти'}
           </button>
           {saved && <span style={{ color: 'var(--success, #05AB8C)', fontSize: 13 }}>✓</span>}
         </div>
         <small style={{ color: 'var(--text2)' }}>
-          Acum: {enabled ? `activă, la ${delay} min după livrare` : 'oprită'}.
+          Зараз: {enabled ? `увімкнено, через ${delay} хв після доставки` : 'вимкнено'}.
         </small>
       </div>
 
@@ -151,7 +151,7 @@ export default function AdminFeedback() {
   useEffect(() => { load(); }, []);
 
   async function onDelete(r: TgReply) {
-    if (!confirm('Ștergi acest răspuns?')) return;
+    if (!confirm('Видалити цю відповідь?')) return;
     await adminApi.deleteFeedback(r.id);
     await load();
   }
@@ -159,7 +159,7 @@ export default function AdminFeedback() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>✈️ Feedback Telegram</h2>
+        <h2>✈️ Відгуки в Telegram</h2>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
@@ -173,12 +173,12 @@ export default function AdminFeedback() {
       <BulkSend contacts={contacts} onSent={load} />
 
       <div className="admin-section-header" style={{ marginTop: 28 }}>
-        <h3 style={{ margin: 0 }}>💬 Răspunsuri primite</h3>
-        <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={load}>↻ Reîncarcă</button>
+        <h3 style={{ margin: 0 }}>💬 Отримані відповіді</h3>
+        <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={load}>↻ Оновити</button>
       </div>
 
-      {loading && <div className="admin-empty">Se încarcă...</div>}
-      {!loading && replies.length === 0 && <div className="admin-empty">Niciun răspuns încă.</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
+      {!loading && replies.length === 0 && <div className="admin-empty">Ще немає відповідей.</div>}
 
       {replies.map(r => (
         <div className="admin-test-card" key={r.id} style={{ padding: 16 }}>
@@ -187,7 +187,7 @@ export default function AdminFeedback() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
                 {r.username
                   ? <b style={{ fontSize: 14 }}>@{r.username}</b>
-                  : <span style={{ fontSize: 13, color: 'var(--text2)' }}>(fără username)</span>}
+                  : <span style={{ fontSize: 13, color: 'var(--text2)' }}>(без username)</span>}
                 <span className="admin-badge admin-badge-muted">{(r.lang || 'ru').toUpperCase()}</span>
                 {r.answered_at && (
                   <span style={{ fontSize: 12, color: 'var(--text2)' }}>{r.answered_at.slice(0, 16).replace('T', ' ')}</span>
@@ -214,7 +214,7 @@ export default function AdminFeedback() {
 // Editable bilingual prompt
 // ──────────────────────────────────────────────────────────────
 function PromptEditor() {
-  const [ro, setRo] = useState('');
+  const [uk, setUk] = useState('');
   const [ru, setRu] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -223,7 +223,7 @@ function PromptEditor() {
 
   useEffect(() => {
     adminApi.getFeedbackPrompt()
-      .then(p => { setRo(p.ro); setRu(p.ru); })
+      .then(p => { setUk(p.uk); setRu(p.ru); })
       .catch(e => setError(e instanceof Error ? e.message : 'Load failed'))
       .finally(() => setLoading(false));
   }, []);
@@ -232,34 +232,34 @@ function PromptEditor() {
     e.preventDefault();
     setBusy(true); setSaved(false); setError('');
     try {
-      const p = await adminApi.updateFeedbackPrompt({ ro, ru });
-      setRo(p.ro); setRu(p.ru);
+      const p = await adminApi.updateFeedbackPrompt({ uk, ru });
+      setUk(p.uk); setRu(p.ru);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { setError(e instanceof Error ? e.message : 'Save failed'); }
     finally { setBusy(false); }
   }
 
-  if (loading) return <div className="admin-empty">Se încarcă textul...</div>;
+  if (loading) return <div className="admin-empty">Завантаження тексту...</div>;
 
   return (
     <form className="admin-test-card" style={{ padding: 16, marginBottom: 20 }} onSubmit={save}>
-      <h3 style={{ margin: '0 0 4px' }}>📝 Textul întrebării (presetat)</h3>
+      <h3 style={{ margin: '0 0 4px' }}>📝 Текст запитання (передвстановлений)</h3>
       <p style={{ color: 'var(--text2)', fontSize: 12, margin: '0 0 12px' }}>
-        Limba se alege automat după persoană (fallback RU). Emoji și liniile noi se păstrează.
+        Мова обирається автоматично за особою (запасний варіант — RU). Емодзі та нові рядки зберігаються.
       </p>
       <div className="admin-form-group">
-        <label>Text (RO)</label>
-        <textarea value={ro} maxLength={4000} onChange={e => setRo(e.target.value)} style={{ minHeight: 150 }} />
+        <label>Текст (UA)</label>
+        <textarea value={uk} maxLength={4000} onChange={e => setUk(e.target.value)} style={{ minHeight: 150 }} />
       </div>
       <div className="admin-form-group">
-        <label>Text (RU)</label>
+        <label>Текст (RU)</label>
         <textarea value={ru} maxLength={4000} onChange={e => setRu(e.target.value)} style={{ minHeight: 150 }} />
       </div>
       {error && <div className="admin-error">⚠️ {error}</div>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Salvează textul'}</button>
-        {saved && <span style={{ color: 'var(--success, #05AB8C)', fontSize: 13 }}>✓ Salvat</span>}
+        <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>{busy ? '...' : 'Зберегти текст'}</button>
+        {saved && <span style={{ color: 'var(--success, #05AB8C)', fontSize: 13 }}>✓ Збережено</span>}
       </div>
     </form>
   );
@@ -270,7 +270,7 @@ function PromptEditor() {
 // ──────────────────────────────────────────────────────────────
 function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => void }) {
   const [raw, setRaw] = useState('');
-  const [lang, setLang] = useState<'auto' | 'ro' | 'ru'>('auto');
+  const [lang, setLang] = useState<'auto' | 'uk' | 'ru'>('auto');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState<FeedbackSendResult[] | null>(null);
@@ -279,7 +279,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
     e.preventDefault();
     setError(''); setResults(null);
     const targets = raw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
-    if (targets.length === 0) { setError('Adăugați cel puțin un destinatar.'); return; }
+    if (targets.length === 0) { setError('Додайте щонайменше одного одержувача.'); return; }
     setBusy(true);
     try {
       const resp = await adminApi.sendFeedback({ targets, lang });
@@ -287,7 +287,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
       setRaw('');
       onSent();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Eroare');
+      setError(e instanceof Error ? e.message : 'Помилка');
     } finally { setBusy(false); }
   }
 
@@ -297,26 +297,26 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
 
   return (
     <form className="admin-test-card" style={{ padding: 16 }} onSubmit={submit}>
-      <h3 style={{ margin: '0 0 12px' }}>➕ Trimite la mai mulți</h3>
+      <h3 style={{ margin: '0 0 12px' }}>➕ Надіслати кільком</h3>
 
       <div className="admin-form-group">
-        <label>Destinatari (câte unul pe linie — @username, ID Telegram sau link t.me)</label>
+        <label>Одержувачі (по одному на рядок — @username, ID Telegram або посилання t.me)</label>
         <textarea
           value={raw}
           onChange={e => setRaw(e.target.value)}
           placeholder={'@ion_pop\n123456789\nhttps://t.me/maria_x'}
           style={{ minHeight: 120, fontFamily: 'monospace', fontSize: 13 }}
         />
-        <small style={{ color: 'var(--text2)' }}>{contacts.length} contacte au folosit deja botul.</small>
+        <small style={{ color: 'var(--text2)' }}>{contacts.length} контактів уже користувалися ботом.</small>
       </div>
 
       <div className="admin-form-group">
-        <label>Limba</label>
+        <label>Мова</label>
         <div style={{ display: 'flex', gap: 8 }}>
-          {(['auto', 'ro', 'ru'] as const).map(l => (
+          {(['auto', 'uk', 'ru'] as const).map(l => (
             <label key={l} className={`admin-btn admin-btn-sm ${lang === l ? 'admin-btn-accent' : 'admin-btn-ghost'}`} style={{ cursor: 'pointer' }}>
               <input type="radio" name="fblang" checked={lang === l} onChange={() => setLang(l)} style={{ display: 'none' }} />
-              {l === 'auto' ? 'Automat' : l.toUpperCase()}
+              {l === 'auto' ? 'Авто' : l.toUpperCase()}
             </label>
           ))}
         </div>
@@ -325,20 +325,20 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
       {error && <div className="admin-error">⚠️ {error}</div>}
 
       <button type="submit" className="admin-btn admin-btn-accent" disabled={busy}>
-        {busy ? 'Se trimite...' : 'Trimite'}
+        {busy ? 'Надсилання...' : 'Надіслати'}
       </button>
 
       {results && (
         <div style={{ marginTop: 14 }}>
           {sent.length > 0 && (
             <div style={{ color: 'var(--success, #05AB8C)', fontSize: 13, marginBottom: 8 }}>
-              ✓ Trimis către {sent.length}: {sent.map(r => r.username ? `@${r.username}` : r.target).join(', ')}
+              ✓ Надіслано до {sent.length}: {sent.map(r => r.username ? `@${r.username}` : r.target).join(', ')}
             </div>
           )}
           {links.length > 0 && (
             <div style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-                🔗 Linkuri personale de trimis manual ({links.length}):
+                🔗 Персональні посилання для надсилання вручну ({links.length}):
               </div>
               {links.map((r, i) => (
                 <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
@@ -352,7 +352,7 @@ function BulkSend({ contacts, onSent }: { contacts: TgContact[]; onSent: () => v
           )}
           {invalid.length > 0 && (
             <div style={{ color: 'var(--danger, #D64535)', fontSize: 13 }}>
-              ⚠️ Invalide (ignorate): {invalid.map(r => r.target).join(', ')}
+              ⚠️ Недійсні (пропущено): {invalid.map(r => r.target).join(', ')}
             </div>
           )}
         </div>

@@ -1,893 +1,893 @@
-export type Lang = 'ro' | 'ru';
+export type Lang = 'uk' | 'ru';
 
 export const translations = {
   // Header
   headerRight: {
-    ro: 'Evaluarea riscurilor · 2026',
+    uk: 'Оцінка ризиків · 2026',
     ru: 'Оценка рисков · 2026',
   },
 
   // Start page — Hero
   heroEyebrow: {
-    ro: 'Instrument de autodiagnosticare',
+    uk: 'Інструмент самодіагностики',
     ru: 'Инструмент самодиагностики',
   },
   heroTitle1: {
-    ro: 'Evaluarea riscurilor',
+    uk: 'Оцінка ризиків',
     ru: 'Оценка рисков',
   },
   heroTitle2: {
-    ro: 'afacerii dumneavoastră',
+    uk: 'вашого бізнесу',
     ru: 'вашего бизнеса',
   },
   heroDesc: {
-    ro: 'Diagnostic profesional conform metodologiei Crowe. Răspundeți la întrebări pe {blocks} blocuri cheie — obțineți un raport detaliat privind zonele de risc și eficiență.',
+    uk: 'Професійна діагностика за методологією Crowe. Дайте відповіді на запитання за {blocks} ключовими блоками — отримайте детальний звіт про зони ризику та ефективності.',
     ru: 'Профессиональная диагностика по методологии Crowe. Ответьте на вопросы по {blocks} ключевым блокам — получите детальный отчёт о зонах риска и эффективности.',
   },
   metaBlocks: {
-    ro: 'blocuri de analiză',
+    uk: 'блоків аналізу',
     ru: 'блоков анализа',
   },
   metaQuestions: {
-    ro: 'întrebări',
+    uk: 'запитань',
     ru: 'вопросов',
   },
   metaMinutes: {
-    ro: 'minute',
+    uk: 'хвилин',
     ru: 'минут',
   },
 
   // Start page — Test selection (Step 0)
   step0: {
-    ro: 'Pasul 0',
+    uk: 'Крок 0',
     ru: 'Шаг 0',
   },
   step0Title: {
-    ro: 'Alegeți tipul auditului',
+    uk: 'Оберіть тип аудиту',
     ru: 'Выберите тип аудита',
   },
   step0Hint: {
-    ro: 'Fiecare audit are propriul set de întrebări adaptat domeniului.',
+    uk: 'Кожен аудит має свій набір запитань, адаптований під напрям.',
     ru: 'У каждого аудита свой набор вопросов, адаптированный под направление.',
   },
   formWarnTest: {
-    ro: 'Vă rugăm să selectați un audit pentru a continua.',
+    uk: 'Будь ласка, оберіть аудит, щоб продовжити.',
     ru: 'Пожалуйста, выберите аудит, чтобы продолжить.',
   },
 
   // Start page — Personal info (Step 1)
   step1: {
-    ro: 'Pasul 1',
+    uk: 'Крок 1',
     ru: 'Шаг 1',
   },
   step1Title: {
-    ro: 'Date de contact pentru obținerea unei evaluări preliminare a riscurilor',
+    uk: 'Контактні дані для отримання первинної оцінки ризиків',
     ru: 'Контактные данные для получения первичной оценки рисков',
   },
   labelFirstName: {
-    ro: 'Prenume',
+    uk: 'Ім\'я',
     ru: 'Имя',
   },
   labelLastName: {
-    ro: 'Nume',
+    uk: 'Прізвище',
     ru: 'Фамилия',
   },
   labelFullName: {
-    ro: 'Nume complet',
+    uk: 'Повне ім\'я',
     ru: 'Полное имя',
   },
   placeholderFullName: {
-    ro: 'Ivan Ivanov',
+    uk: 'Іван Іванов',
     ru: 'Иван Иванов',
   },
   labelEmail: {
-    ro: 'Adresa electronică',
+    uk: 'Електронна пошта',
     ru: 'Электронная почта',
   },
   labelPhone: {
-    ro: 'Număr de telefon',
+    uk: 'Номер телефону',
     ru: 'Номер телефона',
   },
   consentText: {
-    ro: 'Sunt de acord cu prelucrarea datelor mele personale',
+    uk: 'Я згоден на обробку своїх персональних даних',
     ru: 'Я согласен на обработку моих персональных данных',
   },
   placeholderFirstName: {
-    ro: 'Ivan',
+    uk: 'Іван',
     ru: 'Иван',
   },
   placeholderLastName: {
-    ro: 'Ivanov',
+    uk: 'Іванов',
     ru: 'Иванов',
   },
   placeholderEmail: {
-    ro: 'Office@bizcheck.md',
+    uk: 'Office@bizcheck.md',
     ru: 'Office@bizcheck.md',
   },
   placeholderPhone: {
-    ro: '+373 XX XXX XXX',
+    uk: '+373 XX XXX XXX',
     ru: '+373 XX XXX XXX',
   },
 
   // Start page — Company info (Step 2)
   step2: {
-    ro: 'Pasul 2',
+    uk: 'Крок 2',
     ru: 'Шаг 2',
   },
   step2Title: {
-    ro: 'Informații despre companie',
+    uk: 'Інформація про компанію',
     ru: 'Информация о компании',
   },
   labelSector: {
-    ro: 'Domeniul de activitate',
+    uk: 'Сфера діяльності',
     ru: 'Сфера деятельности',
   },
   labelSize: {
-    ro: 'Numărul de angajați',
+    uk: 'Кількість співробітників',
     ru: 'Количество сотрудников',
   },
   labelAge: {
-    ro: 'De câți ani există compania dumneavoastră?',
+    uk: 'Скільки років існує ваша компанія?',
     ru: 'Сколько лет существует ваша компания?',
   },
   labelRevenue: {
-    ro: 'Veniturile din vânzări',
+    uk: 'Доходи від продажів',
     ru: 'Доходы от продаж',
   },
   formWarnPersonal: {
-    ro: 'Vă rugăm să completați toate câmpurile obligatorii și să acceptați procesarea datelor.',
+    uk: 'Будь ласка, заповніть усі обов\'язкові поля та надайте згоду на обробку даних.',
     ru: 'Пожалуйста, заполните все обязательные поля и дайте согласие на обработку данных.',
   },
   formWarnEmail: {
-    ro: 'Adresa de e-mail nu este validă.',
+    uk: 'Неправильна адреса електронної пошти.',
     ru: 'Неверный адрес электронной почты.',
   },
   formWarnPhone: {
-    ro: 'Numărul de telefon nu este valid (minim 7 cifre).',
+    uk: 'Неправильний номер телефону (мінімум 7 цифр).',
     ru: 'Неверный номер телефона (минимум 7 цифр).',
   },
   formWarnFullName: {
-    ro: 'Vă rugăm să completați.',
+    uk: 'Будь ласка, заповніть.',
     ru: 'Пожалуйста, заполните.',
   },
 
   // CTA — delivery frames (per-method form)
   ctaFrameBack: {
-    ro: '← Înapoi la opțiuni',
+    uk: '← Назад до варіантів',
     ru: '← Назад к вариантам',
   },
   ctaFrameDownloadSub: {
-    ro: 'Completați datele de contact pentru a descărca raportul.',
+    uk: 'Заповніть контактні дані, щоб завантажити звіт.',
     ru: 'Заполните контактные данные, чтобы скачать отчёт.',
   },
   ctaFrameEmailSub: {
-    ro: 'Introduceți adresa de e-mail unde să vă trimitem raportul.',
+    uk: 'Введіть адресу ел. пошти, куди надішлемо звіт.',
     ru: 'Введите адрес эл. почты, куда отправим отчёт.',
   },
   ctaFrameTelegramSub: {
-    ro: 'Vă vom redirecționa spre Telegram pentru a primi raportul.',
+    uk: 'Ми перенаправимо вас у Telegram для отримання звіту.',
     ru: 'Мы перенаправим вас в Telegram для получения отчёта.',
   },
   ctaConsentPrefix: {
-    ro: 'Sunt de acord cu',
+    uk: 'Я згоден(на) з',
     ru: 'Я согласен(на) с',
   },
   ctaConsentLink: {
-    ro: 'politica de confidențialitate, cookies și procesarea datelor personale',
+    uk: 'політикою конфіденційності, cookies та обробкою персональних даних',
     ru: 'политикой конфиденциальности, cookies и обработкой персональных данных',
   },
   formWarnConsent: {
-    ro: 'Bifați acordul cu politica de confidențialitate.',
+    uk: 'Підтвердьте згоду з політикою конфіденційності.',
     ru: 'Подтвердите согласие с политикой конфиденциальности.',
   },
   formWarnServer: {
-    ro: 'Eroare la salvarea datelor. Verificați email-ul sau telefonul și încercați din nou.',
+    uk: 'Помилка збереження даних. Перевірте email або телефон і спробуйте знову.',
     ru: 'Ошибка сохранения данных. Проверьте email или телефон и попробуйте снова.',
   },
   formWarnCompany: {
-    ro: 'Vă rugăm să selectați domeniul de activitate, numărul de angajați și vârsta companiei.',
+    uk: 'Будь ласка, оберіть сферу діяльності, кількість співробітників та час існування компанії.',
     ru: 'Пожалуйста, выберите сферу деятельности, количество сотрудников и возраст компании.',
   },
   btnNext: {
-    ro: 'Continuă',
+    uk: 'Далі',
     ru: 'Далее',
   },
   startBtn: {
-    ro: 'Începe evaluarea',
+    uk: 'Почати оцінку',
     ru: 'Начать оценку',
   },
 
   // Sectors
   sectors: {
-    ro: ['Producție', 'Comerț', 'Servicii / Consultanță', 'HoReCa', 'IT / Servicii digitale', 'Agricultură', 'Transport și logistică', 'Medicină / Farmacie', 'Alt domeniu'],
+    uk: ['Виробництво', 'Торгівля', 'Послуги / Консалтинг', 'HoReCa', 'IT / Цифрові сервіси', 'Сільське господарство', 'Транспорт і логістика', 'Медицина / Фармацевтика', 'Інша сфера'],
     ru: ['Производство', 'Торговля', 'Услуги / Консалтинг', 'HoReCa', 'IT / Цифровые сервисы', 'Сельское хозяйство', 'Транспорт и логистика', 'Медицина / Фармацевтика', 'Другая сфера'],
   },
   sizes: {
-    ro: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
+    uk: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
     ru: ['1–5', '6–10', '11–25', '26–50', '51–100', '101–250', '251–500', '500+'],
   },
   ages: {
-    ro: ['Mai puțin de 1 an', '1–2 ani', '3–5 ani', '6–10 ani', 'Peste 10 ani'],
+    uk: ['Менше 1 року', '1–2 роки', '3–5 років', '6–10 років', 'Понад 10 років'],
     ru: ['Менее 1 года', '1–2 года', '3–5 лет', '6–10 лет', 'Более 10 лет'],
   },
   revenues: {
-    ro: ['Până la 50 mln', '50–100 mln', '100–150 mln', '150–200 mln', '200–500 mln', '500 mln și mai mult'],
+    uk: ['До 50 млн', '50–100 млн', '100–150 млн', '150–200 млн', '200–500 млн', '500 млн і більше'],
     ru: ['До 50 млн', '50–100 млн', '100–150 млн', '150–200 млн', '200–500 млн', '500 млн и более'],
   },
 
   // Quiz
   questionOf: {
-    ro: 'Întrebarea {current} din {total}',
+    uk: 'Запитання {current} з {total}',
     ru: 'Вопрос {current} из {total}',
   },
   btnBack: {
-    ro: 'Înapoi',
+    uk: 'Назад',
     ru: 'Назад',
   },
   btnGetReport: {
-    ro: 'Obține raportul',
+    uk: 'Отримати звіт',
     ru: 'Получить отчёт',
   },
   progressQuestion: {
-    ro: 'Întrebarea',
+    uk: 'Запитання',
     ru: 'Вопрос',
   },
 
   // Quiz transition
   blockCompleted: {
-    ro: 'Bloc finalizat!',
+    uk: 'Блок завершено!',
     ru: 'Блок завершён!',
   },
   blockLabel: {
-    ro: 'Bloc',
+    uk: 'Блок',
     ru: 'Блок',
   },
   nextLabel: {
-    ro: 'Următorul:',
+    uk: 'Наступний:',
     ru: 'Следующий:',
   },
   btnContinue: {
-    ro: 'Continuă',
+    uk: 'Продовжити',
     ru: 'Продолжить',
   },
 
   // Block detail page labels
   // Standard report — per-question checklist
   checklistTitle: {
-    ro: 'Detalii per întrebare',
+    uk: 'Деталі за запитаннями',
     ru: 'Детали по вопросам',
   },
   checklistSubtitle: {
-    ro: 'Evaluarea fiecărei întrebări · Corespunde / Nu corespunde normei',
+    uk: 'Оцінка за кожним запитанням · Відповідає / Не відповідає нормі',
     ru: 'Оценка по каждому вопросу · Соответствует / Не соответствует норме',
   },
   checklistPass: {
-    ro: 'Corespunde normei',
+    uk: 'Відповідає нормі',
     ru: 'Соответствует норме',
   },
   checklistFail: {
-    ro: 'Nu corespunde normei',
+    uk: 'Не відповідає нормі',
     ru: 'Не соответствует норме',
   },
   checklistPartial: {
-    ro: 'Parțial',
+    uk: 'Частково',
     ru: 'Частично',
   },
   checklistYourAnswer: {
-    ro: 'Răspunsul dumneavoastră',
+    uk: 'Ваша відповідь',
     ru: 'Ваш ответ',
   },
   checklistNoAnswer: {
-    ro: '(neafișată — întrebare săritată)',
+    uk: '(не показано — запитання пропущено)',
     ru: '(не показана — вопрос пропущен)',
   },
 
   // GDPR report — per-question explanation page
   gdprQuestionLabel: {
-    ro: 'Întrebarea',
+    uk: 'Запитання',
     ru: 'Вопрос',
   },
 
   blockEssenceLabel: {
-    ro: 'Esența',
+    uk: 'Суть',
     ru: 'Суть',
   },
   blockRiskLabel: {
-    ro: 'Risc și consecințe',
+    uk: 'Ризик і наслідки',
     ru: 'Риск и последствия',
   },
   blockActionLabel: {
-    ro: 'Ce trebuie de făcut',
+    uk: 'Що робити',
     ru: 'Что делать',
   },
   blockRegulatoryLabel: {
-    ro: 'Cadrul de reglementare',
+    uk: 'Нормативна основа',
     ru: 'Нормативная основа',
   },
 
   // Report
   reportTitle: {
-    ro: 'Raport Bizcheck.md',
+    uk: 'Звіт Bizcheck.md',
     ru: 'Отчёт Bizcheck.md',
   },
   reportSubtitle: {
-    ro: 'Analiză pe categorii · Evaluarea riscurilor afacerii',
+    uk: 'Аналіз за категоріями · Оцінка ризиків бізнесу',
     ru: 'Анализ по категориям · Оценка рисков бизнеса',
   },
   overallResult: {
-    ro: 'Rezultat general',
+    uk: 'Загальний результат',
     ru: 'Общий результат',
   },
   resultsByCategory: {
-    ro: 'Rezultate pe categorii',
+    uk: 'Результати за категоріями',
     ru: 'Результаты по категориям',
   },
   conclusion: {
-    ro: 'Concluzie',
+    uk: 'Висновок',
     ru: 'Заключение',
   },
   conclusionHigh: {
-    ro: 'Afacerea dumneavoastră demonstrează un nivel ridicat de maturitate. Continuați să mențineți cele mai bune practici.',
+    uk: 'Ваш бізнес демонструє високий рівень зрілості. Продовжуйте підтримувати найкращі практики.',
     ru: 'Ваш бизнес демонстрирует высокий уровень зрелости. Продолжайте поддерживать лучшие практики.',
   },
   conclusionMid: {
-    ro: 'Există zone de îmbunătățire. Vă recomandăm să acordați atenție blocurilor cu indicatori scăzuți.',
+    uk: 'Є зони для покращення. Рекомендуємо звернути увагу на блоки з низькими показниками.',
     ru: 'Есть зоны для улучшения. Рекомендуем обратить внимание на блоки с низкими показателями.',
   },
   conclusionWarning: {
-    ro: 'Situație instabilă cu vulnerabilități semnificative. Se recomandă analiza detaliată a zonelor problematice.',
+    uk: 'Нестабільна ситуація із суттєвими вразливостями. Рекомендується детальний аналіз проблемних зон.',
     ru: 'Нестабильная ситуация с существенными уязвимостями. Рекомендуется детальный анализ проблемных зон.',
   },
   conclusionLow: {
-    ro: 'Au fost identificate zone critice de risc. Se recomandă consultanță profesională.',
+    uk: 'Виявлено критичні зони ризику. Рекомендується професійна консультація.',
     ru: 'Выявлены критические зоны риска. Рекомендуется профессиональная консультация.',
   },
   onPathTo: {
-    ro: 'Sunteți la {pct}% din drumul către afacerea ideală.',
+    uk: 'Ви на {pct}% шляху до ідеального бізнесу.',
     ru: 'Вы на {pct}% пути к идеальному бизнесу.',
   },
   verdictHigh: {
-    ro: 'Afacerea este în formă bună.',
+    uk: 'Бізнес у хорошій формі.',
     ru: 'Бизнес в хорошей форме.',
   },
   verdictMid: {
-    ro: 'Nivel acceptabil, dar necesită îmbunătățiri.',
+    uk: 'Допустимий рівень, але потребує доопрацювання.',
     ru: 'Допустимый уровень, но требует доработки.',
   },
   verdictWarning: {
-    ro: 'Situație instabilă. Vulnerabilități semnificative.',
+    uk: 'Ситуація нестабільна. Суттєві вразливості.',
     ru: 'Ситуация нестабильна. Существенные уязвимости.',
   },
   verdictLow: {
-    ro: 'Riscuri critice. Este necesară consultanță.',
+    uk: 'Критичні ризики. Потрібна консультація.',
     ru: 'Критические риски. Требуется консультация.',
   },
   indicator: {
-    ro: 'Indicator:',
+    uk: 'Показник:',
     ru: 'Показатель:',
   },
 
   // Legend
   legendTitle: {
-    ro: 'Legenda evaluării riscurilor:',
+    uk: 'Легенда оцінки ризиків:',
     ru: 'Легенда оценки рисков:',
   },
   legendGreen: {
-    ro: '80% – 100%',
+    uk: '80% – 100%',
     ru: '80% – 100%',
   },
   legendGreenDesc: {
-    ro: 'Risc scăzut. Zonă stabilă, sistemul funcționează corect.',
+    uk: 'Низький ризик. Стабільна зона, система працює коректно.',
     ru: 'Низкий риск. Стабильная зона, система работает корректно.',
   },
   legendYellow: {
-    ro: '70% – 79%',
+    uk: '70% – 79%',
     ru: '70% – 79%',
   },
   legendYellowDesc: {
-    ro: 'Risc moderat. Nivel acceptabil, dar necesită control și îmbunătățiri.',
+    uk: 'Помірний ризик. Допустимий рівень, але потребує контролю та доопрацювання.',
     ru: 'Умеренный риск. Допустимый уровень, но требует контроля и доработки.',
   },
   legendOrange: {
-    ro: '65% – 69%',
+    uk: '65% – 69%',
     ru: '65% – 69%',
   },
   legendOrangeDesc: {
-    ro: 'Risc ridicat. Situație instabilă, vulnerabilități semnificative.',
+    uk: 'Небезпечний рівень ризику. Ситуація нестабільна, наявні суттєві вразливості.',
     ru: 'Опасный уровень риска. Ситуация нестабильна, присутствуют существенные уязвимости.',
   },
   legendRed: {
-    ro: '0% – 64%',
+    uk: '0% – 64%',
     ru: '0% – 64%',
   },
   legendRedDesc: {
-    ro: 'Risc critic. Zonă critică, necesită atenție și intervenție imediată.',
+    uk: 'Високий рівень ризику. Критична зона, потрібні увага та втручання.',
     ru: 'Высокий уровень риска. Критическая зона, требуется внимание и вмешательство.',
   },
 
   // Zones
   zoneSafe: {
-    ro: 'Risc scăzut',
+    uk: 'Низький ризик',
     ru: 'Низкий риск',
   },
   zoneDeveloping: {
-    ro: 'Risc moderat',
+    uk: 'Помірний ризик',
     ru: 'Умеренный риск',
   },
   zoneWarning: {
-    ro: 'Risc ridicat',
+    uk: 'Небезпечний рівень ризику',
     ru: 'Опасный уровень риска',
   },
   zoneRisk: {
-    ro: 'Risc critic',
+    uk: 'Високий рівень ризику',
     ru: 'Высокий уровень риска',
   },
   zoneDescRisk: {
-    ro: 'Zonă critică, necesită atenție și intervenție imediată.',
+    uk: 'Критична зона, потрібні увага та втручання.',
     ru: 'Критическая зона, требуется внимание и вмешательство.',
   },
   zoneDescWarning: {
-    ro: 'Situație instabilă, vulnerabilități semnificative.',
+    uk: 'Ситуація нестабільна, наявні суттєві вразливості.',
     ru: 'Ситуация нестабильна, присутствуют существенные уязвимости.',
   },
   zoneDescDeveloping: {
-    ro: 'Nivel acceptabil, dar necesită control și îmbunătățiri.',
+    uk: 'Допустимий рівень, але потребує контролю та доопрацювання.',
     ru: 'Допустимый уровень, но требует контроля и доработки.',
   },
   zoneDescSafe: {
-    ro: 'Zonă stabilă. Recomandăm menținerea acestui nivel.',
+    uk: 'Стабільна зона. Рекомендуємо підтримувати цей рівень.',
     ru: 'Стабильная зона. Рекомендуем поддерживать этот уровень.',
   },
 
   // CTA
   ctaTitle: {
-    ro: 'Aveți nevoie de un diagnostic complet?',
+    uk: 'Потрібна повна діагностика?',
     ru: 'Нужна полная диагностика?',
   },
   ctaSubtitle: {
-    ro: 'Experții Crowe vă vor ajuta să efectuați o analiză aprofundată a riscurilor și să elaborați o strategie de creștere a eficienței afacerii dumneavoastră.',
+    uk: 'Експерти Crowe допоможуть провести глибокий аналіз ризиків і розробити стратегію підвищення ефективності вашого бізнесу.',
     ru: 'Эксперты Crowe помогут провести глубокий анализ рисков и разработать стратегию повышения эффективности вашего бизнеса.',
   },
   ctaNote: {
-    ro: 'În cel mai scurt timp, specialiștii noștri vă vor contacta pentru a discuta rezultatele și pașii următori.',
+    uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
     ru: 'В ближайшее время наши специалисты свяжутся с вами для обсуждения результатов и следующих шагов.',
   },
   ctaBtn: {
-    ro: 'Solicită consultanță',
+    uk: 'Запросити консультацію',
     ru: 'Запросить консультацию',
   },
   ctaRestart: {
-    ro: 'Refă testul',
+    uk: 'Пройти заново',
     ru: 'Пройти заново',
   },
-  ctaEmailLabel:    { ro: 'EMAIL',    ru: 'EMAIL' },
-  ctaTelegramLabel: { ro: 'TELEGRAM', ru: 'TELEGRAM' },
-  ctaWebLabel:      { ro: 'WEB',      ru: 'ВЕБ' },
-  ctaEmailValue:    { ro: 'office@bizcheck.md', ru: 'office@bizcheck.md' },
-  ctaTelegramValue: { ro: '@CROWE_TM', ru: '@CROWE_TM' },
-  ctaWebValue:      { ro: 'crowe-tm.md', ru: 'crowe-tm.md' },
-  ctaCrowe: { ro: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
+  ctaEmailLabel:    { uk: 'EMAIL',    ru: 'EMAIL' },
+  ctaTelegramLabel: { uk: 'TELEGRAM', ru: 'TELEGRAM' },
+  ctaWebLabel:      { uk: 'ВЕБ',      ru: 'ВЕБ' },
+  ctaEmailValue:    { uk: 'office@bizcheck.md', ru: 'office@bizcheck.md' },
+  ctaTelegramValue: { uk: '@CROWE_TM', ru: '@CROWE_TM' },
+  ctaWebValue:      { uk: 'crowe-tm.md', ru: 'crowe-tm.md' },
+  ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
   ctaDisclaimer: {
-    ro: 'Raportul este generat automat de platforma Bizcheck.md și are un caracter exclusiv informativ. Acesta nu constituie o concluzie oficială profesională, juridică, financiară sau de alt tip și nu poate fi considerat o evaluare a activității, a nivelului de „sănătate" sau a competențelor companiei.\n\nPlatforma nu garantează exhaustivitatea și acuratețea rezultatelor. Pentru luarea deciziilor se recomandă efectuarea unei analize separate cu participarea specialiștilor de profil.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
     ru: 'Отчёт сформирован автоматически платформой Bizcheck.md и носит исключительно информационный характер. Он не является официальным профессиональным, юридическим, финансовым или иным заключением и не может считаться оценкой деятельности, уровня «здоровья» или компетенций компании.\n\nПлатформа не гарантирует полноту и точность результатов. Для принятия решений рекомендуется проведение отдельного анализа с привлечением профильных специалистов.',
   },
 
   // Loading / empty states
   loading: {
-    ro: 'Se încarcă...',
+    uk: 'Завантаження...',
     ru: 'Загрузка...',
   },
   noQuestions: {
-    ro: 'Momentan nu sunt întrebări disponibile. Vă rugăm să reveniți mai târziu.',
+    uk: 'Наразі запитання недоступні. Будь ласка, поверніться пізніше.',
     ru: 'В настоящее время вопросы недоступны. Пожалуйста, вернитесь позже.',
   },
 
   // PDF download
   downloadPdf: {
-    ro: 'Descarcă raportul PDF',
+    uk: 'Завантажити звіт PDF',
     ru: 'Скачать отчёт PDF',
   },
   telegramCta: {
-    ro: 'Apăsați butonul, deschideți Telegram și apăsați START — raportul PDF va fi trimis direct în chat.',
+    uk: 'Натисніть кнопку, відкрийте Telegram і натисніть START — PDF-звіт буде надіслано безпосередньо в чат.',
     ru: 'Нажмите кнопку, откройте Telegram и нажмите START — PDF-отчёт будет отправлен прямо в чат.',
   },
   telegramBtn: {
-    ro: 'Trimite raportul în Telegram',
+    uk: 'Надіслати звіт у Telegram',
     ru: 'Отправить отчёт в Telegram',
   },
   telegramLoading: {
-    ro: 'Se pregătește...',
+    uk: 'Підготовка...',
     ru: 'Подготовка...',
   },
   telegramError: {
-    ro: 'Eroare temporară. Deschis direct.',
+    uk: 'Тимчасова помилка. Відкрито напряму.',
     ru: 'Временная ошибка. Открыто напрямую.',
   },
 
   // CTA success page (after quiz, before bot)
   ctaSuccessTitle: {
-    ro: 'Testul a fost finalizat!',
+    uk: 'Тест завершено!',
     ru: 'Тест завершён!',
   },
   ctaSuccessSubtitle: {
-    ro: 'Raportul dvs. detaliat este pregătit',
+    uk: 'Ваш детальний звіт готовий',
     ru: 'Ваш детальный отчёт готов',
   },
   ctaSuccessName: {
-    ro: 'Pregătit pentru {name}',
+    uk: 'Підготовлено для {name}',
     ru: 'Подготовлено для {name}',
   },
   ctaStep1Label: {
-    ro: 'Test completat',
+    uk: 'Тест пройдено',
     ru: 'Тест пройден',
   },
   ctaStep2Label: {
-    ro: 'Deschideți botul',
+    uk: 'Відкрийте бота',
     ru: 'Откройте бота',
   },
   ctaStep3Label: {
-    ro: 'Primiți PDF',
+    uk: 'Отримайте PDF',
     ru: 'Получите PDF',
   },
   ctaInstruction: {
-    ro: 'Apăsați butonul de mai jos, deschideți Telegram și apăsați START — raportul PDF va fi trimis în câteva secunde.',
+    uk: 'Натисніть кнопку нижче, відкрийте Telegram і натисніть START — PDF-звіт буде надіслано протягом кількох секунд.',
     ru: 'Нажмите кнопку ниже, откройте Telegram и нажмите START — PDF-отчёт будет отправлен в течение нескольких секунд.',
   },
   ctaPdfPreparing: {
-    ro: 'Se pregătește raportul...',
+    uk: 'Звіт готується...',
     ru: 'Отчёт готовится...',
   },
   ctaPdfReady: {
-    ro: 'Raportul este pregătit. Deschideți botul pentru a-l primi.',
+    uk: 'Звіт готовий. Відкрийте бота, щоб його отримати.',
     ru: 'Отчёт готов. Откройте бота, чтобы его получить.',
   },
   ctaPdfError: {
-    ro: 'Eroare la generarea PDF-ului.',
+    uk: 'Помилка генерації PDF.',
     ru: 'Ошибка генерации PDF.',
   },
   ctaPdfRetry: {
-    ro: 'Încercați din nou',
+    uk: 'Спробувати знову',
     ru: 'Попробовать снова',
   },
   // CTA — contact gate (shown before delivery options)
   ctaContactTitle: {
-    ro: 'Ultimul pas — datele dvs. de contact',
+    uk: 'Останній крок — ваші контактні дані',
     ru: 'Последний шаг — ваши контактные данные',
   },
   ctaContactDesc: {
-    ro: 'Lăsați numele și numărul de telefon ca să putem să vă contactăm înapoi și să discutăm rezultatele.',
+    uk: 'Залиште ім\'я та номер телефону, щоб ми могли зв\'язатися з вами й обговорити результати.',
     ru: 'Оставьте имя и номер телефона, чтобы мы могли связаться с вами и обсудить результаты.',
   },
   ctaContactSubmitBtn: {
-    ro: 'Continuă',
+    uk: 'Продовжити',
     ru: 'Продолжить',
   },
   ctaContactWarn: {
-    ro: 'Vă rugăm să introduceți numele, numărul de telefon și să acceptați prelucrarea datelor.',
+    uk: 'Будь ласка, введіть ім\'я, номер телефону та надайте згоду на обробку даних.',
     ru: 'Пожалуйста, введите имя, номер телефона и дайте согласие на обработку данных.',
   },
   ctaEmailPromptTitle: {
-    ro: 'Introduceți adresa de email',
+    uk: 'Введіть адресу електронної пошти',
     ru: 'Введите адрес электронной почты',
   },
   ctaEmailPromptDesc: {
-    ro: 'Vom trimite raportul pe această adresă.',
+    uk: 'Ми надішлемо звіт на цю адресу.',
     ru: 'Мы отправим отчёт на этот адрес.',
   },
 
   ctaDeliveryTitle: {
-    ro: 'Cum doriți să primiți raportul?',
+    uk: 'Як ви хочете отримати звіт?',
     ru: 'Как вы хотите получить отчёт?',
   },
   ctaDeliverySubtitle: {
-    ro: 'Alegeți o opțiune mai jos.',
+    uk: 'Оберіть один із варіантів нижче.',
     ru: 'Выберите один из вариантов ниже.',
   },
-  ctaDownloadTitle:    { ro: 'Descarcă PDF', ru: 'Скачать PDF' },
-  ctaDownloadDesc:     { ro: 'Salvează raportul direct pe dispozitiv',
+  ctaDownloadTitle:    { uk: 'Завантажити PDF', ru: 'Скачать PDF' },
+  ctaDownloadDesc:     { uk: 'Зберегти звіт на пристрій',
                           ru: 'Сохранить отчёт на устройство' },
-  ctaDownloadBtn:      { ro: 'Descarcă acum', ru: 'Скачать' },
+  ctaDownloadBtn:      { uk: 'Завантажити', ru: 'Скачать' },
 
-  ctaEmailTitle:       { ro: 'Trimite pe email', ru: 'Отправить на email' },
-  ctaEmailDesc:        { ro: 'Primiți raportul în căsuța dvs. de email',
+  ctaEmailTitle:       { uk: 'Надіслати на email', ru: 'Отправить на email' },
+  ctaEmailDesc:        { uk: 'Отримайте звіт на свою електронну пошту',
                           ru: 'Получите отчёт на свою электронную почту' },
-  ctaEmailPlaceholder: { ro: 'adresa@email.com', ru: 'адрес@email.ru' },
-  ctaEmailBtn:         { ro: 'Trimite pe email', ru: 'Отправить' },
-  ctaEmailSent:        { ro: 'Raportul este pe drum!',
+  ctaEmailPlaceholder: { uk: 'адреса@email.com', ru: 'адрес@email.ru' },
+  ctaEmailBtn:         { uk: 'Надіслати', ru: 'Отправить' },
+  ctaEmailSent:        { uk: 'Звіт уже в дорозі!',
                           ru: 'Отчёт уже в пути!' },
-  ctaEmailSentSub:     { ro: 'În câteva clipe veți primi un mesaj la {email} cu un buton pentru a deschide raportul Bizcheck.md (PDF). Verificați și folderul Spam.',
+  ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.md (PDF). Перевірте також папку Спам.',
                           ru: 'Через несколько секунд вы получите письмо на {email} с кнопкой для открытия отчёта Bizcheck.md (PDF). Проверьте также папку Спам.' },
-  ctaEmailResend:      { ro: 'Trimite din nou', ru: 'Отправить ещё раз' },
-  ctaEmailResent:      { ro: 'Trimis din nou ✓', ru: 'Отправлено ещё раз ✓' },
-  ctaEmailComingSoon:  { ro: 'În curând', ru: 'Скоро' },
-  ctaEmailSoonDesc:    { ro: 'În curând va fi posibil și prin această metodă. Momentan folosiți Telegram.',
+  ctaEmailResend:      { uk: 'Надіслати ще раз', ru: 'Отправить ещё раз' },
+  ctaEmailResent:      { uk: 'Надіслано ще раз ✓', ru: 'Отправлено ещё раз ✓' },
+  ctaEmailComingSoon:  { uk: 'Незабаром', ru: 'Скоро' },
+  ctaEmailSoonDesc:    { uk: 'Незабаром буде доступно й цим способом. Поки що використовуйте Telegram.',
                           ru: 'Скоро будет доступно и этим способом. Пока используйте Telegram.' },
 
   // Save-gate — background verification that all answers reached the server.
-  ctaSavingTitle:      { ro: 'Ne cerem scuze — salvăm răspunsurile dvs.',
+  ctaSavingTitle:      { uk: 'Перепрошуємо — зберігаємо ваші відповіді.',
                           ru: 'Приносим извинения — сохраняем ваши ответы.' },
-  ctaSavingText:       { ro: 'Un moment, ne asigurăm că toate răspunsurile au fost salvate. Vă rugăm să nu închideți pagina.',
+  ctaSavingText:       { uk: 'Одну секунду, ми переконуємося, що всі відповіді збережено. Будь ласка, не закривайте сторінку.',
                           ru: 'Одну секунду, мы убеждаемся, что все ответы сохранены. Пожалуйста, не закрывайте страницу.' },
-  ctaSaveFailTitle:    { ro: 'Conexiune instabilă',
+  ctaSaveFailTitle:    { uk: 'Нестабільне з\'єднання',
                           ru: 'Нестабильное соединение' },
-  ctaSaveFailText:     { ro: 'Unele răspunsuri nu s-au putut confirma încă. Le salvăm automat în fundal imediat ce revine conexiunea — nu închideți pagina prea repede.',
+  ctaSaveFailText:     { uk: 'Деякі відповіді поки не вдалося підтвердити. Ми збережемо їх автоматично у фоні, щойно повернеться зв\'язок — не закривайте сторінку надто швидко.',
                           ru: 'Некоторые ответы пока не удалось подтвердить. Мы сохраним их автоматически в фоне, как только вернётся связь — не закрывайте страницу слишком быстро.' },
 
   // Prominent "check Spam" notice on the email-sent success screen.
-  ctaSpamNoticeTitle:  { ro: 'Verificați folderul SPAM',
+  ctaSpamNoticeTitle:  { uk: 'Перевірте папку СПАМ',
                           ru: 'Проверьте папку СПАМ' },
-  ctaSpamNoticeText:   { ro: 'Uneori emailul ajunge în Spam sau Promoții. Dacă nu vedeți raportul în inbox în câteva minute, căutați acolo un mesaj de la Bizcheck.md.',
+  ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.md.',
                           ru: 'Иногда письмо попадает в Спам или Промоакции. Если не видите отчёт во «Входящих» через несколько минут, поищите там письмо от Bizcheck.md.' },
 
   // Download done state — shown after PDF saved + email dispatched
   ctaDownloadDoneTitle: {
-    ro: 'Raportul a fost descărcat!',
+    uk: 'Звіт завантажено!',
     ru: 'Отчёт скачан!',
   },
   ctaDownloadDoneSub: {
-    ro: 'Verificați folderul Descărcări și inbox-ul {email} — vă trimitem o copie pe email pentru siguranță.',
+    uk: 'Перевірте папку Завантажень і поштову скриньку {email} — ми також надіслали копію на email про всяк випадок.',
     ru: 'Проверьте папку Загрузок и почтовый ящик {email} — мы также отправили копию на email на всякий случай.',
   },
 
-  ctaTelegramTitle:    { ro: 'Telegram', ru: 'Telegram' },
-  ctaTelegramDesc:     { ro: 'Deschideți botul și primiți raportul instant',
+  ctaTelegramTitle:    { uk: 'Telegram', ru: 'Telegram' },
+  ctaTelegramDesc:     { uk: 'Відкрийте бота й отримайте звіт миттєво',
                           ru: 'Откройте бота и получите отчёт мгновенно' },
-  ctaTelegramBtn:      { ro: 'Deschide Telegram', ru: 'Открыть Telegram' },
+  ctaTelegramBtn:      { uk: 'Відкрити Telegram', ru: 'Открыть Telegram' },
 
   // PDF Footer
   pdfFooterTitle: {
-    ro: 'Aveți nevoie de un diagnostic complet?',
+    uk: 'Потрібна повна діагностика?',
     ru: 'Нужна полная диагностика?',
   },
   pdfFooterDesc: {
-    ro: 'Experții Crowe vă vor ajuta să efectuați o analiză aprofundată a riscurilor și să elaborați o strategie de creștere a eficienței afacerii dumneavoastră.',
+    uk: 'Експерти Crowe допоможуть провести глибокий аналіз ризиків і розробити стратегію підвищення ефективності вашого бізнесу.',
     ru: 'Эксперты Crowe помогут провести глубокий анализ рисков и разработать стратегию повышения эффективности вашего бизнеса.',
   },
   pdfFooterContact: {
-    ro: 'În cel mai scurt timp, specialiștii noștri vă vor contacta pentru a discuta rezultatele și pașii următori.',
+    uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
     ru: 'В ближайшее время наши специалисты свяжутся с вами для обсуждения результатов и следующих шагов.',
   },
   pdfFooterConfidential: {
-    ro: 'Raportul este generat automat de platforma Bizcheck.md și are un caracter exclusiv informativ. Acesta nu constituie o concluzie profesională, juridică, financiară sau de alt tip și nu poate fi considerat o evaluare a activității, a nivelului de „sănătate" sau a competențelor companiei.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
     ru: 'Отчёт сформирован автоматически платформой Bizcheck.md и носит исключительно ознакомительный характер. Он не является профессиональным, юридическим, финансовым или иным заключением и не может рассматриваться как оценка деятельности, уровня «здоровья» или компетенций компании.',
   },
   pdfFooterGenerated: {
-    ro: 'Platforma nu garantează exhaustivitatea și acuratețea rezultatelor. Pentru luarea deciziilor se recomandă efectuarea unei analize separate cu participarea specialiștilor de profil.',
+    uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу за участю профільних фахівців.',
     ru: 'Платформа не гарантирует полноту и точность результатов. Для принятия решений рекомендуется проведение отдельного анализа с участием профильных специалистов.',
   },
 
   // ============ LANDING PAGE ============
 
   // Hero
-  heroNavLogin:  { ro: 'Log in',  ru: 'Войти' },
-  heroNavSignup: { ro: 'Sign up', ru: 'Регистрация' },
-  heroSearchPh:  { ro: 'Caută teste sau șabloane', ru: 'Поиск тестов и шаблонов' },
-  heroEyebrowLanding: { ro: 'PLATFORMA #1 ÎN MOLDOVA', ru: 'ПЛАТФОРМА #1 В МОЛДОВЕ' },
-  heroTitleLine1: { ro: 'Bizcheck.md', ru: 'Bizcheck.md' },
-  heroTitleLine2: { ro: 'Business Checkup', ru: 'Чек-ап бизнеса' },
+  heroNavLogin:  { uk: 'Увійти',  ru: 'Войти' },
+  heroNavSignup: { uk: 'Реєстрація', ru: 'Регистрация' },
+  heroSearchPh:  { uk: 'Пошук тестів і шаблонів', ru: 'Поиск тестов и шаблонов' },
+  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 У МОЛДОВІ', ru: 'ПЛАТФОРМА #1 В МОЛДОВЕ' },
+  heroTitleLine1: { uk: 'Bizcheck.md', ru: 'Bizcheck.md' },
+  heroTitleLine2: { uk: 'Чек-ап бізнесу', ru: 'Чек-ап бизнеса' },
   heroDescLanding: {
-    ro: 'Teste și șabloane profesionale pentru dezvoltarea și conformitatea afacerii tale.',
+    uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
     ru: 'Профессиональные тесты и шаблоны для развития и соответствия вашего бизнеса.',
   },
-  heroCta:           { ro: 'Testează-ți compania acum', ru: 'Проверьте компанию сейчас' },
-  heroTrustTitle:    { ro: 'Peste 130+ de companii', ru: 'Более 130+ компаний' },
-  heroTrustSub:      { ro: 'au încredere în Crowe Turcan Mikhailenko', ru: 'доверяют Crowe Turcan Mikhailenko' },
-  heroRatingSub:     { ro: 'din 230+ recenzii', ru: 'из 230+ отзывов' },
-  heroPurchasesSub:  { ro: 'companii active', ru: 'активных компаний' },
+  heroCta:           { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
+  heroTrustTitle:    { uk: 'Понад 130+ компаній', ru: 'Более 130+ компаний' },
+  heroTrustSub:      { uk: 'довіряють Crowe Turcan Mikhailenko', ru: 'доверяют Crowe Turcan Mikhailenko' },
+  heroRatingSub:     { uk: 'із 230+ відгуків', ru: 'из 230+ отзывов' },
+  heroPurchasesSub:  { uk: 'активних компаній', ru: 'активных компаний' },
 
   // About platform
-  aboutTitle: { ro: 'Despre platformă', ru: 'О платформе' },
+  aboutTitle: { uk: 'Про платформу', ru: 'О платформе' },
   aboutP1: {
-    ro: 'Bizcheck este o platformă digitală pentru antreprenori și companii care doresc să își optimizeze procesele și să respecte cerințele legale.',
+    uk: 'Bizcheck — цифрова платформа для підприємців і компаній, які хочуть оптимізувати процеси та дотримуватися вимог законодавства.',
     ru: 'Bizcheck — цифровая платформа для предпринимателей и компаний, которые хотят оптимизировать процессы и соблюдать требования законодательства.',
   },
   aboutP2: {
-    ro: 'Oferim teste interactive și șabloane profesionale, create pentru a simplifica activitățile de business și a economisi timp.',
+    uk: 'Ми пропонуємо інтерактивні тести та професійні шаблони, створені для спрощення бізнес-процесів й економії часу.',
     ru: 'Мы предлагаем интерактивные тесты и профессиональные шаблоны, созданные для упрощения бизнес-процессов и экономии времени.',
   },
   aboutP3: {
-    ro: 'Toate resursele sunt ușor de utilizat, editabile și adaptabile oricărui tip de companie.',
+    uk: 'Усі ресурси прості у використанні, редаговані та адаптовані до будь-якого типу компанії.',
     ru: 'Все ресурсы просты в использовании, редактируемы и адаптируемы к любому типу компании.',
   },
-  aboutCta: { ro: 'Testează-ți compania acum', ru: 'Проверьте компанию сейчас' },
+  aboutCta: { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
   aboutIllustrationAlt: {
-    ro: 'Bizcheck pe laptop, tabletă și telefon',
+    uk: 'Bizcheck на ноутбуці, планшеті й телефоні',
     ru: 'Bizcheck на ноутбуке, планшете и телефоне',
   },
 
   // Why Bizcheck
-  whyTitle:           { ro: 'De ce Bizcheck?',   ru: 'Почему Bizcheck?' },
-  whyFastTitle:       { ro: 'Rapid și simplu',   ru: 'Быстро и просто' },
+  whyTitle:           { uk: 'Чому Bizcheck?',   ru: 'Почему Bizcheck?' },
+  whyFastTitle:       { uk: 'Швидко й просто',   ru: 'Быстро и просто' },
   whyFastDesc:        {
-    ro: 'Procese simple, fără complicații sau cunoștințe tehnice.',
+    uk: 'Прості процеси, без складнощів і технічних знань.',
     ru: 'Простые процессы, без сложностей и технических знаний.',
   },
-  whyDocsTitle:       { ro: 'Documente profesionale', ru: 'Профессиональные документы' },
+  whyDocsTitle:       { uk: 'Професійні документи', ru: 'Профессиональные документы' },
   whyDocsDesc:        {
-    ro: 'Șabloane create conform standardelor utilizate în business.',
+    uk: 'Шаблони, створені відповідно до бізнес-стандартів.',
     ru: 'Шаблоны, созданные в соответствии с бизнес-стандартами.',
   },
-  whyBusinessTitle:   { ro: 'Pentru orice business', ru: 'Для любого бизнеса' },
+  whyBusinessTitle:   { uk: 'Для будь-якого бізнесу', ru: 'Для любого бизнеса' },
   whyBusinessDesc:    {
-    ro: 'Soluții adaptate pentru startup-uri, freelanceri și orice tipuri de companii.',
+    uk: 'Рішення для стартапів, фрилансерів і будь-яких типів компаній.',
     ru: 'Решения для стартапов, фрилансеров и любых типов компаний.',
   },
-  whyLegalTitle:      { ro: 'Conform legislației', ru: 'Соответствует законодательству' },
+  whyLegalTitle:      { uk: 'Відповідає законодавству', ru: 'Соответствует законодательству' },
   whyLegalDesc:       {
-    ro: 'Documente actualizate în funcție de cerințele legale în vigoare.',
+    uk: 'Документи, оновлені відповідно до чинних вимог.',
     ru: 'Документы, обновлённые в соответствии с действующими требованиями.',
   },
 
   // Catalog
-  catalogTitle:       { ro: 'Treci Checkup afacerii tale ', ru: 'Пройти Чек-ап бизнеса' },
-  catalogSearchPh:    { ro: 'Caută...', ru: 'Поиск...' },
-  catalogTabAll:      { ro: 'Toate',    ru: 'Все' },
-  catalogTabTests:    { ro: 'Teste',    ru: 'Тесты' },
-  catalogTabTemplates:{ ro: 'Șabloane', ru: 'Шаблоны' },
-  catalogFiltersLbl:  { ro: 'Filtre',       ru: 'Фильтры' },
-  catalogCategories:  { ro: 'Categorii',    ru: 'Категории' },
-  catalogType:        { ro: 'Tip',          ru: 'Тип' },
-  catalogPrice:       { ro: 'Preț',         ru: 'Цена' },
-  catalogPriceFree:   { ro: 'Gratuit',      ru: 'Бесплатно' },
-  catalogPricePaid:   { ro: 'Cu plată',     ru: 'Платно' },
-  catalogBadgeBasic:  { ro: 'Basic',        ru: 'Basic' },
-  catalogBadgePremium:{ ro: 'Premium',      ru: 'Premium' },
-  catalogStartTest:   { ro: 'Începe testul', ru: 'Начать тест' },
-  catalogDownload:    { ro: 'Descarcă',     ru: 'Скачать' },
-  catalogViewDetails: { ro: 'Vezi detalii', ru: 'Подробнее' },
-  catalogComingSoon:  { ro: 'În curând',    ru: 'Скоро' },
-  catalogComingSoonBadge: { ro: 'În curând va fi disponibil', ru: 'Скоро станет доступным' },
-  catalogEmpty:       { ro: 'Nu s-a găsit nimic pentru filtrele selectate.',
+  catalogTitle:       { uk: 'Пройти Чек-ап бізнесу', ru: 'Пройти Чек-ап бизнеса' },
+  catalogSearchPh:    { uk: 'Пошук...', ru: 'Поиск...' },
+  catalogTabAll:      { uk: 'Усі',    ru: 'Все' },
+  catalogTabTests:    { uk: 'Тести',    ru: 'Тесты' },
+  catalogTabTemplates:{ uk: 'Шаблони', ru: 'Шаблоны' },
+  catalogFiltersLbl:  { uk: 'Фільтри',       ru: 'Фильтры' },
+  catalogCategories:  { uk: 'Категорії',    ru: 'Категории' },
+  catalogType:        { uk: 'Тип',          ru: 'Тип' },
+  catalogPrice:       { uk: 'Ціна',         ru: 'Цена' },
+  catalogPriceFree:   { uk: 'Безкоштовно',      ru: 'Бесплатно' },
+  catalogPricePaid:   { uk: 'Платно',     ru: 'Платно' },
+  catalogBadgeBasic:  { uk: 'Basic',        ru: 'Basic' },
+  catalogBadgePremium:{ uk: 'Premium',      ru: 'Premium' },
+  catalogStartTest:   { uk: 'Почати тест', ru: 'Начать тест' },
+  catalogDownload:    { uk: 'Завантажити',     ru: 'Скачать' },
+  catalogViewDetails: { uk: 'Детальніше', ru: 'Подробнее' },
+  catalogComingSoon:  { uk: 'Незабаром',    ru: 'Скоро' },
+  catalogComingSoonBadge: { uk: 'Незабаром стане доступним', ru: 'Скоро станет доступным' },
+  catalogEmpty:       { uk: 'Нічого не знайдено за обраними фільтрами.',
                         ru: 'Ничего не найдено по выбранным фильтрам.' },
-  catalogSectionTests:     { ro: 'Teste',    ru: 'Тесты' },
-  catalogSectionTemplates: { ro: 'Șabloane', ru: 'Шаблоны' },
+  catalogSectionTests:     { uk: 'Тести',    ru: 'Тесты' },
+  catalogSectionTemplates: { uk: 'Шаблони', ru: 'Шаблоны' },
 
   // Testimonials & FAQ
-  testimonialsTitle: { ro: 'Ce spun clienții noștri?', ru: 'Что говорят наши клиенты?' },
-  faqTitle:          { ro: 'Întrebări frecvente',      ru: 'Частые вопросы' },
-  testimonialsEmpty: { ro: 'Nu există testimoniale încă.', ru: 'Пока нет отзывов.' },
-  faqEmpty:          { ro: 'Nu există întrebări încă.',    ru: 'Пока нет вопросов.' },
+  testimonialsTitle: { uk: 'Що кажуть наші клієнти?', ru: 'Что говорят наши клиенты?' },
+  faqTitle:          { uk: 'Часті запитання',      ru: 'Частые вопросы' },
+  testimonialsEmpty: { uk: 'Поки що немає відгуків.', ru: 'Пока нет отзывов.' },
+  faqEmpty:          { uk: 'Поки що немає запитань.',    ru: 'Пока нет вопросов.' },
 
   // Public "leave a review" form
-  reviewLeave:       { ro: 'Lasă o recenzie',            ru: 'Оставить отзыв' },
-  reviewFormTitle:   { ro: 'Împărtășește experiența ta', ru: 'Поделитесь своим опытом' },
-  reviewFormSubtitle:{ ro: 'Recenzia ta apare imediat pe site.', ru: 'Ваш отзыв появится на сайте сразу.' },
-  reviewName:        { ro: 'Numele tău',                 ru: 'Ваше имя' },
-  reviewNamePh:      { ro: 'Ex: Vlad R.',                ru: 'Напр.: Влад Р.' },
-  reviewRole:        { ro: 'Rol / companie (opțional)',  ru: 'Должность / компания (необязательно)' },
-  reviewRolePh:      { ro: 'Ex: CEO @ Firma SRL',        ru: 'Напр.: CEO @ Фирма SRL' },
-  reviewRating:      { ro: 'Nota ta',                    ru: 'Ваша оценка' },
-  reviewText:        { ro: 'Recenzia ta',                ru: 'Ваш отзыв' },
-  reviewTextPh:      { ro: 'Spune-ne cum a fost experiența ta...', ru: 'Расскажите о вашем опыте...' },
-  reviewSubmit:      { ro: 'Trimite recenzia',           ru: 'Отправить отзыв' },
-  reviewSending:     { ro: 'Se trimite...',              ru: 'Отправка...' },
-  reviewThanks:      { ro: 'Mulțumim! Recenzia ta a fost publicată. 🎉', ru: 'Спасибо! Ваш отзыв опубликован. 🎉' },
-  reviewErrName:     { ro: 'Introdu numele tău (min. 2 caractere).', ru: 'Укажите ваше имя (мин. 2 символа).' },
-  reviewErrText:     { ro: 'Recenzia e prea scurtă (min. 3 caractere).', ru: 'Отзыв слишком короткий (мин. 3 символа).' },
-  reviewErrRate:     { ro: 'Prea multe recenzii. Încearcă din nou mai târziu.', ru: 'Слишком много отзывов. Попробуйте позже.' },
-  reviewErrGeneric:  { ro: 'Nu am putut trimite recenzia. Încearcă din nou.', ru: 'Не удалось отправить отзыв. Попробуйте снова.' },
+  reviewLeave:       { uk: 'Залишити відгук',            ru: 'Оставить отзыв' },
+  reviewFormTitle:   { uk: 'Поділіться своїм досвідом', ru: 'Поделитесь своим опытом' },
+  reviewFormSubtitle:{ uk: 'Ваш відгук з\'явиться на сайті одразу.', ru: 'Ваш отзыв появится на сайте сразу.' },
+  reviewName:        { uk: 'Ваше ім\'я',                 ru: 'Ваше имя' },
+  reviewNamePh:      { uk: 'Напр.: Влад Р.',                ru: 'Напр.: Влад Р.' },
+  reviewRole:        { uk: 'Посада / компанія (необов\'язково)',  ru: 'Должность / компания (необязательно)' },
+  reviewRolePh:      { uk: 'Напр.: CEO @ Фірма SRL',        ru: 'Напр.: CEO @ Фирма SRL' },
+  reviewRating:      { uk: 'Ваша оцінка',                    ru: 'Ваша оценка' },
+  reviewText:        { uk: 'Ваш відгук',                ru: 'Ваш отзыв' },
+  reviewTextPh:      { uk: 'Розкажіть про ваш досвід...', ru: 'Расскажите о вашем опыте...' },
+  reviewSubmit:      { uk: 'Надіслати відгук',           ru: 'Отправить отзыв' },
+  reviewSending:     { uk: 'Надсилання...',              ru: 'Отправка...' },
+  reviewThanks:      { uk: 'Дякуємо! Ваш відгук опубліковано. 🎉', ru: 'Спасибо! Ваш отзыв опубликован. 🎉' },
+  reviewErrName:     { uk: 'Вкажіть ваше ім\'я (мін. 2 символи).', ru: 'Укажите ваше имя (мин. 2 символа).' },
+  reviewErrText:     { uk: 'Відгук занадто короткий (мін. 3 символи).', ru: 'Отзыв слишком короткий (мин. 3 символа).' },
+  reviewErrRate:     { uk: 'Забагато відгуків. Спробуйте пізніше.', ru: 'Слишком много отзывов. Попробуйте позже.' },
+  reviewErrGeneric:  { uk: 'Не вдалося надіслати відгук. Спробуйте знову.', ru: 'Не удалось отправить отзыв. Попробуйте снова.' },
 
   // Final CTA band
-  finalCtaTitle:    { ro: 'Începe acum să-ți optimizezi afacerea',
+  finalCtaTitle:    { uk: 'Почніть оптимізувати свій бізнес уже зараз',
                       ru: 'Начните оптимизировать свой бизнес уже сейчас' },
-  finalCtaSubtitle: { ro: 'Teste interactive. Șabloane profesionale. Procese simplificate.',
+  finalCtaSubtitle: { uk: 'Інтерактивні тести. Професійні шаблони. Спрощені процеси.',
                       ru: 'Интерактивные тесты. Профессиональные шаблоны. Упрощённые процессы.' },
-  finalCtaButton:   { ro: 'Testează-ți compania acum', ru: 'Проверьте компанию сейчас' },
+  finalCtaButton:   { uk: 'Перевірте компанію зараз', ru: 'Проверьте компанию сейчас' },
 
   // Hero search & menu
-  searchRecent:        { ro: 'Căutări recente',     ru: 'Недавние запросы' },
-  searchSuggestions:   { ro: 'Sugestii',            ru: 'Подсказки' },
-  searchNoResults:     { ro: 'Nimic găsit',         ru: 'Ничего не найдено' },
-  searchSeeAll:        { ro: 'Vezi toate rezultatele', ru: 'Показать все результаты' },
-  menuJumpAbout:       { ro: 'Despre platformă',    ru: 'О платформе' },
-  menuJumpWhy:         { ro: 'De ce Bizcheck',      ru: 'Почему Bizcheck' },
-  menuJumpCatalog:     { ro: 'Catalog complet',     ru: 'Полный каталог' },
-  menuJumpTests:       { ro: 'Doar Teste',          ru: 'Только Тесты' },
-  menuJumpTemplates:   { ro: 'Doar Șabloane',       ru: 'Только Шаблоны' },
-  menuJumpTestimonials:{ ro: 'Testimoniale',        ru: 'Отзывы' },
-  menuJumpFaq:         { ro: 'Întrebări frecvente', ru: 'Частые вопросы' },
+  searchRecent:        { uk: 'Останні запити',     ru: 'Недавние запросы' },
+  searchSuggestions:   { uk: 'Підказки',            ru: 'Подсказки' },
+  searchNoResults:     { uk: 'Нічого не знайдено',         ru: 'Ничего не найдено' },
+  searchSeeAll:        { uk: 'Показати всі результати', ru: 'Показать все результаты' },
+  menuJumpAbout:       { uk: 'Про платформу',    ru: 'О платформе' },
+  menuJumpWhy:         { uk: 'Чому Bizcheck',      ru: 'Почему Bizcheck' },
+  menuJumpCatalog:     { uk: 'Повний каталог',     ru: 'Полный каталог' },
+  menuJumpTests:       { uk: 'Лише Тести',          ru: 'Только Тесты' },
+  menuJumpTemplates:   { uk: 'Лише Шаблони',       ru: 'Только Шаблоны' },
+  menuJumpTestimonials:{ uk: 'Відгуки',        ru: 'Отзывы' },
+  menuJumpFaq:         { uk: 'Часті запитання', ru: 'Частые вопросы' },
 
   // Footer
-  footerResources:     { ro: 'Resurse',   ru: 'Ресурсы' },
-  footerLinkTests:     { ro: 'Teste',     ru: 'Тесты' },
-  footerLinkTemplates: { ro: 'Șabloane',  ru: 'Шаблоны' },
-  footerLegal:         { ro: 'Legal',     ru: 'Правовая информация' },
-  footerTerms:         { ro: 'Termeni și condiții',         ru: 'Условия и положения' },
-  footerPrivacy:       { ro: 'Politica de confidențialitate', ru: 'Политика конфиденциальности' },
-  footerCookies:       { ro: 'Politica cookies',            ru: 'Политика cookies' },
-  footerContacts:      { ro: 'Contacte',                    ru: 'Контакты' },
-  footerHours:         { ro: 'L-V: 9:00 - 18:00',           ru: 'Пн-Пт: 9:00 - 18:00' },
-  footerCopyright:     { ro: 'Toate drepturile rezervate',  ru: 'Все права защищены' },
-  footerOfficial:      { ro: 'Site-uri oficiale',           ru: 'Официальные сайты' },
-  footerLinkTurcan:    { ro: 'ȚURCAN Ivan',                 ru: 'ЦУРКАН Иван' },
-  footerLinkCrowe:     { ro: 'Crowe Turcan Mikhailenko',    ru: 'Crowe Turcan Mikhailenko' },
+  footerResources:     { uk: 'Ресурси',   ru: 'Ресурсы' },
+  footerLinkTests:     { uk: 'Тести',     ru: 'Тесты' },
+  footerLinkTemplates: { uk: 'Шаблони',  ru: 'Шаблоны' },
+  footerLegal:         { uk: 'Правова інформація',     ru: 'Правовая информация' },
+  footerTerms:         { uk: 'Умови та положення',         ru: 'Условия и положения' },
+  footerPrivacy:       { uk: 'Політика конфіденційності', ru: 'Политика конфиденциальности' },
+  footerCookies:       { uk: 'Політика cookies',            ru: 'Политика cookies' },
+  footerContacts:      { uk: 'Контакти',                    ru: 'Контакты' },
+  footerHours:         { uk: 'Пн-Пт: 9:00 - 18:00',           ru: 'Пн-Пт: 9:00 - 18:00' },
+  footerCopyright:     { uk: 'Усі права захищені',  ru: 'Все права защищены' },
+  footerOfficial:      { uk: 'Офіційні сайти',           ru: 'Официальные сайты' },
+  footerLinkTurcan:    { uk: 'ЦУРКАН Іван',                 ru: 'ЦУРКАН Иван' },
+  footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    ru: 'Crowe Turcan Mikhailenko' },
 
   // Crowe / founder block (landing, after Hero)
-  croweEyebrow: { ro: 'ÎN SPATELE BIZCHECK.MD', ru: 'КТО СТОИТ ЗА BIZCHECK.MD' },
-  croweTitle:   { ro: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
+  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.MD', ru: 'КТО СТОИТ ЗА BIZCHECK.MD' },
+  croweTitle:   { uk: 'Crowe Turcan Mikhailenko', ru: 'Crowe Turcan Mikhailenko' },
   croweBody1: {
-    ro: 'Crowe Turcan Mikhailenko face parte din rețeaua internațională Crowe Global, una dintre principalele rețele mondiale în domeniul auditului, consultanței și soluțiilor corporative.',
+    uk: 'Crowe Turcan Mikhailenko є частиною міжнародної мережі Crowe Global — однієї з провідних світових мереж у сфері аудиту, консалтингу та корпоративних рішень.',
     ru: 'Crowe Turcan Mikhailenko является частью международной сети Crowe Global — одной из ведущих мировых сетей в области аудита, консалтинга и корпоративных решений.',
   },
   croweBody2: {
-    ro: 'Lucrăm cu companii locale și internaționale, oferind suport adaptat realităților juridice, fiscale și comerciale ale Republicii Moldova.',
+    uk: 'Ми працюємо з місцевими та міжнародними компаніями, надаючи підтримку, адаптовану до юридичних, податкових і комерційних реалій Республіки Молдова.',
     ru: 'Мы работаем с местными и международными компаниями, предоставляя поддержку, адаптированную к юридическим, налоговым и коммерческим реалиям Республики Молдова.',
   },
   croweBody3: {
-    ro: 'Ne concentrăm pe soluții practice, clare și aplicabile, astfel încât clienții noștri să poată lua decizii sigure și bine fundamentate.',
+    uk: 'Ми орієнтовані на практичні, зрозумілі й застосовні рішення, щоб наші клієнти могли ухвалювати впевнені та обґрунтовані рішення.',
     ru: 'Мы ориентированы на практичные, понятные и применимые решения, чтобы наши клиенты могли принимать уверенные и обоснованные решения.',
   },
-  croweName: { ro: 'ȚURCAN IVAN', ru: 'ЦУРКАН ИВАН' },
-  croweRole: { ro: 'Fondator · Crowe Turcan Mikhailenko', ru: 'Основатель · Crowe Turcan Mikhailenko' },
-  croweBtnTurcan: { ro: 'Ivan Țurcan', ru: 'Иван Цуркан' },
-  croweBtnCrowe:  { ro: 'Crowe Mikhailenko', ru: 'Crowe Mikhailenko' },
-  croweVisitHint: { ro: 'Vizitează site-ul oficial', ru: 'Перейти на официальный сайт' },
+  croweName: { uk: 'ЦУРКАН ІВАН', ru: 'ЦУРКАН ИВАН' },
+  croweRole: { uk: 'Засновник · Crowe Turcan Mikhailenko', ru: 'Основатель · Crowe Turcan Mikhailenko' },
+  croweBtnTurcan: { uk: 'Іван Цуркан', ru: 'Иван Цуркан' },
+  croweBtnCrowe:  { uk: 'Crowe Mikhailenko', ru: 'Crowe Mikhailenko' },
+  croweVisitHint: { uk: 'Перейти на офіційний сайт', ru: 'Перейти на официальный сайт' },
   croweCtaHint: {
-    ro: 'Pentru mai multe detalii, vizitați site-urile oficiale și faceți cunoștință cu noi:',
+    uk: 'Задля деталей відвідайте офіційні сайти та познайомтеся з нами:',
     ru: 'Для подробностей посетите официальные сайты и познакомьтесь с нами:',
   },
 
   // Cookie banner
   cookieTitle: {
-    ro: 'Acest site folosește cookie-uri',
+    uk: 'Цей сайт використовує cookie-файли',
     ru: 'Этот сайт использует cookie-файлы',
   },
   cookieDesc: {
-    ro: 'Folosim cookie-uri esențiale pentru funcționarea site-ului și, opțional, cookie-uri de analiză și marketing pentru a îmbunătăți experiența. Puteți accepta toate, refuza opționalele sau alege individual.',
+    uk: 'Ми використовуємо необхідні cookie-файли для роботи сайту та, за бажанням, файли аналітики й маркетингу для покращення досвіду. Ви можете прийняти всі, відмовитися від необов\'язкових або обрати індивідуально.',
     ru: 'Мы используем необходимые cookie-файлы для работы сайта и, по желанию, файлы аналитики и маркетинга для улучшения опыта. Вы можете принять все, отказаться от необязательных или выбрать индивидуально.',
   },
-  cookieAcceptAll: { ro: 'Acceptă toate', ru: 'Принять все' },
-  cookieRejectAll: { ro: 'Respinge opționalele', ru: 'Отклонить необязательные' },
-  cookieCustomize: { ro: 'Setări', ru: 'Настройки' },
-  cookieSave:      { ro: 'Salvează preferințele', ru: 'Сохранить настройки' },
-  cookieBack:      { ro: 'Înapoi', ru: 'Назад' },
-  cookiePolicyLink: { ro: 'Politica de confidențialitate', ru: 'Политика конфиденциальности' },
+  cookieAcceptAll: { uk: 'Прийняти всі', ru: 'Принять все' },
+  cookieRejectAll: { uk: 'Відхилити необов\'язкові', ru: 'Отклонить необязательные' },
+  cookieCustomize: { uk: 'Налаштування', ru: 'Настройки' },
+  cookieSave:      { uk: 'Зберегти налаштування', ru: 'Сохранить настройки' },
+  cookieBack:      { uk: 'Назад', ru: 'Назад' },
+  cookiePolicyLink: { uk: 'Політика конфіденційності', ru: 'Политика конфиденциальности' },
 
-  cookieCatNecessaryTitle: { ro: 'Strict necesare', ru: 'Строго необходимые' },
+  cookieCatNecessaryTitle: { uk: 'Строго необхідні', ru: 'Строго необходимые' },
   cookieCatNecessaryDesc: {
-    ro: 'Indispensabile pentru autentificare, sesiunea de quiz și securitate. Nu pot fi dezactivate.',
+    uk: 'Необхідні для автентифікації, сесії тесту та безпеки. Не можуть бути вимкнені.',
     ru: 'Необходимы для аутентификации, сессии теста и безопасности. Не могут быть отключены.',
   },
-  cookieCatAnalyticsTitle: { ro: 'Analiză', ru: 'Аналитика' },
+  cookieCatAnalyticsTitle: { uk: 'Аналітика', ru: 'Аналитика' },
   cookieCatAnalyticsDesc: {
-    ro: 'Statistici anonime despre traficul site-ului — ne ajută să îmbunătățim conținutul.',
+    uk: 'Анонімна статистика трафіку сайту — допомагає нам покращувати контент.',
     ru: 'Анонимная статистика трафика сайта — помогает нам улучшать контент.',
   },
-  cookieCatMarketingTitle: { ro: 'Marketing', ru: 'Маркетинг' },
+  cookieCatMarketingTitle: { uk: 'Маркетинг', ru: 'Маркетинг' },
   cookieCatMarketingDesc: {
-    ro: 'Permit afișarea de oferte relevante prin parteneri externi (rețele sociale, publicitate).',
+    uk: 'Дозволяють показувати релевантні пропозиції через зовнішніх партнерів (соцмережі, реклама).',
     ru: 'Позволяют показывать релевантные предложения через внешних партнёров (соцсети, реклама).',
   },
-  cookieAlwaysOn: { ro: 'Mereu activ', ru: 'Всегда включено' },
+  cookieAlwaysOn: { uk: 'Завжди увімкнено', ru: 'Всегда включено' },
 
-  footerCookieSettings: { ro: 'Setări cookies', ru: 'Настройки cookies' },
+  footerCookieSettings: { uk: 'Налаштування cookies', ru: 'Настройки cookies' },
 
   // Header quick-jump
-  navTests: { ro: 'Teste', ru: 'Тесты' },
+  navTests: { uk: 'Тести', ru: 'Тесты' },
 
   // Company-data recovery — shown only when the save-gate failed to confirm.
   ctaRecoveryTitle: {
-    ro: 'Confirmați datele companiei',
+    uk: 'Підтвердьте дані компанії',
     ru: 'Подтвердите данные компании',
   },
   ctaRecoveryIntro: {
-    ro: 'Ne cerem scuze — este posibil ca datele despre compania dvs. să nu se fi salvat. Vă rugăm confirmați-le mai jos.',
+    uk: 'Перепрошуємо — можливо, дані про вашу компанію не збереглися. Будь ласка, підтвердьте їх нижче.',
     ru: 'Приносим извинения — возможно, данные о вашей компании не сохранились. Пожалуйста, подтвердите их ниже.',
   },
   ctaRecoverySave: {
-    ro: 'Salvează datele',
+    uk: 'Зберегти дані',
     ru: 'Сохранить данные',
   },
   ctaRecoverySaving: {
-    ro: 'Se salvează…',
+    uk: 'Зберігаємо…',
     ru: 'Сохраняем…',
   },
   ctaRecoverySaved: {
-    ro: 'Salvat ✓',
+    uk: 'Збережено ✓',
     ru: 'Сохранено ✓',
   },
   ctaRecoverySupport: {
-    ro: 'Dacă problema persistă, vă rugăm să ne anunțați la',
+    uk: 'Якщо проблема зберігається, будь ласка, повідомте нам на',
     ru: 'Если проблема сохраняется, пожалуйста, сообщите нам на',
   },
 } as const;

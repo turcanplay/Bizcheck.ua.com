@@ -12,14 +12,14 @@ export default function PrivacyPage() {
       <Seo
         title={lang === 'ru'
           ? 'Политика конфиденциальности · Bizcheck.md'
-          : 'Politica de confidențialitate · Bizcheck.md'}
+          : 'Політика конфіденційності · Bizcheck.md'}
         description={lang === 'ru'
           ? 'Политика обработки персональных данных, cookies и условия использования платформы Bizcheck.md от Crowe Turcan Mikhailenko.'
-          : 'Politica de prelucrare a datelor personale, cookies și condițiile de utilizare ale platformei Bizcheck.md de la Crowe Turcan Mikhailenko.'}
+          : 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.md від Crowe Turcan Mikhailenko.'}
         path="/confidentialitate"
         jsonLd={breadcrumbSchema([
-          { name: lang === 'ru' ? 'Главная' : 'Acasă', path: '/' },
-          { name: lang === 'ru' ? 'Конфиденциальность' : 'Confidențialitate', path: '/confidentialitate' },
+          { name: lang === 'ru' ? 'Главная' : 'Головна', path: '/' },
+          { name: lang === 'ru' ? 'Конфиденциальность' : 'Конфіденційність', path: '/confidentialitate' },
         ])}
       />
       <div className="privacy-page__inner">
@@ -27,27 +27,28 @@ export default function PrivacyPage() {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 7H2M6 3L2 7l4 4" />
           </svg>
-          {lang === 'ro' ? 'Înapoi la pagina principală' : 'Вернуться на главную'}
+          {lang === 'uk' ? 'Повернутися на головну' : 'Вернуться на главную'}
         </Link>
 
         {PRIVACY_BLOCKS.map((block, i) => {
+          const text = lang === 'ru' ? block.ru : block.uk;
           if (block.k === 'title') {
             return (
               <h1 key={i} className="privacy-page__title">
-                {block.text}
+                {text}
               </h1>
             );
           }
           if (block.k === 'h2') {
             return (
               <h2 key={i} className="privacy-page__heading">
-                {block.text}
+                {text}
               </h2>
             );
           }
           return (
             <p key={i} className="privacy-page__text">
-              {block.text}
+              {text}
             </p>
           );
         })}

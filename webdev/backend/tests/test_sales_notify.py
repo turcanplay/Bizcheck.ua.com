@@ -12,11 +12,11 @@ from services import sales_notify as sn
 
 class TestZoneLabel:
     @pytest.mark.parametrize("score,label", [
-        (85, "Risc scăzut"), (72, "Risc moderat"),
-        (66, "Risc ridicat"), (40, "Risc critic"),
+        (85, "Низький ризик"), (72, "Помірний ризик"),
+        (66, "Високий ризик"), (40, "Критичний ризик"),
     ])
     def test_boundaries(self, score, label):
-        assert sn._zone_label_ro(score) == label
+        assert sn._zone_label_uk(score) == label
 
 
 class TestEsc:
@@ -62,12 +62,12 @@ class TestBuildCaption:
             "BizCheck")
         assert "Ion Pop" in cap
         assert "a@b.md" in cap
-        assert "Risc scăzut" in cap          # 85 → low risk
+        assert "Низький ризик" in cap          # 85 → low risk
         assert "BizCheck" in cap
 
     def test_non_numeric_score_renders_dash(self):
         cap = sn._build_caption({"first_name": "Ana", "total_score": None}, "T")
-        assert "Scor: <b>—</b>" in cap
+        assert "Оцінка: <b>—</b>" in cap
 
 
 class TestRetryAfter:

@@ -3,9 +3,9 @@ import { API_BASE } from '@/config/api';
 export interface PublicTest {
   id: number;
   slug: string;
-  name_ro: string;
+  name_uk: string;
   name_ru: string;
-  description_ro: string;
+  description_uk: string;
   description_ru: string;
   is_paid: boolean;
   is_active: boolean;
@@ -20,9 +20,9 @@ export interface PublicTest {
 export interface PublicTemplate {
   id: number;
   slug: string;
-  title_ro: string;
+  title_uk: string;
   title_ru: string;
-  description_ro: string;
+  description_uk: string;
   description_ru: string;
   is_paid: boolean;
   is_active: boolean;
@@ -60,7 +60,7 @@ export interface PublicTestimonial {
   id: number;
   name: string;
   role: string | null;
-  quote_ro: string;
+  quote_uk: string;
   quote_ru: string;
   rating: number;
   avatar_url: string | null;
@@ -79,9 +79,9 @@ export interface TestimonialSubmission {
 
 export interface PublicFaqItem {
   id: number;
-  question_ro: string;
+  question_uk: string;
   question_ru: string;
-  answer_ro: string;
+  answer_uk: string;
   answer_ru: string;
 }
 

@@ -24,21 +24,21 @@ export default function TemplateDetailPage() {
       .then(r => {
         const t = r.templates.find(x => x.slug === slug) ?? null;
         setItem(t);
-        if (!t) setErr('Șablon negăsit');
+        if (!t) setErr(lang === 'ru' ? 'Шаблон не найден' : 'Шаблон не знайдено');
       })
       .catch(e => setErr(e.message));
   }, [slug]);
 
-  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">Înapoi</Link></div>;
-  if (!item) return <div style={{ padding: 40 }}>Se încarcă...</div>;
+  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">{lang === 'ru' ? 'Назад' : 'Назад'}</Link></div>;
+  if (!item) return <div style={{ padding: 40 }}>{lang === 'ru' ? 'Загрузка...' : 'Завантаження...'}</div>;
 
   const path = `/sablon/${slug}`;
-  const title = lang === 'ru' ? (item.title_ru || item.title_ro) : item.title_ro;
-  const description = lang === 'ru' ? (item.description_ru || item.description_ro) : item.description_ro;
+  const title = lang === 'ru' ? (item.title_ru || item.title_uk) : item.title_uk;
+  const description = lang === 'ru' ? (item.description_ru || item.description_uk) : item.description_uk;
   const seoDesc = (description || '').slice(0, 160) ||
     (lang === 'ru'
       ? `Юридический шаблон ${title} от Crowe Turcan Mikhailenko на платформе Bizcheck.md.`
-      : `Șablon juridic ${title} de la Crowe Turcan Mikhailenko pe platforma Bizcheck.md.`);
+      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.md.`);
 
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }} data-page="template-detail">
@@ -56,24 +56,26 @@ export default function TemplateDetailPage() {
             currency: item.currency ?? 'MDL',
           }),
           breadcrumbSchema([
-            { name: lang === 'ru' ? 'Главная' : 'Acasă', path: '/' },
-            { name: lang === 'ru' ? 'Шаблоны' : 'Șabloane', path: '/' },
+            { name: lang === 'ru' ? 'Главная' : 'Головна', path: '/' },
+            { name: lang === 'ru' ? 'Шаблоны' : 'Шаблони', path: '/' },
             { name: title, path },
           ]),
         ]}
       />
-      <Link to="/" style={{ color: '#0A3A6E', textDecoration: 'none' }}>← Înapoi</Link>
-      <h1 style={{ marginTop: 12 }}>📄 {item.title_ro}</h1>
-      <p style={{ color: '#555' }}>{item.description_ro}</p>
+      <Link to="/" style={{ color: '#0A3A6E', textDecoration: 'none' }}>← {lang === 'ru' ? 'Назад' : 'Назад'}</Link>
+      <h1 style={{ marginTop: 12 }}>📄 {title}</h1>
+      <p style={{ color: '#555' }}>{description}</p>
 
-      <h3 style={{ marginTop: 32 }}>Cum vrei să primești șablonul?</h3>
+      <h3 style={{ marginTop: 32 }}>{lang === 'ru' ? 'Как вы хотите получить шаблон?' : 'Як ви хочете отримати шаблон?'}</h3>
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', marginTop: 12 }} data-section="delivery-picker">
-        <button className="landing-card" disabled title="Implementare ulterioară">📥 Descarcă acum</button>
-        <button className="landing-card" disabled title="Implementare ulterioară">✉️ Pe email</button>
-        <button className="landing-card" disabled title="Implementare ulterioară">💬 Pe Telegram</button>
+        <button className="landing-card" disabled>📥 {lang === 'ru' ? 'Скачать сейчас' : 'Завантажити зараз'}</button>
+        <button className="landing-card" disabled>✉️ {lang === 'ru' ? 'На email' : 'На email'}</button>
+        <button className="landing-card" disabled>💬 {lang === 'ru' ? 'В Telegram' : 'У Telegram'}</button>
       </div>
       <p style={{ fontSize: 12, color: '#999', marginTop: 12 }}>
-        * Livrarea va fi cablată în iterația următoare. Telegram folosește bot-ul BizCheck existent.
+        {lang === 'ru'
+          ? '* Доставка будет подключена в следующей итерации. Telegram использует существующий бот BizCheck.'
+          : '* Доставку буде підключено в наступній ітерації. Telegram використовує наявний бот BizCheck.'}
       </p>
     </div>
   );

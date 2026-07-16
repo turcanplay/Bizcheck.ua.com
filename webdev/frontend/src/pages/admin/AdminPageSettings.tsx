@@ -2,30 +2,30 @@ import { useEffect, useState } from 'react';
 import { adminApi, type AdminTest, type SiteSettings } from '@/api/admin';
 
 /**
- * "Setări pagină" — admin sets which test each landing-page CTA button opens.
+ * "Налаштування сторінки" — admin sets which test each landing-page CTA button opens.
  * Empty value = button keeps its old behavior (scrolls to the catalog).
  */
 
 const CTA_FIELDS: Array<{ key: keyof SiteSettings; label: string; hint: string }> = [
   {
     key: 'cta_hero_test',
-    label: 'Buton Hero — „Testează-ți compania acum"',
-    hint: 'Butonul mare din partea de sus a paginii principale.',
+    label: 'Кнопка Hero — „Перевірте свою компанію зараз"',
+    hint: 'Велика кнопка у верхній частині головної сторінки.',
   },
   {
     key: 'cta_about_test',
-    label: 'Buton secțiunea „Despre platformă"',
-    hint: 'Butonul din blocul de prezentare a platformei.',
+    label: 'Кнопка секції „Про платформу"',
+    hint: 'Кнопка в блоці презентації платформи.',
   },
   {
     key: 'cta_final_test',
-    label: 'Buton secțiunea finală (Final CTA)',
-    hint: 'Butonul mare de la finalul paginii, înainte de footer.',
+    label: 'Кнопка фінальної секції (Final CTA)',
+    hint: 'Велика кнопка в кінці сторінки, перед футером.',
   },
   {
     key: 'cta_catalog_test',
-    label: 'Buton zona Catalog (Marketplace)',
-    hint: 'Butonul roșu din capul secțiunii de catalog (Teste și șabloane).',
+    label: 'Кнопка зони Каталог (Marketplace)',
+    hint: 'Червона кнопка у заголовку секції каталогу (Тести та шаблони).',
   },
 ];
 
@@ -79,20 +79,20 @@ export default function AdminPageSettings() {
   return (
     <>
       <div className="admin-section-header">
-        <h2>⚙️ Setări pagină</h2>
+        <h2>⚙️ Налаштування сторінки</h2>
         <button className="admin-btn admin-btn-accent" onClick={onSave} disabled={saving || loading}>
-          {saving ? '...' : 'Salvează'}
+          {saving ? '...' : 'Зберегти'}
         </button>
       </div>
 
       {error && <div className="admin-error">⚠️ {error}</div>}
-      {loading && <div className="admin-empty">Se încarcă...</div>}
+      {loading && <div className="admin-empty">Завантаження...</div>}
 
       {!loading && (
         <div className="admin-test-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, margin: 0 }}>
-            Alege la ce test duce fiecare buton „call to action" de pe pagina principală.
-            Dacă lași „— fără țintă —", butonul derulează la catalogul de teste, ca înainte.
+            Оберіть, до якого тесту веде кожна кнопка „call to action" на головній сторінці.
+            Якщо залишити „— без цілі —", кнопка прокручує до каталогу тестів, як раніше.
           </p>
 
           {CTA_FIELDS.map(field => (
@@ -102,12 +102,12 @@ export default function AdminPageSettings() {
                 value={settings[field.key]}
                 onChange={e => setField(field.key, e.target.value)}
               >
-                <option value="">— fără țintă (derulează la catalog) —</option>
+                <option value="">— без цілі (прокрутити до каталогу) —</option>
                 {tests.map(test => (
                   <option key={test.slug} value={test.slug}>
-                    {test.name_ro || test.slug}
-                    {test.is_paid ? ' (cu plată)' : ''}
-                    {!test.is_active ? ' — inactiv' : ''}
+                    {test.name_uk || test.slug}
+                    {test.is_paid ? ' (платний)' : ''}
+                    {!test.is_active ? ' — неактивний' : ''}
                   </option>
                 ))}
               </select>
@@ -124,17 +124,17 @@ export default function AdminPageSettings() {
                 onChange={e => setField('email_delivery_enabled', e.target.checked ? '1' : '0')}
                 style={{ width: 18, height: 18 }}
               />
-              <span>Livrare prin email activă (pagina de după test)</span>
+              <span>Доставка через email активна (сторінка після тесту)</span>
             </label>
             <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4 }}>
-              Dezactivat → opțiunea „Trimite pe email" apare ca „În curând", utilizatorii folosesc Telegram.
-              Activează doar după ce emailul ajunge corect (SPF/DKIM/DMARC configurate).
+              Вимкнено → опція „Надіслати на email" відображається як „Незабаром", користувачі використовують Telegram.
+              Вмикайте лише після того, як email доходить коректно (налаштовано SPF/DKIM/DMARC).
             </div>
           </div>
 
           {savedAt && (
             <div className="admin-badge admin-badge-green" style={{ alignSelf: 'flex-start' }}>
-              ✅ Salvat
+              ✅ Збережено
             </div>
           )}
         </div>

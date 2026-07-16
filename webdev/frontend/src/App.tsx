@@ -86,7 +86,7 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
           justifyContent: 'center', minHeight: '60vh', color: '#011E41', fontSize: 15,
           fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", textAlign: 'center', padding: 24,
         }}>
-          <span>S-a actualizat aplicația. Reîncărcăm pagina…</span>
+          <span>Застосунок оновлено. Перезавантажуємо сторінку…</span>
           <button
             onClick={() => window.location.reload()}
             style={{
@@ -94,7 +94,7 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
               background: '#F5A800', color: '#011E41', fontWeight: 700, fontSize: 14,
             }}
           >
-            Reîncarcă
+            Перезавантажити
           </button>
         </div>
       );

@@ -48,14 +48,14 @@ export default function QuizApp() {
   }, [slug, selectedTestSlug, phase, submissionId, restartQuiz, selectTest]);
 
   const test = tests.find(t => t.slug === selectedTestSlug);
-  const testName = test ? (lang === 'ru' ? test.name_ru : test.name_ro) : '';
+  const testName = test ? (lang === 'ru' ? test.name_ru : test.name_uk) : '';
   const seoTitle = testName
     ? `${testName} · Bizcheck.md · Crowe`
-    : (lang === 'ru' ? 'Тест Bizcheck.md · Crowe' : 'Test Bizcheck.md · Crowe');
+    : (lang === 'ru' ? 'Тест Bizcheck.md · Crowe' : 'Тест Bizcheck.md · Crowe');
   const seoDesc = testName
     ? (lang === 'ru'
         ? `Пройдите тест "${testName}" на Bizcheck.md и получите детальный отчёт о рисках вашего бизнеса.`
-        : `Completați testul „${testName}" pe Bizcheck.md și primiți raport detaliat despre riscurile afacerii dumneavoastră.`)
+        : `Пройдіть тест «${testName}» на Bizcheck.md і отримайте детальний звіт про ризики вашого бізнесу.`)
     : undefined;
 
   // Quiz pages are dynamic — index but with light priority; CTA stage is noindex.

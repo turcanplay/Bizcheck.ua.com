@@ -18,9 +18,9 @@ interface SeoProps {
 
 const SITE = 'https://bizcheck.md';
 const DEFAULT_IMAGE = `${SITE}/android-chrome-512x512.png`;
-const DEFAULT_TITLE_RO = 'Bizcheck.md · Evaluarea riscurilor afacerii · Crowe';
+const DEFAULT_TITLE_UK = 'Bizcheck.md · Оцінка ризиків бізнесу · Crowe';
 const DEFAULT_TITLE_RU = 'Bizcheck.md · Оценка рисков бизнеса · Crowe';
-const DEFAULT_DESC_RO = 'Bizcheck.md — platforma online de autoevaluare a riscurilor afacerii prin metodologia Crowe. Teste pe blocuri, raport detaliat PDF, șabloane juridice pentru IMM-uri din Moldova.';
+const DEFAULT_DESC_UK = 'Bizcheck.md — онлайн-платформа самодіагностики ризиків бізнесу за методологією Crowe. Тести за блоками, детальний звіт PDF, юридичні шаблони для МСБ.';
 const DEFAULT_DESC_RU = 'Bizcheck.md — онлайн-платформа самодиагностики рисков бизнеса по методологии Crowe. Тесты, детальный отчёт PDF, юридические шаблоны для МСБ Молдовы.';
 
 /**
@@ -41,8 +41,8 @@ export default function Seo({
   ogType = 'website',
 }: SeoProps) {
   const { lang } = useLang();
-  const finalTitle = title || (lang === 'ru' ? DEFAULT_TITLE_RU : DEFAULT_TITLE_RO);
-  const finalDesc = description || (lang === 'ru' ? DEFAULT_DESC_RU : DEFAULT_DESC_RO);
+  const finalTitle = title || (lang === 'ru' ? DEFAULT_TITLE_RU : DEFAULT_TITLE_UK);
+  const finalDesc = description || (lang === 'ru' ? DEFAULT_DESC_RU : DEFAULT_DESC_UK);
   const finalImage = image || DEFAULT_IMAGE;
   const url = `${SITE}${path}`;
 
@@ -55,7 +55,7 @@ export default function Seo({
       <link rel="canonical" href={url} />
 
       {/* Hreflang — same SPA path for both languages */}
-      <link rel="alternate" hrefLang="ro" href={url} />
+      <link rel="alternate" hrefLang="uk" href={url} />
       <link rel="alternate" hrefLang="ru" href={url} />
       <link rel="alternate" hrefLang="x-default" href={url} />
 
@@ -66,8 +66,8 @@ export default function Seo({
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDesc} />
       <meta property="og:image" content={finalImage} />
-      <meta property="og:locale" content={lang === 'ru' ? 'ru_RU' : 'ro_RO'} />
-      <meta property="og:locale:alternate" content={lang === 'ru' ? 'ro_RO' : 'ru_RU'} />
+      <meta property="og:locale" content={lang === 'ru' ? 'ru_RU' : 'uk_UA'} />
+      <meta property="og:locale:alternate" content={lang === 'ru' ? 'uk_UA' : 'ru_RU'} />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

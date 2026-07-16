@@ -45,7 +45,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     else:
         # User opened the bot directly without a token — default to RO welcome
         await update.message.reply_text(
-            _t("ro", "welcome"),
+            _t("uk", "welcome"),
             parse_mode="Markdown",
         )
 
@@ -89,20 +89,20 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
         resp = await backend.get_report(token)
     except httpx.RequestError as exc:
         logger.error("Backend unreachable: %s", exc)
-        await status_msg.edit_text(_t("ro", "server_error"))
+        await status_msg.edit_text(_t("uk", "server_error"))
         return
 
     if resp.status_code == 404:
-        await status_msg.edit_text(_t("ro", "expired"), parse_mode="Markdown")
+        await status_msg.edit_text(_t("uk", "expired"), parse_mode="Markdown")
         return
 
     if resp.status_code != 200:
         logger.error("Backend returned %s", resp.status_code)
-        await status_msg.edit_text(_t("ro", "server_fail"))
+        await status_msg.edit_text(_t("uk", "server_fail"))
         return
 
     data        = resp.json()
-    lang        = data.get("language") or "ro"
+    lang        = data.get("language") or "uk"
     first_name  = data.get("first_name", "")
     last_name   = data.get("last_name", "")
     total_score = int(round(data.get("total_score") or 0))
@@ -205,7 +205,7 @@ def _start_flow(context, flow: str, lang: str, token: str) -> str:
     Preserves the phone-share context (ctok/clng) so the request_contact reply
     keyboard offered after the report keeps working even mid-flow.
     """
-    lng = lang if lang in ("ro", "ru") else "ro"
+    lng = lang if lang in ("uk", "ru") else "uk"
     ctok = context.user_data.get("ctok")
     clng = context.user_data.get("clng")
     context.user_data.clear()
@@ -247,7 +247,7 @@ async def on_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     """
     contact = update.message.contact if update.message else None
     token = context.user_data.get("ctok")
-    lang = context.user_data.get("clng", "ro")
+    lang = context.user_data.get("clng", "uk")
     if not contact or not token:
         return
     phone = (contact.phone_number or "").strip()
@@ -276,8 +276,8 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = (update.message.text or "").strip()
 
     # Dismiss the phone-share reply keyboard if the user chose "later".
-    if text in (_STRINGS["ro"]["phone_later_btn"], _STRINGS["ru"]["phone_later_btn"]):
-        lng = context.user_data.get("clng", context.user_data.get("lng", "ro"))
+    if text in (_STRINGS["uk"]["phone_later_btn"], _STRINGS["ru"]["phone_later_btn"]):
+        lng = context.user_data.get("clng", context.user_data.get("lng", "uk"))
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lng, "phone_later_ack"), reply_markup=ReplyKeyboardRemove())
         return
@@ -287,7 +287,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # No report flow armed → this may be the reply to a feedback question.
         await _maybe_capture_feedback(update, text)
         return
-    lang = context.user_data.get("lng", "ro")
+    lang = context.user_data.get("lng", "uk")
     token = context.user_data.get("tok")
 
     # ----- flow: receive report by email (single step) -----
