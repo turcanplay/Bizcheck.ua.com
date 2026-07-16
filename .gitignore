@@ -1,0 +1,27 @@
+# Secrets — never commit a real .env. Only *.env.example belongs in git.
+.env
+.env.*
+!.env.example
+!*.env.example
+
+# Database dumps: they carry real customer rows (submissions, users).
+# The PII columns are Fernet-encrypted, but tg_username/tg_chat_id/sector/
+# revenue/scores are not — a dump in git is a data leak waiting to happen.
+*.dump
+*.sql.gz
+bizzcheck_local.sql
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# OS / editor
+.DS_Store
+*.swp
