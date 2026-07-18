@@ -142,6 +142,65 @@ def get_report_by_token(token):
 
 
 # ---------------------------------------------------------------------------
+# Report delivery FAILED in the bot → alert the sales team (fire-and-forget)
+# ---------------------------------------------------------------------------
+
+# Fixed UK labels for the reasons the bot can report. A closed map (not free
+# text) means the bot can never inject arbitrary content into the sales group.
+_FAIL_REASONS = {
+    "expired":      "Термін дії посилання минув (>24 год)",
+    "server_error": "Бекенд недоступний / помилка сервера",
+    "server_fail":  "Помилка отримання звіту з бекенду",
+    "no_pdf":       "PDF ще не готовий на момент відкриття",
+}
+
+
+@tg_bp.route("/report/<token>/failed", methods=["POST"])
+def report_delivery_failed(token):
+    """Bot-only: the user opened their report link but delivery FAILED (expired
+    token, backend error, …). We look the token up — it may be EXPIRED, but the
+    row still exists — and, if it maps to a real submission, alert the sales team
+    so they can reach the lead manually.
+
+    Unknown tokens are ignored silently: an alert only fires for a token that
+    maps to a real submission, so a forged/guessed token can neither spam the
+    sales group nor probe which tokens exist (identical 200 either way).
+    """
+    data = request.get_json(silent=True) or {}
+    reason_label = _FAIL_REASONS.get(
+        (data.get("reason") or "").strip(), "Невідома помилка доставки звіту"
+    )
+    tg_username = clean_optional(data.get("tg_username"), max_len=MAX_NAME) or ""
+    try:
+        tg_chat_id = int(data.get("tg_chat_id"))
+    except (TypeError, ValueError):
+        tg_chat_id = None
+
+    # Look up by token even when expired — rescuing expired-link leads is the point.
+    sub = None
+    try:
+        row = query("SELECT id FROM submissions WHERE tg_token = %s", (token,), fetch_one=True)
+        if row:
+            from models.submission import Submission
+            sub = Submission.find_by_id(row["id"])
+    except Exception:
+        sub = None
+
+    if sub:
+        try:
+            from services.sales_notify import notify_delivery_issue
+            notify_delivery_issue(
+                reason_label, sub,
+                tg_username=tg_username or None, tg_chat_id=tg_chat_id,
+            )
+        except Exception:
+            pass
+
+    # Always 200 — fire-and-forget, identical response for known/unknown tokens.
+    return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
 # Save Telegram contact after report delivery (called by the bot)
 # ---------------------------------------------------------------------------
 

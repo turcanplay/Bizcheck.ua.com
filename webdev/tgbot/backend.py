@@ -22,6 +22,15 @@ async def get_report(token: str) -> httpx.Response:
         return await client.get(_url(f"/report/{token}"))
 
 
+async def report_failed(token: str, reason: str, payload: dict) -> httpx.Response:
+    """Tell the backend the report could NOT be delivered so it can alert the
+    sales team. Best-effort — the caller swallows any error (the user already
+    sees the failure message)."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        return await client.post(_url(f"/report/{token}/failed"),
+                                 json={"reason": reason, **payload})
+
+
 async def save_contact(token: str, payload: dict) -> httpx.Response:
     """Persist the user's Telegram identity for follow-up."""
     async with httpx.AsyncClient(timeout=10.0) as client:

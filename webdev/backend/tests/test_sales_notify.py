@@ -137,3 +137,66 @@ class TestMaybeNotifySales:
                             staticmethod(lambda i: None))
         sn.maybe_notify_sales(1)
         assert jobs == []
+
+
+class TestBuildAlert:
+    def test_contains_reason_test_and_contact(self):
+        text = sn._build_alert({
+            "first_name": "Ion", "last_name": "P", "tg_username": "ion",
+            "test_name": "BizCheck", "reason_label": "Термін дії посилання минув",
+        })
+        assert "Не вдалося надіслати звіт" in text
+        assert "Ion P" in text
+        assert "BizCheck" in text
+        assert "минув" in text
+        assert "https://t.me/ion" in text
+
+    def test_escapes_injected_html_in_name(self):
+        text = sn._build_alert({"first_name": "<b>x", "reason_label": "r"})
+        assert "<b>x" not in text
+        assert "&lt;b&gt;x" in text
+
+
+class TestNotifyDeliveryIssue:
+    """The delivery-failure alert enqueues an 'alert' job (not fire-once)."""
+
+    @pytest.fixture
+    def jobs(self, monkeypatch):
+        captured = []
+        monkeypatch.setattr(sn, "_configured", lambda: True)
+        monkeypatch.setattr(sn, "_ensure_worker", lambda: None)
+        monkeypatch.setattr(sn, "_enqueue", lambda job, **kw: captured.append(job))
+        return captured
+
+    def test_skips_when_not_configured(self, monkeypatch):
+        monkeypatch.setattr(sn, "_configured", lambda: False)
+        called = []
+        monkeypatch.setattr(sn, "_enqueue", lambda *a, **k: called.append(a))
+        sn.notify_delivery_issue("expired", {"id": 1})
+        assert called == []
+
+    def test_enqueues_alert_with_lead_and_reason(self, jobs):
+        sn.notify_delivery_issue(
+            "Термін дії посилання минув",
+            {"first_name": "Ion", "last_name": "P", "test_id": 3, "tg_chat_id": 9},
+        )
+        assert len(jobs) == 1
+        kind, info = jobs[0]
+        assert kind == "alert"
+        assert info["reason_label"] == "Термін дії посилання минув"
+        assert info["first_name"] == "Ion"
+        assert info["test_id"] == 3
+        assert info["tg_chat_id"] == 9
+
+    def test_explicit_tg_identity_overrides_sub(self, jobs):
+        sn.notify_delivery_issue("expired", {"tg_chat_id": 1, "tg_username": "a"},
+                                 tg_username="b", tg_chat_id=2)
+        _, info = jobs[0]
+        assert info["tg_username"] == "b"
+        assert info["tg_chat_id"] == 2
+
+    def test_works_without_a_submission(self, jobs):
+        sn.notify_delivery_issue("expired", None, tg_chat_id=5)
+        _, info = jobs[0]
+        assert info["tg_chat_id"] == 5
+        assert info["first_name"] is None
