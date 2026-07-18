@@ -86,6 +86,20 @@ async def _feedback_open(update: Update, token: str) -> None:
 # Report delivery
 # ---------------------------------------------------------------------------
 
+async def _alert_delivery_failed(update: Update, token: str, reason: str) -> None:
+    """Best-effort: tell the backend the report could not be delivered so the
+    sales team can follow the lead up manually. Never raises — the user has
+    already been shown an error, this is a side-channel for the team."""
+    tg_user = update.effective_user
+    try:
+        await backend.report_failed(token, reason, {
+            "tg_username": (tg_user.username if tg_user else "") or "",
+            "tg_chat_id":  tg_user.id if tg_user else None,
+        })
+    except Exception as exc:
+        logger.warning("Could not report delivery failure to backend: %s", exc)
+
+
 async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token: str) -> None:
     """Fetch the report PDF from the backend and send it to the user."""
     chat    = update.effective_chat
@@ -104,11 +118,14 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
 
     if resp.status_code == 404:
         await status_msg.edit_text(_t("uk", "expired"), parse_mode="Markdown")
+        # Expired/invalid link → the lead can't self-serve; flag it to the team.
+        await _alert_delivery_failed(update, token, "expired")
         return
 
     if resp.status_code != 200:
         logger.error("Backend returned %s", resp.status_code)
         await status_msg.edit_text(_t("uk", "server_fail"))
+        await _alert_delivery_failed(update, token, "server_fail")
         return
 
     data        = resp.json()

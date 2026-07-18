@@ -167,6 +167,30 @@ def _build_caption(sub: dict, test_name: str) -> str:
     )
 
 
+def _build_alert(info: dict) -> str:
+    """Text for the 'the user bot could NOT deliver a report' alert.
+
+    Uses the same contact helpers as a lead card so the team can DM / email the
+    person straight from the message, but frames it as a delivery FAILURE that
+    needs a manual follow-up rather than a fresh lead.
+    """
+    name = " ".join(p for p in [info.get("first_name"), info.get("last_name")] if p) or "—"
+    tg_line = _tg_contact_line(info)
+    test_name = info.get("test_name") or "—"
+    reason = info.get("reason_label") or "—"
+    sep = "➖➖➖➖➖➖➖➖➖➖"
+    return (
+        "⚠️ <b>Не вдалося надіслати звіт у Telegram</b>\n\n"
+        f"👤 <b>{_esc(name)}</b>\n"
+        f"✈️ {tg_line}\n\n"
+        f"🧪 Тест: <b>{_esc(test_name)}</b>\n"
+        f"❗ Причина: <b>{_esc(reason)}</b>\n\n"
+        f"{sep}\n"
+        f'📄 Деталі → <a href="{_admin_url()}">панель адміністратора</a>\n'
+        "🔔 Зв’яжіться з клієнтом вручну, щоб не втратити лід."
+    )
+
+
 def _post_json(method: str, payload: dict) -> dict:
     token = _env("SALES_BOT_TOKEN")
     data = json.dumps(payload).encode("utf-8")
@@ -427,6 +451,54 @@ def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
         log.exception("[sales] failed to update notification for submission %s: %s", submission_id, e)
 
 
+def _process_alert(info: dict) -> None:
+    """Post a delivery-failure alert into the sales group (same routing as leads:
+    into the test's forum topic when available, else General). Retries 429 and
+    falls back out of a deleted topic exactly like _do_send."""
+    info = dict(info)
+    # Resolve test name + topic here (off the request thread) so a DB/network
+    # round-trip never blocks the endpoint that enqueued this.
+    tid = info.get("test_id")
+    if tid and not info.get("test_name"):
+        info["test_name"] = _resolve_test_name({"test_id": tid})
+    thread_id = _topic_thread_id({
+        "test_id": tid,
+        "first_name": info.get("first_name"),
+        "last_name": info.get("last_name"),
+    })
+
+    payload = {"chat_id": _sales_chat_id(), "text": _build_alert(info), "parse_mode": "HTML"}
+    kb = _build_keyboard(info)
+    if kb:
+        payload["reply_markup"] = kb
+    if thread_id:
+        payload["message_thread_id"] = thread_id
+
+    for attempt in range(_MAX_SEND_RETRY + 1):
+        try:
+            _post_json("sendMessage", payload)
+            log.info("[sales] delivery-failure alert sent (chat %s)", info.get("tg_chat_id"))
+            return
+        except urllib.error.HTTPError as e:
+            body = b""
+            try:
+                body = e.read()
+            except Exception:
+                body = b""
+            if e.code == 429 and attempt < _MAX_SEND_RETRY:
+                time.sleep(_retry_after(body))
+                continue
+            if payload.get("message_thread_id") and b"thread not found" in body.lower():
+                payload.pop("message_thread_id", None)
+                _forget_topic_id({"test_id": tid})
+                continue
+            log.error("[sales] delivery-failure alert error: %s %s", e.code, body[:200])
+            return
+        except Exception:
+            log.exception("[sales] failed to send delivery-failure alert")
+            return
+
+
 def _worker_loop() -> None:
     while True:
         job = _QUEUE.get()
@@ -435,6 +507,8 @@ def _worker_loop() -> None:
                 _process_send(job[1])
             elif job[0] == "update":
                 _process_update(job[1], job[2], job[3])
+            elif job[0] == "alert":
+                _process_alert(job[1])
         except Exception:
             log.exception("[sales] worker job failed: %s", job)
         finally:
@@ -514,3 +588,27 @@ def maybe_notify_sales(submission_id: int) -> None:
         return
     msg_id, is_doc = existing
     _enqueue(("update", submission_id, msg_id, is_doc))
+
+
+def notify_delivery_issue(reason_label: str, sub: dict | None = None,
+                          tg_username=None, tg_chat_id=None) -> None:
+    """Alert the sales group that the USER BOT could NOT deliver a report (expired
+    link, backend error, …) so the lead is chased manually instead of lost
+    silently. Fire-and-forget through the same serialized worker; no-op unless the
+    sales notifier is configured. Unlike maybe_notify_sales this is NOT fire-once —
+    a failed delivery is worth flagging every time it happens.
+    """
+    if not _configured():
+        return
+    sub = sub or {}
+    info = {
+        "reason_label": reason_label,
+        "tg_username":  tg_username or sub.get("tg_username"),
+        "tg_chat_id":   tg_chat_id or sub.get("tg_chat_id"),
+        "first_name":   sub.get("first_name"),
+        "last_name":    sub.get("last_name"),
+        "email":        sub.get("email"),
+        "test_id":      sub.get("test_id"),
+    }
+    _ensure_worker()
+    _enqueue(("alert", info))
