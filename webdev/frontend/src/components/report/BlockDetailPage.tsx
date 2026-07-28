@@ -1,6 +1,6 @@
 import type { BlockResult } from '@/types';
 import DonutChart from '@/components/ui/DonutChart';
-import { getZoneColor } from '@/utils/scoring';
+import { getZoneColor, displayPct } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { findBlockExplanation } from '@/data/blockExplanations';
 import type { TranslationKey } from '@/i18n/translations';
@@ -37,7 +37,7 @@ export default function BlockDetailPage({ block }: BlockDetailPageProps) {
       <header className="block-detail__top">
         <div className="block-detail__score" style={{ borderColor: color }}>
           <DonutChart
-            percentage={block.score}
+            percentage={displayPct(block.score)}
             color={color}
             size={130}
             strokeWidth={11}

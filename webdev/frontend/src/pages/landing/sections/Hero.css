@@ -29,9 +29,9 @@
 }
 /* Vector1 — big cloud extending past the laptop on the right */
 .hero__bg-img--right       { top: 60px;   right: -180px; width: 720px; opacity: .85; }
-/* Vector3 — pale ovals in upper-left (behind rating badge) */
+/* Upper-left decoration (behind the rating badge) — no image uses it right now */
 .hero__bg-img--left-top    { top: -60px;  left: -80px;   width: 260px; opacity: .65; }
-/* Vector6 — small accent lower-left of hero copy */
+/* Small accent lower-left of the hero copy — no image uses it right now */
 .hero__bg-img--left-bottom { bottom: 80px; left: 20px;   width: 170px; opacity: .45; transform: rotate(-14deg); }
 
 /* -------- Top nav bar -------- */

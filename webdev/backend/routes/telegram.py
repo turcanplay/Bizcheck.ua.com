@@ -18,6 +18,7 @@ from flask import Blueprint, jsonify, request
 from database.db import execute, query
 from utils.crypto import decrypt_value
 from middleware.admin_middleware import submission_owner_or_admin
+from services.scoring import resolve_zones
 from utils.validators import clean_text, clean_optional, MAX_NAME
 
 log = logging.getLogger(__name__)
@@ -166,11 +167,18 @@ def get_report_by_token(token):
     Return submission data + base64-encoded PDF for a valid token.
     Called exclusively by the Telegram bot service.
     """
+    # scoring_zones comes along on the SAME row (LEFT JOIN, no extra round-trip):
+    # the bot prints the score's zone and must use the test's admin-configured
+    # bands, not a ladder of its own. LEFT JOIN because submissions.test_id is
+    # nullable — a submission without a test still delivers its PDF, it just
+    # falls back to the default zones.
     row = query(
-        """SELECT id, first_name, last_name, total_score, block_scores_json,
-                  tg_token_expires, pdf_data, language
-           FROM submissions
-           WHERE tg_token = %s""",
+        """SELECT s.id, s.first_name, s.last_name, s.total_score,
+                  s.block_scores_json, s.tg_token_expires, s.pdf_data,
+                  s.language, t.scoring_zones
+           FROM submissions s
+           LEFT JOIN tests t ON t.id = s.test_id
+           WHERE s.tg_token = %s""",
         (token,),
         fetch_one=True,
     )
@@ -201,6 +209,9 @@ def get_report_by_token(token):
         "block_scores_json": row["block_scores_json"],
         "pdf_b64": pdf_b64,
         "language": row.get("language") or "uk",
+        # Always a complete, ordered 4-key dict — resolve_zones() repairs legacy
+        # / hand-edited rows, so the bot never receives null or a partial ladder.
+        "scoring_zones": resolve_zones(row.get("scoring_zones")),
     })
 
 

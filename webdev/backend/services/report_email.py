@@ -74,8 +74,10 @@ def dispatch_report_email(sub_id):
 
     lang = (sub.get("language") or "uk").lower()
 
-    # Test name in the user's language.
+    # Test name in the user's language + the test's own scoring thresholds
+    # (the email's score ring must use the SAME bands as the on-screen report).
     test_name = ""
+    zones = None
     test_id = sub.get("test_id")
     if test_id:
         try:
@@ -84,6 +86,7 @@ def dispatch_report_email(sub_id):
                 # Symmetric fallback: an EN-only test must not produce a blank
                 # subject line for a Ukrainian recipient either.
                 test_name = pick_lang(t, "name", lang)
+                zones = t.get("scoring_zones")
         except Exception:
             # Swallowed: the email still goes out, just with the generic
             # "Звіт Bizcheck.ua.com" title instead of the real test name.
@@ -125,6 +128,7 @@ def dispatch_report_email(sub_id):
             score=score,
             download_url=download_url,
             pdf_filename=pdf_filename,
+            zones=zones,
         )
     except Exception as e:
         log.exception("[report-email] dispatch failed for sub %s: %s", sub_id, e)

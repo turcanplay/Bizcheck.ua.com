@@ -21,7 +21,7 @@ from telegram.ext import ContextTypes
 import backend
 from config import logger, EMAIL_RE, PHONE_RE
 from strings import _STRINGS, _t, pick_lang
-from helpers import _zone
+from helpers import _zone, display_pct
 
 
 def _client_lang(update: Update) -> str:
@@ -152,17 +152,27 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     lang        = data.get("language") or ui_lang
     first_name  = data.get("first_name", "")
     last_name   = data.get("last_name", "")
-    total_score = int(round(data.get("total_score") or 0))
     pdf_b64     = data.get("pdf_b64")
+    # Same rounding as the report/email/sales card: round once, then both the
+    # zone and the printed number derive from that single integer.
+    try:
+        total_score = int(round(float(data.get("total_score") or 0)))
+    except (TypeError, ValueError):
+        total_score = 0
+    # Admin-configurable bands (tests.scoring_zones). Absent when the backend is
+    # older than this bot → helpers falls back to the documented defaults.
+    zones = data.get("scoring_zones")
 
     # Update loading message now that we know the language
     await status_msg.edit_text(_t(lang, "preparing"))
 
-    # 2. Build summary text
-    zone_emoji, zone_label = _zone(total_score, lang)
+    # 2. Build summary text.
+    #    The zone comes from the RAW score (a 0 must stay in the risk band); only
+    #    the printed percentage is floored to 1 — see helpers.display_pct.
+    zone_emoji, zone_label = _zone(total_score, lang, zones)
     lines = [
         _t(lang, "report_header", first_name=first_name, last_name=last_name),
-        _t(lang, "score_line", score=total_score),
+        _t(lang, "score_line", score=display_pct(total_score)),
         f"{zone_emoji} {zone_label}\n",
     ]
 

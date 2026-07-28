@@ -15,7 +15,7 @@ export default function Header() {
   const testName = pickLang(currentTest, 'name', lang);
 
   // Show test name only during quiz / cta phases where a test is active
-  const showTestName = !!testName && (phase === 'quiz' || phase === 'cta' || phase === 'report');
+  const showTestName = !!testName && (phase === 'quiz' || phase === 'cta');
 
   return (
     <header className="site-header">

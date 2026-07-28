@@ -367,3 +367,172 @@ class TestFormulaInjection:
                         found += 1
                         assert c.data_type != "f", f"live formula in {ws.title}!{c.coordinate}"
         assert found >= 1, "the payload never reached the workbook"
+
+
+# ---------------------------------------------------------------------------
+# A displayed 0% is printed as 1% — parity with the web report / PDF / email
+# ---------------------------------------------------------------------------
+# Product decision (services.scoring.display_pct): "0%" reads like a broken
+# calculation, so every surface a human reads prints 1% instead. The export was
+# the last surface still printing a bare 0, which made the workbook an admin
+# downloads contradict the report the client had already received.
+#
+# Two invariants this whole section exists to pin down:
+#   * the floor is DISPLAY-ONLY — the stored score and the zone it falls in are
+#     computed from the RAW value, so a 0 stays in `risk`;
+#   * it applies to PERCENTAGES only — per-question answer points and empty
+#     cells are exported untouched.
+
+class TestDisplayedZeroIsOne:
+
+    # ---- the two formatting helpers -------------------------------------
+    def test_fmt_score_floors_zero(self):
+        assert ex._fmt_score(0) == "1%"
+        assert ex._fmt_score(0.0) == "1%"
+        assert ex._fmt_score("0") == "1%"
+        assert ex._fmt_score(0.4) == "1%"        # rounds to 0 → floored
+
+    def test_fmt_score_leaves_non_zero_alone(self):
+        assert ex._fmt_score(1) == "1%"
+        assert ex._fmt_score(37) == "37%"
+        assert ex._fmt_score(82.4) == "82%"
+        assert ex._fmt_score(100) == "100%"
+
+    def test_fmt_score_keeps_dash_for_missing(self):
+        # An unknown score must stay unknown — never a fabricated 1%.
+        assert ex._fmt_score(None) == "—"
+        assert ex._fmt_score("") == "—"
+        assert ex._fmt_score("abc") == "—"
+
+    def test_display_pct_cell_floors_zero_and_stays_numeric(self):
+        out = ex._display_pct_cell(0)
+        assert out == 1
+        assert isinstance(out, int) and not isinstance(out, str)
+
+    def test_display_pct_cell_keeps_non_zero_numbers(self):
+        assert ex._display_pct_cell(37) == 37
+        assert ex._display_pct_cell(100) == 100
+        assert isinstance(ex._display_pct_cell(79.6), int)
+        assert ex._display_pct_cell(79.6) == 80          # same rounding as the UI
+
+    def test_display_pct_cell_passes_blanks_through(self):
+        # None / "" / a placeholder must NOT become 1.
+        assert ex._display_pct_cell(None) is None
+        assert ex._display_pct_cell("") == ""
+        assert ex._display_pct_cell("—") == "—"
+        assert ex._display_pct_cell("abc") == "abc"
+
+    # ---- row builders ----------------------------------------------------
+    def _zero_sub(self, **over):
+        sub = {
+            "id": 9, "first_name": "Nul", "last_name": "Score", "email": "n@s.ua",
+            "phone": "+380", "sector": "IT", "status": "completed", "consent": True,
+            "total_score": 0, "created_at": "2026-01-01", "test_id": 1, "language": "uk",
+            "block_scores_json": '[{"title": "Bloc A", "score": 0},'
+                                 ' {"title": "Bloc B", "score": 55}]',
+            "answers_json": '{"b1q1": 0}',
+        }
+        sub.update(over)
+        return sub
+
+    def test_summary_row_total_and_block_zero_become_one(self):
+        headers = ex._summary_headers(["Bloc A", "Bloc B"], {"b1q1": "Q1"}, ["b1q1"])
+        row = ex._summary_row(self._zero_sub(), ["Bloc A", "Bloc B"], ["b1q1"])
+
+        total = row[headers.index("Загальний бал %")]
+        assert total == 1 and isinstance(total, int)
+
+        block_a = row[headers.index("Bloc A %")]
+        assert block_a == 1 and isinstance(block_a, int)
+        assert row[headers.index("Bloc B %")] == 55        # untouched
+
+    def test_summary_row_answer_points_are_not_floored(self):
+        """answers_json holds raw per-question points, not a percentage.
+
+        A 0 there means "answered no" and is what the admin analyses — flooring
+        it to 1 would falsify the data, not present it.
+        """
+        headers = ex._summary_headers([], {"b1q1": "Q1"}, ["b1q1"])
+        row = ex._summary_row(self._zero_sub(), [], ["b1q1"])
+        assert row[headers.index("Q1")] == 0
+
+    def test_summary_row_missing_score_stays_blank(self):
+        headers = ex._summary_headers(["Bloc A"], {}, [])
+        row = ex._summary_row(
+            self._zero_sub(block_scores_json='[{"title": "Bloc A"}]'), ["Bloc A"], [])
+        assert row[headers.index("Bloc A %")] == ""
+
+    def test_summary_row_null_total_stays_empty(self):
+        headers = ex._summary_headers([], {}, [])
+        row = ex._summary_row(self._zero_sub(total_score=None), [], [])
+        assert row[headers.index("Загальний бал %")] is None
+
+    def test_processed_row_floors_zero_but_not_null(self):
+        idx = ex._PROCESSED_HEADERS.index("Загальний бал %")
+        assert ex._processed_row(self._zero_sub(status="in_progress"))[idx] == 1
+        assert ex._processed_row(self._zero_sub(total_score=None))[idx] is None
+        assert ex._processed_row(self._zero_sub(total_score=64))[idx] == 64
+
+    def test_row_builders_do_not_mutate_the_submission(self):
+        """Display-only: the dict that came from the DB is left at 0."""
+        sub = self._zero_sub()
+        ex._summary_row(sub, ["Bloc A"], ["b1q1"])
+        ex._processed_row(sub)
+        assert sub["total_score"] == 0
+        assert '"score": 0' in sub["block_scores_json"]
+
+    def test_stored_zero_still_lands_in_the_risk_zone(self):
+        """The floor must never move a score into another band."""
+        from services.scoring import display_pct, zone_of
+        assert zone_of(0) == "risk"
+        assert zone_of(display_pct(0)) == "risk"     # even the displayed 1
+
+    # ---- rendered surfaces ----------------------------------------------
+    def _patch_one(self, monkeypatch, sub):
+        monkeypatch.setattr("models.submission.Submission.find_all",
+                            staticmethod(lambda test_id=None: [sub]))
+        monkeypatch.setattr("models.submission.Submission.find_by_id",
+                            staticmethod(lambda i: sub))
+        monkeypatch.setattr("models.block.Block.find_by_test",
+                            staticmethod(lambda t: [{"id": 1}]))
+        monkeypatch.setattr("models.block.Block.find_all", staticmethod(lambda: [{"id": 1}]))
+        monkeypatch.setattr("models.question.Question.find_by_blocks",
+                            staticmethod(lambda ids: [
+                                {"id": 1, "block_id": 1, "text_uk": "Питання 1",
+                                 "parent_question_id": None}]))
+
+    def test_single_user_sheet_shows_one_percent(self, monkeypatch):
+        sub = self._zero_sub()
+        self._patch_one(monkeypatch, sub)
+        wb, _ = ex.build_single_user_workbook(9)
+        ws = wb.active
+        pairs = {r[0].value: r[1].value for r in ws.iter_rows(min_col=1, max_col=2)
+                 if r[0].value is not None}
+
+        assert pairs["Загальний бал %"] == 1                 # numeric, floored
+        assert isinstance(pairs["Загальний бал %"], int)
+        assert pairs["Bloc A"] == "1%"                       # block label/value pair
+        assert pairs["Bloc B"] == "55%"
+        # the per-question answer point keeps its raw 0
+        assert pairs["B1 Q1: Питання 1"] == 0
+
+    def test_html_report_shows_one_percent(self, monkeypatch):
+        self._patch_one(monkeypatch, self._zero_sub())
+        page, _ = ex.build_single_user_report_html(9)
+        assert ">1%<" in page                    # total, in the .total span
+        assert "1%</td>" in page                 # Bloc A
+        assert "55%</td>" in page                # Bloc B untouched
+        assert ">0%<" not in page and "0%</td>" not in page
+
+    def test_workbook_keeps_the_score_column_numeric(self, monkeypatch):
+        """Excel must still see a NUMBER — a "1%" string would break sorting."""
+        from io import BytesIO
+        self._patch_one(monkeypatch, self._zero_sub())
+        book = openpyxl.load_workbook(
+            BytesIO(ex.workbook_to_bytes(ex.build_test_combined_workbook(1))))
+        ws = book["Зведення"]
+        headers = [c.value for c in ws[1]]
+        col = headers.index("Загальний бал %") + 1
+        cell = ws.cell(row=2, column=col)
+        assert cell.value == 1
+        assert cell.data_type == "n"

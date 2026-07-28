@@ -111,7 +111,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [tests, setTests] = useState<TestOption[]>([]);
   // True once the /tests fetch has settled (success OR failure). Report layout
   // selection keys off report_type from this list — rendering before it loads
-  // would wrongly fall back to the 'bizcheck' layout. See ReportPage.
+  // would wrongly fall back to the 'bizcheck' layout. See CtaPage.
   const [testsLoaded, setTestsLoaded] = useState(false);
   const [selectedTestSlug, setSelectedTestSlug] = useState<string | null>(saved.current?.selectedTestSlug ?? null);
 
@@ -229,6 +229,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       setBlocks(resolveBlocks(rawApiBlocks, lang));
     }
   }, [lang, rawApiBlocks]);
+
+  /* Scoring thresholds of the SELECTED test — the report's colour bands are
+   * admin-configurable per test (`tests.scoring_zones`). Held in a ref because
+   * buildReport() is called from callbacks that must not re-create on every
+   * `tests` refresh. Undefined until /tests resolves → resolveZones() defaults. */
+  const currentTestZones = tests.find(t => t.slug === selectedTestSlug)?.scoring_zones;
+  const zonesRef = useRef(currentTestZones);
+  zonesRef.current = currentTestZones;
 
   const sectors = tList('sectors');
   const sizes = tList('sizes');
@@ -402,7 +410,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     } else {
       // Last question of last block — generate report
       setAnswers(latestAnswers => {
-        const reportData = buildReport(blocksRef.current, latestAnswers, userInfo);
+        const reportData = buildReport(blocksRef.current, latestAnswers, userInfo, zonesRef.current);
         setReport(reportData);
         setPhase('cta');
 
@@ -479,13 +487,13 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   // If phase is 'cta' but report is null (page refresh), regenerate from saved data
   useEffect(() => {
     if (phase === 'cta' && !report && blocks.length > 0 && Object.keys(answers).length > 0) {
-      const reportData = buildReport(blocks, answers, userInfo);
+      const reportData = buildReport(blocks, answers, userInfo, currentTestZones);
       setReport(reportData);
     }
-  }, [phase, report, blocks, answers, userInfo]);
+  }, [phase, report, blocks, answers, userInfo, currentTestZones]);
 
   const generateReport = useCallback(() => {
-    const reportData = buildReport(blocks, answers, userInfo);
+    const reportData = buildReport(blocks, answers, userInfo, zonesRef.current);
     setReport(reportData);
     setPhase('cta');
 

@@ -1,20 +1,50 @@
-import type { ReportData } from '@/types';
-import { getZoneColor, getZone } from '@/utils/scoring';
+import type { ReportData, Zone } from '@/types';
+import { getZoneColor, getZone, displayPct } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { useQuiz } from '@/context/QuizContext';
 import { pickLang } from '@/i18n/pickLang';
+import type { TranslationKey } from '@/i18n/translations';
 import './ReportHeader.css';
 
 interface ReportHeaderProps {
   report: ReportData;
 }
 
+const ZONE_VERDICT_KEYS: Record<Zone, TranslationKey> = {
+  safe: 'verdictHigh',
+  developing: 'verdictMid',
+  warning: 'verdictWarning',
+  risk: 'verdictLow',
+};
+
+const ZONE_DESC_KEYS: Record<Zone, TranslationKey> = {
+  safe: 'legendGreenDesc',
+  developing: 'legendYellowDesc',
+  warning: 'legendOrangeDesc',
+  risk: 'legendRedDesc',
+};
+
 export default function ReportHeader({ report }: ReportHeaderProps) {
   const { t, lang } = useLang();
   const { tests, selectedTestSlug } = useQuiz();
-  const totalColor = getZoneColor(getZone(report.totalScore));
+  const zone = getZone(report.totalScore, report.zones);
+  const totalColor = getZoneColor(zone);
+  const shownPct = displayPct(report.totalScore);
   const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
   const testName = pickLang(currentTest, 'name', lang);
+
+  // Legend rows built from the SAME thresholds the report was scored with —
+  // the ranges used to be hard-coded strings ("80% – 100%") that silently
+  // contradicted any test whose zones an admin had edited.
+  // A band whose upper bound falls below its lower bound is empty (the admin
+  // collapsed it) and is dropped rather than printed as an inverted range.
+  const { safe, developing, warn } = report.zones;
+  const legendRows = ([
+    { zone: 'safe', lo: safe, hi: 100 },
+    { zone: 'developing', lo: developing, hi: safe - 1 },
+    { zone: 'warning', lo: warn, hi: developing - 1 },
+    { zone: 'risk', lo: 0, hi: warn - 1 },
+  ] as { zone: Zone; lo: number; hi: number }[]).filter(b => b.hi >= b.lo);
 
   return (
     <div className="report-header" data-pdf-section data-pdf-page>
@@ -46,52 +76,38 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
             <div className="report-header__total-bar">
               <div
                 className="report-header__total-bar-fill"
-                style={{ width: `${report.totalScore}%`, background: totalColor }}
+                style={{ width: `${shownPct}%`, background: totalColor }}
               />
             </div>
             <div className="report-header__total-bar-pct" style={{ color: totalColor }}>
-              {report.totalScore}%
+              {shownPct}%
             </div>
           </div>
 
           <div className="report-header__total-big">
             <div className="report-header__total-num" style={{ color: totalColor }}>
-              {report.totalScore}%
+              {shownPct}%
             </div>
             <div className="report-header__total-verdict">
-              {report.totalScore >= 80
-                ? t('verdictHigh')
-                : report.totalScore >= 70
-                  ? t('verdictMid')
-                  : report.totalScore >= 65
-                    ? t('verdictWarning')
-                    : t('verdictLow')}
+              {t(ZONE_VERDICT_KEYS[zone])}
             </div>
           </div>
 
           <div className="report-header__legend">
             <div className="report-header__legend-title">{t('legendTitle')}</div>
             <div className="report-header__legend-grid">
-              <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#05AB8C' }} />
-                <span className="report-header__legend-range">{t('legendGreen')}</span>
-                <span className="report-header__legend-desc">{t('legendGreenDesc')}</span>
-              </div>
-              <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#F5A800' }} />
-                <span className="report-header__legend-range">{t('legendYellow')}</span>
-                <span className="report-header__legend-desc">{t('legendYellowDesc')}</span>
-              </div>
-              <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#E07B00' }} />
-                <span className="report-header__legend-range">{t('legendOrange')}</span>
-                <span className="report-header__legend-desc">{t('legendOrangeDesc')}</span>
-              </div>
-              <div className="report-header__legend-row">
-                <span className="report-header__legend-badge" style={{ background: '#D64535' }} />
-                <span className="report-header__legend-range">{t('legendRed')}</span>
-                <span className="report-header__legend-desc">{t('legendRedDesc')}</span>
-              </div>
+              {legendRows.map(band => (
+                <div className="report-header__legend-row" key={band.zone}>
+                  <span
+                    className="report-header__legend-badge"
+                    style={{ background: getZoneColor(band.zone) }}
+                  />
+                  <span className="report-header__legend-range">
+                    {Math.round(band.lo)}% – {Math.round(band.hi)}%
+                  </span>
+                  <span className="report-header__legend-desc">{t(ZONE_DESC_KEYS[band.zone])}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

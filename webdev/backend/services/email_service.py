@@ -191,8 +191,12 @@ def send_report_email_sync(
     pdf_filename: str = "BizCheck_Report.pdf",
     logo_url: str | None = None,
     download_url: str | None = None,
+    zones=None,
 ) -> bool:
     """Render + send the report email synchronously. Returns True on success.
+
+    ``zones`` is the test's raw `scoring_zones` value; it decides which colour
+    band the score falls into (see services/scoring.py). None → the defaults.
 
     Use this from scripts/tests where you want the result. The web/Telegram
     paths use the async wrapper below.
@@ -217,6 +221,7 @@ def send_report_email_sync(
         logo_url=logo_src,
         download_url=download_url,
         reply_to=reply_to,
+        zones=zones,
     )
 
     return _deliver(
@@ -242,6 +247,7 @@ def send_report_email_async(
     pdf_filename: str = "BizCheck_Report.pdf",
     logo_url: str | None = None,
     download_url: str | None = None,
+    zones=None,
 ) -> None:
     """Fire-and-forget email send. Returns immediately; actual delivery
     happens in a daemon thread. Errors are logged, not propagated.
@@ -271,6 +277,7 @@ def send_report_email_async(
             pdf_filename=pdf_filename,
             logo_url=logo_url,
             download_url=download_url,
+            zones=zones,
         ),
         daemon=True,
         name=f"email-{to_email[:20]}",

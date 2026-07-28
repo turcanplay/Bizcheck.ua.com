@@ -12,14 +12,29 @@ import BlockGrid from '@/components/report/BlockGrid';
 import OverallScore from '@/components/report/OverallScore';
 import ZoneSection from '@/components/report/ZoneSection';
 import BlockDetailPage from '@/components/report/BlockDetailPage';
+import GdprQuestionPage from '@/components/report/GdprQuestionPage';
 import QuestionChecklistSlice from '@/components/report/QuestionChecklistSlice';
 import ReportFooter from '@/components/report/ReportFooter';
 import { findBlockExplanation } from '@/data/blockExplanations';
+import { getZone, getZoneColor, displayPct } from '@/utils/scoring';
+import type { TranslationKey } from '@/i18n/translations';
 import type { Zone, Question } from '@/types';
 
-interface QuestionWithMeta { q: Question; blockTitle: string; }
 import './ReportPage.css';
 import './CtaPage.css';
+
+interface QuestionWithMeta { q: Question; blockTitle: string; }
+
+const ZONE_LABEL_KEYS: Record<Zone, TranslationKey> = {
+  safe: 'zoneSafe',
+  developing: 'zoneDeveloping',
+  warning: 'zoneWarning',
+  risk: 'zoneRisk',
+};
+
+const ZONE_EMOJI: Record<Zone, string> = {
+  safe: '🟢', developing: '🟡', warning: '🟠', risk: '🔴',
+};
 
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$/;
 const PHONE_RE = /^\+?[\d\s\-()]{7,20}$/;
@@ -138,7 +153,7 @@ export default function CtaPage() {
 
   useEffect(() => {
     if (!report) return;
-    const target = Math.round(report.totalScore);
+    const target = displayPct(report.totalScore);
     const step = target / 40;
     let current = 0;
     const interval = setInterval(() => {
@@ -343,8 +358,12 @@ export default function CtaPage() {
 
   if (!report) return null;
 
-  const score = Math.round(report.totalScore);
-  const scoreColor = score >= 80 ? '#05AB8C' : score >= 70 ? '#F5A800' : score >= 65 ? '#E07B00' : '#D64535';
+  // Zone off the RAW total with the test's own thresholds; only the number the
+  // user sees is floored to 1 (displayPct) — a 0 stays in the risk band.
+  const zone = getZone(report.totalScore, report.zones);
+  const scoreColor = getZoneColor(zone);
+  const zoneLine = `${ZONE_EMOJI[zone]} ${t(ZONE_LABEL_KEYS[zone])}`;
+  const score = displayPct(report.totalScore);
 
   return (
     <div className="cta-page">
@@ -360,12 +379,7 @@ export default function CtaPage() {
             <div className="cta-reveal__score" style={{ color: scoreColor }}>
               {scoreDisplay}<span className="cta-reveal__pct">%</span>
             </div>
-            <div className="cta-reveal__label">
-              {score >= 80 ? `🟢 ${t('zoneSafe')}`
-                : score >= 70 ? `🟡 ${t('zoneDeveloping')}`
-                : score >= 65 ? `🟠 ${t('zoneWarning')}`
-                : `🔴 ${t('zoneRisk')}`}
-            </div>
+            <div className="cta-reveal__label">{zoneLine}</div>
             <div className="cta-reveal__bar">
               <div className="cta-reveal__bar-fill" style={{ width: `${scoreDisplay}%`, background: scoreColor }} />
             </div>
@@ -383,9 +397,37 @@ export default function CtaPage() {
               const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
               const rt = currentTest?.report_type ?? 'bizcheck';
 
-              // ── STANDARD layout ───────────────────────────
+              // ── GDPR layout ──
+              // One page per question: question + given answer, then the fixed
+              // UK/EN explanation. Question position (1-based) maps to the
+              // explanation order. Without this branch a `gdpr` test silently
+              // fell through to the bizcheck tree and shipped the wrong PDF.
+              if (rt === 'gdpr') {
+                const flatQuestions: QuestionWithMeta[] = [];
+                blocks.forEach(block => {
+                  block.questions.filter(q => !q.parent_question_id).forEach(q => {
+                    flatQuestions.push({ q, blockTitle: block.title });
+                  });
+                });
+                return (
+                  <>
+                    {flatQuestions.map(({ q }, i) => (
+                      <div className="report-pdf__page" data-pdf-page key={`gdpr-${q.db_id}`}>
+                        <GdprQuestionPage
+                          q={q}
+                          number={i + 1}
+                          answers={answers}
+                          selectedKeys={selectedKeys}
+                        />
+                      </div>
+                    ))}
+                  </>
+                );
+              }
+
+              // ── STANDARD layout ────────────────────────────
               // Cover → [checklist, 5 questions/page] → OverallScore+Footer → outro
-              // Nu are BlockGrid, nu are ZoneSections (redundante pentru acest tip).
+              // No BlockGrid and no ZoneSections — redundant for this layout.
               if (rt === 'standard') {
                 const flatQuestions: QuestionWithMeta[] = [];
                 blocks.forEach(block => {
@@ -492,12 +534,7 @@ export default function CtaPage() {
           <div className="cta-page__score-pct" style={{ color: scoreColor }}>
             {score}<span className="cta-page__score-pct-sign">%</span>
           </div>
-          <div className="cta-page__score-zone">
-            {score >= 80 ? `🟢 ${t('zoneSafe')}`
-              : score >= 70 ? `🟡 ${t('zoneDeveloping')}`
-              : score >= 65 ? `🟠 ${t('zoneWarning')}`
-              : `🔴 ${t('zoneRisk')}`}
-          </div>
+          <div className="cta-page__score-zone">{zoneLine}</div>
           <p className={`cta-page__status ${pdfDone ? 'cta-page__status--ready' : ''}`}>
             {!pdfDone && <span className="cta-page__status-spinner" aria-hidden />}
             {pdfDone ? t('ctaPdfReady') : t('ctaPdfPreparing')}

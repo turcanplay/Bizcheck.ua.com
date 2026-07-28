@@ -1,6 +1,6 @@
 import type { BlockResult } from '@/types';
 import DonutChart from '@/components/ui/DonutChart';
-import { getZoneColor } from '@/utils/scoring';
+import { getZoneColor, displayPct } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import './BlockGrid.css';
 
@@ -35,7 +35,7 @@ export default function BlockGrid({ blocks }: BlockGridProps) {
                 <div className="block-grid__card" key={b.id}>
                   <div className="block-grid__card-donut">
                     <DonutChart
-                      percentage={b.score}
+                      percentage={displayPct(b.score)}
                       color={color}
                       size={200}
                       strokeWidth={16}

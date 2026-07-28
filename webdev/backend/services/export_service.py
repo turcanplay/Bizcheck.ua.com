@@ -15,12 +15,15 @@ from datetime import date, datetime
 from io import BytesIO
 
 import openpyxl
+from openpyxl.cell import Cell, WriteOnlyCell
 from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.worksheet._write_only import WriteOnlyWorksheet
 
 from models.block import Block
 from models.question import Question
 from models.submission import Submission
 from models.test import Test
+from services.scoring import display_pct
 
 
 log = logging.getLogger(__name__)
@@ -41,6 +44,9 @@ _HEADER_FONT = Font(bold=True, size=10)
 _HEADER_FILL = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
 _HEADER_ALIGN = Alignment(wrap_text=True, vertical="center", horizontal="center")
 _CELL_ALIGN = Alignment(wrap_text=True, vertical="top")
+_BOLD_FONT = Font(bold=True)
+_TITLE_FONT = Font(bold=True, size=14)
+_SECTION_FONT = Font(bold=True, size=12)
 _FIXED_COLS = {
     "ID": 5, "Ім'я": 12, "Прізвище": 12, "Email": 24, "Телефон": 14,
     "Сектор": 16, "Розмір компанії": 15, "Вік компанії": 15, "Оборот": 16,
@@ -78,6 +84,45 @@ def _parse_json_field(val):
         except (json.JSONDecodeError, TypeError):
             return None
     return val
+
+
+# ──────────────────────────────────────────────────────────────────
+# Percentages as SHOWN — the one place this file decides how a score prints
+# ──────────────────────────────────────────────────────────────────
+# A computed 0 is displayed as 1 (services.scoring.display_pct): "0%" reads like
+# a broken calculation rather than a result. The web report, the PDF, the email
+# and the Telegram notification already print it that way, so an export that
+# printed a bare 0 contradicted the report the client received.
+#
+# Two rules apply to everything below:
+#   • DISPLAY ONLY — nothing here is written back to the DB and nothing here
+#     feeds zone_of(); a stored 0 stays 0 and stays in the `risk` zone.
+#   • ONLY PERCENTAGES — per-question answer points (answers_json) are raw
+#     scores where 0 means "answered no", not a percentage. They are exported
+#     untouched.
+
+def _display_pct_cell(val):
+    """A percentage for a SPREADSHEET cell: numeric, with a computed 0 → 1.
+
+    Returns a plain ``int`` so the column stays sortable and formattable in
+    Excel — never a string. Anything that is not a number (``None``, ``""``,
+    a stray label like ``"—"``) is passed through untouched, so an unknown or
+    empty score keeps rendering as an empty/placeholder cell and never turns
+    into a fabricated "1".
+    """
+    shown = display_pct(val)
+    return val if shown is None else shown
+
+
+def _fmt_score(val) -> str:
+    """Render a numeric score as 'NN%'; '—' when missing/non-numeric.
+
+    Deliberately a STRING: its two call sites are label/value pairs (the HTML
+    report and the second column of a per-user detail sheet), not a numeric
+    column. A computed 0 renders as "1%" — same rule as _display_pct_cell.
+    """
+    shown = display_pct(val)
+    return "—" if shown is None else f"{shown}%"
 
 
 def _collect_questions_for_blocks(blocks):
@@ -126,14 +171,127 @@ def _get_test_blocks(test_id):
     return Block.find_by_test(test_id) if test_id else Block.find_all()
 
 
-def _style_header_row(ws, headers):
-    for cell in ws[1]:
-        cell.font = _HEADER_FONT
-        cell.fill = _HEADER_FILL
-        cell.alignment = _HEADER_ALIGN
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            cell.alignment = _CELL_ALIGN
+# ──────────────────────────────────────────────────────────────────
+# Streaming sheets (openpyxl write_only) + style/defuse at write time
+# ──────────────────────────────────────────────────────────────────
+# A normal openpyxl Workbook keeps every cell of every sheet as a live Python
+# object until save(). A combined export is 3 summary sheets + up to
+# MAX_USER_SHEETS detail sheets, so the peak heap scaled with the corpus:
+# ~42 MB for an 0.88 MB .xlsx at 500 submissions, ×4 gunicorn workers.
+#
+# write_only sheets serialize each row to a temp XML file the instant it is
+# appended, so the heap stays flat. The price is that a written cell can no
+# longer be reached: the two post-processing passes this module used to run —
+# header styling and formula defusing — MUST happen while the row is being
+# built. Both do, below:
+#   • styling  → _cell() attaches font/fill/alignment to explicit Cell objects,
+#                which ws.append() accepts alongside plain values;
+#   • defusing → _cell() flips data_type "f"→"s", and _StreamSheet.append()
+#                re-checks EVERY value on the way out, so even a plain
+#                ws.append(["=WEBSERVICE(...)"]) cannot emit a live formula.
+
+
+def _defuse(cell):
+    """Force a formula-typed cell back to text (CWE-1236). Idempotent."""
+    if cell.data_type == "f":
+        cell.data_type = "s"
+    return cell
+
+
+def _cell(ws, value, *, font=None, fill=None, alignment=_CELL_ALIGN):
+    """One styled, formula-defused cell, ready to be handed to ws.append().
+
+    Works for both streaming and in-memory sheets: openpyxl's ``append``
+    accepts pre-built ``Cell`` objects in either mode.
+    """
+    c = WriteOnlyCell(ws, value=value)
+    if font is not None:
+        c.font = font
+    if fill is not None:
+        c.fill = fill
+    if alignment is not None:
+        c.alignment = alignment
+    return _defuse(c)
+
+
+def _append(ws, values, *, font=None, fill=None, alignment=_CELL_ALIGN):
+    """Append one fully styled, fully defused row."""
+    ws.append([_cell(ws, v, font=font, fill=fill, alignment=alignment) for v in values])
+
+
+class _StreamSheet(WriteOnlyWorksheet):
+    """Write-only sheet that cannot emit a live formula.
+
+    Rows leave for disk the moment they are appended, which is precisely why
+    ``_defuse_formulas`` (a post-hoc walk over ``ws.iter_rows()``) can no longer
+    protect them. This override is the single funnel every row of a streaming
+    sheet passes through, so the guarantee is structural rather than a
+    convention callers have to remember — including for raw values, which
+    openpyxl would otherwise type as formulas itself.
+    """
+
+    def append(self, row):
+        super().append([
+            _defuse(v) if isinstance(v, Cell)
+            else _cell(self, v, alignment=None) if isinstance(v, str) and v.startswith("=")
+            else v
+            for v in row
+        ])
+
+
+def _stream_sheet(wb, title):
+    """Create a ``_StreamSheet`` on a write_only workbook.
+
+    ``wb.create_sheet()`` hardcodes ``WriteOnlyWorksheet``, so the sheet is
+    instantiated directly and registered the same way create_sheet does
+    (``_add_sheet`` is what create_sheet itself calls; the title setter still
+    validates and de-duplicates the name).
+    """
+    ws = _StreamSheet(parent=wb, title=title)
+    wb._add_sheet(ws)
+    return ws
+
+
+def _finish_sheet(ws):
+    """Flush a streaming sheet and release its file descriptor.
+
+    Without this every sheet keeps its temp XML file open until ``wb.save()`` —
+    303 open descriptors for a full combined export. Closing as we go keeps it
+    at one. A closed sheet is still archived at save time (``ExcelWriter``
+    checks ``ws.closed`` first), so nothing else changes.
+    """
+    if isinstance(ws, WriteOnlyWorksheet) and not ws.closed:
+        ws.close()
+
+
+def _discard_workbook(wb):
+    """Close and delete the temp files behind a half-built streaming workbook.
+
+    Each streaming sheet parks its rows in a temp XML file that only ``save()``
+    ever removes. If a build raises half-way (a DB error mid-scan) those files
+    would survive until the worker exits, so an export that fails repeatedly
+    fills the disk. Best effort: cleanup must never mask the original error.
+    """
+    for ws in wb.worksheets:
+        writer = getattr(ws, "_writer", None)
+        if writer is None:
+            continue
+        try:
+            if not ws.closed:
+                ws.close()
+            writer.cleanup()
+        except Exception:
+            log.warning("[export] could not discard the temp sheet file for %r",
+                        getattr(ws, "title", "?"), exc_info=True)
+
+
+def _size_columns(ws, headers):
+    """Column widths + frozen header row.
+
+    MUST run BEFORE the first append on a streaming sheet: openpyxl emits
+    ``<cols>`` and ``<sheetViews>`` when the first row is written, and anything
+    set afterwards is silently dropped.
+    """
     for col_idx, header_val in enumerate(headers, 1):
         letter = openpyxl.utils.get_column_letter(col_idx)
         if header_val in _FIXED_COLS:
@@ -143,6 +301,10 @@ def _style_header_row(ws, headers):
         else:
             ws.column_dimensions[letter].width = 18
     ws.freeze_panes = "A2"
+
+
+def _append_header_row(ws, headers):
+    _append(ws, headers, font=_HEADER_FONT, fill=_HEADER_FILL, alignment=_HEADER_ALIGN)
 
 
 def _block_titles_from_subs(subs):
@@ -168,7 +330,10 @@ def _summary_row(s, block_titles, question_keys_ordered):
     if isinstance(bs, list):
         for b in bs:
             title = b.get("title", f"Block {b.get('id', '?')}")
-            block_map[title] = round(b.get("score", 0))
+            # Displayed percentage (0 → 1). A block carrying no usable score
+            # stays blank rather than becoming a "1" out of nowhere.
+            shown = display_pct(b.get("score"))
+            block_map[title] = "" if shown is None else shown
 
     tg_name = f"{s.get('tg_first_name') or ''} {s.get('tg_last_name') or ''}".strip()
     row = [
@@ -184,8 +349,8 @@ def _summary_row(s, block_titles, question_keys_ordered):
         "Так" if s.get("consent") else "Ні",
         # ── Telegram (strâns la un loc) ──
         s.get("tg_username", ""), tg_name, s.get("tg_chat_id", ""),
-        # ── scor total ──
-        s.get("total_score", ""),
+        # ── scor total (afișat: 0 → 1) ──
+        _display_pct_cell(s.get("total_score", "")),
     ]
     # scoruri pe blocuri, apoi răspunsurile la întrebări — la final
     for t in block_titles:
@@ -211,10 +376,10 @@ def _summary_headers(block_titles, question_labels, question_keys_ordered):
 
 def _fill_summary_sheet(ws, subs, block_titles, question_keys_ordered, question_labels):
     headers = _summary_headers(block_titles, question_labels, question_keys_ordered)
-    ws.append(headers)
+    _size_columns(ws, headers)
+    _append_header_row(ws, headers)
     for s in subs:
-        ws.append(_summary_row(s, block_titles, question_keys_ordered))
-    _style_header_row(ws, headers)
+        _append(ws, _summary_row(s, block_titles, question_keys_ordered))
 
 
 # Trimmed view for non-completed ("У процесі") submissions: only contact data,
@@ -233,22 +398,29 @@ def _processed_row(s):
         s.get("sector") or "", s.get("company_size") or "",
         s.get("company_age") or "", s.get("company_revenue") or "",
         s.get("status", ""), str(s.get("created_at", "")),
-        s.get("total_score", ""),
+        _display_pct_cell(s.get("total_score", "")),
     ]
 
 
 def _fill_processed_sheet(ws, subs):
     """Fill a sheet with the trimmed contact+company+score view (no answers)."""
-    ws.append(_PROCESSED_HEADERS)
+    _size_columns(ws, _PROCESSED_HEADERS)
+    _append_header_row(ws, _PROCESSED_HEADERS)
     for s in subs:
-        ws.append(_processed_row(s))
-    _style_header_row(ws, _PROCESSED_HEADERS)
+        _append(ws, _processed_row(s))
 
 
 def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
-    """Render one user's full detail on a dedicated sheet."""
-    ws.append(["BizCheck — Індивідуальний звіт"])
-    ws.cell(row=1, column=1).font = Font(bold=True, size=14)
+    """Render one user's full detail on a dedicated sheet.
+
+    Every cell is emitted already styled and already defused, so the sheet needs
+    no second pass — which is what lets it be a streaming sheet.
+    """
+    # Widths first: on a streaming sheet <cols> is written with the first row.
+    ws.column_dimensions['A'].width = 46
+    ws.column_dimensions['B'].width = 56
+
+    _append(ws, ["BizCheck — Індивідуальний звіт"], font=_TITLE_FONT)
     ws.append([])
 
     name = f"{sub.get('first_name') or ''} {sub.get('last_name') or ''}".strip() or "—"
@@ -266,40 +438,28 @@ def _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels):
         ("Telegram відображуване ім'я", f"{sub.get('tg_first_name') or ''} {sub.get('tg_last_name') or ''}".strip() or "—"),
         ("Статус", sub.get("status") or "—"),
         ("Дата заповнення", str(sub.get("created_at") or "—")),
-        ("Загальний бал %", sub.get("total_score", "—")),
+        ("Загальний бал %", _display_pct_cell(sub.get("total_score", "—"))),
     ]
     for k, v in pairs:
-        ws.append([k, v])
-        ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
+        ws.append([_cell(ws, k, font=_BOLD_FONT), _cell(ws, v)])
 
     ws.append([])
-    ws.append(["Бали за блоками"])
-    ws.cell(row=ws.max_row, column=1).font = Font(bold=True, size=12)
+    _append(ws, ["Бали за блоками"], font=_SECTION_FONT)
 
     bs = _parse_json_field(sub.get("block_scores_json")) or []
     if isinstance(bs, list):
         for b in bs:
-            ws.append([b.get("title", "—"), f"{round(b.get('score', 0))}%"])
+            _append(ws, [b.get("title", "—"), _fmt_score(b.get("score"))])
 
     ws.append([])
-    ws.append(["Детальні відповіді за питаннями"])
-    ws.cell(row=ws.max_row, column=1).font = Font(bold=True, size=12)
-    ws.append(["Питання", "Бал"])
-    for c in ws[ws.max_row]:
-        c.font = _HEADER_FONT
-        c.fill = _HEADER_FILL
+    _append(ws, ["Детальні відповіді за питаннями"], font=_SECTION_FONT)
+    _append(ws, ["Питання", "Бал"], font=_HEADER_FONT, fill=_HEADER_FILL)
 
     answers = _parse_json_field(sub.get("answers_json")) or {}
     if not isinstance(answers, dict):
         answers = {}
     for qkey in question_keys_ordered:
-        ws.append([question_labels.get(qkey, qkey), answers.get(qkey, "")])
-
-    for row in ws.iter_rows():
-        for cell in row:
-            cell.alignment = _CELL_ALIGN
-    ws.column_dimensions['A'].width = 46
-    ws.column_dimensions['B'].width = 56
+        _append(ws, [question_labels.get(qkey, qkey), answers.get(qkey, "")])
 
 
 def _filter_submissions_for_test(test_id):
@@ -366,33 +526,43 @@ def build_test_combined_workbook(test_id, date_from=None, date_to=None):
     completed = [s for s in subs if (s.get("status") or "") == "completed"]
     in_progress = [s for s in subs if (s.get("status") or "") != "completed"]
 
-    wb = openpyxl.Workbook()
-    summary = wb.active
-    summary.title = "Зведення"
-    _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
+    # Streaming workbook: each sheet goes to disk as it is built, so the heap
+    # never holds more than the row being written (see _StreamSheet).
+    wb = openpyxl.Workbook(write_only=True)
+    try:
+        summary = _stream_sheet(wb, "Зведення")
+        _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
+        _finish_sheet(summary)
 
-    finished_ws = wb.create_sheet(title="Завершені")
-    _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
+        finished_ws = _stream_sheet(wb, "Завершені")
+        _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered,
+                            question_labels)
+        _finish_sheet(finished_ws)
 
-    in_progress_ws = wb.create_sheet(title="У процесі")
-    _fill_processed_sheet(in_progress_ws, in_progress)
+        in_progress_ws = _stream_sheet(wb, "У процесі")
+        _fill_processed_sheet(in_progress_ws, in_progress)
+        _finish_sheet(in_progress_ws)
 
-    # One sheet per completed user. Name: "{id}_FirstLast" truncated to 31 chars.
-    # Over MAX_USER_SHEETS completed users we omit the individual sheets to avoid
-    # OOM / request timeouts — the complete data still lives in the summary sheets
-    # ("Зведення" / "Завершені" / "У процесі") and in the admin panel.
-    used_names = {"Зведення", "Завершені", "У процесі"}
-    for s in completed[:MAX_USER_SHEETS]:
-        raw = f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}"
-        base = _safe_sheet_name(raw)
-        name, i = base, 1
-        while name in used_names:
-            suffix = f"_{i}"
-            name = base[: 31 - len(suffix)] + suffix
-            i += 1
-        used_names.add(name)
-        ws = wb.create_sheet(title=name)
-        _fill_single_user_sheet(ws, s, question_keys_ordered, question_labels)
+        # One sheet per completed user. Name: "{id}_FirstLast" truncated to 31 chars.
+        # Over MAX_USER_SHEETS completed users we omit the individual sheets to avoid
+        # OOM / request timeouts — the complete data still lives in the summary sheets
+        # ("Зведення" / "Завершені" / "У процесі") and in the admin panel.
+        used_names = {"Зведення", "Завершені", "У процесі"}
+        for s in completed[:MAX_USER_SHEETS]:
+            raw = f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}"
+            base = _safe_sheet_name(raw)
+            name, i = base, 1
+            while name in used_names:
+                suffix = f"_{i}"
+                name = base[: 31 - len(suffix)] + suffix
+                i += 1
+            used_names.add(name)
+            ws = _stream_sheet(wb, name)
+            _fill_single_user_sheet(ws, s, question_keys_ordered, question_labels)
+            _finish_sheet(ws)
+    except BaseException:
+        _discard_workbook(wb)
+        raise
 
     return wb
 
@@ -414,16 +584,23 @@ def build_all_submissions_workbook():
     completed = [s for s in subs if (s.get("status") or "") == "completed"]
     in_progress = [s for s in subs if (s.get("status") or "") != "completed"]
 
-    wb = openpyxl.Workbook()
-    summary = wb.active
-    summary.title = "Зведення"
-    _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
+    wb = openpyxl.Workbook(write_only=True)
+    try:
+        summary = _stream_sheet(wb, "Зведення")
+        _fill_summary_sheet(summary, subs, block_titles, question_keys_ordered, question_labels)
+        _finish_sheet(summary)
 
-    finished_ws = wb.create_sheet(title="Завершені")
-    _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered, question_labels)
+        finished_ws = _stream_sheet(wb, "Завершені")
+        _fill_summary_sheet(finished_ws, completed, block_titles, question_keys_ordered,
+                            question_labels)
+        _finish_sheet(finished_ws)
 
-    in_progress_ws = wb.create_sheet(title="У процесі")
-    _fill_processed_sheet(in_progress_ws, in_progress)
+        in_progress_ws = _stream_sheet(wb, "У процесі")
+        _fill_processed_sheet(in_progress_ws, in_progress)
+        _finish_sheet(in_progress_ws)
+    except BaseException:
+        _discard_workbook(wb)
+        raise
 
     return wb
 
@@ -441,16 +618,6 @@ def build_single_user_workbook(submission_id):
     ws.title = _safe_sheet_name(name)
     _fill_single_user_sheet(ws, sub, question_keys_ordered, question_labels)
     return wb, _safe_filename(f"{name}_{sub.get('created_at')}")
-
-
-def _fmt_score(val) -> str:
-    """Render a numeric score as 'NN%'; '—' when missing/non-numeric."""
-    if val is None or val == "":
-        return "—"
-    try:
-        return f"{round(float(val))}%"
-    except (TypeError, ValueError):
-        return "—"
 
 
 def build_single_user_report_html(submission_id) -> tuple[str, str]:
@@ -574,12 +741,23 @@ def _defuse_formulas(wb):
 
     Overriding data_type (rather than prefixing an apostrophe) keeps the text
     readable verbatim in the sheet, and numbers/dates keep their own types.
+
+    Streaming sheets cannot be walked here — their rows are already XML on disk
+    by the time this runs — so they defuse in ``_StreamSheet.append`` instead.
+    Anything streaming that is NOT a ``_StreamSheet`` would slip through
+    unprotected, so it is a hard error rather than a silent skip.
     """
     for ws in wb.worksheets:
+        if isinstance(ws, WriteOnlyWorksheet):
+            if not isinstance(ws, _StreamSheet):
+                raise RuntimeError(
+                    f"write-only sheet {ws.title!r} bypassed formula defusing; "
+                    "create streaming sheets with _stream_sheet()"
+                )
+            continue
         for row in ws.iter_rows():
             for cell in row:
-                if cell.data_type == "f":
-                    cell.data_type = "s"
+                _defuse(cell)
 
 
 def workbook_to_bytes(wb) -> bytes:

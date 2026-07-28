@@ -6,10 +6,11 @@ from services.test_service import (
     list_active_tests, list_all_tests,
     create_test, update_test, delete_test, reorder_tests,
 )
+from services.scoring import resolve_zones, validate_zones
 from middleware.admin_middleware import admin_required
 from utils.validators import (
     clean_authored, clean_authored_optional, clean_json_content, clean_slug,
-    clean_bool, clean_float, MAX_TITLE, MAX_LONG,
+    clean_bool, MAX_TITLE, MAX_LONG,
 )
 
 tests_bp = Blueprint("tests", __name__, url_prefix="/api_crowe_bizcheck/tests")
@@ -24,8 +25,6 @@ MAX_CATEGORY = 50
 MAX_FEATURE = 200          # test_service._norm_features already clips at 200
 MAX_REPORT_TYPE = 32       # tests.report_type VARCHAR(32); the enum is checked in the service
 MAX_CURRENCY = 8           # 3-letter code; the service upper-cases and validates
-
-_ZONE_KEYS = ("safe", "developing", "warn", "risk")
 
 
 def _clean_features(value):
@@ -43,17 +42,13 @@ def _clean_scoring_zones(value):
     """Scoring thresholds are NUMBERS, not text — validate by type.
 
     Running these through a text cleaner would stringify them and break the
-    report's zone selection. Unknown keys are dropped (closed allow-list).
+    report's zone selection. Unknown keys are dropped (closed allow-list) and
+    the ordering (safe > developing > warn >= risk) is enforced, so an admin who
+    types 60/70/80 gets a 400 instead of a report with an unreachable band.
+    Missing keys are filled from the defaults, so the stored row always carries
+    all four thresholds. See services/scoring.py — the single source of truth.
     """
-    if value is None:
-        return None
-    if not isinstance(value, dict):
-        raise ValueError("scoring_zones must be an object")
-    out = {}
-    for k in _ZONE_KEYS:
-        if k in value:
-            out[k] = clean_float(value[k], min_value=0, max_value=100)
-    return out or None
+    return validate_zones(value)
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +80,10 @@ def public_list():
                 "category": t.get("category"),
                 "features": t.get("features") or [],
                 "report_type": t.get("report_type") or "bizcheck",
+                # The SPA colours the whole report off these thresholds. Always
+                # send a complete, repaired set (never the raw column) so a
+                # legacy / hand-edited row cannot break the client's zone split.
+                "scoring_zones": resolve_zones(t.get("scoring_zones")),
                 "order_index": t.get("order_index") or 0,
             }
             for t in tests

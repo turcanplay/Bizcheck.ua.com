@@ -28,6 +28,20 @@ export interface QuestionsData {
   revenues: string[];
 }
 
+/**
+ * Score thresholds for the report's colour bands, as stored in
+ * `tests.scoring_zones` and edited from the admin panel.
+ *
+ * The keys are the DB/admin spelling — note `warn`, while the rendered `Zone`
+ * is called `warning`. Translate with `getZone()`, never by hand.
+ */
+export interface ScoringZones {
+  safe: number;
+  developing: number;
+  warn: number;
+  risk: number;
+}
+
 export interface TestOption {
   id: number;
   slug: string;
@@ -36,6 +50,8 @@ export interface TestOption {
   description_uk: string;
   description_en: string;
   report_type?: 'standard' | 'premium' | 'bizcheck' | 'gdpr';
+  /** Optional: absent on a legacy API response → `resolveZones()` defaults. */
+  scoring_zones?: Partial<ScoringZones> | null;
 }
 
 export interface UserInfo {
@@ -52,7 +68,7 @@ export interface UserInfo {
 
 export type Answers = Record<string, number>;
 
-export type Phase = 'start' | 'quiz' | 'transition' | 'report' | 'cta';
+export type Phase = 'start' | 'quiz' | 'cta';
 
 export type Zone = 'safe' | 'developing' | 'warning' | 'risk';
 
@@ -68,6 +84,9 @@ export interface BlockResult {
 export interface ReportData {
   blockScores: BlockResult[];
   totalScore: number;
+  /** Thresholds this report was scored with — resolved from the test once, in
+   *  `buildReport()`, so no component re-derives them. */
+  zones: ScoringZones;
   distanceFromPerfect: number;
   userInfo: UserInfo;
   date: string;

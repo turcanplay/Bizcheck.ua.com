@@ -10,6 +10,8 @@ import os
 from html import escape
 from urllib.parse import quote
 
+from services.scoring import display_pct, zone_of
+
 # ---------------------------------------------------------------------------
 # Brand / contact configuration
 # ---------------------------------------------------------------------------
@@ -42,28 +44,31 @@ HAIR = "#ECEEF3"        # hairline divider
 BG_PAGE = "#F4F6FB"     # soft page background
 
 
-def _zone_color(score: int) -> str:
-    if score >= 80: return "#16A34A"   # green
-    if score >= 70: return "#EAB308"   # yellow
-    if score >= 65: return "#F97316"   # orange
-    return "#DC2626"                   # red
+# Zone selection lives in services/scoring.py — the thresholds come from the
+# test's `scoring_zones` column, NOT from a ladder hard-coded here. `zones=None`
+# means "this caller has no test row", and scoring.resolve_zones() supplies the
+# documented defaults.
+_ZONE_COLOR = {"safe": "#16A34A", "developing": "#EAB308",   # green / yellow
+               "warning": "#F97316", "risk": "#DC2626"}      # orange / red
+_ZONE_TINT = {"safe": "#E9F8EF", "developing": "#FCF6DD",
+              "warning": "#FDEFE2", "risk": "#FCE9E9"}
+_ZONE_LABEL_UK = {"safe": "Низький ризик", "developing": "Помірний ризик",
+                  "warning": "Підвищений ризик", "risk": "Критичний ризик"}
+_ZONE_LABEL_EN = {"safe": "Low risk", "developing": "Moderate risk",
+                  "warning": "Elevated risk", "risk": "Critical risk"}
 
 
-def _zone_tint(score: int) -> str:
-    if score >= 80: return "#E9F8EF"
-    if score >= 70: return "#FCF6DD"
-    if score >= 65: return "#FDEFE2"
-    return "#FCE9E9"
+def _zone_color(score: int, zones=None) -> str:
+    return _ZONE_COLOR[zone_of(score, zones)]
 
 
-def _zone_label(score: int, lang: str) -> str:
-    uk = ["Низький ризик", "Помірний ризик", "Підвищений ризик", "Критичний ризик"]
-    en = ["Low risk", "Moderate risk", "Elevated risk", "Critical risk"]
-    labels = uk if lang == "uk" else en
-    if score >= 80: return labels[0]
-    if score >= 70: return labels[1]
-    if score >= 65: return labels[2]
-    return labels[3]
+def _zone_tint(score: int, zones=None) -> str:
+    return _ZONE_TINT[zone_of(score, zones)]
+
+
+def _zone_label(score: int, lang: str, zones=None) -> str:
+    labels = _ZONE_LABEL_UK if lang == "uk" else _ZONE_LABEL_EN
+    return labels[zone_of(score, zones)]
 
 
 def render(
@@ -81,6 +86,7 @@ def render(
     telegram_url: str = DEFAULT_TELEGRAM_URL,
     telegram_handle: str = DEFAULT_TELEGRAM_HANDLE,
     bizcheck_url: str = DEFAULT_BIZCHECK_URL,
+    zones=None,
 ) -> tuple[str, str, str]:
     """Return (subject, html_body, text_body) for the given language.
 
@@ -90,9 +96,13 @@ def render(
     if lang not in ("uk", "en"):
         lang = "uk"
 
-    zone_col = _zone_color(score)
-    zone_tint = _zone_tint(score)
-    zone_lbl = _zone_label(score, lang)
+    # Zone from the RAW score; the printed number is floored to 1 (see
+    # scoring.display_pct) so a 0% never looks like a failed calculation — but a
+    # 0 still lands in the risk band, which is why the two are computed apart.
+    zone_col = _zone_color(score, zones)
+    zone_tint = _zone_tint(score, zones)
+    zone_lbl = _zone_label(score, lang, zones)
+    score = display_pct(score) or 1
     first = escape(first_name.strip()) if first_name else ("Клієнт" if lang == "uk" else "Client")
     test_clean = escape(test_name or (f"Звіт {BRAND_NAME}" if lang == "uk" else f"{BRAND_NAME} Report"))
     date_clean = escape(date_str or "")

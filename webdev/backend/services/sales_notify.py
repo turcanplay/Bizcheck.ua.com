@@ -85,11 +85,19 @@ def _configured() -> bool:
     return bool(_env("SALES_BOT_TOKEN") and _sales_chat_id())
 
 
-def _zone_label_uk(score: int) -> str:
-    if score >= 80: return "Низький ризик"
-    if score >= 70: return "Помірний ризик"
-    if score >= 65: return "Високий ризик"
-    return "Критичний ризик"
+_ZONE_LABEL_UK = {
+    "safe": "Низький ризик",
+    "developing": "Помірний ризик",
+    "warning": "Високий ризик",
+    "risk": "Критичний ризик",
+}
+
+
+def _zone_label_uk(score: int, zones=None) -> str:
+    """Risk label for the lead card. Bands come from the test's `scoring_zones`
+    (services/scoring.py); `zones=None` falls back to the documented defaults."""
+    from services.scoring import zone_of
+    return _ZONE_LABEL_UK[zone_of(score, zones)]
 
 
 def _esc(s) -> str:
@@ -133,7 +141,9 @@ def _build_keyboard(sub: dict):
     return {"inline_keyboard": rows} if rows else None
 
 
-def _build_caption(sub: dict, test_name: str) -> str:
+def _build_caption(sub: dict, test_name: str, zones=None) -> str:
+    from services.scoring import display_pct
+
     name = " ".join(p for p in [sub.get("first_name"), sub.get("last_name")] if p) or "—"
     phone = sub.get("phone") or "—"
     email = sub.get("email") or "—"
@@ -142,7 +152,9 @@ def _build_caption(sub: dict, test_name: str) -> str:
     score = sub.get("total_score")
     try:
         score_int = int(round(float(score)))
-        score_line = f"{score_int}% — {_zone_label_uk(score_int)}"
+        # The label uses the RAW score (a 0 must stay "Критичний ризик"); only
+        # the printed number is floored to 1 — see scoring.display_pct.
+        score_line = f"{display_pct(score_int)}% — {_zone_label_uk(score_int, zones)}"
     except (TypeError, ValueError):
         score_line = "—"
 
@@ -299,19 +311,28 @@ def _retry_after(body: bytes) -> float:
     return min(max(ra, 1), 30)
 
 
-def _resolve_test_name(sub: dict) -> str:
+def _resolve_test(sub: dict):
+    """The submission's test row, or None. Never raises — everything read off it
+    is cosmetic, so a DB hiccup must not cost us the lead notification."""
     try:
         from models.test import Test
         tid = sub.get("test_id")
         if tid:
-            t = Test.find_by_id(tid)
-            if t:
-                return t.get("name_uk") or t.get("name_en") or ""
+            return Test.find_by_id(tid)
     except Exception:
-        # Cosmetic — the notification still goes out with "—" as the test name.
-        log.warning("[sales] could not resolve test name for test %s",
-                    sub.get("test_id"), exc_info=True)
-    return ""
+        log.warning("[sales] could not load test %s", sub.get("test_id"), exc_info=True)
+    return None
+
+
+def _resolve_test_name(sub: dict) -> str:
+    t = _resolve_test(sub)
+    return (t.get("name_uk") or t.get("name_en") or "") if t else ""
+
+
+def _resolve_test_zones(sub: dict):
+    """Raw `scoring_zones` of the submission's test (None → default bands)."""
+    t = _resolve_test(sub)
+    return t.get("scoring_zones") if t else None
 
 
 def _forget_topic_id(sub: dict) -> None:
@@ -340,12 +361,12 @@ def _forget_topic_id(sub: dict) -> None:
         log.exception("[sales] could not clear stale topic id for test %s", tid)
 
 
-def _do_send(sub: dict, test_name: str, thread_id):
+def _do_send(sub: dict, test_name: str, thread_id, zones=None):
     """Send the text notification into the test's topic (or General).
     Returns (ok, msg_id). Retries 429 a few times; on a missing topic falls
     back once to the General thread so the lead still lands."""
     chat_id = _sales_chat_id()
-    caption = _build_caption(sub, test_name)
+    caption = _build_caption(sub, test_name, zones)
     payload = {"chat_id": chat_id, "text": caption, "parse_mode": "HTML"}
     kb = _build_keyboard(sub)
     if kb:
@@ -399,7 +420,9 @@ def _process_send(submission_id: int) -> None:
         return
 
     thread_id = _topic_thread_id(sub)
-    ok, msg_id = _do_send(sub, _resolve_test_name(sub), thread_id)
+    test = _resolve_test(sub) or {}
+    ok, msg_id = _do_send(sub, test.get("name_uk") or test.get("name_en") or "",
+                          thread_id, test.get("scoring_zones"))
     if ok and msg_id:
         try:
             # Text message → is_doc is always False now (no PDF attachment).
@@ -447,7 +470,9 @@ def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
     if not sub:
         return
     chat_id = _sales_chat_id()
-    caption = _build_caption(sub, _resolve_test_name(sub))
+    test = _resolve_test(sub) or {}
+    caption = _build_caption(sub, test.get("name_uk") or test.get("name_en") or "",
+                             test.get("scoring_zones"))
     method = "editMessageCaption" if is_doc else "editMessageText"
     text_field = "caption" if is_doc else "text"
     payload = {"chat_id": chat_id, "message_id": msg_id, text_field: caption, "parse_mode": "HTML"}

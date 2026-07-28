@@ -1,6 +1,6 @@
 import type { BlockResult, Zone } from '@/types';
 import DonutChart from '@/components/ui/DonutChart';
-import { getZoneColor } from '@/utils/scoring';
+import { getZoneColor, displayPct } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import type { TranslationKey } from '@/i18n/translations';
 import './ZoneSection.css';
@@ -29,9 +29,11 @@ export default function ZoneSection({ zone, blocks }: ZoneSectionProps) {
 
   const color = getZoneColor(zone);
   const label = t(ZONE_LABEL_KEYS[zone]);
+  // Display only — the blocks were already assigned to this zone from their
+  // raw scores, so flooring the printed average cannot move anything.
   const avgScore = blocks.length === 0
     ? 0
-    : Math.round(blocks.reduce((s, b) => s + b.score, 0) / blocks.length);
+    : displayPct(blocks.reduce((s, b) => s + b.score, 0) / blocks.length);
 
   return (
     <section className="zone-section" data-pdf-section style={{ '--zone-color': color } as React.CSSProperties}>
@@ -52,7 +54,7 @@ export default function ZoneSection({ zone, blocks }: ZoneSectionProps) {
           <div className="zone-section__card" key={b.id}>
             <div className="zone-section__card-left">
               <DonutChart
-                percentage={b.score}
+                percentage={displayPct(b.score)}
                 color={color}
                 size={88}
                 strokeWidth={8}
@@ -67,7 +69,7 @@ export default function ZoneSection({ zone, blocks }: ZoneSectionProps) {
               <div className="zone-section__card-bar">
                 <div
                   className="zone-section__card-fill"
-                  style={{ width: `${b.score}%`, background: color }}
+                  style={{ width: `${displayPct(b.score)}%`, background: color }}
                 />
               </div>
             </div>

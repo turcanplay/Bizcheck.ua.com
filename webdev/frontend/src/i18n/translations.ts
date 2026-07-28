@@ -372,33 +372,17 @@ export const translations = {
     uk: 'Легенда оцінки ризиків:',
     en: 'Risk assessment legend:',
   },
-  legendGreen: {
-    uk: '80% – 100%',
-    en: '80% – 100%',
-  },
   legendGreenDesc: {
     uk: 'Низький ризик. Стабільна зона, система працює коректно.',
     en: 'Low risk. A stable zone; the system is working correctly.',
-  },
-  legendYellow: {
-    uk: '70% – 79%',
-    en: '70% – 79%',
   },
   legendYellowDesc: {
     uk: 'Помірний ризик. Допустимий рівень, але потребує контролю та доопрацювання.',
     en: 'Moderate risk. An acceptable level, but it requires monitoring and refinement.',
   },
-  legendOrange: {
-    uk: '65% – 69%',
-    en: '65% – 69%',
-  },
   legendOrangeDesc: {
     uk: 'Небезпечний рівень ризику. Ситуація нестабільна, наявні суттєві вразливості.',
     en: 'A dangerous level of risk. The situation is unstable, with significant vulnerabilities present.',
-  },
-  legendRed: {
-    uk: '0% – 64%',
-    en: '0% – 64%',
   },
   legendRedDesc: {
     uk: 'Високий рівень ризику. Критична зона, потрібні увага та втручання.',

@@ -1,6 +1,6 @@
 import type { ReportData } from '@/types';
 import DonutChart from '@/components/ui/DonutChart';
-import { getZoneColor, getZone } from '@/utils/scoring';
+import { getZoneColor, getZone, displayPct } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import type { Zone } from '@/types';
 import type { TranslationKey } from '@/i18n/translations';
@@ -17,11 +17,21 @@ const ZONE_LABEL_KEYS: Record<Zone, TranslationKey> = {
   risk: 'zoneRisk',
 };
 
+const ZONE_CONCLUSION_KEYS: Record<Zone, TranslationKey> = {
+  safe: 'conclusionHigh',
+  developing: 'conclusionMid',
+  warning: 'conclusionWarning',
+  risk: 'conclusionLow',
+};
+
 export default function OverallScore({ report }: OverallScoreProps) {
   const { t } = useLang();
-  const zone = getZone(report.totalScore);
+  // Zone from the RAW score with the TEST's thresholds; only the printed
+  // number is floored to 1 (see displayPct) so a 0 still reads as risk.
+  const zone = getZone(report.totalScore, report.zones);
   const color = getZoneColor(zone);
   const zoneLabel = t(ZONE_LABEL_KEYS[zone]);
+  const shownPct = displayPct(report.totalScore);
 
   return (
     <section className="overall-score" data-pdf-section>
@@ -33,7 +43,7 @@ export default function OverallScore({ report }: OverallScoreProps) {
         <div className="overall-score__left">
           <div className="overall-score__donut">
             <DonutChart
-              percentage={report.totalScore}
+              percentage={shownPct}
               color={color}
               size={180}
               strokeWidth={18}
@@ -50,16 +60,10 @@ export default function OverallScore({ report }: OverallScoreProps) {
         <div className="overall-score__right">
           <div className="overall-score__conclusion-label">{t('conclusion')}</div>
           <p className="overall-score__conclusion-headline">
-            {t('onPathTo', { pct: report.totalScore })}
+            {t('onPathTo', { pct: shownPct })}
           </p>
           <p className="overall-score__conclusion-detail">
-            {report.totalScore >= 80
-              ? t('conclusionHigh')
-              : report.totalScore >= 70
-                ? t('conclusionMid')
-                : report.totalScore >= 65
-                  ? t('conclusionWarning')
-                  : t('conclusionLow')}
+            {t(ZONE_CONCLUSION_KEYS[zone])}
           </p>
         </div>
       </div>
