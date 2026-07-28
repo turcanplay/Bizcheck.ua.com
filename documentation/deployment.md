@@ -67,9 +67,12 @@ Key generation: Fernet — `python -c "from cryptography.fernet import Fernet; p
 
 ## Backend scripts (`backend/scripts/`) — out of request path
 
-- **`seed.py`** — populate blocks/questions/answers from a JSON file (skips if DB already seeded).
-- **`seed_tests.py`** — **DESTRUCTIVE**: truncates quiz tables, loads `scripts/seeds/*.sql`
-  (business, gdpr, hr) for the multi-test schema.
+- **`clear_quiz_content.py`** — **DESTRUCTIVE, manual only**: deletes tests/blocks/questions/answers
+  from an existing DB so the quiz can be re-entered by hand in the admin panel. Interactive (type
+  `DELETE` to confirm), supports `--dry-run` and `--with-submissions`. Submissions are kept and
+  detached (`test_id = NULL`) unless that flag is given. Nothing in the app calls it, and there is
+  deliberately NO equivalent inside `migrate()` — that runs on every boot and would wipe live data.
+  A fresh install already starts empty: `migrate()` creates tables only and never seeds content.
 - **`e2e_check.py`** — 9 in-container smoke tests (health, tests list, quiz slug handling, submission,
   PII encryption). `python scripts/e2e_check.py`.
 - **`send_test_email.py`** — send a real test report email (same template as prod);

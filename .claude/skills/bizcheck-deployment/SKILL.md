@@ -32,7 +32,8 @@ reachable only by nginx + tgbot. `db` (postgres:16) and `tgbot` are internal. Co
 
 ## Scripts
 - Smoke test: `backend/scripts/e2e_check.py`. Email: `scripts/send_test_email.py`, `scripts/smtp_simple_test.py`.
-- Seed: `scripts/seed.py` (safe), `scripts/seed_tests.py` (**destructive truncate**).
+- No seed script: a fresh DB starts empty and content is entered in the admin panel.
+- Wipe content by hand: `scripts/clear_quiz_content.py` (**destructive**, interactive, `--dry-run`).
 - Frontend build: `generate-sitemap.mjs` (prebuild), `generate-static-html.mjs` (postbuild).
 
 ## Don'ts

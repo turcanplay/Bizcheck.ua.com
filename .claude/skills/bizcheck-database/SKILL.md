@@ -33,8 +33,11 @@ on every backend boot under `pg_advisory_xact_lock(1)` (serializes concurrent wo
   (they handle cursor, commit, rollback, and returning the connection to the pool).
 
 ## Seeding (out of request path)
-- `scripts/seed.py` — populate blocks/questions/answers (skips if seeded).
-- `scripts/seed_tests.py` — **DESTRUCTIVE** truncate + load `scripts/seeds/*.sql` (business/gdpr/hr).
+- There is NO seed. `migrate()` creates tables only — a fresh DB starts with zero
+  tests/blocks/questions and the content is entered by hand in the admin panel.
+- `scripts/clear_quiz_content.py` — **DESTRUCTIVE, manual only**: empties an existing DB's quiz
+  content (interactive confirmation, `--dry-run`, `--with-submissions`). Never add a DELETE to
+  `migrate()` to do this — it runs on every boot/replica and would destroy live data.
 
 ## Don'ts
 - Don't drop columns or run non-idempotent DDL in `migrate()`.
