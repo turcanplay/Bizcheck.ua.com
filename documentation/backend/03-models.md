@@ -49,7 +49,7 @@ PII fields (`first_name`, `last_name`, `email`, `phone`) auto-encrypt on write
 
 ## `content.py` → tables `testimonials`, `faq_items`
 - **Testimonial**: `create(...)`, **`create_public(name, role, quote, rating, lang)`** (stores quote in the
-  matching `quote_ro`/`quote_ru` column, sets `is_active=TRUE`, `is_user_submitted=TRUE`),
+  matching `quote_uk`/`quote_en` column, sets `is_active=TRUE`, `is_user_submitted=TRUE`),
   `find_by_id`, `find_active`, `find_all`, `update` (lang via COALESCE), `delete`.
 - **FaqItem**: `create`, `find_by_id`, `find_active`, `find_all`, `update`, `delete`.
 

@@ -3,7 +3,22 @@
 **Date:** 2026-03-12 · **Last update:** 2026-04-14 (multi-test + PII-at-rest)
 **Application:** BizCheck — Business Assessment Web Application
 **Stack:** React + TypeScript (Vite) / Flask (Python) / PostgreSQL / Docker
-**Auditor:** Senior Security QA Engineer (Claude Code)
+
+> **This is a point-in-time record, not a description of the current system.**
+> It documents what was found and fixed in March–April 2026. File paths and line
+> numbers are from that snapshot and have since moved; the app has changed a lot
+> after it (language migration to UK/EN, `/register` for the sales group,
+> fail-closed `X-Bot-Secret` on every `/tg/*` surface, async ZIP export jobs).
+> For how the system works **today**, read
+> [`../documentation/architecture/02-auth-and-security.md`](../documentation/architecture/02-auth-and-security.md).
+>
+> This file used to exist twice — identical copies at the repo root and here.
+> The root copy was removed; **this is the only one**.
+>
+> **Secret hygiene:** the leaked Telegram token that CRITICAL-1 was about is no
+> longer printed in this file (see the masked value below). It is still present
+> in **git history**, so masking it here is not a substitute for revoking it.
+> See [IMMEDIATE ACTIONS REQUIRED](#immediate-actions-required).
 
 ---
 
@@ -35,7 +50,10 @@ BizCheck had a solid security foundation (parameterized SQL queries everywhere, 
 - **Description:** The file `tgbot/.env.example` contained a live Telegram bot token. This file is tracked by git.
 - **Impact:** Anyone with repo access can take full control of the bot, receive all user messages, and send messages to users who interacted with it.
 - **Fix Applied:** Token replaced with `YOUR_BOT_TOKEN_FROM_BOTFATHER` placeholder.
-- **ACTION REQUIRED:** Revoke token `8724617416:AAFfswUCyBMmrvBhFL_1Zs4Nr2897yvO1Hg` immediately via @BotFather and generate a new one.
+- **ACTION REQUIRED:** Revoke the leaked token — bot id `8724617416`, secret masked
+  as `872461****:AAF***************************` — via @BotFather and generate a new
+  one. The full value was printed in this file until 2026-07-28; it was masked then,
+  but it remains readable in git history, so **only revocation actually retires it**.
 
 ---
 
@@ -243,11 +261,22 @@ The app uses the `postgres` superuser. Create a dedicated limited-privilege role
 
 ## IMMEDIATE ACTIONS REQUIRED
 
-1. **Revoke Telegram token** `8724617416:AAFfswUCyBMmrvBhFL_1Zs4Nr2897yvO1Hg` via @BotFather NOW.
+> Status as of 2026-07-28: **not verified as done.** These were written in March 2026
+> and nothing in the repo records that they were carried out. Treat every item below
+> as still open until someone confirms otherwise, then annotate it here.
+
+1. **Revoke the leaked Telegram token** (bot id `8724617416`) via @BotFather and issue a
+   new one. The full token is no longer in this file, but it is still recoverable from
+   git history — masking is not revocation.
 2. **Audit git history** for committed secrets: `git log --all --full-history -- "backend/.env" "*.env"`
-3. **Rotate all credentials** before any deployment: Admin password, DB password, JWT secrets.
+   and `git log -p --all -S ':AA' -- '*.md' '*.example'`.
+3. **Rotate all credentials** before any deployment: admin password, DB password, JWT
+   secrets, `PII_ENCRYPTION_KEY`, `BOT_SHARED_SECRET`, SMTP password.
 4. **Generate strong JWT secrets**: `openssl rand -hex 32`
 5. **Check if the Telegram bot was already abused** — review bot admin logs if available.
+6. **If the token is confirmed revoked**, consider purging it from git history
+   (`git filter-repo` + force-push + re-clone by everyone) so it stops showing up in
+   secret scanners.
 
 ---
 

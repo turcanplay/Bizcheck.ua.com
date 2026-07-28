@@ -70,7 +70,24 @@ Services referenced are documented in [`02-services.md`](02-services.md).
 | GET | `/submissions/<id>/export/excel` | admin | One user → detailed XLSX | `build_single_user_workbook` |
 | GET | `/submissions/tests/<test_id>/export/excel-combined` | admin | Summary+per-user sheets XLSX | `build_test_combined_workbook` |
 | GET | `/submissions/tests/<test_id>/export/excels-zip` | admin | ZIP of per-user XLSX | `build_excels_zip_for_test` |
-| GET | `/submissions/tests/<test_id>/export/pdfs-zip` | admin | ZIP of per-user PDFs | `build_pdfs_zip_for_test` |
+| GET | `/submissions/tests/<test_id>/export/pdfs-zip` | admin | ZIP of per-user PDFs — **legacy synchronous** path, pins a worker for the whole build | `build_pdfs_zip_for_test` |
+
+### Async PDF-ZIP export (preferred)
+
+Large archives are built in a background job with an on-disk spool, so a request never
+holds a gunicorn worker for the length of the build. New callers use this trio:
+
+| Method | Path | Auth | Does |
+|---|---|---|---|
+| POST | `/submissions/tests/<test_id>/export/pdfs-zip/jobs` | admin | **202** + job token. Returns the *existing* job if one is already queued/running for the same test (double-click guard). **503** when the backlog queue is full. |
+| GET | `/submissions/exports/jobs/<token>` | admin | Poll: `queued` → `running` → `ready` \| `failed`, with `progress {done,total}`. |
+| GET | `/submissions/exports/jobs/<token>/download` | admin | Stream the archive. **409** not ready, **410** ready but archive gone, **404** unknown/expired. |
+
+The token is a capability (`secrets.token_urlsafe(32)`, regex-validated as the
+path-traversal guard). State and archive live under `EXPORT_SPOOL_DIR/<token>/` —
+filesystem rather than a module dict, because gunicorn runs 4 separate worker processes.
+Cleanup is a `sweep()` that runs inline on create/status/download; TTLs are env-tunable
+(see [`../deployment.md`](../deployment.md)). Excel exports stay synchronous by design.
 
 ## `telegram.py` — web-flow bot endpoints · prefix `/tg`
 Token = the 24h deep-link token (`tg_token`), not the submission token.

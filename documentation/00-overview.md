@@ -2,7 +2,7 @@
 
 ## What BizCheck is
 
-BizCheck is a public web app (live at **https://bizcheck.md**) that lets a business
+BizCheck is a public web app (live at **https://bizcheck.ua.com**) that lets a business
 owner take a **diagnostic quiz** about their company, get an **automatic scored
 report** (per-block risk zones), and receive it as a **PDF** by email or via Telegram.
 It is operated by Crowe Turcan Mikhailenko. An admin panel manages tests, questions,
@@ -15,18 +15,34 @@ User journey:
 4. Gets a scored report; chooses delivery by **email** or **Telegram**.
 5. A PDF is generated client-side, uploaded, and delivered. Sales is notified.
 
-## Two codebases in this repo (only one is live)
+## Languages
 
-| Location | What it is | Status |
-|---|---|---|
-| `webdev/` | The live product: Flask API + React/Vite SPA + nginx + a Telegram bot service. | **Active — document this.** |
-| Repo root (`Dockerfile`, `docker-compose.yml`, `schema.sql`, `requirements.txt`, `README.md`, `GHID_COMPLET_APLICATIE.md`) | Config/docs for an older **standalone aiogram Telegram bot** (aiogram + SQLAlchemy on Postgres). | **Legacy. Its `src/` code is NOT present in this repo.** The root `docker-compose.yml` points at a `src/` working dir that does not exist. |
+The app is bilingual **Ukrainian (`uk`, default) + English (`en`)**. The language
+switcher shows **UA / EN**. Romanian and Russian were removed in two migrations
+(`_ro`→`_uk`, then `_ru`→`_en`) — see
+[`ukrainian-language-migration.md`](ukrainian-language-migration.md).
 
-> When anyone says "submission", "admin panel", "the report", "DA/NU questions",
-> "bot logic" in the context of the live site, they mean **`webdev/`**.
-> The two codebases do not share code.
+Public routes are language-prefixed: `/:lang/`, `/:lang/test/:slug`,
+`/:lang/templates/:slug`, `/:lang/checkout/:kind/:slug`, `/:lang/privacy`. The
+pre-migration paths (`/test/:slug`, `/sablon/:slug`, `/confidentialitate`,
+`/termeni`, `/plata/:kind/:slug`) are 301-redirected in `webdev/nginx.conf`, with a
+client-side fallback in the SPA router. `/` is left to the SPA, which redirects to
+`/uk/` (or the previously chosen language).
 
-The rest of this documentation is about `webdev/` unless explicitly stated.
+The admin panel is **not** language-prefixed.
+
+## One codebase in this repo
+
+Everything that runs is under **`webdev/`**: Flask API + React/Vite SPA + nginx +
+two Telegram bot services. There is no second application.
+
+The repo used to also carry a standalone aiogram Telegram bot in `src/`, with its
+own root `Dockerfile`, `docker-compose.yml`, `requirements.txt` and `pytest.ini`.
+All of that has been **deleted**. Only its historical schema survives, parked at
+[`legacy/schema.sql`](legacy/schema.sql) for reference — nothing reads it. If you
+find documentation that still describes that bot, it is stale.
+
+The rest of this documentation is about `webdev/`.
 
 ## Tech stack (`webdev/`)
 
@@ -39,7 +55,7 @@ The rest of this documentation is about `webdev/` unless explicitly stated.
 | Frontend | React 19, TypeScript, Vite, React Router 7, react-helmet-async |
 | PDF (client) | html2canvas-pro + jspdf + pdf-lib |
 | Email | SMTP (Office 365, STARTTLS) |
-| Telegram | `python-telegram-bot` 21.x (web-flow bot in `webdev/tgbot/`) |
+| Telegram | `python-telegram-bot` — client bot `webdev/tgbot/`, team bot `webdev/groupbot/` |
 | Proxy | nginx (single hop in front of backend) |
 | Infra | Docker Compose |
 
@@ -49,14 +65,28 @@ The rest of this documentation is about `webdev/` unless explicitly stated.
 webdev/
   backend/        Flask API (routes, services, models, middleware, utils, database, scripts, tests)
   frontend/       React + Vite SPA (src/, public/, build scripts)
-  tgbot/          Telegram bot service for the web flow
-  nginx.conf      Single reverse proxy in front of everything
+  tgbot/          Telegram bot that delivers the report to the client
+  groupbot/       Telegram bot for the internal sales group (/register, /excel, /client)
+  nginx.conf      Serves the SPA; only reverse proxy in front of the backend
   docker-compose.yml
   Dockerfile.frontend
+  deploy.sh       Build + healthchecks + smoke test + auto-rollback
+  scripts/        backup-db.sh, check-telegram.sh, export-spool.sh
   .env.example
+  SEO_GUIDE.md              Off-page SEO runbook (Ukraine market)
+  SECURITY_AUDIT_REPORT.md  Security audit — point-in-time historical record
 documentation/    ← you are here
+  legacy/         Archive of the removed standalone bot (schema.sql only)
 CLAUDE.md         Operational rules / invariants (read before editing webdev/)
 ```
+
+## No seed data
+
+`migrate()` creates tables and never inserts content. A fresh install starts with an
+**empty** database; tests, blocks, questions, answers, templates, testimonials and
+FAQ entries are entered by hand through the admin panel. The `.dump` / `.sql` files
+at the repo root are untracked local snapshots — nothing in compose or `deploy.sh`
+restores them.
 
 ## The most important invariants (full detail in the security doc)
 

@@ -28,24 +28,24 @@ testimonials   faq_items   site_settings   (standalone)
 ## Tables
 
 ### `tests` — a diagnostic quiz definition
-Key columns: `id`, `slug` (unique), `name_ro/ru`, `description_ro/ru`,
+Key columns: `id`, `slug` (unique), `name_uk/en`, `description_uk/en`,
 `scoring_zones` JSONB (default `{safe:80, developing:70, warn:65, risk:0}`),
 `zone_recommendations` JSONB, `is_active`, `is_coming_soon`, `is_paid`, `price`, `currency` (def `MDL`),
 `category`, `features` JSONB, **`report_type`** VARCHAR(32) (def `bizcheck`), `order_index`, `created_at`.
-`report_type` ∈ {`bizcheck`, `standard`, `premium`} selects the report layout (see below).
+`report_type` ∈ {`bizcheck`, `standard`, `premium`, `gdpr`} selects the report layout (see below).
 Indexes: slug, is_active, category.
 
 ### `blocks` — a section of a test
-`id`, `test_id` FK→tests (CASCADE), `title_ro/ru`, `order_index`, `created_at`. Index: test_id.
+`id`, `test_id` FK→tests (CASCADE), `title_uk/en`, `order_index`, `created_at`. Index: test_id.
 
 ### `questions` — one question inside a block
 `id`, `block_id` FK→blocks (CASCADE), **`parent_question_id`** FK→questions (SET NULL) for branching
-sub-questions, `text_ro/ru`, `note_ro/ru`, `purpose_ro/ru`, `example_ro/ru`, `order_index`, `created_at`.
+sub-questions, `text_uk/en`, `note_uk/en`, `purpose_uk/en`, `example_uk/en`, `order_index`, `created_at`.
 Indexes: block_id, parent_question_id.
 
 ### `answers` — an option for a question
 `id`, `question_id` FK→questions (CASCADE), **`next_question_id`** FK→questions (SET NULL) for branching,
-`text_ro/ru`, `score` REAL, `explanation_ro/ru`, `risk_ro/ru`, `created_at`. Index: question_id.
+`text_uk/en`, `score` REAL, `explanation_uk/en`, `risk_uk/en`, `created_at`. Index: question_id.
 
 ### `submissions` — one person's quiz run (the core public-flow table)
 - PII (Fernet ciphertext, nullable — collected after the quiz): `first_name`, `last_name`, `email`, `phone`.
@@ -66,18 +66,18 @@ Indexes: block_id, parent_question_id.
   Records quiz attempts for registered users (separate from `submissions`).
 
 ### `templates` + `template_files` — downloadable legal document templates
-- `templates`: `id`, `slug` (unique), `title_ro/ru`, `description_ro/ru`, `is_active`,
+- `templates`: `id`, `slug` (unique), `title_uk/en`, `description_uk/en`, `is_active`,
   `is_coming_soon`, `is_paid`, `price`, `currency`, `category`, `features` JSONB, `created_at`.
 - `template_files`: `id`, `template_id` FK→templates (CASCADE), `filename`, `pdf_data` BYTEA,
   `file_size`, `order_index`, `created_at`.
 
 ### `testimonials` — landing-page reviews
-`id`, `name`, `role`, `quote_ro/ru`, `rating` NUMERIC(2,1) (half-stars allowed, def 5),
+`id`, `name`, `role`, `quote_uk/en`, `rating` NUMERIC(2,1) (half-stars allowed, def 5),
 `avatar_url`, `order_index`, `is_active`, **`lang`** (single language a public review was written in),
 **`is_user_submitted`** (public vs admin-curated), `created_at`. Index: is_active.
 
 ### `faq_items` — landing-page FAQ
-`id`, `question_ro/ru`, `answer_ro/ru`, `order_index`, `is_active`, `created_at`. Index: is_active.
+`id`, `question_uk/en`, `answer_uk/en`, `order_index`, `is_active`, `created_at`. Index: is_active.
 
 ### `site_settings` — editable page config (key/value)
 `setting_key` PK, `setting_value`, `updated_at`. Holds CTA button target test slugs
@@ -88,9 +88,13 @@ Indexes: block_id, parent_question_id.
 
 | Value | Layout |
 |---|---|
-| `bizcheck` | Cover + block grid + zone sections + **per-block detail pages** (explanations, risks, actions, regulatory links). |
+| `bizcheck` (default) | Cover + block grid + zone sections + **per-block detail pages** (explanations, risks, actions, regulatory links). |
 | `standard` | Per-**question** checklist (pass/fail per question, ~5 per A4 page). |
-| `premium` | Short: cover + block grid + zone sections only. |
+| `premium` | Short: cover + block grid + zone sections only — `bizcheck` minus the detail pages. |
+| `gdpr` | One page per top-level question: the question, the given answer, then the fixed intro/risk/action text. |
+
+The canonical set is enforced in `services/test_service.py` (`CANONICAL_REPORT_TYPES`),
+not by a DB `CHECK` constraint — an unknown value is rejected at the service layer.
 
 The frontend picks the React component tree from this column — see
 [`../frontend/02-components.md`](../frontend/02-components.md).

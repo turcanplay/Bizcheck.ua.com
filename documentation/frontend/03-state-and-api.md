@@ -24,7 +24,7 @@ Holds `consent {analytics, marketing}`, `bannerVisible`, `hasDecided`. Methods: 
 
 ## Hook — `hooks/useCtaTarget.ts`
 Resolves a landing CTA key (`cta_hero_test`, etc.) to a `CtaTarget`:
-`{kind:'route', to}` (→ `/test/:slug` if free, `/plata/test/:slug` if paid) or `{kind:'scroll'}`
+`{kind:'route', to}` (→ `/:lang/test/:slug` if free, `/:lang/checkout/test/:slug` if paid) or `{kind:'scroll'}`
 (when the configured test is missing/inactive → scroll to catalog). Fetches site-settings + active
 tests once and caches the promise at module level (shared across CTA buttons).
 

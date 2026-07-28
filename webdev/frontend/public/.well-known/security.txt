@@ -1,0 +1,26 @@
+# BizCheck — security contact (RFC 9116)
+#
+# Served from webdev/frontend/public/.well-known/ : Vite copies publicDir
+# verbatim into dist/ (dot-directories included), the frontend image copies
+# dist/ to /usr/share/nginx/html, and nginx.conf has a `location ^~
+# /.well-known/` block ABOVE the `location ~ /\. { deny all; }` rule, so the
+# canonical path really resolves. Do not move this file.
+#
+# If you found a vulnerability: please report it privately to the address
+# below and give us reasonable time to fix it before any disclosure. Do not
+# run automated scans that generate load, do not access, modify or exfiltrate
+# other people's data, and stop as soon as you have a proof of concept.
+
+Contact: mailto:office@bizcheck.md
+Contact: https://t.me/CROWE_TM
+
+# MANDATORY field (RFC 9116 §2.5.5). Must be a future date or the whole file
+# is treated as stale. Kept under one year, as the RFC recommends. RENEW IT:
+# put a calendar reminder a month before this date.
+Expires: 2027-07-01T00:00:00.000Z
+
+Preferred-Languages: uk, en
+
+# The one URI this file is authoritative for (RFC 9116 §2.5.2). A copy found
+# anywhere else without this line pointing back here is not ours.
+Canonical: https://bizcheck.ua.com/.well-known/security.txt

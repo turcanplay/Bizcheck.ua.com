@@ -45,7 +45,7 @@ No ORM — models issue parameterized SQL via `database/db.py` helpers.
 
 ## Conventions
 
-- Bilingual `_ro`/`_ru` columns throughout.
+- Bilingual `_uk` (Ukrainian, default) / `_en` (English) columns throughout.
 - API base prefix `/api_crowe_bizcheck/` (obscured, intentional).
 - Write-path free text → `clean_text`/`clean_optional`; slugs → `clean_slug`.
 - PII read/written only through `models/submission.py` (auto encrypt/decrypt).

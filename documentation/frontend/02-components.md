@@ -21,6 +21,10 @@ The report is paginated into `[data-pdf-page]` elements. Which components render
 | `standard` | `ReportHeader` → `QuestionChecklistSlice` (≈5 questions/page) → `OverallScore` + `ReportFooter` |
 | `premium` | `ReportHeader` → `BlockGrid` → `OverallScore` → `ZoneSection` pages → `ReportFooter` |
 | `bizcheck` | same as `premium` **plus** a `BlockDetailPage` per block (explanations/risks/actions/regulatory) |
+| `gdpr` | `ReportHeader` → one `GdprQuestionPage` per top-level question → `ReportFooter` |
+
+The tree waits for the tests list to load before committing to a layout, so a
+`standard`/`gdpr` report never flashes the wrong component tree first.
 
 Component roles:
 - **`ReportHeader.tsx`** — branding, user name, date, overall score bar + %, verdict text, zone color legend.
@@ -36,11 +40,11 @@ Component roles:
 - **`ReportFooter.tsx`** — Crowe branding, confidentiality notice, generation timestamp.
 
 ## Layout (`components/layout/`)
-- **`Header.tsx`** — shows the test name during quiz/report/cta (else "Bizcheck.md"); RO/RU toggle; Crowe logo.
+- **`Header.tsx`** — shows the test name during quiz/report/cta (else "Bizcheck.ua.com"); UA / EN toggle; Crowe logo.
 
 ## SEO (`components/seo/`)
 - **`Seo.tsx`** — per-page `<title>`, meta description, robots, canonical, hreflang, Open Graph, Twitter card.
-  Exports JSON-LD builders: `articleSchema`, `breadcrumbSchema`, `faqSchema`, `productSchema`. RO/RU-aware defaults.
+  Exports JSON-LD builders: `articleSchema`, `breadcrumbSchema`, `faqSchema`, `productSchema`. UK/EN-aware defaults.
 
 ## UI (`components/ui/`)
 - **`CookieBanner.tsx`** — consent UI (necessary always on; analytics/marketing toggles). Calls

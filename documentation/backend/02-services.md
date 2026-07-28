@@ -20,7 +20,7 @@ operate through models. External side effects (SMTP, Telegram API, PDF/Excel) no
 - `get_all_blocks(test_id=None)`, `create_block`, `update_block`, `delete_block` — CRUD (DB).
 - **`get_quiz_data(test_slug=None, test_id=None)`** — builds the full quiz JSON the frontend
   consumes: `{blocks, test}` with bilingual question text/notes and answer options
-  (`label_ro/ru`, `score`, `next_question_id`). Question keys `b{block}q{q}`, answer keys `a{id}`.
+  (`label_uk/en`, `score`, `next_question_id`). Question keys `b{block}q{q}`, answer keys `a{id}`.
 
 ## `question_service.py` — questions
 - `get_questions_by_block`, `get_all_questions` — fetch with nested answers.
@@ -30,7 +30,7 @@ operate through models. External side effects (SMTP, Telegram API, PDF/Excel) no
 ## `test_service.py` — tests
 - `list_active_tests`, `list_all_tests`, `get_test_by_slug`, `get_test_by_id`.
 - `create_test` — auto-slug if omitted; default `scoring_zones {safe:80, developing:70, warn:65, risk:0}`;
-  validates slug uniqueness, price, `report_type` ∈ {bizcheck, standard, premium}.
+  validates slug uniqueness, price, `report_type` ∈ {bizcheck, standard, premium, gdpr}.
 - `update_test`, `reorder_tests(items)`, `delete_test`.
 
 ## `submission_service.py` — submissions
@@ -60,7 +60,7 @@ operate through models. External side effects (SMTP, Telegram API, PDF/Excel) no
 ## `email_templates.py` — bilingual email rendering
 - `render(lang, first_name, test_name, date_str, score, logo_url, download_url, …)`
   → `(subject, html_body, text_body)`. Brand palette + score ring + zone label + CTA button
-  (Outlook VML + anchor fallback). RO/RU with RO fallback.
+  (Outlook VML + anchor fallback). UK/EN, with a fallback to the other language when one translation is blank.
 
 ## `report_email.py` — orchestrates report email
 - `dispatch_report_email(sub_id)` → `(ok, reason)`. Validates email present + PDF ready, builds the
@@ -70,11 +70,33 @@ operate through models. External side effects (SMTP, Telegram API, PDF/Excel) no
 ## `sales_notify.py` — sales-team Telegram alert · **external: Telegram Bot API**
 - `maybe_notify_sales(submission_id)` — fire-and-forget daemon thread. On the **first** complete lead
   (name + contact) sends a Telegram message/document to the sales chat; later writes **edit** the same
-  message in place. Atomic fire-once via `submissions.sales_notified` claim. Config: `SALES_BOT_TOKEN`,
-  `SALES_CHAT_ID` (separate bot from the web-flow bot).
+  message in place. Atomic fire-once via `submissions.sales_notified` claim. Separate bot from the
+  web-flow bot; shares its token with `groupbot`, but only ever **sends**, so there is no
+  `getUpdates` conflict.
+- Destination: `SALES_CHAT_ID` **wins whenever set**, otherwise the chat bound at runtime via the
+  group bot's `/register` (stored in `site_settings`). Neither → `_configured()` is false and the
+  notification is skipped silently. `SALES_TOPIC_ID`, when set, pins every lead to one forum topic
+  and overrides the per-test topic. A dead topic id is cleared on fallback, so the next lead
+  creates a fresh one.
+- Also emits a delivery-failure alert to the same chat — see
+  [`../telegram/04-alerta-esec-livrare.md`](../telegram/04-alerta-esec-livrare.md).
 
 ## `export_service.py` — Excel/ZIP exports · **CPU: openpyxl**
 - `build_test_combined_workbook(test_id)` → multi-sheet `Workbook` (summary + per-user).
 - `build_single_user_workbook(submission_id)` → `(Workbook, filename_stem)`.
-- `workbook_to_bytes(wb)`; `build_pdfs_zip_for_test(test_id)`; `build_excels_zip_for_test(test_id)`.
+- `workbook_to_bytes(wb)`; `build_excels_zip_for_test(test_id)`.
+- `build_pdfs_zip_for_test(test_id, max_bytes=None, *, dest_dir=None, on_progress=None)` — streams each
+  submission's `pdf_data` into a temp file **inside** `dest_dir`, so the final `os.replace` is an
+  atomic same-filesystem rename instead of copying a multi-GB archive.
 - Batch-fetches questions via `Question.find_by_blocks` to avoid N+1.
+
+## `export_jobs.py` — background PDF-ZIP jobs
+- Wraps `build_pdfs_zip_for_test` in a queued background job so no request holds a gunicorn worker
+  for the whole build. State (`state.json`) and the archive live under `EXPORT_SPOOL_DIR/<token>/`
+  on a shared volume — the filesystem, not a module-level dict, because gunicorn runs 4 separate
+  worker processes.
+- One daemon worker thread per process drains a bounded `queue.Queue`; overflow raises `JobQueueFull`
+  (→ 503). Creating a job for a test that already has one queued/running returns the existing job.
+- `sweep()` runs inline on create/status/download and enforces the ready / downloaded / failed /
+  stale TTLs. There is no cron.
+- Endpoints: see [`01-routes.md`](01-routes.md). Excel exports are deliberately left synchronous.

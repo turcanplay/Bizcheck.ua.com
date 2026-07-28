@@ -4,8 +4,8 @@ Acest folder documentează **toate cele trei suprafețe Telegram** din `webdev/`
 Fișierele sunt mici și fiecare acoperă un singur subiect — **citește doar fișierul
 de care ai nevoie**.
 
-> Suprafețele NU împart cod cu botul standalone din `src/` (aiogram, DB separată).
-> Aici e vorba exclusiv de `webdev/`.
+> Acesta este setul de referință pentru Telegram. Vechiul set din `webdev/docs/` a fost
+> retras — vezi [`../../webdev/docs/README.md`](../../webdev/docs/README.md).
 
 ## Cuprins
 
@@ -18,6 +18,7 @@ de care ai nevoie**.
 | 4 | [`04-alerta-esec-livrare.md`](04-alerta-esec-livrare.md) | **Nou** — alerta trimisă echipei când botul NU reușește să livreze raportul |
 | 5 | [`05-env-si-deploy.md`](05-env-si-deploy.md) | Variabile de mediu, precedența `SALES_CHAT_ID` ↔ `/register`, pași de deploy |
 | 6 | [`06-teste.md`](06-teste.md) | Toate suitele de teste (fără DB / fără server), cum le rulezi, validare prin mutații |
+| 7 | [`07-depanare.md`](07-depanare.md) | Simptom → cauză → fix pentru boți, notificări, exporturi |
 
 ## Convenții
 

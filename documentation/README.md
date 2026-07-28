@@ -26,7 +26,9 @@ each one is scoped to a single subsystem so you never load context you won't use
 | **Toate cele 3 suprafețe Telegram** (bot user, notificare vânzări, bot grup + `/register`, alertă eșec livrare) — set structurat cu cuprins | [`telegram/README.md`](telegram/README.md) |
 | ↳ arhivă istoric (changelog probleme rezolvate + restanțe) | [`telegram-boti-status.md`](telegram-boti-status.md) |
 | Docker, nginx, Dockerfiles, env vars, scripts, build tooling | [`deployment.md`](deployment.md) |
-| Language migration (RO→UK, then RU→EN) — what changed, how to deploy, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
+| ↳ historical: language migration (RO→UK, then RU→EN) — what changed, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
+| Off-page SEO runbook (Ukraine market) — the only copy | [`../webdev/SEO_GUIDE.md`](../webdev/SEO_GUIDE.md) |
+| ↳ historical: security audit (Mar–Apr 2026), with still-open follow-ups | [`../webdev/SECURITY_AUDIT_REPORT.md`](../webdev/SECURITY_AUDIT_REPORT.md) |
 
 ## Conventions used in these docs
 
@@ -37,5 +39,11 @@ each one is scoped to a single subsystem so you never load context you won't use
 - **Obscured paths** are intentional, do not "normalize" them:
   - API base: `/api_crowe_bizcheck/`
   - Admin SPA: `/admin_bizcheck_md_crowe/`
+- **Languages**: the app is Ukrainian (`uk`, default) + English (`en`). Public routes are
+  language-prefixed (`/uk/…`, `/en/…`); the old unprefixed paths 301-redirect.
 - File references use `path:line` form so they are clickable in editors.
-- `webdev/` is the live product. The repo-root bot files are legacy (see overview).
+- `webdev/` is the whole product. The standalone bot that used to live in `src/` is gone;
+  only [`legacy/schema.sql`](legacy/schema.sql) remains, as an archive (see overview).
+- `webdev/docs/` was a second, older documentation set covering the same Telegram
+  subsystem. It has been retired in favour of this folder — see
+  [`../webdev/docs/README.md`](../webdev/docs/README.md).

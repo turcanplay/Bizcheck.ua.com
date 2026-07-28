@@ -9,11 +9,13 @@ and the trust boundary. For build/deploy details see [`../deployment.md`](../dep
 |---|---|---|---|
 | `db` | `postgres:16-alpine` | internal network only | PostgreSQL 16. Volume `pgdata`. Healthcheck `pg_isready`. |
 | `backend` | `./backend` (Flask + Gunicorn) | **`expose: 4001` only** (no `ports:`) | The API. Reachable only by nginx and the bot, never from the host/internet. |
-| `frontend` | `./Dockerfile.frontend` (build SPA → nginx) | the single public entry | Serves the built React SPA **and** reverse-proxies the API. |
-| `tgbot` | `./tgbot` (`python-telegram-bot`) | internal network only | Long-poll Telegram bot for the web flow. Calls `backend:4001`. |
+| `frontend` | `./Dockerfile.frontend` (build SPA → nginx) | `127.0.0.1:${FRONTEND_PORT:-5173}:80` | Serves the built React SPA **and** reverse-proxies the API. The only host binding, loopback-only. |
+| `tgbot` | `./tgbot` (`python-telegram-bot`) | internal network only | Long-poll client bot for the web flow. Calls `backend:4001`. |
+| `groupbot` | `./groupbot` (`python-telegram-bot`) | internal network only | Long-poll bot inside the internal sales group: `/register`, `/excel`, `/client`, `/pdf`. Calls `backend:4001/tg/*` with `X-Bot-Secret`. |
 
-> The backend is **NOT** published to the host. Only `expose:` is used. nginx is the
-> single proxy in front. Do not add `ports:` to backend on any compose file.
+> The backend and the database are **NOT** published to the host. nginx is the single
+> proxy in front, and TLS is terminated by an **external** nginx that is not part of this
+> compose file (`webdev/nginx-proxy.conf.example`). Do not add `ports:` to backend or db.
 
 ## Request flow
 
@@ -24,9 +26,11 @@ Browser ──HTTPS──> nginx (frontend container)
                      └── /api_crowe_bizcheck/*     → proxy → backend:4001 (Flask)
                                                           → PostgreSQL (db:5432)
 
-Telegram user ──> Telegram ──long poll──> tgbot ──HTTP──> backend:4001 /api_crowe_bizcheck/tg/*
+Telegram user ──> Telegram ──long poll──> tgbot    ──HTTP──> backend:4001 /api_crowe_bizcheck/tg/*
+Sales group   ──> Telegram ──long poll──> groupbot ──HTTP──> backend:4001 /api_crowe_bizcheck/tg/{exports,group}/*
 Backend ──SMTP──> Office 365 (report emails)
-Backend ──HTTPS──> Telegram Bot API (sales-team notification, separate bot)
+Backend ──HTTPS──> Telegram Bot API (sales-team notification — same token as groupbot,
+                                     send-only, so no getUpdates conflict)
 ```
 
 - nginx routes by path: SPA for everything except `/api_crowe_bizcheck/*` (proxied to Flask)
@@ -59,7 +63,7 @@ Full breakdown: [`../backend/00-backend-overview.md`](../backend/00-backend-over
 
 React 19 SPA built by Vite. One bundle serves three surfaces by route:
 - Marketing/landing site (`/`)
-- Quiz + report flow (`/test/:slug`)
+- Quiz + report flow (`/:lang/test/:slug`)
 - Admin panel (`/admin_bizcheck_md_crowe/*`)
 
 Heavy bundles (quiz, admin, checkout, PDF libs) are lazy-loaded.

@@ -42,7 +42,7 @@ Topics: 1 Founders & Management · 2 Personal Data & IT · 3 Contract Reliabilit
 5 Personal Liability & Bankruptcy · 6 Counterparties · 7 Labor Relations · 8 Market Risks.
 
 ## i18n (`src/i18n/translations.ts`)
-`Lang = 'ro' | 'ru'`. Keys grouped by feature: `header`, `hero`, `steps` (profile wizard),
+`Lang = 'uk' | 'en'` (default `uk`). Keys grouped by feature: `header`, `hero`, `steps` (profile wizard),
 form-validation warnings, `quiz`, dropdown arrays (`sectors[9]`, `sizes[8]`, `ages[5]`, `revenues[6]`),
 `report` (conclusions/verdicts/legend), `zones` (+ descriptions), PDF footer, `cta`, `cookies`.
 Accessed via `LanguageContext`'s `t()` / `tList()`.
@@ -52,7 +52,7 @@ Accessed via `LanguageContext`'s `t()` / `tList()`.
 - `Question` `{id, db_id, parent_question_id?, text, note?, options[]}`
 - `Block` `{id, title, questions[]}`
 - `QuestionsData` `{blocks[], sectors[], sizes[], ages[], revenues[]}`
-- `TestOption` `{id, slug, name_ro, name_ru, description_ro, description_ru, report_type?}`
+- `TestOption` `{id, slug, name_uk, name_en, description_uk, description_en, report_type?}`
 - `UserInfo` `{firstName, lastName, email, phone, consent, sector, size, age, revenue}`
 - `Answers = Record<string, number>` (questionId → earned score)
 - `Phase = 'start'|'quiz'|'transition'|'report'|'cta'`

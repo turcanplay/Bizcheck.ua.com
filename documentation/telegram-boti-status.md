@@ -16,6 +16,9 @@
 Mai jos e păstrat **istoricul** (changelog-ul problemelor găsite și restanțele) — nu e material
 de referință, ci un jurnal al deciziilor luate în timp.
 
+> **Document istoric, arhivat la 2026-07-28.** Descrie starea de la momentul scrierii;
+> nu-l folosi ca sursă pentru cum arată codul azi.
+
 ---
 
 ## Arhivă — probleme găsite în cod, toate rezolvate

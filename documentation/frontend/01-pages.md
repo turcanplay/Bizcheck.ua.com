@@ -9,9 +9,9 @@ pages: [`02-components.md`](02-components.md). State: [`03-state-and-api.md`](03
 Marketing homepage. Composed of section components in `landing/sections/`:
 `Hero`, `AboutPlatform`, `WhyBizcheck`, `CatalogSection` (+ `TestsShowcase`, `TemplatesShowcase`),
 `Testimonials`, `FAQ`, `ReviewForm` (public testimonial submit), `FinalCta`, `Footer`.
-CTA buttons resolve their target test via `useCtaTarget` (site-settings → `/test/:slug` or scroll to catalog).
+CTA buttons resolve their target test via `useCtaTarget` (site-settings → `/:lang/test/:slug` or scroll to catalog).
 
-### `QuizApp.tsx` — `/test/:slug`
+### `QuizApp.tsx` — `/:lang/test/:slug`
 Orchestrates the quiz SPA across phases (`start` → `quiz` → `cta`), wrapped in `QuizProvider`.
 Deep-links to a test by slug. API: `GET /tests`, `GET /blocks/quiz?test=<slug>`,
 `POST /submissions`, `PATCH /submissions/{id}` (autosave), `POST /submissions/{id}/pdf`.
@@ -29,13 +29,13 @@ Renders the printable report tree (used for preview/PDF). Layout chosen by `test
 `standard` → question checklist; `bizcheck`/`premium` → block grid + zones (+ per-block detail for `bizcheck`).
 See [`02-components.md`](02-components.md).
 
-### `catalog/TemplateDetailPage.tsx` — `/sablon/:slug`
+### `catalog/TemplateDetailPage.tsx` — `/:lang/templates/:slug`
 Legal template detail. Fetches `publicApi.listTemplates()` and finds by slug. Delivery options are UI placeholders.
 
-### `checkout/CheckoutPage.tsx` — `/plata/:kind/:slug`
+### `checkout/CheckoutPage.tsx` — `/:lang/checkout/:kind/:slug`
 Payment **placeholder** for a future MAIB integration. No backend yet. Params: `kind` (test/template), `slug`.
 
-### `PrivacyPage.tsx` — `/confidentialitate`
+### `PrivacyPage.tsx` — `/:lang/privacy`
 Privacy policy. Placeholder content to be finalized by Crowe Legal.
 
 ## Admin pages (`pages/admin/`, all behind `@admin_required`)

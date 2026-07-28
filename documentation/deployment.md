@@ -8,12 +8,27 @@ Everything to build, run, and configure `webdev/`. Runtime topology:
 | Service | Build/Image | Exposure | Depends on | Notes |
 |---|---|---|---|---|
 | `db` | `postgres:16-alpine` | internal only | — | Volume `pgdata`; healthcheck `pg_isready`. |
-| `backend` | `./backend` | **`expose: 4001`** (no `ports:`) | `db` (healthy) | Never published to host. nginx + tgbot reach it. |
-| `frontend` | `./Dockerfile.frontend` | the public entry | `backend` | Built SPA + nginx reverse proxy. |
-| `tgbot` | `./tgbot` | internal only | `backend` | Long-poll Telegram bot. |
+| `backend` | `./backend` | **`expose: 4001`** (no `ports:`) | `db` (healthy) | Never published to host. nginx + both bots reach it. |
+| `frontend` | `./Dockerfile.frontend` | **`127.0.0.1:${FRONTEND_PORT:-5173}:80`** | `backend` (started) | Built SPA + nginx. The only host binding in the stack, and it is loopback-only. |
+| `tgbot` | `./tgbot` | internal only | `backend` (healthy) | Long-poll client bot. |
+| `groupbot` | `./groupbot` | internal only | `backend` (healthy) | Long-poll bot for the internal sales group. |
 
-> Do not add `ports:` to `backend` on any compose file. Do not change the repo-root bot compose's
-> Postgres binding from `127.0.0.1` to `0.0.0.0`.
+TLS and the public vhost are terminated by an **external** nginx that is not part of this
+compose file — see `webdev/nginx-proxy.conf.example`.
+
+> Do not add `ports:` to `backend` or `db` on any compose file, and keep `frontend` bound to
+> `127.0.0.1`.
+
+`frontend` depends on `backend` only with `service_started` (not `service_healthy`) on purpose:
+the static SPA must come up even when the API is down.
+
+## `deploy.sh`
+
+`webdev/deploy.sh` is the deploy path on the server. It takes a `pg_dump` backup, tags the
+current images `:previous`, rebuilds **`backend frontend tgbot groupbot`**, waits on the
+healthchecks, runs a smoke test and rolls back automatically if it fails. An older version of
+the script rebuilt only `backend groupbot`, so frontend and nginx changes never reached the
+server — any documentation that still says that is stale.
 
 Deploy note (from `CLAUDE.md`): **don't `docker compose up` after edits** — the user deploys to the
 server and tests there.
@@ -44,7 +59,8 @@ server and tests there.
   `server:app` with **4 workers × 2 gthread threads** (8 slots), `--timeout 120`,
   `--graceful-timeout 30`, `--keep-alive 5`, `--max-requests 1000 --max-requests-jitter 100` (worker recycling).
   `backend/Procfile` holds the equivalent process line.
-- **`tgbot/Dockerfile`**: `python:3.12-slim`; `CMD python bot.py`.
+- **`tgbot/Dockerfile`** and **`groupbot/Dockerfile`**: `python:3.12-slim`; `CMD python bot.py`.
+  Neither serves HTTP — both long-poll Telegram.
 
 ## Environment variables
 
@@ -59,8 +75,10 @@ Primary file: **`webdev/.env.example`** (copy to `.env`). `backend/.env.example`
 | CORS/host | `CORS_ORIGIN` (comma list), `ALLOWED_HOSTS` (opt-in allowlist) | Origin + Host-header hardening. |
 | Runtime | `NODE_ENV` (`production` → HSTS, strict env checks), `PORT` (def 4001) | Mode/port. |
 | Email | `SMTP_HOST` (def smtp.office365.com), `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`, `SMTP_REPLY_TO`, `EMAIL_LOGO_URL`, `PUBLIC_BASE_URL` | Report email + download links. |
-| Web-flow bot | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `BACKEND_URL` | `tgbot/` service. |
-| Sales alerts | `SALES_BOT_TOKEN`, `SALES_CHAT_ID` | Sales-team Telegram notify (optional). |
+| Web-flow bot | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `BACKEND_URL` | `tgbot/` service (`TELEGRAM_BOT_USERNAME` is read by the **backend**, to build the deep link). |
+| Sales alerts | `SALES_BOT_TOKEN`, `SALES_CHAT_ID`, `SALES_TOPIC_ID` | Sales-team Telegram notify. `SALES_CHAT_ID` is **optional** and *wins over* the group bound via `/register` — leave it empty if you want `/register` to work. `SALES_TOPIC_ID` pins every lead to one forum topic. |
+| Bot ↔ backend | `BOT_SHARED_SECRET`, `ADMIN_PANEL_URL`, `FEEDBACK_SCHEDULER` | Shared secret for `/tg/exports/*`, `/tg/group/*`, `/tg/feedback/*`. **Unset = those endpoints are disabled (403)**, not open. |
+| Async ZIP export | `EXPORT_SPOOL_DIR`, `EXPORT_SPOOL_HOST_DIR`, `EXPORT_JOB_READY_TTL`, `EXPORT_JOB_DOWNLOADED_TTL`, `EXPORT_JOB_FAILED_TTL`, `EXPORT_JOB_STALE_AFTER` | On-disk spool for the background PDF-ZIP jobs (bind-mounted so all 4 gunicorn workers share it). |
 | Frontend | `VITE_API_URL` (build-time), `SITEMAP_BASE_URL`, `SITEMAP_API_URL` (build scripts) | SPA API base + sitemap. |
 
 Key generation: Fernet — `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
@@ -76,8 +94,14 @@ Key generation: Fernet — `python -c "from cryptography.fernet import Fernet; p
 - **`e2e_check.py`** — 9 in-container smoke tests (health, tests list, quiz slug handling, submission,
   PII encryption). `python scripts/e2e_check.py`.
 - **`send_test_email.py`** — send a real test report email (same template as prod);
-  `python -m scripts.send_test_email --to you@x.com [--lang ro|ru] [--score 78]`.
+  `python -m scripts.send_test_email --to you@x.com [--lang uk|en] [--score 78]`.
 - **`smtp_simple_test.py`** — raw SMTP connectivity check, independent of Flask.
+
+## Server scripts (`webdev/scripts/`)
+
+- **`backup-db.sh`** — `pg_dump` of the running database.
+- **`check-telegram.sh`** — `getMe` / `getChat` probes for the bot tokens and the sales chat.
+- **`export-spool.sh`** — inspect / clean the async export spool directory.
 
 ## Frontend build scripts
 

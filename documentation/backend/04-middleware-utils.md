@@ -40,7 +40,7 @@ Mandatory on every write-path free-text field. HTML strip (stored-XSS guard) + l
 - `clean_int(value, *, min_value, max_value)` — parse + clamp.
 - `clean_float(value, *, min_value, max_value, step)` — parse, snap to step grid (e.g. 0.5 ratings),
   clamp, reject NaN/inf, round to 1 decimal.
-- `clean_lang(value, default="ro")` — whitelist `ro`/`ru`.
+- `clean_lang(value, default="uk")` — whitelist `uk`/`en`.
 - `clean_bool(value)` — `"1"/"true"/"yes"/"on"` → True.
 
 ## Database (`backend/database/db.py`)

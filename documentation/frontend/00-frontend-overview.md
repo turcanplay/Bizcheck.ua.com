@@ -15,7 +15,7 @@ src/
   components/        quiz/, report/, layout/, seo/, ui/                → 02-components.md
   utils/            scoring, pdfGenerator, cookieConsent, inputGuard   → 04-utils-and-data.md
   data/             blockExplanations.ts                              → 04-utils-and-data.md
-  i18n/             translations.ts (ro/ru)                           → 04-utils-and-data.md
+  i18n/             translations.ts (uk/en)                           → 04-utils-and-data.md
   types/index.ts    shared TS types                                   → 04-utils-and-data.md
   styles/           variables.css (Crowe brand tokens), App.css, index.css → 05-design-system.md
 ```
@@ -27,15 +27,34 @@ src/
 
 ## Route table
 
+Public routes are **language-prefixed**. `:lang` is guarded by `LangGate`, which 404s any
+first segment other than `uk` / `en`.
+
 | Path | Component | Notes |
 |---|---|---|
-| `/` (and `*` fallback) | `LandingPage` | Marketing homepage (eager-loaded) |
-| `/test/:slug` | `QuizApp` (wrapped in `QuizProvider`) | Quiz/report flow (lazy) |
-| `/sablon/:slug` | `TemplateDetailPage` | Legal template detail (lazy) |
-| `/plata/:kind/:slug` | `CheckoutPage` | Payment placeholder (MAIB, lazy) |
-| `/confidentialitate` | `PrivacyPage` | Privacy policy |
-| `/admin_bizcheck_md_crowe/login` | `AdminLogin` | Admin login |
+| `/` | `LangRedirect` | Client-side `<Navigate replace>` to `/uk/` (or the stored language). nginx deliberately does **not** 301 this — the SPA makes the choice. |
+| `/:lang/` | `LandingPage` | Marketing homepage |
+| `/:lang/test/:slug` | `QuizApp` (wrapped in `QuizProvider`) | Quiz/report flow (lazy) |
+| `/:lang/templates/:slug` | `TemplateDetailPage` | Legal template detail (lazy) |
+| `/:lang/checkout/:kind/:slug` | `CheckoutPage` | Payment placeholder (lazy) |
+| `/:lang/privacy` | `PrivacyPage` | Privacy policy |
+| `/:lang/*` and `*` | `NotFoundPage` | 404 |
+| `/admin_bizcheck_md_crowe/login` | `AdminLogin` | Admin login — **not** language-prefixed |
 | `/admin_bizcheck_md_crowe/*` | `AdminLayout` + nested routes | Admin panel (lazy) |
+
+### Legacy redirects
+
+The pre-migration paths are 301'd by nginx (`webdev/nginx.conf`), with a client-side
+`<LegacyRedirect>` in `App.tsx` as an SPA-side safety net. Change both together.
+
+| Legacy | Target |
+|---|---|
+| `/test/:slug` | `/uk/test/:slug` |
+| `/sablon/:slug` | `/uk/templates/:slug` |
+| `/confidentialitate`, `/termeni` | `/uk/privacy` |
+| `/plata/:kind/:slug` | `/uk/checkout/:kind/:slug` |
+
+nginx also 301s `www.bizcheck.ua.com` → `https://bizcheck.ua.com` and http → https.
 
 `CookieBanner` renders on all non-admin routes.
 
@@ -56,6 +75,6 @@ Default relative path → dev Vite proxy / prod nginx proxy. Override with `VITE
 - **`scripts/generate-sitemap.mjs`** — hits the live API for `/tests` and `/templates` slugs →
   `public/sitemap.xml` (falls back to existing file if API offline). Env `SITEMAP_BASE_URL`, `SITEMAP_API_URL`.
 - **`scripts/generate-static-html.mjs`** — writes per-route `index.html` with injected meta for
-  static routes (e.g. `/confidentialitate`) so crawlers get tags before JS; nginx `try_files` serves them.
+  static routes (per language, e.g. `/uk/privacy`) so crawlers get tags before JS; nginx `try_files` serves them.
 
 Full deploy/build details (Dockerfiles, env): [`../deployment.md`](../deployment.md).

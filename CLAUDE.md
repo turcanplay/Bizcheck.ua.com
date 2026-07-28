@@ -1,11 +1,18 @@
 # CLAUDE.md
 
-## Two parallel codebases in this repo
+## One codebase in this repo
 
-- `src/` + root `docker-compose.yml` + `schema.sql` — the standalone Telegram bot (aiogram, SQLAlchemy on Postgres). README.md and GHID_COMPLET_APLICATIE.md are about THIS one.
-- `webdev/` — the public web app (Flask backend + React+Vite SPA + nginx + a separate Telegram bot service in `webdev/tgbot/`). This is what users hit at https://bizcheck.md.
+- `webdev/` — the public web app: Flask backend + React+Vite SPA + nginx + two Telegram bot services (`webdev/tgbot/` for clients, `webdev/groupbot/` for the internal sales group). This is what users hit at https://bizcheck.ua.com.
 
-These do not share code. When the user says "submission" / "admin panel" / "the report" they mean `webdev/`. When they say "bot logic" / "DA/NU questions" they mean `src/`.
+There is no longer a second application. The old standalone aiogram bot in `src/`, and the root `Dockerfile` / `docker-compose.yml` / `requirements.txt` / `pytest.ini` that served it, have been deleted; its schema is archived at `documentation/legacy/schema.sql`. Anything you find that still describes it is stale — fix it rather than following it.
+
+Docs live in `documentation/` (single source of truth, indexed by `documentation/README.md`).
+
+## Languages
+
+The app is bilingual **Ukrainian (`uk`, default) + English (`en`)**. Romanian and Russian were removed in two migrations (`_ro`→`_uk`, `_ru`→`_en`) — see `documentation/ukrainian-language-migration.md`. Bilingual DB columns carry `_uk` / `_en` suffixes. Do not reintroduce `ro` / `ru` anywhere (columns, `hreflang`, validators' language whitelist, bot strings).
+
+Public routes are language-prefixed: `/uk/…` and `/en/…`. The pre-migration paths (`/test/:slug`, `/sablon/:slug`, `/confidentialitate`, `/termeni`, `/plata/:kind/:slug`) are 301-redirected in `webdev/nginx.conf`, with a client-side fallback in the SPA router. Keep both sides in sync when you touch routing.
 
 ## Auth model (webdev)
 
@@ -30,7 +37,7 @@ PII columns on `submissions` (first_name, last_name, email, phone) are Fernet-en
 
 Backend (`backend:4001`) is NOT exposed publicly — only `expose:` in `webdev/docker-compose.yml`. nginx is the single proxy in front. The Flask app trusts exactly one hop: `ProxyFix(x_for=1)`. nginx OVERWRITES `X-Forwarded-For` with `$remote_addr` (does not append) so spoofed XFF cannot influence rate-limit keys. If you ever add another proxy in front of nginx (Cloudflare, etc.), you must reconfigure both.
 
-The bot-standalone compose at the repo root binds Postgres on `127.0.0.1:5433/5434` — do not change this to `0.0.0.0`.
+Postgres is not published to the host either. The only host binding in the whole stack is the frontend on `127.0.0.1:${FRONTEND_PORT:-5173}` — keep it on loopback; TLS is terminated by an external nginx (`webdev/nginx-proxy.conf.example`).
 
 ## CSP / security headers
 
@@ -38,13 +45,14 @@ Strict CSP for the SPA lives in `webdev/nginx.conf` (`location /`), not in Flask
 
 ## Tests
 
-- `webdev/backend/tests/test_unit_security.py` — runs without a backend or DB (Flask test client + monkeypatched model). Use this for any new auth/middleware/validator logic.
-- `webdev/backend/tests/test_security.py` — integration; needs a live backend on `:4001`. Fixtures expect `ADMIN_USERNAME=admin / ADMIN_PASSWORD=admin` defaults.
+- `webdev/backend/pytest.ini` already excludes the two live-server files, so a plain `pytest` is the no-DB/no-server sweep. Put new auth/middleware/validator logic in a `test_unit_*.py` (Flask test client + monkeypatched model).
+- `webdev/backend/tests/test_security.py` and `security_test.py` — integration; need a live backend on `:4001`. Opt-in only. Fixtures expect `ADMIN_USERNAME=admin / ADMIN_PASSWORD=admin` defaults.
+- Frontend uses Vitest + Testing Library (jsdom), config in `webdev/frontend/vite.config.ts`.
+- Both bots have their own suites: `webdev/tgbot/tests/`, `webdev/groupbot/tests/`.
 
-Run unit only:
 ```
-cd webdev/backend
-venv/Scripts/python -m pytest tests/test_unit_security.py -v
+cd webdev/backend  && python -m pytest          # unit sweep, no DB, no server
+cd webdev/frontend && npm run test:run
 ```
 
 ## Obscured paths (do not "fix")
@@ -56,16 +64,21 @@ These are intentional. `robots.txt` does NOT list them anymore (security through
 
 ## Report layout types
 
-`tests.report_type` ∈ {`bizcheck` (per-block detail), `standard` (per-question checklist), `premium` (short)}. The frontend chooses the React component tree based on this column. There is a backfill in `migrate()` that re-marks legacy rows as `bizcheck` only when no `bizcheck` row exists yet — already idempotent, leave it.
+`tests.report_type` ∈ {`bizcheck` (per-block detail), `standard` (per-question checklist), `premium` (like `bizcheck` minus the per-block detail pages), `gdpr` (one page per question)}. The canonical set is enforced in `services/test_service.py` (`CANONICAL_REPORT_TYPES`), not by a DB constraint. The frontend chooses the React component tree based on this column. There is a backfill in `migrate()` that re-marks legacy rows as `bizcheck` only when no `bizcheck` row exists yet — already idempotent, leave it.
 
-## Two Telegram surfaces
+## Three Telegram surfaces
 
-- `webdev/tgbot/` — bot service for the web flow. Calls backend via `BACKEND_URL/api_crowe_bizcheck/tg/*`. `/tg/link/{sub_id}` is owner-gated; `/tg/report/<token>` and `/tg/contact/<token>` are token-gated (32-byte URL-safe, 24h TTL).
-- `src/` — the original standalone bot, separate DB.
+- `webdev/tgbot/` — client bot for the web flow. Calls backend via `BACKEND_URL/api_crowe_bizcheck/tg/*`. `/tg/link/{sub_id}` is owner-gated; `/tg/report/<token>` and `/tg/contact/<token>` are token-gated (32-byte URL-safe, 24h TTL).
+- `webdev/groupbot/` — internal bot living in the sales group: `/register`, `/unregister`, `/excel`, `/client`, `/pdf`. Authorization fails closed — `SALES_CHAT_ID` wins when set, otherwise the chat bound via `/register`; nothing set and nothing registered → deny.
+- `services/sales_notify.py` — the backend posting lead notifications into that group (same token as `groupbot`, send-only, so no `getUpdates` conflict).
+
+Every `/tg/exports/*`, `/tg/group/*` and `/tg/feedback/*` endpoint is gated **strictly** on `X-Bot-Secret`: an unset `BOT_SHARED_SECRET` disables the feature (403), it never opens it. Do not "relax for local dev".
 
 ## Don'ts
 
 - Don't `docker compose up` after edits — user deploys to server and tests there.
 - Don't add a Bearer-token fallback for admin auth.
 - Don't write user text to DB without `clean_text`.
-- Don't expose the backend port externally on any compose file.
+- Don't expose the backend or the DB port externally on any compose file.
+- Don't add `ro` / `ru` back as application languages.
+- Don't seed the database from `migrate()` — a fresh install starts empty on purpose and content is entered in the admin panel.

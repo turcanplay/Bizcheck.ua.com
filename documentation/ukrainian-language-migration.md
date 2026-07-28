@@ -1,5 +1,14 @@
 # Language migration — deploy & handoff
 
+> **HISTORICAL DOCUMENT (archived 2026-07-28).** This is the handoff written *at the time*
+> of the migration, kept because it records why the schema looks the way it does and how
+> the two boot migrations work. **It is not a to-do list any more** — the migration has
+> shipped and `uk` + `en` is simply how the app works today. The deploy steps in §2 and
+> the checks in §5 were valid then; the domain has since moved to `bizcheck.ua.com` and
+> the public routes are now language-prefixed, so the URLs below have been corrected
+> in place. For the current state, read
+> [`00-overview.md`](00-overview.md) and [`deployment.md`](deployment.md).
+
 **What this is:** the web app (`webdev/`) language set was migrated **twice**, in two commits:
 
 1. **RO → UK** — Romanian replaced by Ukrainian.
@@ -28,7 +37,9 @@
 | **PDF covers** | `preview_ru.pdf`/`outro_ru.pdf` renamed to `*_en.pdf`. EN users get them directly; UK falls back to `preview_en.pdf` until `preview_uk.pdf` is designed. |
 | **Tests** | Suite on the UK/EN contract; migration idempotency covered for **both** renames. Frontend build + **259 backend tests** green. No Romanian or Russian text remains. |
 
-The standalone `src/` bot (own DB, own language) is **not** affected.
+(At the time this was written there was also a standalone bot in `src/`, with its own DB
+and its own language, which the migration did not touch. That bot has since been deleted
+from the repo.)
 
 ---
 
@@ -92,7 +103,7 @@ Each one:
    -- stored language values should be only uk / en
    SELECT DISTINCT language FROM submissions;
    ```
-3. **Public site** (`https://bizcheck.md`): loads in Ukrainian by default; the **UA / EN** switch works; report, privacy policy (`/confidentialitate`) and quiz show no Romanian or Russian.
+3. **Public site** (`https://bizcheck.ua.com`): `/` lands on `/uk/`; the **UA / EN** switch works; report, privacy policy (`/uk/privacy`) and quiz show no Romanian or Russian. The legacy `/confidentialitate` must 301 to `/uk/privacy`.
 4. **Admin panel** (`/admin_bizcheck_md_crowe/`): UI is Ukrainian; per-item field markers read **(UA)** / **(EN)**.
 5. **Telegram**: client bot and the group bot (`/excel`, `/pdf`) reply in Ukrainian.
 

@@ -1,44 +1,39 @@
-# Documentație tehnică — Subsistemul Telegram (BizCheck `webdev/`)
+# `webdev/docs/` — retras (2026-07-28)
 
-Această documentație acoperă tot ce ține de **Telegram** în aplicația web BizCheck
-(`webdev/`): cei **doi boți**, **notificările** automate către echipă, **exporturile**
-Excel/PDF, **endpoint-urile backend** care îi deservesc, **baza de date**, aspectele de
-**securitate** și **deploy**-ul.
+Acest folder a fost un al doilea set de documentație, scris în iunie 2026, care
+acoperea același subiect ca `documentation/`: subsistemul Telegram, backendul, baza
+de date, securitatea, env-ul și deploy-ul.
 
-> Atenție: documentația se referă DOAR la codebase-ul `webdev/` (aplicația web de la
-> https://bizcheck.ua.com). Botul standalone din `src/` este un proiect separat și NU este
-> documentat aici.
+Cele două seturi divergiseră. Setul de aici rămăsese în urmă cu două schimbări mari și
+descria greșit lucruri sensibile:
 
-## Cuprins
+- limba: vorbea de câmpuri `name_ro` / `name_ru` și texte RO/RU, când aplicația e de
+  mult pe `_uk` / `_en`;
+- auth: descria `/tg/feedback/*` ca **fail-open** („tolerant, pentru dev local") și
+  `groupbot` ca nefiind blocat când `SALES_CHAT_ID` e gol. **Ambele sunt fail-closed**
+  în cod;
+- nu menționa deloc `/register`, `/unregister`, alerta la eșec de livrare, sau
+  exportul ZIP ca job asincron;
+- indexul lui trimitea la șase fișiere care nu existau pe disc.
 
-| # | Fișier | Subiect |
-|---|--------|---------|
-| 01 | [01-arhitectura-generala.md](01-arhitectura-generala.md) | Imaginea de ansamblu: 3 procese, 2 tokenuri, backend |
-| 02 | [02-bot-client.md](02-bot-client.md) | Botul pentru clienți (`tgbot/`) — livrare rapoarte |
-| 03 | [03-bot-grup.md](03-bot-grup.md) | Botul de grup (`groupbot/`) — comenzile `/excel` și `/pdf` |
-| 04 | [04-notificari-vanzari.md](04-notificari-vanzari.md) | Notificările automate către echipă (`services/sales_notify.py`) |
-| 05 | [05-export-excel.md](05-export-excel.md) | Generarea și structura exportului Excel |
-| 06 | [06-export-pdf.md](06-export-pdf.md) | Generarea PDF-urilor și arhiva ZIP |
-| 07 | [07-backend-endpoints-tg.md](07-backend-endpoints-tg.md) | Toate rutele `/api_crowe_bizcheck/tg/*` |
-| 08 | [08-baza-de-date.md](08-baza-de-date.md) | Tabele și coloane relevante pentru Telegram |
-| 09 | [09-securitate-tokenuri.md](09-securitate-tokenuri.md) | Tokenuri, `X-Bot-Secret`, gating |
-| 10 | [10-deploy-docker.md](10-deploy-docker.md) | Servicii Docker Compose și deploy |
-| 11 | [11-variabile-mediu.md](11-variabile-mediu.md) | Variabilele de mediu necesare |
-| 12 | [12-depanare.md](12-depanare.md) | Probleme frecvente și soluții |
+Ca să nu existe două surse de adevăr, fișierele au fost șterse (rămân în istoricul
+git). **Sursa unică de adevăr este [`../../documentation/`](../../documentation/README.md).**
 
-## Dacă vrei X → citește fișierul Y
+## Unde a plecat fiecare fișier
 
-| Vrei să... | Citește |
-|------------|---------|
-| înțelegi cum se leagă toate piesele | 01 |
-| afli cum ajunge raportul la client în Telegram | 02 |
-| descarci Excel/PDF din grupul echipei | 03 |
-| afli de ce echipa primește o notificare la fiecare test | 04 |
-| modifici conținutul exportului Excel | 05 |
-| modifici PDF-ul / arhiva ZIP | 06 |
-| adaugi sau modifici o rută backend pentru boți | 07 |
-| știi unde se salvează contactele Telegram | 08 |
-| înțelegi de ce backend-ul și groupbot-ul împart un token | 09, 01 |
-| pornești/oprești serviciile pe server | 10 |
-| configurezi un bot nou (tokenuri, chat id) | 11 |
-| depanezi un conflict `getUpdates` sau notificări lipsă | 12 |
+| Fișier vechi | Citește în loc |
+|---|---|
+| `01-arhitectura-generala.md` | [`documentation/telegram/00-overview.md`](../../documentation/telegram/00-overview.md), [`documentation/architecture/01-system-architecture.md`](../../documentation/architecture/01-system-architecture.md) |
+| `02-bot-client.md` | [`documentation/telegram/01-bot-user.md`](../../documentation/telegram/01-bot-user.md) |
+| `03-bot-grup.md` | [`documentation/telegram/03-bot-grup-register.md`](../../documentation/telegram/03-bot-grup-register.md) |
+| `04-notificari-vanzari.md` | [`documentation/telegram/02-notificare-vanzari.md`](../../documentation/telegram/02-notificare-vanzari.md) |
+| `05-topicuri-forum.md` | [`documentation/telegram/02-notificare-vanzari.md`](../../documentation/telegram/02-notificare-vanzari.md) (secțiunea despre topicuri) |
+| `06-export-excel-pdf.md` | [`documentation/backend/02-services.md`](../../documentation/backend/02-services.md), [`documentation/telegram/03-bot-grup-register.md`](../../documentation/telegram/03-bot-grup-register.md) |
+| `07-backend.md` | [`documentation/backend/00-backend-overview.md`](../../documentation/backend/00-backend-overview.md), [`documentation/backend/01-routes.md`](../../documentation/backend/01-routes.md) |
+| `08-baza-de-date.md` | [`documentation/architecture/03-data-model.md`](../../documentation/architecture/03-data-model.md) |
+| `09-securitate-auth.md` | [`documentation/architecture/02-auth-and-security.md`](../../documentation/architecture/02-auth-and-security.md) |
+| `10-variabile-env.md` | [`documentation/telegram/05-env-si-deploy.md`](../../documentation/telegram/05-env-si-deploy.md), [`documentation/deployment.md`](../../documentation/deployment.md) |
+| `11-deploy.md` | [`documentation/deployment.md`](../../documentation/deployment.md), [`documentation/telegram/05-env-si-deploy.md`](../../documentation/telegram/05-env-si-deploy.md) |
+| `12-depanare.md` | [`documentation/telegram/07-depanare.md`](../../documentation/telegram/07-depanare.md) — conținut preluat și corectat |
+
+> Nu adăuga fișiere noi aici. Documentația nouă merge în `documentation/`.
