@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { AdminTest, AdminTestInput, ReportType } from '@/api/admin';
+import { saveErrorMessage, type AdminTest, type AdminTestInput, type ReportType } from '@/api/admin';
 
 interface Props {
   initial: AdminTest | null;
@@ -90,7 +90,7 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
       };
       await onSave(input, initial?.id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed');
+      setError(saveErrorMessage(e));
     } finally {
       setBusy(false);
     }

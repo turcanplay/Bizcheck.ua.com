@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminApi, type AdminTest, type SiteSettings } from '@/api/admin';
+import { adminApi, saveErrorMessage, type AdminTest, type SiteSettings } from '@/api/admin';
 import { pickLang } from '@/i18n/pickLang';
 
 /**
@@ -71,7 +71,7 @@ export default function AdminPageSettings() {
       setSettings({ ...EMPTY, ...fresh });
       setSavedAt(Date.now());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed');
+      setError(saveErrorMessage(e));
     } finally {
       setSaving(false);
     }

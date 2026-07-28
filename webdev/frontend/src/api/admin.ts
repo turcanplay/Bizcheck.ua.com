@@ -18,6 +18,126 @@ export type { SiteSettings };
 const CSRF_COOKIE = 'admin_csrf';
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
+/* ──────────────────────────────────────────────────────────────
+ *  Structured API errors
+ *
+ *  `request()` used to collapse every failure into `new Error(body.error)`,
+ *  which throws away the status code and any structured payload. The backend
+ *  now answers some failures with machine-readable bodies that the UI has to
+ *  act on:
+ *
+ *    400 {"code":"field_too_long","field","limit","length","submitted_length"}
+ *        — an admin authored-content field exceeded its column width. The SPA
+ *          must name the field and its limit instead of "Save failed".
+ *    503 — the export backlog is saturated.
+ *
+ *  ApiError keeps `message` exactly as before (so `e instanceof Error` and
+ *  `e.message` keep working everywhere), and ADDS the status and the body.
+ * ────────────────────────────────────────────────────────────── */
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly body: Record<string, unknown>;
+
+  constructor(message: string, status: number, body: Record<string, unknown> = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
+  }
+
+  /** The backend's machine-readable discriminator, when it sent one. */
+  get code(): string | null {
+    return typeof this.body.code === 'string' ? this.body.code : null;
+  }
+}
+
+/** Payload of a 400 `field_too_long`, normalized to numbers. */
+export interface FieldTooLong {
+  field: string;
+  limit: number;
+  /** Length AFTER server-side sanitization — this is what is compared to `limit`. */
+  length: number;
+  /** Length of the raw value as submitted (differs when markup was stripped). */
+  submittedLength: number;
+}
+
+/** Extract the `field_too_long` details from a thrown error, or null. */
+export function fieldTooLongDetail(err: unknown): FieldTooLong | null {
+  if (!(err instanceof ApiError) || err.code !== 'field_too_long') return null;
+  const b = err.body;
+  const limit = Number(b.limit);
+  const length = Number(b.length);
+  if (!Number.isFinite(limit) || !Number.isFinite(length)) return null;
+  const submitted = Number(b.submitted_length);
+  return {
+    field: typeof b.field === 'string' && b.field ? b.field : 'value',
+    limit,
+    length,
+    submittedLength: Number.isFinite(submitted) ? submitted : length,
+  };
+}
+
+/** Ukrainian labels for every field name the strict validators can name.
+ *  Keys mirror the request keys passed to `clean_authored(...)` in
+ *  backend/routes/{tests,blocks,questions,templates,...}.py. */
+const FIELD_LABELS: Record<string, string> = {
+  slug: 'Слаг (URL)',
+  name: 'Імʼя',
+  name_uk: 'Назва (UA)',
+  name_en: 'Назва (EN)',
+  title_uk: 'Назва (UA)',
+  title_en: 'Назва (EN)',
+  description_uk: 'Опис (UA)',
+  description_en: 'Опис (EN)',
+  text_uk: 'Текст (UA)',
+  text_en: 'Текст (EN)',
+  note_uk: 'Примітка (UA)',
+  note_en: 'Примітка (EN)',
+  question_uk: 'Запитання (UA)',
+  question_en: 'Запитання (EN)',
+  answer_uk: 'Відповідь (UA)',
+  answer_en: 'Відповідь (EN)',
+  quote_uk: 'Відгук (UA)',
+  quote_en: 'Відгук (EN)',
+  category: 'Категорія',
+  currency: 'Валюта',
+  role: 'Посада',
+  features: 'Переваги',
+  report_type: 'Тип звіту',
+  avatar_url: 'Посилання на аватар',
+};
+
+/** Human label for a field name, including the indexed forms the backend emits
+ *  for collections (`answers[0].text_uk`, `features[2]`). */
+export function fieldLabel(field: string): string {
+  const nested = /^([A-Za-z_]+)\[(\d+)\]\.(.+)$/.exec(field);
+  if (nested) {
+    const collection = nested[1] === 'answers' ? 'Відповідь' : fieldLabel(nested[1]);
+    return `${collection} №${Number(nested[2]) + 1} — ${fieldLabel(nested[3])}`;
+  }
+  const indexed = /^([A-Za-z_]+)\[(\d+)\]$/.exec(field);
+  if (indexed) return `${fieldLabel(indexed[1])} №${Number(indexed[2]) + 1}`;
+  return FIELD_LABELS[field] ?? field;
+}
+
+/** Message for the `admin-error` strip inside a save modal.
+ *
+ *  A `field_too_long` 400 is turned into "which field, how long, what is the
+ *  limit, how much to cut" — the backend REJECTS now instead of truncating, so
+ *  a generic "Save failed" would leave the admin with no way to fix the form.
+ *  Anything else keeps whatever message it already carried. */
+export function saveErrorMessage(err: unknown, fallback = 'Не вдалося зберегти'): string {
+  const d = fieldTooLongDetail(err);
+  if (d) {
+    const over = Math.max(1, d.length - d.limit);
+    return `Поле «${fieldLabel(d.field)}» задовге: ${d.length} символів, максимум ${d.limit}. `
+      + `Скоротіть текст щонайменше на ${over}.`;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
+}
+
 function readCookie(name: string): string | null {
   const prefix = `${name}=`;
   for (const part of document.cookie.split(';')) {
@@ -74,12 +194,17 @@ async function requestFull<T>(path: string, opts: RequestInit = {}): Promise<{ d
     credentials: 'include',
   });
   if (res.status === 401) {
-    throw new Error('Unauthorized');
+    throw new ApiError('Unauthorized', 401);
   }
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const body = await res.json(); msg = body.error || msg; } catch { /* ignore */ }
-    throw new Error(msg);
+    let body: Record<string, unknown> = {};
+    try {
+      const parsed = await res.json();
+      if (parsed && typeof parsed === 'object') body = parsed as Record<string, unknown>;
+      if (typeof body.error === 'string' && body.error) msg = body.error;
+    } catch { /* not JSON — keep the status-only message */ }
+    throw new ApiError(msg, res.status, body);
   }
   if (res.status === 204) return { data: null as T, res };
   return { data: (await res.json()) as T, res };
@@ -195,6 +320,48 @@ export function normalizeSubmissionsResponse(
   };
 }
 
+/* ──────────────────────────────────────────────────────────────
+ *  Asynchronous exports (per-test PDF ZIP)
+ *
+ *  The synchronous GET .../export/pdfs-zip still exists, but it pins one of the
+ *  4 gunicorn workers for the whole build (16 s / 807 MB at 250 submissions).
+ *  The job flavour is three calls:
+ *
+ *    POST /submissions/tests/{id}/export/pdfs-zip/jobs → 202 {job} | 503 (full)
+ *    GET  {job.status_path}                            → 200 {job} | 404
+ *    GET  {job.download_path}                          → zip | 409 | 404 | 410
+ *
+ *  `*_path` values are relative to API_BASE (what adminFetch/request expect);
+ *  `*_url` are absolute and would double the prefix — never feed them to
+ *  adminFetch. `download_path`/`download_url` exist ONLY when state==='ready'.
+ * ────────────────────────────────────────────────────────────── */
+
+export type ExportJobState = 'queued' | 'running' | 'ready' | 'failed';
+
+export interface ExportJobProgress {
+  done: number;
+  /** null until the worker knows how many submissions it will pack. */
+  total: number | null;
+}
+
+export interface ExportJob {
+  token: string;
+  kind: string;
+  test_id: number | null;
+  state: ExportJobState;
+  /** Unix seconds (float) — the backend stores time.time(). */
+  created_at: number;
+  updated_at: number;
+  progress: ExportJobProgress;
+  size_bytes: number | null;
+  filename: string | null;
+  error: string | null;
+  status_path: string;
+  status_url: string;
+  download_path?: string;
+  download_url?: string;
+}
+
 export const adminApi = {
   login: (username: string, password: string) =>
     request<{ ok: boolean; csrf_token: string }>('/admin/login', {
@@ -260,6 +427,19 @@ export const adminApi = {
 
   exportSubmissionsExcelUrl: () =>
     `${API_BASE}/submissions/export/excel`,
+
+  /** Start (or rejoin) the async PDF-ZIP export for one test.
+   *  The backend dedupes: a second call while a job for the same test is
+   *  queued/running returns THAT job instead of building a second archive.
+   *  Throws ApiError(503) when the backlog is saturated. */
+  startPdfsZipExport: (testId: number) =>
+    request<{ job: ExportJob }>(`/submissions/tests/${testId}/export/pdfs-zip/jobs`, {
+      method: 'POST',
+    }),
+  /** Poll a job. Pass `job.status_path` (relative), never `status_url`.
+   *  Throws ApiError(404) once the job is unknown, expired or swept. */
+  getExportJob: (statusPath: string) =>
+    request<{ job: ExportJob }>(statusPath),
 
   listTemplates: () =>
     request<{ templates: AdminTemplate[] }>('/admin/templates'),

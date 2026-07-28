@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { adminApi, type AdminFaqItem, type AdminFaqInput } from '@/api/admin';
+import { adminApi, saveErrorMessage, type AdminFaqItem, type AdminFaqInput } from '@/api/admin';
 
 export default function AdminFaq() {
   const [items, setItems] = useState<AdminFaqItem[]>([]);
@@ -103,7 +103,7 @@ function FaqModal({ initial, onClose, onSave }: ModalProps) {
         order_index: Number(orderIndex) || 0,
         is_active: isActive,
       }, initial?.id ?? null);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Save failed'); }
+    } catch (e) { setError(saveErrorMessage(e)); }
     finally { setBusy(false); }
   }
 

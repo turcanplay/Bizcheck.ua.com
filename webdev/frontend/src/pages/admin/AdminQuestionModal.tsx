@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import type { AdminAnswerInput, AdminBlock, AdminQuestion, AdminQuestionInput } from '@/api/admin';
+import { saveErrorMessage, type AdminAnswerInput, type AdminBlock, type AdminQuestion, type AdminQuestionInput } from '@/api/admin';
 
 interface Props {
   initial: AdminQuestion | null;
@@ -95,7 +95,7 @@ export default function AdminQuestionModal({ initial, blocks, allQuestions, defa
       };
       await onSave(data, initial?.id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed');
+      setError(saveErrorMessage(e));
     } finally {
       setBusy(false);
     }

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { AdminTemplate, AdminTemplateInput } from '@/api/admin';
+import { saveErrorMessage, type AdminTemplate, type AdminTemplateInput } from '@/api/admin';
 
 interface Props {
   initial: AdminTemplate | null;
@@ -74,7 +74,7 @@ export default function AdminTemplateModal({ initial, onClose, onSave }: Props) 
         features,
       }, initial?.id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed');
+      setError(saveErrorMessage(e));
     } finally {
       setBusy(false);
     }

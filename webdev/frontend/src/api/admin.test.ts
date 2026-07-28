@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
+  ApiError,
   adminApi,
   buildSubmissionsQuery,
   clampPerPage,
+  fieldLabel,
+  fieldTooLongDetail,
   normalizeSubmissionsResponse,
+  saveErrorMessage,
   SUBMISSIONS_DEFAULT_PER_PAGE,
   SUBMISSIONS_MAX_PER_PAGE,
   type AdminSubmission,
@@ -184,5 +188,133 @@ describe('adminApi.listSubmissions', () => {
     expect(r.total).toBe(120);
     expect(r.totalPages).toBe(3);
     expect(r.page).toBe(2);
+  });
+});
+
+/* ──────────────────────────────────────────────────────────────
+ *  400 field_too_long
+ *
+ *  The admin authored-content validators (clean_authored) now REJECT an
+ *  over-long value instead of silently truncating it, and answer
+ *  400 {"code":"field_too_long","field","limit","length","submitted_length"}.
+ *  The client used to flatten every failure into `new Error(body.error)`, so
+ *  the modal could only say "Save failed". These pin the structured path.
+ * ────────────────────────────────────────────────────────────── */
+
+function tooLong(field: string, limit: number, length: number, submitted = length) {
+  return new ApiError(
+    `Field '${field}' is too long: ${length} characters after sanitization, the maximum is ${limit}.`,
+    400,
+    { code: 'field_too_long', field, limit, length, submitted_length: submitted },
+  );
+}
+
+describe('ApiError plumbing', () => {
+  const fetchMock = vi.fn();
+  beforeEach(() => { fetchMock.mockReset(); vi.stubGlobal('fetch', fetchMock); });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it('carries the status and the whole body off a failing request', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: { get: () => null },
+      json: async () => ({
+        error: "Field 'title_uk' is too long: 405 characters after sanitization, the maximum is 255.",
+        code: 'field_too_long', field: 'title_uk', limit: 255, length: 405, submitted_length: 412,
+      }),
+    });
+
+    const err = await adminApi.createBlock({ test_id: 1, title_uk: 'x', title_en: 'y' })
+      .then(() => null, (e: unknown) => e);
+
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err).toBeInstanceOf(Error);                 // modals still catch it
+    const api = err as ApiError;
+    expect(api.status).toBe(400);
+    expect(api.code).toBe('field_too_long');
+    expect(api.body.field).toBe('title_uk');
+  });
+
+  it('keeps a status-only message when the body is not JSON', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false, status: 502, headers: { get: () => null },
+      json: async () => { throw new Error('not json'); },
+    });
+    const err = await adminApi.listTests().then(() => null, (e: unknown) => e) as ApiError;
+    expect(err.status).toBe(502);
+    expect(err.message).toBe('HTTP 502');
+    expect(err.code).toBeNull();
+  });
+
+  it('still throws "Unauthorized" on 401 (the AdminLayout redirect depends on it)', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 401, headers: { get: () => null }, json: async () => ({}) });
+    const err = await adminApi.listTests().then(() => null, (e: unknown) => e) as ApiError;
+    expect(err.message).toBe('Unauthorized');
+    expect(err.status).toBe(401);
+  });
+});
+
+describe('fieldTooLongDetail', () => {
+  it('normalizes the payload', () => {
+    expect(fieldTooLongDetail(tooLong('title_uk', 255, 405, 412))).toEqual({
+      field: 'title_uk', limit: 255, length: 405, submittedLength: 412,
+    });
+  });
+
+  it('falls back to length when submitted_length is absent', () => {
+    const err = new ApiError('too long', 400, { code: 'field_too_long', field: 'note_uk', limit: 10, length: 30 });
+    expect(fieldTooLongDetail(err)?.submittedLength).toBe(30);
+  });
+
+  it('ignores other errors, other codes and non-numeric payloads', () => {
+    expect(fieldTooLongDetail(new Error('boom'))).toBeNull();
+    expect(fieldTooLongDetail(new ApiError('nope', 400, { code: 'other' }))).toBeNull();
+    expect(fieldTooLongDetail(new ApiError('x', 400, { code: 'field_too_long', field: 'a' }))).toBeNull();
+    expect(fieldTooLongDetail(null)).toBeNull();
+  });
+});
+
+describe('fieldLabel', () => {
+  it('maps the plain request keys to Ukrainian labels', () => {
+    expect(fieldLabel('title_uk')).toBe('Назва (UA)');
+    expect(fieldLabel('description_en')).toBe('Опис (EN)');
+    expect(fieldLabel('note_uk')).toBe('Примітка (UA)');
+  });
+
+  it('renders the 1-based position for the indexed collection fields', () => {
+    expect(fieldLabel('answers[0].text_uk')).toBe('Відповідь №1 — Текст (UA)');
+    expect(fieldLabel('answers[3].text_en')).toBe('Відповідь №4 — Текст (EN)');
+    expect(fieldLabel('features[2]')).toBe('Переваги №3');
+  });
+
+  it('falls back to the raw key for anything it does not know', () => {
+    expect(fieldLabel('brand_new_field')).toBe('brand_new_field');
+  });
+});
+
+describe('saveErrorMessage', () => {
+  it('names the field, its length and the limit, and how much to cut', () => {
+    const msg = saveErrorMessage(tooLong('title_uk', 255, 405));
+    expect(msg).toContain('Назва (UA)');
+    expect(msg).toContain('405');
+    expect(msg).toContain('255');
+    expect(msg).toContain('150');                       // 405 - 255
+    expect(msg).not.toContain('Save failed');
+  });
+
+  it('points at the exact answer inside a question form', () => {
+    expect(saveErrorMessage(tooLong('answers[1].text_uk', 2000, 2500)))
+      .toContain('Відповідь №2 — Текст (UA)');
+  });
+
+  it('passes other errors through unchanged', () => {
+    expect(saveErrorMessage(new Error('Unauthorized'))).toBe('Unauthorized');
+    expect(saveErrorMessage(new ApiError('HTTP 500', 500))).toBe('HTTP 500');
+  });
+
+  it('uses the fallback for a non-Error throw', () => {
+    expect(saveErrorMessage('oops')).toBe('Не вдалося зберегти');
+    expect(saveErrorMessage(undefined, 'нема')).toBe('нема');
   });
 });

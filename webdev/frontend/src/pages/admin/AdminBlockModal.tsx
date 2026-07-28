@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import type { AdminBlock } from '@/api/admin';
+import { saveErrorMessage, type AdminBlock } from '@/api/admin';
 
 interface Props {
   initial: AdminBlock | null;
@@ -27,7 +27,7 @@ export default function AdminBlockModal({ initial, onClose, onSave }: Props) {
         initial?.id ?? null,
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save failed');
+      setError(saveErrorMessage(e));
     } finally {
       setBusy(false);
     }

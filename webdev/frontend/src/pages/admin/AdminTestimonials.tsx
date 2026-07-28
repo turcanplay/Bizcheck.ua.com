@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { adminApi, type AdminTestimonial, type AdminTestimonialInput } from '@/api/admin';
+import { adminApi, saveErrorMessage, type AdminTestimonial, type AdminTestimonialInput } from '@/api/admin';
 
 export default function AdminTestimonials() {
   const [items, setItems] = useState<AdminTestimonial[]>([]);
@@ -111,7 +111,7 @@ function TestimonialModal({ initial, onClose, onSave }: ModalProps) {
         order_index: Number(orderIndex) || 0,
         is_active: isActive,
       }, initial?.id ?? null);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Save failed'); }
+    } catch (e) { setError(saveErrorMessage(e)); }
     finally { setBusy(false); }
   }
 
