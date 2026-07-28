@@ -55,6 +55,21 @@ class TestCleanSlug:
         with pytest.raises(ValueError):
             v.clean_slug("-")
 
+    @pytest.mark.parametrize("one_char", ["a", "z", "0", "9"])
+    def test_accepts_single_alphanumeric_slug(self, one_char):
+        """A 1-character slug must survive — existing rows already have them.
+
+        services/test_service.py and services/template_service.py validate with
+        `^[a-z0-9][a-z0-9_-]{0,63}$`, which accepts a single character, and those
+        are the regexes that CREATED every stored row. clean_slug is now applied
+        in front of them (routes/tests.py, routes/templates.py), and the admin
+        edit modal re-sends the stored slug on every PUT — so a stricter
+        clean_slug does not just reject new 1-char slugs, it makes an existing
+        test/template permanently unsaveable from the admin panel (HTTP 400 on
+        every edit, including edits that never touch the slug).
+        """
+        assert v.clean_slug(one_char) == one_char
+
 
 class TestCleanInt:
     def test_parses_numeric_string(self):

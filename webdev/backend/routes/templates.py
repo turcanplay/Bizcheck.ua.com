@@ -14,9 +14,53 @@ from services.template_service import (
 )
 from models.template import Template
 from middleware.admin_middleware import admin_required
+from utils.validators import (
+    clean_content, clean_content_optional, clean_slug, clean_bool, clean_text,
+    MAX_TITLE, MAX_LONG,
+)
 
 templates_bp = Blueprint("templates", __name__, url_prefix="/api_crowe_bizcheck/templates")
 admin_templates_bp = Blueprint("admin_templates", __name__, url_prefix="/api_crowe_bizcheck/admin/templates")
+
+# Same column widths as tests: title_* VARCHAR(255), description_* TEXT,
+# category VARCHAR(50), filename VARCHAR(255).
+MAX_CATEGORY = 50
+MAX_FEATURE = 200
+MAX_CURRENCY = 8
+MAX_FILENAME = 255
+
+
+def _clean_features(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return clean_content(value, MAX_LONG)
+    if isinstance(value, (list, tuple)):
+        return [clean_content(v, MAX_FEATURE) for v in value]
+    return []
+
+
+def _clean_template_payload(data):
+    """Sanitize a PUT body, preserving which keys were present (see tests.py)."""
+    out = dict(data)
+    if (out.get("slug") or "").strip():
+        out["slug"] = clean_slug(out["slug"])
+    elif "slug" in out:
+        out["slug"] = ""
+    for key, cap in (("title_uk", MAX_TITLE), ("title_en", MAX_TITLE),
+                     ("description_uk", MAX_LONG), ("description_en", MAX_LONG)):
+        if key in out:
+            out[key] = clean_content(out[key], cap)
+    if "category" in out:
+        out["category"] = clean_content_optional(out["category"], MAX_CATEGORY)
+    if "currency" in out:
+        out["currency"] = clean_content(out["currency"] or "MDL", MAX_CURRENCY)
+    if "features" in out:
+        out["features"] = _clean_features(out["features"])
+    for key in ("is_active", "is_coming_soon", "is_paid"):
+        if key in out:
+            out[key] = clean_bool(out[key])
+    return out
 
 
 def _slugify_filename(s):
@@ -82,19 +126,21 @@ def admin_detail(template_id):
 def admin_create():
     data = request.get_json(silent=True) or {}
     try:
+        raw_slug = data.get("slug")
+        slug = clean_slug(raw_slug) if (raw_slug or "").strip() else ""
         t = create_template(
-            slug=data.get("slug"),
-            title_uk=data.get("title_uk"),
-            title_en=data.get("title_en"),
-            description_uk=data.get("description_uk", ""),
-            description_en=data.get("description_en", ""),
-            is_active=data.get("is_active", True),
-            is_coming_soon=data.get("is_coming_soon", False),
-            is_paid=data.get("is_paid", False),
-            price=data.get("price"),
-            currency=data.get("currency", "MDL"),
-            category=data.get("category"),
-            features=data.get("features"),
+            slug=slug,
+            title_uk=clean_content(data.get("title_uk"), MAX_TITLE),
+            title_en=clean_content(data.get("title_en"), MAX_TITLE),
+            description_uk=clean_content(data.get("description_uk", ""), MAX_LONG),
+            description_en=clean_content(data.get("description_en", ""), MAX_LONG),
+            is_active=clean_bool(data.get("is_active", True)),
+            is_coming_soon=clean_bool(data.get("is_coming_soon", False)),
+            is_paid=clean_bool(data.get("is_paid", False)),
+            price=data.get("price"),                      # validated by _norm_price
+            currency=clean_content(data.get("currency") or "MDL", MAX_CURRENCY),
+            category=clean_content_optional(data.get("category"), MAX_CATEGORY),
+            features=_clean_features(data.get("features")),
         )
         return jsonify({"template": t}), 201
     except ValueError as e:
@@ -106,7 +152,7 @@ def admin_create():
 def admin_update(template_id):
     data = request.get_json(silent=True) or {}
     try:
-        t = update_template(template_id, data)
+        t = update_template(template_id, _clean_template_payload(data))
         return jsonify({"template": t})
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -131,7 +177,10 @@ def admin_delete(template_id):
 def admin_upload_file(template_id):
     """Accept base64-encoded PDF in JSON body: { filename, pdf }."""
     data = request.get_json(silent=True) or {}
-    filename = (data.get("filename") or "").strip() or "document.pdf"
+    # The service re-runs a strict [^\w\-. ()] filename allow-list on top of
+    # this; clean_text here only guarantees we hand it a control-char-free str
+    # (a non-string filename used to reach .strip() and 500).
+    filename = clean_text(data.get("filename"), MAX_FILENAME) or "document.pdf"
     pdf_b64 = data.get("pdf") or ""
     if not pdf_b64:
         return jsonify({"error": "PDF data is required"}), 400

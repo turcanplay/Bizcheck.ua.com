@@ -18,16 +18,24 @@ def get_all_blocks(test_id=None):
 
 
 def create_block(test_id, title_uk, title_en, order_index=0):
+    # Input validation first — no point querying the DB for a payload that is
+    # already invalid.
     if not test_id:
         raise ValueError("test_id is required")
+    # ONE language is enough. Quiz content is authored by hand and the Ukrainian
+    # text is normally written first, with the English translation following days
+    # later (or never) — requiring both made a Ukrainian-only block impossible to
+    # save, even though the route and the admin modal both advertise "at least
+    # one title". Rendering falls back to the other language (see pick_lang /
+    # src/i18n/pickLang.ts), so a half-filled row is never blank on screen.
+    title_uk = (title_uk or "").strip()
+    title_en = (title_en or "").strip()
+    if not title_uk and not title_en:
+        raise ValueError("At least one block title (UK or EN) is required")
     if not Test.find_by_id(test_id):
         raise ValueError("Test not found")
-    if not title_uk or not title_uk.strip():
-        raise ValueError("Block title (RO) is required")
-    if not title_en or not title_en.strip():
-        raise ValueError("Block title (RU) is required")
     block = _serialize_block(
-        Block.create(test_id, title_uk.strip(), title_en.strip(), order_index)
+        Block.create(test_id, title_uk, title_en, order_index)
     )
     invalidate_quiz_cache()
     return block

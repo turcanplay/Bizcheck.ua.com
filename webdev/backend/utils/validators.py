@@ -6,6 +6,7 @@ we still strip HTML tags server-side on user-submitted text (stored XSS guard)
 and enforce strict length limits on every field (DoS + storage guard).
 """
 
+import html
 import re
 import bleach
 
@@ -18,11 +19,76 @@ MAX_NAME      = 100
 MAX_EMAIL     = 254
 MAX_PHONE     = 20
 MAX_SHORT     = 200          # title, category, role
+MAX_TITLE     = 255          # VARCHAR(255) columns: block/test/template titles
 MAX_URL       = 500
 MAX_TEXT      = 2_000        # descriptions, answers, quotes
 MAX_LONG      = 10_000       # freeform HTML-free text blocks
 MAX_SLUG      = 80
 MAX_LANG      = 5
+
+
+def _bleach(value: str) -> str:
+    return bleach.clean(value, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
+
+
+# --- CPU guard -------------------------------------------------------------
+# bleach's HTML parser is superlinear in the input length: clean_content on
+# "<>" * n costs ~0.3 s at 40 000 chars, ~4.4 s at 400 000 and ~13 s at 800 000.
+# Truncation to max_len happens at the END of clean_text, so before this guard
+# the WHOLE raw body was parsed first. server.py caps a request at 25 MB and
+# PATCH /submissions/{id} — reachable by anyone, the submission_token is issued
+# by the public POST — feeds free text plus every string inside answers_json /
+# block_scores_json / selected_answers_json into the sanitizer, at 60 requests
+# per minute per IP. That is a one-client CPU-exhaustion lever on a gunicorn
+# worker, so the RAW input is cut before it ever reaches the parser.
+#
+# The budget is deliberately generous. Sanitizing only ever REMOVES markup (the
+# escaping path can grow the output, but never the plain text behind it), so a
+# field capped at max_len can never legitimately need more than a few times
+# max_len of input. 4x plus a 4 KB floor leaves 40 000 chars for a 10 000-char
+# description — far above anything a human authors into a plain-text field — and
+# holds the worst case to ~0.3 s. Cutting can only hand the sanitizer a
+# DIFFERENT string, which is then sanitized in full, so this can never weaken
+# the stripping.
+_INPUT_HEADROOM = 4
+_MIN_INPUT_BUDGET = 4_096
+
+
+def _cap_raw_input(value: str, max_len: int) -> str:
+    budget = max(int(max_len) * _INPUT_HEADROOM, _MIN_INPUT_BUDGET)
+    return value if len(value) <= budget else value[:budget]
+
+
+# How many strip/unescape rounds _strip_to_plain_text may take before it gives
+# up and falls back to the (always safe) escaped output. Nested payloads such as
+# `<<script>script>x<</script>/script>` need 2; 5 is head-room, not a guess.
+_PLAIN_TEXT_ROUNDS = 5
+
+
+def _strip_to_plain_text(value: str) -> str:
+    """Remove markup and return the PLAIN TEXT, with `<`, `>`, `&` literal.
+
+    bleach removes tags but HTML-escapes whatever text is left, so a single pass
+    turns "оборот < 500 000" into "оборот &lt; 500 000". Undoing that escaping in
+    one shot is NOT safe: bleach's own parser resolves entities, so both
+    `&amp;lt;script&amp;gt;` and `<<script>script>x<</script>/script>` come back
+    out as `&lt;script&gt;` and would be revived into a live tag.
+
+    So strip and unescape REPEATEDLY until the value stops changing. A complete
+    tag can never be a fixed point (bleach would remove it, changing the value),
+    while a lone `<` that bleach does not read as a tag opener is stable after
+    the first round. If the value is still moving after _PLAIN_TEXT_ROUNDS —
+    which no payload in the fuzz corpus manages — we keep the escaped output,
+    trading readability for safety.
+    """
+    escaped = _bleach(html.unescape(value))
+    current = html.unescape(escaped)
+    for _ in range(_PLAIN_TEXT_ROUNDS):
+        nxt = html.unescape(_bleach(current))
+        if nxt == current:
+            return current
+        current = nxt
+    return _bleach(current)
 
 
 def clean_text(
@@ -31,6 +97,7 @@ def clean_text(
     *,
     allow_empty: bool = True,
     strip_html: bool = True,
+    unescape_entities: bool = False,
 ) -> str:
     """
     Normalize a user-submitted string:
@@ -39,6 +106,9 @@ def clean_text(
       - collapse control chars
       - truncate to max_len
     Returns "" if input is None (when allow_empty=True).
+
+    `unescape_entities` — see clean_content() below. Off by default so the
+    behavior of every existing caller is unchanged.
     """
     if value is None:
         if allow_empty:
@@ -47,8 +117,10 @@ def clean_text(
     if not isinstance(value, str):
         value = str(value)
     value = value.strip()
+    # Bound the parser's input BEFORE sanitizing — see _cap_raw_input.
+    value = _cap_raw_input(value, max_len)
     if strip_html:
-        value = bleach.clean(value, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
+        value = _strip_to_plain_text(value) if unescape_entities else _bleach(value)
     # remove NULL bytes and other C0 control chars except tab/newline
     value = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", value)
     return value[:max_len]
@@ -60,7 +132,102 @@ def clean_optional(value, max_len: int = MAX_SHORT, **kw) -> str | None:
     return out or None
 
 
-_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,78}[a-z0-9]$")
+# ---------------------------------------------------------------------------
+# Authored content (quiz blocks / questions / answers, catalog copy)
+# ---------------------------------------------------------------------------
+# bleach removes tags but HTML-ESCAPES whatever text is left, so `<`, `>` and
+# `&` come back as `&lt;`, `&gt;`, `&amp;`. That is correct for something being
+# re-injected into HTML and WRONG for something being stored as plain text:
+# quiz copy legitimately contains "оборот < 500 000 грн" and "R&D", and those
+# rows are re-emitted by consumers that do NOT interpret HTML (the PDF, the
+# Excel export, Telegram messages built with their own escaper). Storing the
+# entity would show the user a literal "&lt;".
+#
+# clean_content() therefore strips the markup and then undoes exactly that one
+# escaping pass, storing the plain-text content of the input. clean_text() keeps
+# its original behavior for every field that already uses it.
+
+def clean_content(value, max_len: int = MAX_LONG, **kw) -> str:
+    """clean_text() for authored content — keeps `<`, `>`, `&` literal."""
+    return clean_text(value, max_len, unescape_entities=True, **kw)
+
+
+def clean_content_optional(value, max_len: int = MAX_LONG, **kw) -> str | None:
+    """clean_content() that returns None instead of an empty string."""
+    out = clean_content(value, max_len, **kw)
+    return out or None
+
+
+# Depth guard for clean_json_content — a deeply nested payload must not blow the
+# Python recursion limit and turn into a 500.
+_JSON_MAX_DEPTH = 12
+
+# Total characters ONE clean_json_content() walk may push through the HTML
+# parser. _cap_raw_input bounds a single string, but a JSON body can carry
+# thousands of them (the request cap is 25 MB), so the per-string bound alone
+# still multiplies. Sized from the production dump (bizzcheck_local.sql): the
+# largest stored answers_json / block_scores_json / selected_answers_json is
+# 763 bytes, so 32 KB is ~40x headroom for authored content while holding the
+# worst case to a fraction of a second of CPU.
+_JSON_TEXT_BUDGET = 32 * 1024
+
+
+def clean_json_content(value, max_len: int = MAX_LONG, *, _depth: int = 0, _budget=None):
+    """Recursively sanitize every STRING inside a JSON-shaped value.
+
+    Used for the nested payloads: a test's `zone_recommendations`, and a
+    submission's `answers_json` / `block_scores_json` / `selected_answers_json`
+    (block titles and answer labels from those end up in the Excel export and
+    in the admin HTML report).
+
+    Numbers, booleans and None are returned UNTOUCHED — pushing them through a
+    text sanitizer would stringify them and corrupt the scoring data. Dict keys
+    are sanitized too: they are rendered as labels downstream.
+
+    `_budget` is the shared remaining parser-input allowance for the whole walk
+    (see _JSON_TEXT_BUDGET); strings past it are truncated, never left raw.
+    """
+    if _budget is None:
+        _budget = [_JSON_TEXT_BUDGET]
+    if _depth > _JSON_MAX_DEPTH:
+        return None
+    if isinstance(value, str):
+        return _clean_json_str(value, max_len, _budget)
+    if isinstance(value, dict):
+        return {
+            _clean_json_str(str(k), MAX_SHORT, _budget):
+                clean_json_content(v, max_len, _depth=_depth + 1, _budget=_budget)
+            for k, v in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [
+            clean_json_content(v, max_len, _depth=_depth + 1, _budget=_budget)
+            for v in value
+        ]
+    # int / float / bool / None — pass through by design.
+    return value
+
+
+def _clean_json_str(value: str, max_len: int, budget: list) -> str:
+    """Sanitize one string and charge the walk's shared parser budget."""
+    if budget[0] <= 0:
+        return ""
+    cap = min(max_len, budget[0])
+    # Charge what the parser will actually see (clean_text cuts the raw input to
+    # cap * _INPUT_HEADROOM before bleaching).
+    budget[0] -= min(len(value), max(cap * _INPUT_HEADROOM, _MIN_INPUT_BUDGET))
+    return clean_content(value, cap)
+
+
+# Start and end on an alphanumeric, `_`/`-` only in between — but a slug of
+# EXACTLY ONE character is valid (the `(?:...)?` group). services/test_service.py
+# and services/template_service.py validate with `^[a-z0-9][a-z0-9_-]{0,63}$`,
+# which accepts one character, and those are the regexes that created every
+# stored row. clean_slug now runs IN FRONT of them (routes/tests.py,
+# routes/templates.py) and the admin edit modal re-sends the stored slug on
+# every PUT, so rejecting a 1-char slug here would make such a row permanently
+# unsaveable from the admin panel — a 400 on edits that never touch the slug.
+_SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9_-]{0,78}[a-z0-9])?$")
 
 def clean_slug(value, max_len: int = MAX_SLUG) -> str:
     """

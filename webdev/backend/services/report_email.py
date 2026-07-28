@@ -28,6 +28,26 @@ _EN_MONTHS = ["January", "February", "March", "April", "May", "June",
               "July", "August", "September", "October", "November", "December"]
 
 
+def pick_lang(row, base, lang):
+    """Read ``row[f"{base}_{lang}"]`` with a fallback to the other language.
+
+    Quiz/test content is entered by hand from the admin panel, so one of the two
+    translations is regularly left blank. Mirrors the frontend helper
+    ``src/i18n/pickLang.ts``: prefer the requested language, fall back to the
+    other one, return "" only when BOTH are blank. Whitespace-only counts as
+    blank — a space typed into the EN field is not a translation.
+    """
+    if not row:
+        return ""
+    lang = "en" if str(lang).lower() == "en" else "uk"
+    other = "uk" if lang == "en" else "en"
+    for key in (f"{base}_{lang}", f"{base}_{other}"):
+        value = row.get(key)
+        if value and str(value).strip():
+            return str(value)
+    return ""
+
+
 def dispatch_report_email(sub_id):
     """Queue the report email for a submission.
 
@@ -61,7 +81,9 @@ def dispatch_report_email(sub_id):
         try:
             t = get_test_by_id(test_id)
             if t:
-                test_name = (t.get("name_en") if lang == "en" else t.get("name_uk")) or t.get("name_uk") or ""
+                # Symmetric fallback: an EN-only test must not produce a blank
+                # subject line for a Ukrainian recipient either.
+                test_name = pick_lang(t, "name", lang)
         except Exception:
             # Swallowed: the email still goes out, just with the generic
             # "Звіт Bizcheck.ua.com" title instead of the real test name.

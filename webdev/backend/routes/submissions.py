@@ -12,7 +12,7 @@ from services.submission_service import (
 )
 from models.submission import Submission
 from middleware.admin_middleware import admin_required, submission_owner_or_admin
-from utils.validators import clean_text, clean_optional
+from utils.validators import clean_text, clean_optional, clean_json_content
 
 submissions_bp = Blueprint("submissions", __name__, url_prefix="/api_crowe_bizcheck/submissions")
 
@@ -42,6 +42,24 @@ def _strip(val, max_len=200):
     value protects every future consumer (PDF generator, exports, etc.).
     """
     return clean_text(val, max_len=max_len)
+
+
+def _clean_json_field(value):
+    """Sanitize a nested answers/block-scores payload.
+
+    The SPA sends these as objects; a pre-serialized string is decoded first so
+    the sanitizer walks the structure instead of mangling — and truncating — the
+    whole serialized blob. Undecodable strings are left to the service layer.
+    """
+    if isinstance(value, str):
+        import json
+        try:
+            value = json.loads(value)
+        except (ValueError, TypeError):
+            return value
+    if isinstance(value, (dict, list)):
+        return clean_json_content(value)
+    return value
 
 
 @submissions_bp.route("", methods=["POST"])
@@ -127,6 +145,12 @@ def update(sub_id):
         if ph and not _PHONE_RE.match(ph):
             return jsonify({"error": "Invalid phone number"}), 400
         filtered["phone"] = ph or None
+    # The *_json payloads are nested structures the CLIENT builds (block titles,
+    # answer labels) and they are re-emitted by the Excel export and the admin
+    # HTML report → sanitize every string inside, leave the scores as numbers.
+    for json_field in ("answers_json", "block_scores_json", "selected_answers_json"):
+        if json_field in filtered:
+            filtered[json_field] = _clean_json_field(filtered[json_field])
     if "consent" in filtered:
         filtered["consent"] = bool(filtered["consent"])
     if "status" in filtered and filtered["status"] not in _VALID_STATUSES:

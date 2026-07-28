@@ -560,7 +560,30 @@ def build_single_user_report_html(submission_id) -> tuple[str, str]:
     return page, name
 
 
+def _defuse_formulas(wb):
+    """Force every string cell to be TEXT, never a live formula (CWE-1236).
+
+    openpyxl types a string starting with "=" as a formula cell, so free text a
+    submitter controls becomes executable content in the workbook the admin
+    downloads. `sector` / `company_size` / `company_age` / `company_revenue` are
+    written by the PUBLIC PATCH /submissions/{id} and only pass through
+    clean_text, which strips HTML but has no reason to know about spreadsheet
+    syntax — there is no allow-list behind the UI dropdown. Block titles and
+    answer labels arrive the same way inside block_scores_json.
+
+    Overriding data_type (rather than prefixing an apostrophe) keeps the text
+    readable verbatim in the sheet, and numbers/dates keep their own types.
+    """
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.data_type == "f":
+                    cell.data_type = "s"
+
+
 def workbook_to_bytes(wb) -> bytes:
+    # Single choke point: every .xlsx this app emits is serialized here.
+    _defuse_formulas(wb)
     out = BytesIO()
     wb.save(out)
     out.seek(0)
