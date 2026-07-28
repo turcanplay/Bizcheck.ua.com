@@ -9,8 +9,6 @@ declare global {
   interface Window {
     // fbq e injectat de snippet-ul inline Meta Pixel din index.html.
     fbq?: (...args: unknown[]) => void;
-    // ym (Yandex Metrica) e injectat dinamic după consimțământul „Statistici".
-    ym?: ((...args: unknown[]) => void) & { a?: unknown[]; l?: number };
   }
 }
 
@@ -78,32 +76,25 @@ export function applyMarketingConsent(granted: boolean) {
   window.fbq?.('consent', granted ? 'grant' : 'revoke');
 }
 
-export const YANDEX_METRIKA_ID = 109349254;
-let yandexInjected = false;
+let analyticsGranted = false;
 
 /**
- * Încarcă Yandex Metrica (+ Webvisor) DOAR după consimțământul „Statistici" (analytics).
- * Idempotent — injectează scriptul o singură dată. La revoke nu se descarcă în sesiunea
- * curentă, dar la următorul load fără consimțământ pur și simplu nu se mai injectează.
+ * Aplică consimțământul „Statistici" (analytics).
+ *
+ * Yandex Metrica a fost eliminată la lansarea pe piața din Ucraina: `mc.yandex.ru`
+ * este blocat acolo, deci scriptul nu s-ar încărca oricum. Categoria „analytics"
+ * rămâne în banner pentru că politica de confidențialitate o descrie și pentru că
+ * următorul furnizor (Google Analytics 4) se conectează exact aici — momentan nu
+ * se mai injectează niciun tag, doar se reține alegerea.
  */
 export function applyAnalyticsConsent(granted: boolean) {
-  if (!granted || yandexInjected || typeof window === 'undefined') return;
-  yandexInjected = true;
-  // Stub-ul de coadă din loaderul oficial Yandex (apelurile ym() se rețin până se încarcă tag.js).
-  window.ym = window.ym || function (...args: unknown[]) {
-    (window.ym!.a = window.ym!.a || []).push(args);
-  };
-  window.ym!.l = Date.now();
-  const s = document.createElement('script');
-  s.async = true;
-  s.src = 'https://mc.yandex.ru/metrika/tag.js';
-  document.head.appendChild(s);
-  window.ym(YANDEX_METRIKA_ID, 'init', {
-    clickmap: true,
-    trackLinks: true,
-    accurateTrackBounce: true,
-    webvisor: true,
-  });
+  analyticsGranted = granted;
+}
+
+/** Ultima alegere „Statistici" aplicată în sesiunea curentă. Punctul de verificare
+ *  pentru orice furnizor de analytics adăugat ulterior (ex. GA4). */
+export function isAnalyticsGranted(): boolean {
+  return analyticsGranted;
 }
 
 export function saveConsent(consent: Omit<CookieConsent, 'necessary' | 'version' | 'ts'>) {
@@ -116,7 +107,7 @@ export function saveConsent(consent: Omit<CookieConsent, 'necessary' | 'version'
   };
   setCookie(CONSENT_COOKIE, JSON.stringify(full), ONE_YEAR_DAYS);
   applyMarketingConsent(full.marketing);   // marketing → Meta Pixel
-  applyAnalyticsConsent(full.analytics);   // statistici → Yandex Metrica
+  applyAnalyticsConsent(full.analytics);   // statistici → (niciun furnizor conectat)
   return full;
 }
 

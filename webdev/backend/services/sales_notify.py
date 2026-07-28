@@ -247,7 +247,9 @@ def _topic_thread_id(sub: dict):
         try:
             return int(fixed)
         except ValueError:
-            pass
+            # Misconfigured env var — fall through to the per-test topic, but say
+            # so, otherwise SALES_TOPIC_ID looks like it is being ignored.
+            log.warning("[sales] SALES_TOPIC_ID=%r is not an integer — ignoring it", fixed)
 
     if _topics_disabled:
         return None
@@ -306,7 +308,9 @@ def _resolve_test_name(sub: dict) -> str:
             if t:
                 return t.get("name_uk") or t.get("name_en") or ""
     except Exception:
-        pass
+        # Cosmetic — the notification still goes out with "—" as the test name.
+        log.warning("[sales] could not resolve test name for test %s",
+                    sub.get("test_id"), exc_info=True)
     return ""
 
 
@@ -388,6 +392,7 @@ def _process_send(submission_id: int) -> None:
     try:
         sub = Submission.find_by_id(submission_id)
     except Exception:
+        log.exception("[sales] could not load submission %s for send", submission_id)
         sub = None
     if not sub:
         Submission.release_sales_notification(submission_id)
@@ -400,7 +405,12 @@ def _process_send(submission_id: int) -> None:
             # Text message → is_doc is always False now (no PDF attachment).
             Submission.set_sales_message(submission_id, msg_id, False)
         except Exception:
-            pass
+            # Swallowed on purpose (the lead HAS been delivered), but this means
+            # later contact updates can no longer edit that message in place.
+            log.exception(
+                "[sales] submission %s delivered (msg %s) but storing the message id "
+                "failed — in-place updates disabled for this lead",
+                submission_id, msg_id)
     elif ok:
         # Delivered, but the response carried no message_id (Telegram always
         # returns one on success, so this should never happen). The lead HAS
@@ -418,7 +428,11 @@ def _process_send(submission_id: int) -> None:
         try:
             Submission.release_sales_notification(submission_id)
         except Exception:
-            pass
+            # Worst case: the claim stays TRUE and this lead is never retried.
+            # Loud log so it can be released by hand.
+            log.exception(
+                "[sales] send FAILED for submission %s and releasing the claim ALSO "
+                "failed — this lead will not be retried automatically", submission_id)
 
 
 def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
@@ -427,6 +441,8 @@ def _process_update(submission_id: int, msg_id: int, is_doc: bool) -> None:
     try:
         sub = Submission.find_by_id(submission_id)
     except Exception:
+        log.exception("[sales] could not load submission %s for in-place update",
+                      submission_id)
         sub = None
     if not sub:
         return
@@ -540,7 +556,10 @@ def _enqueue(job: tuple, *, release_on_drop: int | None = None) -> None:
                 from models.submission import Submission
                 Submission.release_sales_notification(release_on_drop)
             except Exception:
-                pass
+                log.exception(
+                    "[sales] queue full for submission %s AND releasing the claim "
+                    "failed — this lead will not be retried automatically",
+                    release_on_drop)
 
 
 def maybe_notify_sales(submission_id: int) -> None:
@@ -562,6 +581,8 @@ def maybe_notify_sales(submission_id: int) -> None:
     try:
         sub = Submission.find_by_id(submission_id)
     except Exception:
+        log.exception("[sales] could not load submission %s — notification skipped",
+                      submission_id)
         sub = None
     if not sub:
         return
@@ -583,6 +604,8 @@ def maybe_notify_sales(submission_id: int) -> None:
     try:
         existing = Submission.get_sales_message(submission_id)
     except Exception:
+        log.exception("[sales] could not read the stored message id for submission %s "
+                      "— skipping the in-place update", submission_id)
         existing = None
     if not existing:
         return

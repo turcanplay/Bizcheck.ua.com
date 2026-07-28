@@ -1,9 +1,11 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
+import Picture from '@/components/ui/Picture';
 import './Hero.css';
 
 const RECENT_KEY = 'bizcheck_recent_searches';
@@ -40,6 +42,7 @@ function tokenize(s: string): string[] {
 
 export default function Hero() {
   const { t, lang, setLang } = useLang();
+  const L = useLocalizedPath();
   const navigate = useNavigate();
   const heroCtaTarget = useCtaTarget('cta_hero_test');
 
@@ -134,7 +137,7 @@ export default function Hero() {
     if (q) saveRecent(q);
     setRecents(loadRecents());
     setSearchOpen(false);
-    navigate(`/?q=${encodeURIComponent(q)}`);
+    navigate(`${L('/')}?q=${encodeURIComponent(q)}`);
     requestAnimationFrame(() => {
       document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -144,18 +147,19 @@ export default function Hero() {
     saveRecent(query);
     setSearchOpen(false);
     if (h.kind === 'test') {
-      navigate(h.is_paid ? `/plata/test/${h.slug}` : `/test/${h.slug}`);
+      navigate(L(h.is_paid ? `/checkout/test/${h.slug}` : `/test/${h.slug}`));
     } else {
-      navigate(h.is_paid ? `/plata/sablon/${h.slug}` : `/sablon/${h.slug}`);
+      navigate(L(h.is_paid ? `/checkout/template/${h.slug}` : `/templates/${h.slug}`));
     }
   }
 
   function jumpToSection(id: string, params?: string) {
     setMenuOpen(false);
+    const home = L('/');
     if (params) {
-      navigate(`/?${params}`);
-    } else if (window.location.pathname !== '/') {
-      navigate('/');
+      navigate(`${home}?${params}`);
+    } else if (window.location.pathname !== home) {
+      navigate(home);
     }
     requestAnimationFrame(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -167,7 +171,7 @@ export default function Hero() {
   function handleHeroCta(e: React.MouseEvent) {
     e.preventDefault();
     if (heroCtaTarget.kind === 'route') {
-      navigate(heroCtaTarget.to);
+      navigate(L(heroCtaTarget.to));
     } else {
       jumpToSection('resurse', 'tab=tests');
     }
@@ -176,11 +180,20 @@ export default function Hero() {
   return (
     <header className="hero" data-section="hero">
       <div className="hero__bg" aria-hidden>
-        <img src="/images/hero/Vector1.png" alt="" className="hero__bg-img hero__bg-img--right" />
+        {/* Purely decorative blob. It sits in the initial viewport but must NOT
+            compete with the laptop (the LCP element) for bandwidth, hence lazy
+            + async decode. WebP takes it from 404 KB to 33 KB. */}
+        <Picture
+          src="/images/hero/Vector1.png"
+          alt=""
+          width={950}
+          height={630}
+          className="hero__bg-img hero__bg-img--right"
+        />
       </div>
 
       <nav className="hero__nav">
-        <Link to="/" className="hero__logo" aria-label="Bizcheck.md">
+        <Link to={L("/")} className="hero__logo" aria-label="Bizcheck.md">
           <span className="hero__logo-text">Bizcheck<span className="hero__logo-dot">.md</span></span>
         </Link>
 
@@ -317,7 +330,7 @@ export default function Hero() {
           </h1>
           <p className="hero__desc">{t('heroDescLanding')}</p>
 
-          <Link to="/" className="hero__cta" onClick={handleHeroCta}>
+          <Link to={L("/")} className="hero__cta" onClick={handleHeroCta}>
             {t('heroCta')}
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
@@ -385,10 +398,17 @@ export default function Hero() {
             </div>
           </div>
 
-          <img
+          {/* LCP element. `priority` → loading="eager" + fetchpriority="high"
+              so it is requested ahead of the JS chunks. Never make this lazy.
+              Intrinsic size is that of the WebP (1656x1080, downscaled from the
+              1811px PNG — CSS caps it at 828px, so 2x covers Retina). */}
+          <Picture
             className="hero__laptop"
             src="/images/hero/laptop.png"
             alt="Bizcheck.md marketplace preview"
+            width={1656}
+            height={1080}
+            priority
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         </div>

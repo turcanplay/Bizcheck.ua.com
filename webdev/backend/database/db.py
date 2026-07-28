@@ -438,8 +438,20 @@ def migrate():
                 CREATE INDEX IF NOT EXISTS idx_submissions_test       ON submissions(test_id);
                 CREATE INDEX IF NOT EXISTS idx_submissions_tg_token   ON submissions(tg_token);
                 CREATE INDEX IF NOT EXISTS idx_submissions_tg_chat_id ON submissions(tg_chat_id);
+                -- Hit on EVERY token-gated write (PATCH, POST /pdf, POST /send-email,
+                -- GET /report.pdf?t=) via Submission.find_id_by_token. UNIQUE also
+                -- guarantees no two submissions can share a token.
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_submissions_submission_token
                     ON submissions(submission_token) WHERE submission_token IS NOT NULL;
+                -- Admin listing sorts newest-first over the whole table
+                -- (Submission.find_all → ORDER BY created_at DESC). Without this
+                -- every page costs a full seq scan + sort.
+                CREATE INDEX IF NOT EXISTS idx_submissions_created_at
+                    ON submissions(created_at DESC);
+                -- Same listing filtered by test (?test_id=) and every export:
+                -- a composite index serves filter + ordering in one pass.
+                CREATE INDEX IF NOT EXISTS idx_submissions_test_created
+                    ON submissions(test_id, created_at DESC);
 
                 CREATE TABLE IF NOT EXISTS templates (
                     id             SERIAL        PRIMARY KEY,

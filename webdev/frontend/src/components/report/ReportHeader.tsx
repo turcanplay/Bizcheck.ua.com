@@ -24,7 +24,7 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
 
       <div className="report-header__top">
         <div className="report-header__inner">
-          <div className="report-header__brand">BIZCHECK.MD</div>
+          <div className="report-header__brand">BIZCHECK.UA.COM</div>
           <h1 className="report-header__title">{t('reportTitle')}</h1>
           <p className="report-header__subtitle">{t('reportSubtitle')}</p>
           <div className="report-header__meta">
@@ -98,11 +98,11 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
         </div>
       </div>
 
-      {/* Bottom signature — thin gradient line + "Crowe · Bizcheck.md 2026" on the right */}
+      {/* Bottom signature — thin gradient line + "Crowe · Bizcheck.ua.com 2026" on the right */}
       <div className="report-header__foot">
         <div className="report-header__foot-line" />
         <div className="report-header__foot-text">
-          Crowe · Bizcheck.md {new Date().getFullYear()}
+          Crowe · Bizcheck.ua.com {new Date().getFullYear()}
         </div>
       </div>
 

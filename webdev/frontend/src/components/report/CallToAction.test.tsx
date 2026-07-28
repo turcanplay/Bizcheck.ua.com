@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { MemoryRouter } from 'react-router-dom';
 import CallToAction from './CallToAction';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { translations } from '@/i18n/translations';
@@ -22,17 +23,25 @@ import { translations } from '@/i18n/translations';
 const RESPONSE_URL = 'https://t.me/TEST_FIXTURE_bot?start=tok123';
 const HARDCODED = 'CROWE_BIZCHECK_bot';
 
+/**
+ * The language now comes from the URL (`/uk/…` vs `/en/…`), so LanguageProvider
+ * needs router context — mount it under a MemoryRouter seeded with the matching
+ * language prefix. localStorage is still set because it remains the fallback
+ * preference for prefix-less routes.
+ */
 function renderCta(lang: 'uk' | 'en' = 'uk', props: Partial<React.ComponentProps<typeof CallToAction>> = {}) {
   localStorage.setItem('bizcheck_lang', lang);
   return render(
-    <LanguageProvider>
-      <CallToAction
-        onRestart={vi.fn()}
-        submissionId={42}
-        submissionToken="tok-abc"
-        {...props}
-      />
-    </LanguageProvider>,
+    <MemoryRouter initialEntries={[`/${lang}/test/demo`]}>
+      <LanguageProvider>
+        <CallToAction
+          onRestart={vi.fn()}
+          submissionId={42}
+          submissionToken="tok-abc"
+          {...props}
+        />
+      </LanguageProvider>
+    </MemoryRouter>,
   );
 }
 

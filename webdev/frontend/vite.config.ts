@@ -34,29 +34,37 @@ export default defineConfig({
     minify: 'oxc',
     // Chunk size warning at 500KB
     chunkSizeWarningLimit: 500,
-    // Manual chunk grouping: heavy libs cached long-term, rarely rebuilt.
-    // Function form required by Vite 8 / Rollup 4 typings.
+    // Chunk grouping: heavy libs cached long-term, rarely rebuilt.
+    //
+    // IMPORTANT — use rolldown's `advancedChunks`, NOT the legacy `manualChunks`
+    // function. With `manualChunks`, rolldown folds the virtual module
+    // `\0vite/preload-helper.js` (which exports `__vitePreload`, needed by every
+    // chunk that uses dynamic import()) into the FIRST manual group that also
+    // references it — which was `pdf-vendor`. The entry chunk then had to
+    // statically `import { __vitePreload } from "./pdf-vendor-*.js"`, so Vite
+    // emitted a <link rel="modulepreload"> for the whole 1.15 MB PDF bundle in
+    // index.html and every landing visitor downloaded it before first paint.
+    // `advancedChunks` groups only the modules matched by `test`, leaving the
+    // preload helper in the entry where it belongs. Do not "simplify" this back
+    // to manualChunks — re-check dist/index.html for a pdf-vendor
+    // modulepreload if you ever touch it.
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return undefined;
-          // Core React stays separate — changes least often.
-          if (
-            id.includes('/react-router') ||
-            id.includes('/react-dom/') ||
-            /[\\/]react[\\/]/.test(id)
-          ) {
-            return 'react-vendor';
-          }
-          // PDF toolchain is ~1MB; only pulled in when user reaches report/cta.
-          if (
-            id.includes('html2canvas-pro') ||
-            id.includes('/jspdf') ||
-            id.includes('/pdf-lib')
-          ) {
-            return 'pdf-vendor';
-          }
-          return undefined;
+        advancedChunks: {
+          groups: [
+            // Core React stays separate — changes least often, caches best.
+            {
+              name: 'react-vendor',
+              test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+            },
+            // PDF toolchain is ~1.1 MB. Reached only via `await import()` inside
+            // utils/pdfGenerator, so this is an async-only chunk: it must never
+            // appear in the entry's static import graph.
+            {
+              name: 'pdf-vendor',
+              test: /[\\/]node_modules[\\/](jspdf|html2canvas-pro|pdf-lib)[\\/]/,
+            },
+          ],
         },
       },
     },

@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLang } from '@/context/LanguageContext';
+import { faqSchema } from '@/components/seo/schema';
 import { publicApi, type PublicFaqItem } from '@/api/public';
 import './FAQ.css';
 
@@ -15,12 +17,37 @@ export default function FAQ() {
     }).catch(() => {});
   }, []);
 
+  /** Resolve each row to the active language once, with a fallback to the other
+   *  language so a half-translated row still renders (and still gets indexed). */
+  const localized = useMemo(
+    () => items.map(f => ({
+      id: f.id,
+      question: (lang === 'uk' ? f.question_uk : f.question_en) || f.question_uk || f.question_en,
+      answer:   (lang === 'uk' ? f.answer_uk   : f.answer_en)   || f.answer_uk   || f.answer_en,
+    })),
+    [items, lang],
+  );
+
+  /** FAQPage rich result. Google rejects a Question without an answer, so rows
+   *  missing either half are dropped rather than emitted empty. */
+  const jsonLd = useMemo(() => {
+    const usable = localized
+      .filter(f => f.question?.trim() && f.answer?.trim())
+      .map(f => ({ question: f.question.trim(), answer: f.answer.trim() }));
+    return usable.length > 0 ? faqSchema(usable, lang) : null;
+  }, [localized, lang]);
+
   function toggle(id: number) {
     setOpenId(curr => (curr === id ? null : id));
   }
 
   return (
     <section className="faq" data-section="faq" id="faq">
+      {jsonLd && (
+        <Helmet>
+          <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        </Helmet>
+      )}
       <div className="faq__header">
         <span className="faq__eyebrow">
           <span className="faq__eyebrow-dot" aria-hidden />
@@ -43,9 +70,8 @@ export default function FAQ() {
       <div className="faq__list">
         {items.length === 0 && <div className="faq__empty">{t('faqEmpty')}</div>}
 
-        {items.map((f, i) => {
-          const question = (lang === 'uk' ? f.question_uk : f.question_en) || f.question_uk || f.question_en;
-          const answer   = (lang === 'uk' ? f.answer_uk : f.answer_en)     || f.answer_uk     || f.answer_en;
+        {localized.map((f, i) => {
+          const { question, answer } = f;
           const isOpen = openId === f.id;
           const num = String(i + 1).padStart(2, '0');
           return (

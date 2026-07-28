@@ -1,0 +1,22 @@
+# Context de build pentru serviciul `tgbot`.
+# Dockerfile-ul face `COPY *.py .` — deci .env-ul NU ajunge în imagine, dar
+# contextul îl trimite oricum spre daemon. Îl excludem din principiu.
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+**/__pycache__
+**/*.py[cod]
+.pytest_cache/
+tests/
+pytest.ini
+requirements-dev.txt
+*.dump
+*.sql
+*.sql.gz
+.git
+.gitignore
+.DS_Store
+*.swp
+*.md

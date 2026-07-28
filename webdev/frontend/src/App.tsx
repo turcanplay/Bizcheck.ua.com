@@ -1,11 +1,14 @@
 import { lazy, Suspense, Component, type ReactNode } from 'react';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { QuizProvider } from '@/context/QuizContext';
 import { CookieConsentProvider } from '@/context/CookieConsentContext';
 import CookieBanner from '@/components/ui/CookieBanner';
+import LangRedirect, { LegacyRedirect } from '@/components/LangRedirect';
 import LandingPage from '@/pages/landing/LandingPage';
+import NotFoundPage from '@/pages/NotFoundPage';
+import { isLang } from '@/i18n/routing';
 import './App.css';
 
 // Quiz is essential for the primary flow — keep eagerly loaded.
@@ -34,6 +37,23 @@ const AdminFeedback = lazy(() => import('@/pages/admin/AdminFeedback'));
 const QuizShell = ({ children }: { children: React.ReactNode }) => (
   <QuizProvider>{children}</QuizProvider>
 );
+
+/**
+ * Guard for the `/:lang/*` subtree.
+ *
+ * A single `:lang` param (instead of one hard-coded `<Route path="uk">` per
+ * language) is what lets the language toggle keep component state: `/uk/test/x`
+ * and `/en/test/x` match the SAME route objects, so React Router re-renders
+ * rather than remounts, and an in-progress quiz survives the switch.
+ *
+ * The price is that `:lang` also matches junk first segments (`/foo`), so we
+ * validate here and render a real 404 instead of a soft one.
+ */
+function LangGate() {
+  const { lang } = useParams<{ lang: string }>();
+  if (!isLang(lang)) return <NotFoundPage />;
+  return <Outlet />;
+}
 
 const RouteFallback = () => (
   <div style={{
@@ -114,9 +134,11 @@ function PublicChrome() {
 export default function App() {
   return (
     <HelmetProvider>
+    {/* The router wraps LanguageProvider, not the other way round: the language
+        is read off the URL, so the provider needs router context. */}
+    <BrowserRouter>
     <LanguageProvider>
     <CookieConsentProvider>
-    <BrowserRouter>
       <ChunkReloadBoundary>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
@@ -136,28 +158,53 @@ export default function App() {
             <Route path="page-settings" element={<AdminPageSettings />} />
           </Route>
 
-          {/* Public landing + catalog */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/sablon/:slug" element={<TemplateDetailPage />} />
+          {/* `/` carries no language → bounce to the visitor's language.
+              nginx should also 301 this server-side (see deployment notes). */}
+          <Route path="/" element={<LangRedirect />} />
 
-          {/* Privacy / consent (placeholder — Crowe Legal fills content later) */}
-          <Route path="/confidentialitate" element={<PrivacyPage />} />
+          {/* Pre-i18n URLs. Kept forever as redirects: they are in the wild
+              (shared links, the old sitemap, Telegram messages) and dropping
+              them would turn live inbound traffic into 404s. All land on `uk`,
+              which is what those URLs always served. */}
+          <Route path="/test/:slug"       element={<LegacyRedirect build={p => `/uk/test/${p.slug}`} />} />
+          <Route path="/sablon/:slug"     element={<LegacyRedirect build={p => `/uk/templates/${p.slug}`} />} />
+          <Route path="/confidentialitate" element={<LegacyRedirect build={() => '/uk/privacy'} />} />
+          {/* /termeni never had a page of its own — the footer link pointed at
+              a route that fell through to the landing. Privacy carries the
+              terms text, so send it there instead of 404-ing. */}
+          <Route path="/termeni"          element={<LegacyRedirect build={() => '/uk/privacy'} />} />
+          <Route path="/plata/:kind/:slug" element={
+            <LegacyRedirect build={p => `/uk/checkout/${p.kind === 'sablon' ? 'template' : 'test'}/${p.slug}`} />
+          } />
 
-          {/* Checkout (placeholder — MAIB later) */}
-          <Route path="/plata/:kind/:slug" element={<CheckoutPage />} />
+          {/* Localized public tree — /uk/** and /en/** */}
+          <Route path=":lang" element={<LangGate />}>
+            <Route index element={<LandingPage />} />
+            <Route path="templates/:slug" element={<TemplateDetailPage />} />
 
-          {/* Quiz SPA (needs providers) */}
-          <Route path="/test/:slug" element={<QuizShell><QuizApp /></QuizShell>} />
+            {/* Privacy / consent (placeholder — Crowe Legal fills content later) */}
+            <Route path="privacy" element={<PrivacyPage />} />
 
-          {/* Fallback → landing */}
-          <Route path="*" element={<LandingPage />} />
+            {/* Checkout (placeholder — MAIB later) */}
+            <Route path="checkout/:kind/:slug" element={<CheckoutPage />} />
+
+            {/* Quiz SPA (needs providers) */}
+            <Route path="test/:slug" element={<QuizShell><QuizApp /></QuizShell>} />
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          {/* Anything with no first segment we recognise (`/`-rooted files are
+              served by nginx and never reach here). Real 404, not the landing —
+              the old catch-all was a soft-404 farm for Google. */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
       </ChunkReloadBoundary>
       <PublicChrome />
-    </BrowserRouter>
     </CookieConsentProvider>
     </LanguageProvider>
+    </BrowserRouter>
     </HelmetProvider>
   );
 }

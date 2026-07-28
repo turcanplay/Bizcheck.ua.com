@@ -1,7 +1,9 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { alternateLinks, localizedUrl, stripLangPrefix } from '@/i18n/routing';
 import {
-  SITE_URL,
+  BRAND,
   DEFAULT_IMAGE,
   DEFAULT_TITLE_UK,
   DEFAULT_TITLE_EN,
@@ -12,7 +14,12 @@ import {
 interface SeoProps {
   title?: string;
   description?: string;
-  /** Path part of the canonical URL (e.g. "/sablon/contract"). Leading slash required. */
+  /**
+   * Language-NEUTRAL path of this page (e.g. "/templates/contract", "/privacy",
+   * "/" for the landing) — the language prefix is added here. Omit it and the
+   * current URL is used, which is what most pages want. A path that already
+   * carries a `/uk` or `/en` prefix is accepted; the prefix is normalized away.
+   */
   path?: string;
   /** Page-specific Open Graph image (full URL). Falls back to site default. */
   image?: string;
@@ -27,10 +34,16 @@ interface SeoProps {
 /**
  * Per-page SEO meta. Drop into the top of any page component:
  *
- *   <Seo title="..." description="..." path="/sablon/x" />
+ *   <Seo title="..." description="..." path="/templates/x" />
  *
  * Updates <title>, meta description, canonical, hreflang, OG, Twitter,
  * and (optionally) appends JSON-LD structured data.
+ *
+ * Hreflang is REAL: every supported language gets an alternate pointing at the
+ * same page under its own prefix, plus `x-default` → the Ukrainian version.
+ * Before the language lived in the URL all three alternates pointed at the very
+ * same href, which told Google the two languages were one page and made the
+ * English version impossible to index.
  *
  * This module exports the component ONLY — constants live in ./siteMeta and
  * JSON-LD builders in ./schema, so Vite fast refresh keeps working here.
@@ -38,17 +51,22 @@ interface SeoProps {
 export default function Seo({
   title,
   description,
-  path = '/',
+  path,
   image,
   jsonLd,
   noindex = false,
   ogType = 'website',
 }: SeoProps) {
   const { lang } = useLang();
+  const { pathname } = useLocation();
+
+  const basePath = stripLangPrefix(path ?? pathname);
+  const canonical = localizedUrl(basePath, lang);
+  const alternates = alternateLinks(basePath);
+
   const finalTitle = title || (lang === 'en' ? DEFAULT_TITLE_EN : DEFAULT_TITLE_UK);
   const finalDesc = description || (lang === 'en' ? DEFAULT_DESC_EN : DEFAULT_DESC_UK);
   const finalImage = image || DEFAULT_IMAGE;
-  const url = `${SITE_URL}${path}`;
 
   return (
     <Helmet prioritizeSeoTags>
@@ -56,17 +74,17 @@ export default function Seo({
       <title>{finalTitle}</title>
       <meta name="description" content={finalDesc} />
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonical} />
 
-      {/* Hreflang — same SPA path for both languages */}
-      <link rel="alternate" hrefLang="uk" href={url} />
-      <link rel="alternate" hrefLang="en" href={url} />
-      <link rel="alternate" hrefLang="x-default" href={url} />
+      {/* Hreflang — one entry per language + x-default → uk */}
+      {alternates.map(alt => (
+        <link key={alt.hrefLang} rel="alternate" hrefLang={alt.hrefLang} href={alt.href} />
+      ))}
 
       {/* Open Graph */}
       <meta property="og:type" content={ogType} />
-      <meta property="og:site_name" content="Bizcheck.md" />
-      <meta property="og:url" content={url} />
+      <meta property="og:site_name" content={BRAND} />
+      <meta property="og:url" content={canonical} />
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDesc} />
       <meta property="og:image" content={finalImage} />

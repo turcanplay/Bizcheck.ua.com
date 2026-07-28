@@ -5,6 +5,7 @@ import Seo from '@/components/seo/Seo';
 import { productSchema, breadcrumbSchema } from '@/components/seo/schema';
 import { SITE_URL } from '@/components/seo/siteMeta';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 
 /**
  * Template detail + delivery picker.
@@ -18,6 +19,7 @@ import { useLang } from '@/context/LanguageContext';
 export default function TemplateDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { lang } = useLang();
+  const L = useLocalizedPath();
   const [item, setItem] = useState<PublicTemplate | null>(null);
   const [err, setErr] = useState('');
 
@@ -35,21 +37,22 @@ export default function TemplateDetailPage() {
     // never writes `lang`, so this cannot loop.
   }, [slug, lang]);
 
-  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to="/">{lang === 'en' ? 'Back' : 'Назад'}</Link></div>;
+  if (err) return <div style={{ padding: 40, color: 'crimson' }}>⚠️ {err} · <Link to={L('/')}>{lang === 'en' ? 'Back' : 'Назад'}</Link></div>;
   if (!item) return <div style={{ padding: 40 }}>{lang === 'en' ? 'Loading...' : 'Завантаження...'}</div>;
 
-  const path = `/sablon/${slug}`;
+  // Language-neutral base path — <Seo> and localizePath() add the prefix.
+  const path = `/templates/${slug}`;
   const title = lang === 'en' ? (item.title_en || item.title_uk) : item.title_uk;
   const description = lang === 'en' ? (item.description_en || item.description_uk) : item.description_uk;
   const seoDesc = (description || '').slice(0, 160) ||
     (lang === 'en'
-      ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.md platform.`
-      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.md.`);
+      ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.ua.com platform.`
+      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.ua.com.`);
 
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }} data-page="template-detail">
       <Seo
-        title={`${title} · Bizcheck.md · Crowe`}
+        title={`${title} · Bizcheck.ua.com · Crowe`}
         description={seoDesc}
         path={path}
         ogType="product"
@@ -57,18 +60,20 @@ export default function TemplateDetailPage() {
           productSchema({
             name: title,
             description: seoDesc,
-            url: `${SITE_URL}${path}`,
+            url: `${SITE_URL}${L(path)}`,
             price: item.price ?? null,
-            currency: item.currency ?? 'MDL',
+            // Fall through to the site-wide default currency (UAH) when the row
+            // has none — do not hardcode a legacy MDL default here.
+            currency: item.currency ?? undefined,
           }),
           breadcrumbSchema([
-            { name: lang === 'en' ? 'Home' : 'Головна', path: '/' },
-            { name: lang === 'en' ? 'Templates' : 'Шаблони', path: '/' },
-            { name: title, path },
+            { name: lang === 'en' ? 'Home' : 'Головна', path: L('/') },
+            { name: lang === 'en' ? 'Templates' : 'Шаблони', path: L('/') },
+            { name: title, path: L(path) },
           ]),
         ]}
       />
-      <Link to="/" style={{ color: '#0A3A6E', textDecoration: 'none' }}>← {lang === 'en' ? 'Back' : 'Назад'}</Link>
+      <Link to={L('/')} style={{ color: '#0A3A6E', textDecoration: 'none' }}>← {lang === 'en' ? 'Back' : 'Назад'}</Link>
       <h1 style={{ marginTop: 12 }}>📄 {title}</h1>
       <p style={{ color: '#555' }}>{description}</p>
 

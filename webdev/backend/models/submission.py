@@ -185,17 +185,34 @@ class Submission:
         return bytes(data) if isinstance(data, memoryview) else data
 
     @staticmethod
-    def find_all(test_id=None):
+    def find_all(test_id=None, limit=None, offset=0):
+        """Submissions newest-first, optionally filtered by test and paginated.
+
+        `limit=None` keeps the historical "return everything" behaviour (still
+        used by the exports, which genuinely need the full set). Pass an integer
+        `limit` to bound both the DB transfer AND the Fernet work: decrypt_rows
+        runs 4 decryptions per row, so an unbounded list is the single most
+        expensive thing the admin panel can ask for.
+
+        Ordering is served by idx_submissions_created_at /
+        idx_submissions_test_created (see database/db.py migrate()).
+        """
+        where, params = "", []
         if test_id is not None:
-            rows = query(
-                f"SELECT {_SELECT_COLS} FROM submissions WHERE test_id = %s ORDER BY created_at DESC",
-                (test_id,), fetch_all=True,
-            )
-        else:
-            rows = query(
-                f"SELECT {_SELECT_COLS} FROM submissions ORDER BY created_at DESC",
-                fetch_all=True,
-            )
+            where = " WHERE test_id = %s"
+            params.append(test_id)
+
+        tail = ""
+        if limit is not None:
+            tail = " LIMIT %s OFFSET %s"
+            params.extend([int(limit), max(0, int(offset or 0))])
+
+        rows = query(
+            f"SELECT {_SELECT_COLS} FROM submissions{where}"
+            f" ORDER BY created_at DESC, id DESC{tail}",
+            tuple(params) if params else None,
+            fetch_all=True,
+        )
         return decrypt_rows(rows)
 
     @staticmethod
@@ -209,6 +226,13 @@ class Submission:
         execute("DELETE FROM submissions")
 
     @staticmethod
-    def count():
-        row = query("SELECT COUNT(*) as count FROM submissions", fetch_one=True)
+    def count(test_id=None):
+        """Total rows, optionally scoped to one test. Used for pagination meta."""
+        if test_id is not None:
+            row = query(
+                "SELECT COUNT(*) as count FROM submissions WHERE test_id = %s",
+                (test_id,), fetch_one=True,
+            )
+        else:
+            row = query("SELECT COUNT(*) as count FROM submissions", fetch_one=True)
         return row["count"] if row else 0

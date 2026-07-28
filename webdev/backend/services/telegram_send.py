@@ -77,6 +77,9 @@ def send_message(chat_id, text: str, _attempt: int = 0) -> tuple[bool, str]:
             detail = err_body.get("description", "")
             retry_after = int((err_body.get("parameters") or {}).get("retry_after") or 0)
         except Exception:
+            # NOT a swallowed failure: this is a best-effort parse of Telegram's
+            # error body. `detail` stays empty and the HTTP error itself is
+            # logged in full a few lines below, so nothing is lost here.
             pass
         # 429 = Too Many Requests. Wait the time Telegram asks for and retry.
         if e.code == 429 and _attempt < _MAX_RETRY:

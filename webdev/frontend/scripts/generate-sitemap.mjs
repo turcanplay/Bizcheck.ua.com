@@ -1,115 +1,104 @@
 #!/usr/bin/env node
 /**
- * Build-time sitemap generator for Bizcheck.md.
+ * Build-time sitemap generator for Bizcheck.ua.com.
  *
- * Tries to fetch the live list of public tests + templates from the backend
- * and writes a populated sitemap.xml to public/. If the backend is unreachable
- * (offline build), falls back to the static skeleton already in public/sitemap.xml.
+ * Emits EVERY page twice — once per language — with reciprocal `xhtml:link`
+ * alternates plus `x-default` → the Ukrainian URL. Before the language lived
+ * in the URL this file could only emit one `<loc>` per page with three
+ * identical alternates, which is exactly what kept the English version out of
+ * Google's index.
+ *
+ * Dynamic routes (tests, templates) are pulled from the live backend when
+ * SITEMAP_API_URL is set. Without it the script still succeeds — it just says
+ * so loudly — because the prod build runs in a container that may not be able
+ * to reach the API.
  *
  * Trigger: prepended to `npm run build` via the build script in package.json.
  *   $ node scripts/generate-sitemap.mjs
  *
  * Configurable via env:
  *   SITEMAP_BASE_URL   default https://bizcheck.ua.com
- *   SITEMAP_API_URL    default http://localhost:4001/api_crowe_bizcheck
- *                      (use full prod URL when running on server: https://bizcheck.ua.com/api_crowe_bizcheck)
+ *   SITEMAP_API_URL    unset by default → dynamic routes are skipped.
+ *                      On the server: https://bizcheck.ua.com/api_crowe_bizcheck
+ *                      Locally:       http://localhost:4001/api_crowe_bizcheck
  */
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import {
+  SITE_URL as DEFAULT_SITE,
+  SUPPORTED_LANGS,
+  STATIC_BASE_PATHS,
+  fetchDynamicBasePaths,
+  localizePath,
+  alternateLinks,
+} from './lib/routing.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = resolve(__dirname, '..', 'public');
 
-const SITE = (process.env.SITEMAP_BASE_URL || 'https://bizcheck.ua.com').replace(/\/$/, '');
+const SITE = (process.env.SITEMAP_BASE_URL || DEFAULT_SITE).replace(/\/$/, '');
 const API  = (process.env.SITEMAP_API_URL  || '').replace(/\/$/, '');
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
-// Static, always-present URLs.
-const staticUrls = [
-  { loc: '/',                       changefreq: 'weekly',  priority: '1.0', alternates: ['uk', 'en'] },
-  { loc: '/confidentialitate',      changefreq: 'yearly',  priority: '0.4' },
-];
+/** `alternateLinks` builds against the canonical origin; re-point it when the
+ *  caller overrides SITEMAP_BASE_URL (staging builds). */
+const rebase = href => href.replace(DEFAULT_SITE, SITE);
 
-async function fetchJson(url) {
-  if (!url) return null;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function buildDynamicUrls() {
-  if (!API) return [];
-  const urls = [];
-
-  const templates = await fetchJson(`${API}/templates/`);
-  if (templates?.templates?.length) {
-    for (const t of templates.templates) {
-      if (t.slug) {
-        urls.push({
-          loc: `/sablon/${t.slug}`,
-          changefreq: 'monthly',
-          priority: '0.7',
-        });
-      }
-    }
-  }
-
-  const tests = await fetchJson(`${API}/tests`);
-  if (tests?.tests?.length) {
-    for (const t of tests.tests) {
-      if (t.is_active && t.slug) {
-        urls.push({
-          loc: `/test/${t.slug}`,
-          changefreq: 'monthly',
-          priority: '0.8',
-        });
-      }
-    }
-  }
-
-  return urls;
-}
-
-function urlBlock(u) {
-  const altLines = (u.alternates || [])
-    .map(lang => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${SITE}${u.loc}"/>`)
+function urlBlock(basePath, lang, meta) {
+  const loc = `${SITE}${localizePath(basePath, lang)}`;
+  const alts = alternateLinks(basePath)
+    .map(a => `    <xhtml:link rel="alternate" hreflang="${a.hrefLang}" href="${rebase(a.href)}"/>`)
     .join('\n');
-  const xDefault = u.alternates?.length
-    ? `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE}${u.loc}"/>`
-    : '';
   return [
     '  <url>',
-    `    <loc>${SITE}${u.loc}</loc>`,
+    `    <loc>${loc}</loc>`,
     `    <lastmod>${TODAY}</lastmod>`,
-    `    <changefreq>${u.changefreq}</changefreq>`,
-    `    <priority>${u.priority}</priority>`,
-    altLines,
-    xDefault,
-  ].filter(Boolean).join('\n').replace(/\n\s*$/g, '') + '\n  </url>';
+    `    <changefreq>${meta.changefreq}</changefreq>`,
+    `    <priority>${meta.priority}</priority>`,
+    alts,
+    '  </url>',
+  ].join('\n');
 }
 
 (async () => {
-  const dynamicUrls = await buildDynamicUrls();
-  const all = [...staticUrls, ...dynamicUrls];
+  const dynamic = await fetchDynamicBasePaths(API);
+  const basePaths = [...STATIC_BASE_PATHS, ...dynamic];
+
+  // One <url> per (page × language).
+  const blocks = basePaths.flatMap(p =>
+    SUPPORTED_LANGS.map(lang => urlBlock(p.path, lang, p)),
+  );
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<!-- Auto-generated by scripts/generate-sitemap.mjs at build time. ${all.length} URLs. -->`,
+    `<!-- Auto-generated by scripts/generate-sitemap.mjs at build time. ${blocks.length} URLs. -->`,
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
     '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     '',
-    ...all.map(urlBlock),
+    ...blocks,
     '',
     '</urlset>',
     '',
   ].join('\n');
 
   writeFileSync(resolve(PUBLIC_DIR, 'sitemap.xml'), xml, 'utf-8');
-  console.log(`[sitemap] wrote ${all.length} URLs (${dynamicUrls.length} dynamic from API, ${staticUrls.length} static)`);
+
+  console.log(
+    `[sitemap] wrote ${blocks.length} URLs — ${basePaths.length} pages × ${SUPPORTED_LANGS.length} languages `
+    + `(${STATIC_BASE_PATHS.length} static, ${dynamic.length} dynamic)`,
+  );
+  if (!API) {
+    console.warn(
+      '[sitemap] dynamic routes omitted: SITEMAP_API_URL is not set, so every test and template '
+      + 'page is missing from the sitemap. Set it before building for production, e.g. '
+      + 'SITEMAP_API_URL=https://bizcheck.ua.com/api_crowe_bizcheck npm run build',
+    );
+  } else if (dynamic.length === 0) {
+    console.warn(
+      `[sitemap] 0 dynamic routes returned by ${API} — the backend was unreachable or has no `
+      + 'active tests/templates. Test and template pages are missing from the sitemap.',
+    );
+  }
 })();

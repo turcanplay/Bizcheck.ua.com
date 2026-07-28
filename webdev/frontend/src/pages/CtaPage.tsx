@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useTelegramLink } from '@/hooks/useTelegramLink';
 import { API_BASE } from '@/config/api';
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from '@/config/contact';
 import { publicApi } from '@/api/public';
-import { generateFullPdf } from '@/utils/pdfGenerator';
 import { enqueueSave, isPending, wasDropped, flushAndConfirm } from '@/utils/durableSave';
 import ReportHeader from '@/components/report/ReportHeader';
 import BlockGrid from '@/components/report/BlockGrid';
@@ -26,6 +27,7 @@ const PHONE_RE = /^\+?[\d\s\-()]{7,20}$/;
 export default function CtaPage() {
   const { report, restartQuiz, submissionId, submissionToken, setUserInfo, updateSubmission, userInfo, sectors, sizes, ages, revenues, tests, selectedTestSlug, blocks, answers, selectedKeys } = useQuiz();
   const { t, lang } = useLang();
+  const L = useLocalizedPath();
   const reportRef = useRef<HTMLDivElement>(null);
   const [pdfDone, setPdfDone] = useState(false);
   const { tgLoading, tgError, tgPending, openTelegram, resetTelegram } = useTelegramLink(submissionId, submissionToken);
@@ -165,6 +167,10 @@ export default function CtaPage() {
         }
       }
 
+      // Loaded on demand: pulls in the ~1.1 MB pdf-vendor chunk (jspdf +
+      // html2canvas-pro + pdf-lib). Keep this a dynamic import so the chunk
+      // can never be hoisted into any statically reachable graph.
+      const { generateFullPdf } = await import('@/utils/pdfGenerator');
       const pdf = await generateFullPdf({
         rootEl: el,
         lang,
@@ -628,7 +634,7 @@ export default function CtaPage() {
               <span className="cta-frame__consent-text">
                 {t('ctaConsentPrefix')}{' '}
                 <a
-                  href="/confidentialitate"
+                  href={L('/privacy')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cta-frame__consent-link"
@@ -810,7 +816,7 @@ export default function CtaPage() {
 
             <p className={`cta-recovery__support${!recSaved ? ' cta-recovery__support--prominent' : ''}`}>
               {t('ctaRecoverySupport')}{' '}
-              <a href="mailto:office@bizcheck.md" className="cta-recovery__support-link">office@bizcheck.md</a>.
+              <a href={CONTACT_EMAIL_HREF} className="cta-recovery__support-link">{CONTACT_EMAIL}</a>.
             </p>
           </div>
         )}

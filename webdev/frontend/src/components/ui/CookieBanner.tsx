@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCookieConsent } from '@/context/CookieConsentContext';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import './CookieBanner.css';
 
 /**
@@ -33,6 +34,7 @@ type CardProps = Pick<
 
 function CookieBannerCard({ consent, acceptAll, rejectAll, saveCustom }: CardProps) {
   const { t } = useLang();
+  const L = useLocalizedPath();
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(consent.analytics);
   const [marketing, setMarketing] = useState(consent.marketing);
@@ -43,7 +45,7 @@ function CookieBannerCard({ consent, acceptAll, rejectAll, saveCustom }: CardPro
         <div className="cookie-banner__head">
           <h3 className="cookie-banner__title">{t('cookieTitle')}</h3>
           <p className="cookie-banner__desc">{t('cookieDesc')}</p>
-          <Link to="/confidentialitate" className="cookie-banner__policy-link">
+          <Link to={L('/privacy')} className="cookie-banner__policy-link">
             {t('cookiePolicyLink')} →
           </Link>
         </div>

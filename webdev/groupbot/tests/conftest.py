@@ -198,6 +198,10 @@ def reset_state(monkeypatch):
     # the module attribute rather than the env var.)
     monkeypatch.setattr(bot, "ALLOWED_CHAT_ID", "")
     monkeypatch.setattr(bot, "BOT_SHARED_SECRET", "test-secret")
+    # Backend calls retry transient failures with a backoff — keep the retry
+    # LOGIC but drop the waiting, so the suite still never sleeps.
+    monkeypatch.setattr(bot, "_RETRY_BASE_DELAY", 0.0)
+    monkeypatch.setattr(bot, "_RETRY_MAX_DELAY", 0.0)
     yield
     _clear()
 

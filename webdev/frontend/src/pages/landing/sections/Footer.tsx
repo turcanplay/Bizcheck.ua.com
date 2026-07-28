@@ -1,10 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useCookieConsent } from '@/context/CookieConsentContext';
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_PHONE, CONTACT_PHONE_TEL } from '@/config/contact';
+import { BRAND } from '@/config/siteMeta';
 import './Footer.css';
 
 export default function Footer() {
   const { t } = useLang();
+  const L = useLocalizedPath();
   const navigate = useNavigate();
   const { reopen } = useCookieConsent();
   const year = new Date().getFullYear();
@@ -14,9 +18,9 @@ export default function Footer() {
     const el = document.getElementById('resurse');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (tab) history.replaceState(null, '', `/?tab=${tab}`);
+      if (tab) history.replaceState(null, '', `${L('/')}?tab=${tab}`);
     } else {
-      navigate(tab ? `/?tab=${tab}` : '/');
+      navigate(tab ? `${L('/')}?tab=${tab}` : L('/'));
       requestAnimationFrame(() => {
         document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -27,20 +31,22 @@ export default function Footer() {
     <footer className="footer" data-section="footer">
       <div className="footer__inner">
         <div className="footer__brand">
-          <Link to="/" className="footer__logo">Bizcheck<span>.md</span></Link>
+          <Link to={L('/')} className="footer__logo">Bizcheck<span>.ua.com</span></Link>
         </div>
 
         <div className="footer__col">
           <div className="footer__col-title">{t('footerResources')}</div>
-          <Link to="/" className="footer__link" onClick={(e) => goToCatalog(e, 'tests')}>{t('footerLinkTests')}</Link>
-          <Link to="/" className="footer__link" onClick={(e) => goToCatalog(e, 'templates')}>{t('footerLinkTemplates')}</Link>
+          <Link to={L('/')} className="footer__link" onClick={(e) => goToCatalog(e, 'tests')}>{t('footerLinkTests')}</Link>
+          <Link to={L('/')} className="footer__link" onClick={(e) => goToCatalog(e, 'templates')}>{t('footerLinkTemplates')}</Link>
         </div>
 
         <div className="footer__col">
           <div className="footer__col-title">{t('footerLegal')}</div>
-          <Link to="/termeni"        className="footer__link">{t('footerTerms')}</Link>
-          <Link to="/confidentialitate" className="footer__link">{t('footerPrivacy')}</Link>
-          <Link to="/confidentialitate" className="footer__link">{t('footerCookies')}</Link>
+          {/* No standalone terms page exists yet — the terms text is a section of
+              the privacy policy, so all three point there. */}
+          <Link to={L('/privacy')} className="footer__link">{t('footerTerms')}</Link>
+          <Link to={L('/privacy')} className="footer__link">{t('footerPrivacy')}</Link>
+          <Link to={L('/privacy')} className="footer__link">{t('footerCookies')}</Link>
           <button type="button" className="footer__link footer__link--button" onClick={reopen}>
             {t('footerCookieSettings')}
           </button>
@@ -54,11 +60,11 @@ export default function Footer() {
 
         <div className="footer__col">
           <div className="footer__col-title">{t('footerContacts')}</div>
-          <a href="tel:+37379027317" className="footer__link">
-            <PhoneIcon /> +373 79 027 317
+          <a href={CONTACT_PHONE_TEL} className="footer__link">
+            <PhoneIcon /> {CONTACT_PHONE}
           </a>
-          <a href="mailto:office@bizcheck.md" className="footer__link">
-            <MailIcon /> office@bizcheck.md
+          <a href={CONTACT_EMAIL_HREF} className="footer__link">
+            <MailIcon /> {CONTACT_EMAIL}
           </a>
           <span className="footer__link footer__link--muted">{t('footerHours')}</span>
         </div>
@@ -67,7 +73,7 @@ export default function Footer() {
       <div className="footer__divider" />
 
       <div className="footer__copyright">
-        © {year} Bizcheck.md. {t('footerCopyright')}
+        © {year} {BRAND}. {t('footerCopyright')}
       </div>
     </footer>
   );

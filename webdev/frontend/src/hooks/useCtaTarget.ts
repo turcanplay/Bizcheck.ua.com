@@ -13,6 +13,8 @@ import { publicApi, type PublicTest, type SiteSettings, type CtaKey } from '@/ap
  * module-level promise cache (the landing renders 3 CTA buttons).
  */
 
+/** `to` is the language-NEUTRAL path — callers must run it through
+ *  `useLocalizedPath()` before navigating. */
 export type CtaTarget =
   | { kind: 'route'; to: string }
   | { kind: 'scroll' };
@@ -50,7 +52,7 @@ export function useCtaTarget(key: CtaKey): CtaTarget {
       // Paid tests route through the checkout placeholder, mirroring TestsShowcase.
       setTarget({
         kind: 'route',
-        to: test.is_paid ? `/plata/test/${test.slug}` : `/test/${test.slug}`,
+        to: test.is_paid ? `/checkout/test/${test.slug}` : `/test/${test.slug}`,
       });
     });
     return () => { cancelled = true; };

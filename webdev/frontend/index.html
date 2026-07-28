@@ -6,33 +6,37 @@
     <meta name="theme-color" content="#011E41" />
 
     <!-- Primary meta -->
-    <title>Bizcheck.md · Оцінка ризиків бізнесу · Crowe Turcan Mikhailenko</title>
-    <meta name="description" content="Bizcheck.md — онлайн-платформа самодіагностики ризиків бізнесу за методологією Crowe. Тести за блоками, детальний звіт у PDF, юридичні шаблони та консультації для МСБ." />
-    <meta name="keywords" content="аудит ризиків бізнесу, оцінка ризиків, юридична консультація МСБ, аудит відповідності, Crowe, юридичні шаблони, самодіагностика компанії, HR-аудит, податковий ризик, Bizcheck" />
+    <title>Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com</title>
+    <meta name="description" content="Безкоштовна онлайн-оцінка ризиків бізнесу за методологією Crowe: тест за блоками, детальний PDF-звіт і юридичні шаблони для МСБ. Пройдіть тест зараз." />
+    <meta name="keywords" content="оцінка ризиків бізнесу, аудит бізнесу, бізнес-аудит онлайн, due diligence для МСБ, юридична консультація для бізнесу, аудит відповідності, Crowe, юридичні шаблони, самодіагностика компанії, HR-аудит, податкові ризики, Bizcheck" />
     <meta name="author" content="Crowe Turcan Mikhailenko" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://bizcheck.ua.com/" />
+    <link rel="canonical" href="https://bizcheck.ua.com/uk/" />
 
-    <!-- Hreflang — same SPA serves both languages -->
-    <link rel="alternate" hreflang="uk" href="https://bizcheck.ua.com/" />
-    <link rel="alternate" hreflang="en" href="https://bizcheck.ua.com/" />
-    <link rel="alternate" hreflang="x-default" href="https://bizcheck.ua.com/" />
+    <!-- Hreflang — one URL prefix per language, x-default points at uk -->
+    <link rel="alternate" hreflang="uk" href="https://bizcheck.ua.com/uk/" />
+    <link rel="alternate" hreflang="en" href="https://bizcheck.ua.com/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://bizcheck.ua.com/uk/" />
 
     <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bizcheck.md" />
-    <meta property="og:url" content="https://bizcheck.ua.com/" />
-    <meta property="og:title" content="Bizcheck.md · Оцінка ризиків бізнесу · Crowe" />
-    <meta property="og:description" content="Швидка діагностика ризиків бізнесу за методологією Crowe Turcan Mikhailenko. Онлайн-тест, детальний звіт PDF, рекомендації за зонами ризику." />
+    <meta property="og:site_name" content="Bizcheck.ua.com" />
+    <meta property="og:url" content="https://bizcheck.ua.com/uk/" />
+    <meta property="og:title" content="Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com" />
+    <meta property="og:description" content="Швидка діагностика ризиків бізнесу за методологією Crowe. Онлайн-тест, детальний PDF-звіт, конкретні рекомендації за зонами ризику." />
+    <!-- TODO(og): asset pătrat 512x512 (icon), nu un card social 1200x630.
+         Când există /og-image-1200x630.png, schimbă src + width/height aici,
+         în Seo.tsx și în src/config/siteMeta.ts. -->
     <meta property="og:image" content="https://bizcheck.ua.com/android-chrome-512x512.png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:locale" content="uk_UA" />
     <meta property="og:locale:alternate" content="en_US" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bizcheck.md · Оцінка ризиків бізнесу" />
+    <meta name="twitter:title" content="Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com" />
     <meta name="twitter:description" content="Онлайн-платформа самодіагностики ризиків бізнесу. Crowe Turcan Mikhailenko." />
     <meta name="twitter:image" content="https://bizcheck.ua.com/android-chrome-512x512.png" />
 
@@ -57,16 +61,11 @@
           "@type": "Organization",
           "@id": "https://bizcheck.ua.com/#organization",
           "name": "Crowe Turcan Mikhailenko",
-          "alternateName": "Bizcheck.md",
+          "alternateName": "Bizcheck.ua.com",
           "url": "https://bizcheck.ua.com/",
           "logo": "https://bizcheck.ua.com/android-chrome-512x512.png",
           "email": "office@crowe-tm.md",
-          "areaServed": "MD",
-          "address": {
-            "@type": "PostalAddress",
-            "addressCountry": "MD",
-            "addressLocality": "Chișinău"
-          },
+          "areaServed": "UA",
           "sameAs": [
             "https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/",
             "https://crowe-tm.md"
@@ -76,21 +75,21 @@
           "@type": "WebSite",
           "@id": "https://bizcheck.ua.com/#website",
           "url": "https://bizcheck.ua.com/",
-          "name": "Bizcheck.md",
+          "name": "Bizcheck.ua.com",
           "publisher": { "@id": "https://bizcheck.ua.com/#organization" },
-          "inLanguage": ["uk", "ru"]
+          "inLanguage": ["uk", "en"]
         },
         {
           "@type": "Service",
           "name": "Оцінка ризиків бізнесу",
           "serviceType": "Audit & Risk Assessment",
           "provider": { "@id": "https://bizcheck.ua.com/#organization" },
-          "areaServed": { "@type": "Country", "name": "Republica Moldova" },
+          "areaServed": { "@type": "Country", "name": "Ukraine" },
           "description": "Онлайн-діагностика ризиків бізнесу за методологією Crowe — тести за категоріями, детальний звіт у PDF, конкретні рекомендації.",
           "offers": {
             "@type": "Offer",
             "price": "0",
-            "priceCurrency": "MDL",
+            "priceCurrency": "UAH",
             "availability": "https://schema.org/InStock"
           }
         }
@@ -127,7 +126,7 @@
     <div id="root"></div>
     <noscript>
       <p style="font-family:Inter,system-ui,sans-serif;text-align:center;padding:40px;">
-        Bizcheck.md потребує увімкненого JavaScript для роботи.
+        Bizcheck.ua.com потребує увімкненого JavaScript для роботи.
       </p>
     </noscript>
     <!-- Meta Pixel fallback (fără JS) — trebuie să fie în <body>, conform HTML5 -->

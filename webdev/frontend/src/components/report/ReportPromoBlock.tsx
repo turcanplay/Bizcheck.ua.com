@@ -1,4 +1,12 @@
 import { useLang } from '@/context/LanguageContext';
+import {
+  COMPANY_WEBSITE,
+  COMPANY_WEBSITE_LABEL,
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  CONTACT_TELEGRAM,
+  CONTACT_TELEGRAM_URL,
+} from '@/config/contact';
 import './ReportPromoBlock.css';
 
 export default function ReportPromoBlock() {
@@ -14,30 +22,30 @@ export default function ReportPromoBlock() {
         <div className="report-promo__contact">
           <div className="report-promo__contact-label">{t('ctaWebLabel')}</div>
           <a
-            href="https://crowe-tm.md"
+            href={COMPANY_WEBSITE}
             className="report-promo__contact-value"
             target="_blank"
             rel="noopener noreferrer"
-            data-pdf-link="https://crowe-tm.md"
-          >{t('ctaWebValue')}</a>
+            data-pdf-link={COMPANY_WEBSITE}
+          >{COMPANY_WEBSITE_LABEL}</a>
         </div>
         <div className="report-promo__contact">
           <div className="report-promo__contact-label">{t('ctaEmailLabel')}</div>
           <a
-            href="mailto:office@bizcheck.md"
+            href={CONTACT_EMAIL_HREF}
             className="report-promo__contact-value"
-            data-pdf-link="mailto:office@bizcheck.md"
-          >{t('ctaEmailValue')}</a>
+            data-pdf-link={CONTACT_EMAIL_HREF}
+          >{CONTACT_EMAIL}</a>
         </div>
         <div className="report-promo__contact">
           <div className="report-promo__contact-label">{t('ctaTelegramLabel')}</div>
           <a
-            href="https://t.me/CROWE_TM"
+            href={CONTACT_TELEGRAM_URL}
             className="report-promo__contact-value"
             target="_blank"
             rel="noopener noreferrer"
-            data-pdf-link="https://t.me/CROWE_TM"
-          >{t('ctaTelegramValue')}</a>
+            data-pdf-link={CONTACT_TELEGRAM_URL}
+          >{CONTACT_TELEGRAM}</a>
         </div>
       </div>
 

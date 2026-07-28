@@ -1,0 +1,39 @@
+# Context de build pentru serviciul `backend`.
+# Dockerfile-ul face `COPY . .` — fără fișierul ăsta, în imagine ajung .env-ul,
+# venv-ul de dev (~74MB, binare compilate pentru ALT sistem de operare),
+# .coverage, .pytest_cache și suita de teste.
+# NU exclude: server.py, requirements.txt, routes/, models/, services/,
+# middleware/, utils/, database/, scripts/ (seed-urile rulate manual în container).
+
+# ── Secrete ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# ── Python dev ──
+venv/
+.venv/
+**/__pycache__
+**/*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+# `tests/` și `pytest.ini` rămân INTENȚIONAT în imagine: sunt câțiva KB și permit
+# `docker compose exec backend python -m pytest` direct pe server.
+
+# ── Dumpuri / backupuri DB ──
+*.dump
+*.sql
+*.sql.gz
+
+# ── VCS / editor / OS ──
+.git
+.gitignore
+.DS_Store
+*.swp
+.idea/
+.vscode/
+*.md

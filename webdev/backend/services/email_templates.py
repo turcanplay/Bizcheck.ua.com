@@ -6,8 +6,31 @@ Bilingual HTML (UK/EN) with inline styles for maximum client compatibility
 whitespace, ONE vivid accent (the score ring) and ONE primary action button.
 No dense cards, no bullet lists, no button clutter.
 """
+import os
 from html import escape
 from urllib.parse import quote
+
+# ---------------------------------------------------------------------------
+# Brand / contact configuration
+# ---------------------------------------------------------------------------
+# The product launched on the Ukrainian market as bizcheck.ua.com, so every
+# customer-facing string says "Bizcheck.ua.com". `site_url` deliberately still
+# points at crowe-tm.md — that is the real corporate site of the Crowe firm
+# behind the product and is NOT a leftover of the .md branding.
+BRAND_NAME = "Bizcheck.ua.com"
+BRAND_EYEBROW = "BIZCHECK.UA.COM"
+
+# TODO: adresa reală UA — no Ukrainian mailbox exists yet, so the .md address is
+# kept as the fallback. Override with EMAIL_REPLY_TO (and EMAIL_TELEGRAM_URL /
+# EMAIL_TELEGRAM_HANDLE) in the environment the moment the UA contacts are live;
+# do NOT invent an address here.
+DEFAULT_REPLY_TO = os.getenv("EMAIL_REPLY_TO", "office@bizcheck.md")
+DEFAULT_SITE_URL = os.getenv("EMAIL_SITE_URL", "https://crowe-tm.md")
+DEFAULT_BIZCHECK_URL = os.getenv("PUBLIC_BASE_URL", "https://bizcheck.ua.com").rstrip("/")
+DEFAULT_PRIVACY_URL = os.getenv(
+    "EMAIL_PRIVACY_URL", f"{DEFAULT_BIZCHECK_URL}/confidentialitate")
+DEFAULT_TELEGRAM_URL = os.getenv("EMAIL_TELEGRAM_URL", "https://t.me/CROWE_TM")
+DEFAULT_TELEGRAM_HANDLE = os.getenv("EMAIL_TELEGRAM_HANDLE", "@CROWE_TM")
 
 # Brand palette — vivid where it matters, light everywhere else.
 NAVY = "#082E5E"
@@ -52,12 +75,12 @@ def render(
     score: int,
     logo_url: str,
     download_url: str | None = None,
-    reply_to: str = "office@bizcheck.md",
-    site_url: str = "https://crowe-tm.md",
-    privacy_url: str = "https://bizcheck.ua.com/confidentialitate",
-    telegram_url: str = "https://t.me/CROWE_TM",
-    telegram_handle: str = "@CROWE_TM",
-    bizcheck_url: str = "https://bizcheck.ua.com",
+    reply_to: str = DEFAULT_REPLY_TO,
+    site_url: str = DEFAULT_SITE_URL,
+    privacy_url: str = DEFAULT_PRIVACY_URL,
+    telegram_url: str = DEFAULT_TELEGRAM_URL,
+    telegram_handle: str = DEFAULT_TELEGRAM_HANDLE,
+    bizcheck_url: str = DEFAULT_BIZCHECK_URL,
 ) -> tuple[str, str, str]:
     """Return (subject, html_body, text_body) for the given language.
 
@@ -71,12 +94,12 @@ def render(
     zone_tint = _zone_tint(score)
     zone_lbl = _zone_label(score, lang)
     first = escape(first_name.strip()) if first_name else ("Клієнт" if lang == "uk" else "Client")
-    test_clean = escape(test_name or ("Звіт Bizcheck.md" if lang == "uk" else "Bizcheck.md Report"))
+    test_clean = escape(test_name or (f"Звіт {BRAND_NAME}" if lang == "uk" else f"{BRAND_NAME} Report"))
     date_clean = escape(date_str or "")
 
     if lang == "uk":
-        subject = f"Ваш звіт Bizcheck.md готовий · {test_clean}"
-        eyebrow = "BIZCHECK.MD"
+        subject = f"Ваш звіт {BRAND_NAME} готовий · {test_clean}"
+        eyebrow = BRAND_EYEBROW
         title_line = "Ваш звіт готовий"
         greeting = f"Вітаємо, {first},"
         intro = ("Діагностику завершено. Натисніть кнопку нижче, щоб відкрити "
@@ -89,8 +112,8 @@ def render(
         btn_contact = "Напишіть нам"
         contact_subject = "Запитання щодо звіту BizCheck"
     else:
-        subject = f"Your Bizcheck.md report is ready · {test_clean}"
-        eyebrow = "BIZCHECK.MD"
+        subject = f"Your {BRAND_NAME} report is ready · {test_clean}"
+        eyebrow = BRAND_EYEBROW
         title_line = "Your report is ready"
         greeting = f"Hello {first},"
         intro = ("The diagnostic is complete. Click the button below to open "
@@ -225,7 +248,7 @@ def render(
 
     # ── Plain-text alternative (mirrors the HTML; raw, unescaped values) ──
     first_plain = (first_name.strip() if first_name else ("Клієнт" if lang == "uk" else "Client"))
-    test_plain = test_name or ("Звіт Bizcheck.md" if lang == "uk" else "Bizcheck.md Report")
+    test_plain = test_name or (f"Звіт {BRAND_NAME}" if lang == "uk" else f"{BRAND_NAME} Report")
     date_plain = date_str or ""
 
     text_lines = [

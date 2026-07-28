@@ -19,17 +19,48 @@ Package layout:
 
 import asyncio
 
-from telegram import Update
+from telegram import BotCommand, Update
 from telegram.error import Conflict, NetworkError, TimedOut
 from telegram.ext import (
     Application, AIORateLimiter, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters,
 )
 
-from config import logger, BOT_TOKEN
+from config import logger, BOT_TOKEN, DEFAULT_LANG
+from strings import _t
 from handlers import (
-    cmd_start, on_email_button, on_lead_button, on_contact, on_text,
+    cmd_start, cmd_help, on_email_button, on_lead_button, on_contact, on_text,
 )
+
+
+# ---------------------------------------------------------------------------
+# Command menu (the "Menu" button in every Telegram client)
+# ---------------------------------------------------------------------------
+
+# Only commands that actually have a handler below. Do not advertise anything
+# else — a menu entry that does nothing is worse than no menu.
+_COMMANDS = (
+    ("start", "cmd_start_desc"),
+    ("help",  "cmd_help_desc"),
+)
+
+
+def _command_list(lang: str) -> list:
+    return [BotCommand(name, _t(lang, desc_key)) for name, desc_key in _COMMANDS]
+
+
+async def _post_init(app: Application) -> None:
+    """Publish the command menu. Telegram picks the list matching the user's
+    client language; the entry without a language_code is the fallback."""
+    try:
+        # Fallback list = the default language (uk), then one list per language.
+        await app.bot.set_my_commands(_command_list(DEFAULT_LANG))
+        for lang in ("uk", "en"):
+            await app.bot.set_my_commands(_command_list(lang), language_code=lang)
+        logger.info("Bot command menu published (uk, en)")
+    except Exception as exc:
+        # Never let a menu hiccup stop the bot from polling.
+        logger.warning("Could not publish the command menu: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -70,9 +101,11 @@ def main() -> None:
         Application.builder()
         .token(BOT_TOKEN)
         .rate_limiter(AIORateLimiter(max_retries=3))
+        .post_init(_post_init)
         .build()
     )
     app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CallbackQueryHandler(on_email_button, pattern=r"^eml:"))
     app.add_handler(CallbackQueryHandler(on_lead_button, pattern=r"^lead:"))
     app.add_handler(MessageHandler(filters.CONTACT, on_contact))

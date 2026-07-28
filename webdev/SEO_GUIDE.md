@@ -1,166 +1,197 @@
-# SEO Bizcheck.md — ghid de operare
+# SEO Bizcheck.ua.com — ghid de operare (piața Ucraina)
 
-Acest document conține pașii **off-page** pe care eu (codul) NU îi pot face automat.
-Tu trebuie să-i execuți manual o singură dată după primul deploy. După asta,
-restul SEO-ului merge automat la fiecare build.
+Acest document conține pașii **off-page** pe care codul NU îi poate face automat.
+Trebuie executați manual, o singură dată, după deploy. Restul SEO-ului se
+regenerează la fiecare build.
+
+Piața țintă: **Ucraina**. Domeniu: `https://bizcheck.ua.com`. Limbi: **uk** (default) + **en**.
+Toate semnalele de geo/limbă din cod au fost mutate de pe Moldova pe Ucraina.
 
 ---
 
-## ✅ Ce e deja făcut în cod (faza 1+2+3+4)
+## ✅ Ce e deja făcut în cod
 
 - `<title>`, `<meta description>`, `<meta keywords>`, `<link canonical>` per pagină
 - Open Graph (Facebook, LinkedIn) + Twitter Card meta
-- Hreflang RO/RU + x-default
-- Favicon real (16/32/180/192/512 px) + `site.webmanifest`
-- `/robots.txt` (permite indexare publică, blochează `/admin_*` și `/api_*`)
-- `/sitemap.xml` — generat la build, listează landing + privacy + toate șabloanele + toate testele active (din DB live)
-- Schema.org JSON-LD: `Organization`, `WebSite`, `Service`, plus per-pagină
-  `Product` (șabloane) + `BreadcrumbList` + `FAQPage` (când vom integra FAQ)
-- Pre-render HTML static pentru `/confidentialitate` (crawlerii primesc HTML cu meta complete fără să aștepte JS)
-- Code-splitting Vite (admin chunks lazy, pdf-vendor lazy) → bundle inițial mai mic, LCP mai bun
+- Hreflang **uk / en / x-default**, cu prefixe de limbă în URL (`/uk/…`, `/en/…`, x-default → `/uk/`)
+- Favicon real (16/32/180/192/512 px) + `site.webmanifest` (text în ucraineană, `lang: uk`)
+- `/robots.txt` — permite indexarea publică, blochează `/admin_bizcheck_md_crowe/` și `/api_crowe_bizcheck/`
+- `/sitemap.xml` — generat la build; listează landing + privacy + toate șabloanele + testele active (din DB live)
+- Schema.org JSON-LD: `Organization`, `WebSite`, `Service` (global, în `index.html`), plus per-pagină
+  `Product` (șabloane), `BreadcrumbList` și **`FAQPage`** (emis din secțiunea FAQ a landing-ului, în limba curentă)
+- Semnale geo: `areaServed: "UA"`, `Country: "Ukraine"`, `inLanguage: ["uk","en"]`, `priceCurrency: "UAH"`
+- Pre-render HTML static pentru rutele fără JS (crawlerii primesc meta complete)
+- Code-splitting Vite (admin + pdf-vendor lazy) → bundle inițial mai mic, LCP mai bun
+
+### ⚠️ Yandex Metrica a fost ELIMINATĂ
+
+`mc.yandex.ru` este blocat în Ucraina, deci scriptul nici nu s-ar fi încărcat.
+S-a scos: loaderul din `frontend/src/utils/cookieConsent.ts`, constanta `YANDEX_METRIKA_ID`,
+declarația globală `window.ym` și comentariile din `CookieConsentContext.tsx`.
+
+Categoria „Statistici" din bannerul de cookies **rămâne** (o descrie politica de
+confidențialitate), dar în acest moment nu mai injectează niciun tag. Google Analytics 4
+se va conecta exact în `applyAnalyticsConsent()`. Meta Pixel (marketing) nu a fost atins.
+
+**De făcut în infra:** scoate `https://mc.yandex.ru` și `wss://mc.yandex.ru` din
+`script-src` și `connect-src` în `webdev/nginx.conf` — sunt acum permisiuni CSP moarte.
 
 ---
 
-## 🛠️ Pașii pe care **TU** trebuie să-i faci (one-time, ~30-60 min)
+## 🛠️ Pașii manuali (one-time, ~30–60 min)
 
-### 1. Google Search Console — ÎNREGISTRARE PROPRIETATE
+### 1. Google Search Console — înregistrarea proprietății
 
-Aici Google îți confirmă că deții site-ul, după care vede sitemap-ul și începe să indexeze rapid.
+1. <https://search.google.com/search-console>
+2. Login cu contul Google al firmei
+3. „Add property" → **Domain property** → `bizcheck.ua.com`
+4. Adaugă în DNS TXT-ul de verificare (`google-site-verification=…`). Propagarea durează 5–30 min.
+5. „Verify"
+6. **Sitemaps** → adaugă `sitemap.xml` → devine `https://bizcheck.ua.com/sitemap.xml`
+7. Verifică raportul de **hreflang** că perechea uk↔en e reciprocă.
+8. Rezultatele în „Pages" / „Performance" apar în 24–72h.
 
-1. Mergi la <https://search.google.com/search-console>
-2. Login cu un cont Google (ideal cont Crowe oficial, ex. `office.gmail@crowe-tm.md` sau cont admin)
-3. „Add property" → alege **„Domain property"** și introdu `bizcheck.ua.com`
-4. Google îți cere să adaugi un **TXT record DNS** la registratorul tău (probabil aceeași zonă DNS unde e bizcheck.ua.com)
-   - Exemplu: TXT `@` valoare `google-site-verification=ABC123XYZ...`
-   - DNS-ul poate dura 5-30 min să propagheze
-5. Click „Verify" — Google validează, apoi proprietatea apare ca verificată
-6. În stânga: **Sitemaps** → adăugă `sitemap.xml` (URL relativ, devine `https://bizcheck.ua.com/sitemap.xml`)
-7. Aștepți 24-72h, vezi în „Coverage" / „Pages" cât a indexat
+Notă: nu există un Search Console separat „pentru google.com.ua" — Google are un singur
+Search Console global, iar country targeting manual nu mai există pentru domenii generice.
+Semnalul de geo vine din hreflang + limba conținutului + backlinks locali.
+`google.com.ua` e doar interfața locală de căutare, utilă pentru verificat manual poziții
+(`site:bizcheck.ua.com` pe <https://www.google.com.ua>).
 
-**Beneficiu:** primești emailuri când apare orice problemă (404, robots blocking, schema invalid, slow page) + vezi statisticile reale de search.
+### 2. Google Analytics 4
 
----
+1. <https://analytics.google.com> → „Create property" → „Bizcheck.ua.com"
+2. Property type **Web**, URL `https://bizcheck.ua.com`, fus orar Europe/Kyiv, monedă UAH
+3. Primești `G-XXXXXXXXXX`
+4. Trimite-l → se conectează în `applyAnalyticsConsent()` (gated pe consimțământul „Statistici")
+   și se adaugă `https://www.googletagmanager.com` în CSP din `nginx.conf`
 
-### 2. Google Analytics 4 (opțional dar puternic recomandat)
+### 3. Bing Webmaster Tools — bonus rapid
 
-Vezi cine vine pe site, de unde, ce caută:
+1. <https://www.bing.com/webmasters>
+2. Add site `https://bizcheck.ua.com` → **Import from Google Search Console** (un click)
+3. Submit sitemap
 
-1. <https://analytics.google.com> → cont Crowe → „Create property" → „Bizcheck.md"
-2. Property type: **Web** → URL `https://bizcheck.ua.com`
-3. Primești un cod de tracking (`G-XXXXXXXXXX`)
-4. Trimite-mi codul → adaug `<script>` în `index.html` (1 linie)
-5. Sau folosesc Google Tag Manager (varianta avansată — recomandat dacă vrei să adaugi mai multe scripturi în viitor)
+Bing are cotă mică în UA, dar e gratis și alimentează și DuckDuckGo.
 
----
+### 4. Google Business Profile
 
-### 3. Google My Business — pentru căutări locale
+Se poate revendica **doar dacă firma are o prezență reală în Ucraina** (adresă fizică sau
+zonă de servicii declarată). Dacă nu există încă entitate ucraineană, **sari peste pasul
+ăsta** — o fișă cu adresă din Moldova nu ajută la ranking pe interogări ucrainene și riscă
+suspendarea.
 
-Pentru ca atunci când cineva caută „Crowe Chișinău" sau „audit Moldova" să apari pe Google Maps și pe partea dreaptă a căutării:
+Din același motiv, `PostalAddress` a fost **scos** din JSON-LD-ul `Organization` din
+`index.html`: nu inventăm o adresă. Se adaugă înapoi când există adresa reală UA.
 
-1. <https://www.google.com/business/> → login cont Crowe
-2. „Add your business" → numele „Crowe Turcan Mikhailenko" (există deja? poate trebuie revendicat)
-3. Adaugă adresa fizică Chișinău, telefon, ore program
-4. Adaugă website: `https://bizcheck.ua.com` (nu `crowe-tm.md` — vrem boost pe Bizcheck.md)
-5. Verificare: Google îți trimite un cod prin **poștă fizică** sau telefon. Durează 1-2 săptămâni
-6. După verificare: adaugă poze, descriere completă, servicii (Audit, Consultanță, Risc Management)
+### 5. Directoare și platforme ucrainene (backlinks)
 
-**Beneficiu:** apariție pe Maps + Knowledge Panel pe Google.
+Nu am validat live niciunul dintre acestea — tratează lista ca punct de plecare și
+**verifică fiecare** înainte să investești timp (unele directoare vechi sunt moarte sau
+au devenit spam și fac mai mult rău decât bine).
 
----
-
-### 4. Bing Webmaster Tools — bonus rapid
-
-Bing are ~5% market share dar e gratis și nu cere efort:
-
-1. <https://www.bing.com/webmasters> → login Microsoft (cont `office@crowe-tm.md` merge)
-2. Add site: `https://bizcheck.ua.com`
-3. **Importă din Google Search Console** (un click) — preia toate setările
-4. Submit sitemap: `https://bizcheck.ua.com/sitemap.xml`
-
----
-
-### 5. Directoare locale Moldova (backlinks gratuite)
-
-Înscrie Bizcheck.md / Crowe pe directoarele MD relevante:
-
-| Director | URL | Cost | Prioritate |
+| Platformă | Ce e | Prioritate | Status |
 |---|---|---|---|
-| **Pagina de aur** | <https://www.pagina-de-aur.md> | gratuit | mare (autoritate MD) |
-| **AllMoldova** | <https://www.allmoldova.com/ro/business> | gratuit | medie |
-| **Yellow Pages MD** | <https://yp.md> | gratuit | medie |
-| **999.md (servicii)** | <https://999.md> | gratuit | mică (e marketplace, nu director SEO pur) |
-| **Lovis Catalog** | <https://www.lovis.md> | gratuit | mică |
+| **LinkedIn Company Page** | nu e „director", dar e cel mai puternic semnal B2B în UA | **mare** | sigur util |
+| **Clutch.co** (filtru Ukraine) | director internațional de firme de consultanță/audit, autoritate mare | **mare** | recomandat dacă există profil de firmă |
+| **Facebook Business Page** | trafic mixt B2C/B2B; Meta Pixel e deja instalat | mare | sigur util |
+| **Ua-region.com.ua** | catalog de firme după ЄДРПОУ | medie | **de verificat** — necesită entitate juridică UA |
+| **Prom.ua / Zakupka** | marketplace B2B mare în UA | medie | **de verificat** dacă acceptă servicii de consultanță |
+| **Camere de comerț / asociații de business locale** | backlinks de autoritate | medie | **de verificat** — depinde de statutul legal al firmei în UA |
 
-Pentru fiecare:
-- Adaugă numele firmei + URL `https://bizcheck.ua.com` (NU `crowe-tm.md`)
-- Categorie: „Audit, consultanță, juridic" sau cea mai apropiată
-- Descriere de 100-200 cuvinte cu **„audit risc afacere", „consultanță IMM Moldova", „evaluare conformitate"** integrate natural
+Regula pentru fiecare înregistrare:
+- URL-ul principal = `https://bizcheck.ua.com` (NU `crowe-tm.md` — vrem autoritate pe domeniul nou)
+- Categorie: „аудит", „бізнес-консалтинг", „юридичні послуги" sau cea mai apropiată
+- Descriere 100–200 cuvinte **în ucraineană**, cu keywords integrate natural
 
-**Beneficiu:** 5-10 backlinks din directoare locale → boost autoritate domeniu (DA) → indexare mai rapidă, ranking mai bun pe căutări locale.
+### 6. Keyword research (ucraineană)
 
----
+Instrumente:
+- **Google Trends, geo=UA**: <https://trends.google.com/trends/explore?geo=UA>
+- **Google Keyword Planner** (gratuit cu cont Google Ads) — locația Ucraina, limba ucraineană
+- **Serpstat** (companie ucraineană, date bune pe piața locală) sau **Ubersuggest**
 
-### 6. Schema.org keyword research (planificare conținut)
+Cuvinte cheie de testat pentru nișa noastră — **ipoteze, validează volumele înainte** de a
+scrie conținut pe ele:
 
-Pentru a găsi cuvintele cheie pe care le caută utilizatorii MD:
+| Keyword (uk) | Intenție | Notă |
+|---|---|---|
+| `оцінка ризиків бізнесу` | informațională/comercială | keyword-ul principal, deja în `<title>` |
+| `бізнес-аудит онлайн` | comercială | tail scurt, competiție medie |
+| `due diligence для МСБ` | comercială | volum mic, lead-uri de calitate |
+| `аудит відповідності компанії` | comercială | compliance |
+| `юридичний аудит підприємства` | comercială | potrivit pentru pagina de șabloane |
+| `податкові ризики підприємства` | informațională | potrivit pentru articol/blog |
+| `чек-лист перевірки бізнесу` | informațională | intent aproape perfect pentru testul gratuit |
+| `перевірка контрагента` | informațională | volum **mare** în UA, dar altă intenție (verificarea unui terț, nu autodiagnostic) — nu forța dacă produsul nu face asta |
 
-- **Google Trends MD**: <https://trends.google.com/trends/?geo=MD>
-  - Caută „audit afacere", „consultanță juridică", „risc business" — vezi volumele
-- **Ubersuggest** (free 3 căutări/zi): <https://neilpatel.com/ubersuggest>
-- **Google Keyword Planner** (gratuit cu cont Google Ads): <https://ads.google.com/keywordplanner>
+Termeni în rusă: o parte din publicul de business din UA caută încă în rusă. **Nu adăuga
+înapoi o versiune `ru` a site-ului** — a fost scoasă intenționat. Dacă vrei totuși traficul,
+soluția e conținut ucrainean care menționează natural termenii, nu o a treia limbă.
 
-Cele mai promițătoare cuvinte cheie pentru Bizcheck.md (presupunere bazată pe context):
-- „audit risc afacere Moldova"
-- „evaluare conformitate firmă Chișinău"
-- „consultanță juridică IMM Moldova"
-- „test audit HR online"
-- „diagnostic afacere gratis"
-- „Crowe Moldova audit"
-
-Trimite-mi 3-5 cuvinte cheie validate de tine (după ce le verifici în Trends) și adaug copywriting orientat pe ele în landing + creez 3-4 articole landing dedicate.
-
----
-
-## 📊 Cum măsurăm progres
-
-După ~2-4 săptămâni de la deploy + Search Console verificat:
-
-1. **Search Console → Performance**: vezi câte clicks, impressions, CTR, average position pentru fiecare cuvânt cheie
-2. **Search Console → Coverage**: câte pagini sunt indexate vs descoperite
-3. **PageSpeed Insights** (<https://pagespeed.web.dev/?url=https%3A%2F%2Fbizcheck.ua.com>): rulează lunar — țintă LCP < 2.5s, CLS < 0.1, INP < 200ms
-4. **Google search „site:bizcheck.ua.com"** — vezi ce pagini sunt deja indexate
+Trimite 3–5 keywords validate → se ajustează copywriting-ul pe landing + 3–4 pagini de conținut.
 
 ---
 
-## 🚀 Sumar deploy
+## 📊 Cum măsurăm progresul
+
+La 2–4 săptămâni după deploy + Search Console verificat:
+
+1. **Search Console → Performance** — clicks, impressions, CTR, poziție medie per keyword.
+   Filtrează pe „Country: Ukraine" ca să vezi doar piața relevantă.
+2. **Search Console → Pages** — indexate vs descoperite-neindexate
+3. **PageSpeed Insights** <https://pagespeed.web.dev/?url=https%3A%2F%2Fbizcheck.ua.com> —
+   lunar; țintă LCP < 2.5s, CLS < 0.1, INP < 200ms
+4. `site:bizcheck.ua.com` pe <https://www.google.com.ua>
+5. **Rich Results Test** <https://search.google.com/test/rich-results> — verifică pe landing
+   că `FAQPage` e valid (e emis dinamic, deci depinde de ce FAQ e activ în DB)
+
+---
+
+## 🚀 Deploy
 
 ```bash
-# Local: commit & push tot ce am făcut acum
-cd c:/Depozit/gitProjects/BIZZCHECK_BOT/webdev
+# Local
 git add -A
-git commit -m "seo: phase 1+2+3+4 — meta, OG, Twitter, hreflang, sitemap, schema, prerender static routes"
+git commit -m "seo: rebrand + semnale geo pentru piața UA"
 git push
 
-# Pe server: rebuild frontend (sitemap se regenerează automat din DB live)
+# Pe server: rebuild frontend (sitemap se regenerează din DB live)
 cd ~/BIZZCHECK_BOT/webdev
 git pull
 docker compose build --no-cache frontend
 docker compose up -d frontend
 
-# Verifică:
-curl -s https://bizcheck.ua.com/robots.txt | head -5
-curl -s https://bizcheck.ua.com/sitemap.xml | head -10
-curl -sI https://bizcheck.ua.com/ | head -10
-curl -s https://bizcheck.ua.com/ | grep -E '<title>|"@type"' | head -5
+# Verificare
+curl -s https://bizcheck.ua.com/robots.txt
+curl -s https://bizcheck.ua.com/sitemap.xml | head -20
+curl -s https://bizcheck.ua.com/ | grep -E '<title>|hreflang|"areaServed"|"priceCurrency"'
 ```
-
-Apoi mergi la **Google Search Console** (pasul 1 de mai sus) și începe procesul de indexare.
 
 ---
 
-## ⚠️ Note importante
+## ⚠️ Note și restanțe
 
-- **Sitemap-ul e generat în Docker la `npm run build`** — acolo `SITEMAP_API_URL` nu e setat, deci dynamic URLs nu sunt incluse. Poți seta `SITEMAP_API_URL=http://backend:4001/api_crowe_bizcheck` în docker-compose.yml dacă vrei ca build-time să apeleze API-ul intern. Recomand să-l rulezi MAI BINE prin cron pe server: `0 3 * * * cd ~/BIZZCHECK_BOT/webdev && SITEMAP_API_URL=http://localhost:5174/api ... node frontend/scripts/generate-sitemap.mjs` și după aia `docker cp` în container — overhead minim.
-- **Pre-render static** acum acoperă doar `/confidentialitate`. Când dai green-light, extind la rute dinamice (necesită API call la build, similar cu sitemap).
-- **JSON-LD în index.html** descrie organizația — apare pe orice pagină. JSON-LD din `Seo.tsx` se ADAUGĂ pentru pagini specifice (ex. Product pe șabloane).
-- **Hreflang pe SPA**: ambele limbi servesc aceeași URL, deci hreflang pointează spre același `loc`. Google folosește `<html lang>` dinamic (Helmet îl schimbă la switch limbă) ca să decidă.
+- **`og:image` e încă pătrat (512×512).** Trebuie creat un card social real **1200×630**
+  (`frontend/public/og-image-1200x630.png`), apoi actualizate `og:image` + `og:image:width/height`
+  și `twitter:image` în `frontend/index.html`, plus `DEFAULT_IMAGE` /
+  `DEFAULT_IMAGE_WIDTH` / `DEFAULT_IMAGE_HEIGHT` din `frontend/src/config/siteMeta.ts`.
+  Până atunci `summary_large_image` va fi degradat de Facebook/X la un card mic.
+- **Datele de contact sunt încă moldovenești.** `frontend/src/config/contact.ts` centralizează
+  `office@bizcheck.md`, `+373 79 027 317` și `crowe-tm.md`. Un email/telefon `+373` pe un site
+  `.ua.com` e un semnal de neîncredere pentru utilizatorii ucraineni și pentru E-E-A-T.
+  **Prioritate mare:** obține un email `@bizcheck.ua.com` și un număr `+380`, apoi schimbă
+  doar acel fișier — restul aplicației importă din el.
+- **`crowe-tm.md` a fost păstrat** — e site-ul real al firmei membre Crowe, deci un link
+  legitim. Dacă apare un site ucrainean al grupului, schimbă `COMPANY_WEBSITE` în `contact.ts`.
+- **Conținutul legal e încă pe legislația Moldovei.** `frontend/src/data/blockExplanations.ts`
+  citează Codul Civil / Fiscal / al Muncii al Republicii Moldova, iar
+  `frontend/src/pages/privacyContent.ts` se referă la CNPDCP și la legislația moldovenească.
+  Pentru piața UA trebuie înlocuite cu echivalentele ucrainene (Цивільний кодекс України,
+  Податковий кодекс України, ЗУ «Про захист персональних даних») — **decizie juridică, nu
+  tehnică**, necesită revizuire de la Crowe. E și cel mai mare risc SEO rămas: conținutul
+  principal vorbește despre altă jurisdicție decât cea a publicului țintă.
+- **JSON-LD în `index.html`** descrie organizația și apare pe orice pagină. JSON-LD din
+  `Seo.tsx` / `FAQ.tsx` se **adaugă** la el pentru pagini specifice.
+- **Sitemap-ul se generează la `npm run build`**, unde `SITEMAP_API_URL` nu e setat implicit —
+  fără el URL-urile dinamice lipsesc. Setează `SITEMAP_API_URL=http://backend:4001/api_crowe_bizcheck`
+  la build sau rulează scriptul prin cron pe server.

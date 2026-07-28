@@ -1,0 +1,22 @@
+# Context de build pentru serviciul `groupbot`.
+# Dockerfile-ul copiază selectiv (requirements.txt + bot.py), dar CONTEXTUL
+# întreg pleacă spre daemon — inclusiv venv/ (~37MB) la fiecare build.
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+**/__pycache__
+**/*.py[cod]
+.pytest_cache/
+tests/
+pytest.ini
+requirements-dev.txt
+*.dump
+*.sql
+*.sql.gz
+.git
+.gitignore
+.DS_Store
+*.swp
+*.md

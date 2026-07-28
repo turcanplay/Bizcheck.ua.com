@@ -1,4 +1,13 @@
 import { useLang } from '@/context/LanguageContext';
+import {
+  COMPANY_NAME,
+  COMPANY_WEBSITE,
+  COMPANY_WEBSITE_LABEL,
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  CONTACT_TELEGRAM,
+  CONTACT_TELEGRAM_URL,
+} from '@/config/contact';
 import './ReportFooter.css';
 
 export default function ReportFooter() {
@@ -16,37 +25,37 @@ export default function ReportFooter() {
           <div className="report-footer__contact-item">
             <div className="report-footer__contact-label">Web</div>
             <a
-              href="https://crowe-tm.md"
+              href={COMPANY_WEBSITE}
               target="_blank"
               rel="noopener noreferrer"
               className="report-footer__contact-value"
-              data-pdf-link="https://crowe-tm.md"
-            >crowe-tm.md</a>
+              data-pdf-link={COMPANY_WEBSITE}
+            >{COMPANY_WEBSITE_LABEL}</a>
           </div>
           <div className="report-footer__contact-item">
             <div className="report-footer__contact-label">Email</div>
             <a
-              href="mailto:office@bizcheck.md"
+              href={CONTACT_EMAIL_HREF}
               className="report-footer__contact-value"
-              data-pdf-link="mailto:office@bizcheck.md"
-            >office@bizcheck.md</a>
+              data-pdf-link={CONTACT_EMAIL_HREF}
+            >{CONTACT_EMAIL}</a>
           </div>
           <div className="report-footer__contact-item">
             <div className="report-footer__contact-label">Telegram</div>
             <a
-              href="https://t.me/CROWE_TM"
+              href={CONTACT_TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="report-footer__contact-value"
-              data-pdf-link="https://t.me/CROWE_TM"
-            >@CROWE_TM</a>
+              data-pdf-link={CONTACT_TELEGRAM_URL}
+            >{CONTACT_TELEGRAM}</a>
           </div>
         </div>
 
         <div className="report-footer__bottom">
           <div className="report-footer__brand">
             <a href="https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-              <strong>Crowe Turcan Mikhailenko</strong>
+              <strong>{COMPANY_NAME}</strong>
             </a>
           </div>
           <div className="report-footer__legal">

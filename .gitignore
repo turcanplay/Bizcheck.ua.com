@@ -10,6 +10,8 @@
 *.dump
 *.sql.gz
 bizzcheck_local.sql
+# Backupuri produse de webdev/scripts/backup-db.sh și de deploy.sh.
+backups/
 
 # Python
 venv/

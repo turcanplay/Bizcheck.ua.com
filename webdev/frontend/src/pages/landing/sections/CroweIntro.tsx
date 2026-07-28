@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '@/context/LanguageContext';
+import Picture from '@/components/ui/Picture';
 import './CroweIntro.css';
 
 function ExternalIcon() {
@@ -75,13 +76,12 @@ export default function CroweIntro() {
       <div className="crowe__inner">
         <figure className="crowe__visual crowe-reveal crowe-reveal--photo">
           <div className="crowe__photo-backdrop" aria-hidden />
-          <img
+          <Picture
             className="crowe__photo"
             src="/images/about/ivan-turcan.png"
             alt={name}
             width={800}
             height={1200}
-            loading="lazy"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
           <figcaption className="crowe__caption">
@@ -119,13 +119,12 @@ export default function CroweIntro() {
               </a>
               <span className="crowe__preview" aria-hidden>
                 <span className="crowe__preview-media">
-                  <img
+                  <Picture
                     className="crowe__preview-img"
                     src="/images/about/turcan-preview.jpg"
                     alt=""
-                    width={1000}
-                    height={600}
-                    loading="lazy"
+                    width={820}
+                    height={492}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                 </span>
@@ -149,13 +148,12 @@ export default function CroweIntro() {
               </a>
               <span className="crowe__preview crowe__preview--shift" aria-hidden>
                 <span className="crowe__preview-brand">
-                  <img
+                  <Picture
                     className="crowe__preview-logo"
                     src="/logo-crowe.png"
                     alt=""
-                    width={150}
-                    height={40}
-                    loading="lazy"
+                    width={465}
+                    height={138}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                   <span className="crowe__preview-brand-title">{t('croweTitle')}</span>

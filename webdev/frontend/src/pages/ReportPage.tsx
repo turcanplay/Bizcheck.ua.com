@@ -2,7 +2,6 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
 import { API_BASE } from '@/config/api';
-import { generateFullPdf } from '@/utils/pdfGenerator';
 import ReportHeader from '@/components/report/ReportHeader';
 import BlockGrid from '@/components/report/BlockGrid';
 import OverallScore from '@/components/report/OverallScore';
@@ -30,6 +29,10 @@ export default function ReportPage() {
     setPdfReady(true);
 
     try {
+      // Loaded on demand: pulls in the ~1.1 MB pdf-vendor chunk (jspdf +
+      // html2canvas-pro + pdf-lib). Keep this a dynamic import so the chunk
+      // can never be hoisted into any statically reachable graph.
+      const { generateFullPdf } = await import('@/utils/pdfGenerator');
       const pdf = await generateFullPdf({
         rootEl: reportRef.current,
         lang,

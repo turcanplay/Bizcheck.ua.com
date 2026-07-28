@@ -52,11 +52,17 @@ def save_submission_pdf(submission_id, pdf_bytes):
     Submission.save_pdf(submission_id, pdf_bytes)
 
 
-def get_all_submissions(test_id=None):
-    subs = Submission.find_all(test_id=test_id)
+def get_all_submissions(test_id=None, limit=None, offset=0):
+    """Serialized submissions, newest first. `limit=None` → the full set."""
+    subs = Submission.find_all(test_id=test_id, limit=limit, offset=offset)
     for s in subs:
         s["created_at"] = str(s["created_at"])
     return subs
+
+
+def count_submissions(test_id=None):
+    """Total number of submissions (optionally for one test) — pagination meta."""
+    return Submission.count(test_id=test_id)
 
 
 def get_submission_detail(submission_id):

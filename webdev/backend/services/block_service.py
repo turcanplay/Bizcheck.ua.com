@@ -4,6 +4,7 @@ from models.block import Block
 from models.question import Question
 from models.answer import Answer
 from models.test import Test
+from utils.cache import quiz_cache, invalidate_quiz_cache
 
 
 def _serialize_block(b):
@@ -25,9 +26,11 @@ def create_block(test_id, title_uk, title_en, order_index=0):
         raise ValueError("Block title (RO) is required")
     if not title_en or not title_en.strip():
         raise ValueError("Block title (RU) is required")
-    return _serialize_block(
+    block = _serialize_block(
         Block.create(test_id, title_uk.strip(), title_en.strip(), order_index)
     )
+    invalidate_quiz_cache()
+    return block
 
 
 def update_block(block_id, title_uk, title_en, order_index, test_id=None):
@@ -36,13 +39,15 @@ def update_block(block_id, title_uk, title_en, order_index, test_id=None):
         raise ValueError("Block not found")
     if test_id is not None and not Test.find_by_id(test_id):
         raise ValueError("Test not found")
-    return _serialize_block(Block.update(
+    block = _serialize_block(Block.update(
         block_id,
         title_uk or existing["title_uk"],
         title_en or existing["title_en"],
         order_index if order_index is not None else existing["order_index"],
         test_id=test_id,
     ))
+    invalidate_quiz_cache()
+    return block
 
 
 def delete_block(block_id):
@@ -50,11 +55,31 @@ def delete_block(block_id):
     if not existing:
         raise ValueError("Block not found")
     Block.delete(block_id)
+    invalidate_quiz_cache()
     return True
 
 
 def get_quiz_data(test_slug=None, test_id=None):
-    """Build bilingual quiz data for the frontend.
+    """Bilingual quiz data for the frontend — the hottest public endpoint.
+
+    Cached in-process (see utils/cache.py). The payload is identical for every
+    visitor of a given test and only changes when an admin edits the test /
+    blocks / questions / answers, all of which invalidate the namespace. The
+    short TTL is the safety net that covers the OTHER gunicorn workers, whose
+    caches an in-process invalidation cannot reach.
+
+    An empty result ({"blocks": [], "test": None} — unknown slug) is cached too,
+    on purpose: it is exactly what a bot spraying random slugs would produce,
+    and each miss otherwise costs a DB lookup.
+    """
+    return quiz_cache.get_or_set(
+        ("quiz", test_slug, test_id),
+        lambda: _build_quiz_data(test_slug=test_slug, test_id=test_id),
+    )
+
+
+def _build_quiz_data(test_slug=None, test_id=None):
+    """Uncached builder behind get_quiz_data().
 
     Filters by test when `test_slug` or `test_id` is given. Branching fields
     (db_id, parent_question_id, next_question_id) are included so the client

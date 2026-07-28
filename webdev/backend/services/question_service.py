@@ -2,6 +2,7 @@
 
 from models.question import Question
 from models.answer import Answer
+from utils.cache import invalidate_quiz_cache
 
 
 def _serialize(questions):
@@ -29,6 +30,7 @@ def create_question(block_id, text_uk, text_en, note_uk, note_en, order_index, a
     answers = Answer.create_many(question["id"], answers_list)
     question["answers"] = answers
     question["created_at"] = str(question["created_at"])
+    invalidate_quiz_cache()
     return question
 
 
@@ -59,6 +61,7 @@ def update_question(question_id, block_id, text_uk, text_en, note_uk, note_en, o
         question["answers"] = Answer.find_by_question(question_id)
 
     question["created_at"] = str(question["created_at"])
+    invalidate_quiz_cache()
     return question
 
 
@@ -67,9 +70,11 @@ def delete_question(question_id):
     if not existing:
         raise ValueError("Question not found")
     Question.delete(question_id)
+    invalidate_quiz_cache()
     return True
 
 
 def delete_all_questions():
     Question.delete_all()
+    invalidate_quiz_cache()
     return True

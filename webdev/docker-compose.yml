@@ -47,7 +47,11 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Crowe Turcan Mikhailenko}
-      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@bizcheck.md}
+      # TODO(UA): pune adresa reală de contact pentru piața Ucraina în .env.
+      # Defaultul de mai jos e un PLACEHOLDER — vechiul office@bizcheck.md nu mai
+      # e valabil, iar o adresă .ua inventată ar trimite răspunsurile clienților
+      # în gol. Nu porni în producție fără SMTP_REPLY_TO setat în .env.
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@example.ua}
       EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.ua.com/logo_email.png}
       # Sales-team Telegram notification (private group with the notifier bot).
       # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
@@ -65,6 +69,20 @@ services:
       # Background loop that sends due feedback questions. "1" (default) = on,
       # "0" = off. Only set to "0" to disable the scheduler entirely.
       FEEDBACK_SCHEDULER: ${FEEDBACK_SCHEDULER:-1}
+    # Health probe. python:3.12-slim nu are curl/wget, deci folosim stdlib —
+    # zero pachete în plus în imagine. /api/health e scutit de verificarea
+    # ALLOWED_HOSTS (server.py), deci merge și cu Host: 127.0.0.1.
+    # Endpointul face un `SELECT 1` real (routes/health.py) și răspunde 503 dacă
+    # Postgres nu e accesibil → urlopen ridică HTTPError → containerul devine
+    # unhealthy. Probe-ul DB are un plafon intern de 3s, de aceea timeout-urile
+    # de aici sunt mai mari (altfel am marca unhealthy o bază doar lentă).
+    # start_period acoperă migrarea DB de la boot (migrate() în database/db.py).
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:4001/api/health', timeout=8)\" || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
 
   frontend:
     build:
@@ -77,13 +95,37 @@ services:
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
     depends_on:
-      - backend
+      # INTENȚIONAT service_started, NU service_healthy: SPA-ul e static și
+      # trebuie să se ridice chiar dacă backendul e picat (utilizatorul vede
+      # site-ul, nu o pagină moartă). Condiția e scrisă explicit ca să nu mai
+      # fie ambiguă. Ordinea de pornire rămâne backend → frontend.
+      backend:
+        condition: service_started
+    # nginx:alpine are busybox wget (nu are curl). Cererea pleacă cu
+    # Host: 127.0.0.1 → nu declanșează redirectul www→non-www din nginx.conf,
+    # iar lipsa lui X-Forwarded-Proto nu declanșează redirectul spre https.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   tgbot:
     build: ./tgbot
     restart: unless-stopped
     depends_on:
-      - backend
+      # Boții cheamă backendul imediat la pornire → merită să aștepte healthy.
+      backend:
+        condition: service_healthy
+    # Botul e un proces de long-polling, fără server HTTP propriu: nu are ce
+    # expune. Probăm ce contează pentru funcția lui — că ajunge la backend.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://backend:4001/api/health', timeout=8)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
@@ -97,7 +139,14 @@ services:
     build: ./groupbot
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://backend:4001/api/health', timeout=8)\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     environment:
       SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
       SALES_CHAT_ID: ${SALES_CHAT_ID:-}

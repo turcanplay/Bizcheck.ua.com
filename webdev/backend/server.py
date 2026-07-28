@@ -37,6 +37,7 @@ from routes.site_settings import site_settings_bp, admin_site_settings_bp
 from routes.tg_feedback import admin_feedback_bp, tg_feedback_bp
 from routes.tg_admin import tg_exports_bp
 from routes.tg_group import tg_group_bp
+from routes.health import health_bp
 
 # ---------------------------------------------------------------------------
 # App factory
@@ -69,11 +70,19 @@ def _real_client_ip():
 
 
 # --- Rate limiting ---
+# CAVEAT (documented, not yet fixed): with the default "memory://" backend every
+# gunicorn WORKER keeps its own counters, so the effective limit is
+# <configured> x <worker count>. Acceptable for the current traffic, but it is
+# the reason "5 per minute" on admin login is really 5 x N.
+# Point RATELIMIT_STORAGE_URI at a shared store (e.g. redis://redis:6379/0) to
+# make the limits global — that also requires adding the `redis` package to
+# requirements.txt and a redis service to docker-compose.
+_RATELIMIT_STORAGE = (os.getenv("RATELIMIT_STORAGE_URI") or "memory://").strip()
 limiter = Limiter(
     key_func=_real_client_ip,
     app=app,
     default_limits=["200 per minute"],
-    storage_uri="memory://",
+    storage_uri=_RATELIMIT_STORAGE,
 )
 
 # Stricter limits on auth endpoints
@@ -108,6 +117,13 @@ limiter.limit("10 per hour", methods=["POST"])(content_bp)
 # the env var is empty the check is skipped (dev/tests unaffected). The internal
 # health probe is always allowed.
 _ALLOWED_HOSTS = {h.strip().lower() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()}
+
+if not _ALLOWED_HOSTS and os.getenv("NODE_ENV") == "production":
+    # Not a hard boot failure — an existing deployment without the var must keep
+    # starting — but this IS a missing control, so it must be loud on every boot.
+    logging.getLogger(__name__).warning(
+        "ALLOWED_HOSTS is not set in production: the Host header is NOT validated. "
+        "Set ALLOWED_HOSTS=bizcheck.ua.com,www.bizcheck.ua.com")
 
 
 @app.before_request
@@ -183,6 +199,7 @@ app.register_blueprint(admin_feedback_bp)
 app.register_blueprint(tg_feedback_bp)
 app.register_blueprint(tg_exports_bp)
 app.register_blueprint(tg_group_bp)
+app.register_blueprint(health_bp)
 
 # ---------------------------------------------------------------------------
 # Admin panel now lives in the React SPA under /admin/*.
@@ -192,9 +209,9 @@ app.register_blueprint(tg_group_bp)
 # Health check
 # ---------------------------------------------------------------------------
 
-@app.route("/api/health")
-def health():
-    return jsonify({"status": "ok", "version": "1.0.0"})
+# GET /api/health — registered as a blueprint (see routes/health.py). It runs a
+# real `SELECT 1` and answers 503 when Postgres is unreachable, so Docker's
+# HEALTHCHECK and nginx stop routing to a worker that cannot serve requests.
 
 
 # ---------------------------------------------------------------------------

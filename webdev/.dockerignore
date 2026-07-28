@@ -1,0 +1,58 @@
+# Context de build pentru serviciul `frontend` (build.context: . + Dockerfile.frontend).
+# Dockerfile-ul copiază DOAR `frontend/` și `nginx.conf`, dar contextul întreg pleacă
+# spre daemon: fără fișierul ăsta se trimit ~380MB inutili (frontend/node_modules +
+# backend/venv + groupbot/venv) la fiecare build.
+#
+# Docker aplică pattern-urile pe segmente de cale → pentru „la orice nivel" e nevoie
+# de `**/`. Nu scoate `frontend/` și `nginx.conf` din context.
+
+# ── Secrete ──
+.env
+.env.*
+!.env.example
+!*.env.example
+**/*.pem
+**/*.key
+**/*.crt
+**/*.p12
+
+# ── Alte servicii (au propriile contexte de build) ──
+backend/
+tgbot/
+groupbot/
+
+# ── Node ──
+**/node_modules
+frontend/dist
+**/.vite
+**/*.local
+
+# ── Python ──
+**/venv
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+
+# ── Dumpuri / backupuri DB (date de clienți) ──
+backups/
+**/*.dump
+**/*.sql
+**/*.sql.gz
+
+# ── VCS / editor / OS ──
+.git
+.gitignore
+.claude/
+**/.DS_Store
+**/*.swp
+**/.idea
+**/.vscode
+
+# ── Infra & docs — nu au ce căuta în imagine ──
+docs/
+scripts/
+deploy.sh
+docker-compose.yml
+nginx-proxy.conf.example
+*.md

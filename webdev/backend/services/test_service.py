@@ -2,6 +2,7 @@
 
 import re
 from models.test import Test
+from utils.cache import invalidate_quiz_cache
 
 _SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 
@@ -118,7 +119,7 @@ def create_test(slug, name_uk, name_en, description_uk="", description_en="",
     norm_price = _norm_price(price) if is_paid else None
     norm_currency = _norm_currency(currency)
 
-    return _serialize(Test.create(
+    created = _serialize(Test.create(
         slug, name_uk[:255], name_en[:255],
         (description_uk or "").strip(),
         (description_en or "").strip(),
@@ -131,6 +132,8 @@ def create_test(slug, name_uk, name_en, description_uk="", description_en="",
         is_coming_soon=bool(is_coming_soon),
         order_index=_norm_order(order_index),
     ))
+    invalidate_quiz_cache()
+    return created
 
 
 def update_test(test_id, data):
@@ -151,7 +154,7 @@ def update_test(test_id, data):
     )
 
     features = _norm_features(data.get("features")) if "features" in data else None
-    return _serialize(Test.update(
+    updated = _serialize(Test.update(
         test_id,
         slug,
         (data.get("name_uk") or existing["name_uk"]).strip()[:255],
@@ -171,6 +174,9 @@ def update_test(test_id, data):
         is_coming_soon=bool(data.get("is_coming_soon", existing.get("is_coming_soon", False))),
         order_index=_norm_order(data["order_index"]) if "order_index" in data else None,
     ))
+    # The quiz payload embeds the test's slug/name → any test edit must drop it.
+    invalidate_quiz_cache()
+    return updated
 
 
 def reorder_tests(items):
@@ -195,6 +201,7 @@ def reorder_tests(items):
     if not norm:
         raise ValueError("No valid items to reorder")
     Test.reorder(norm)
+    invalidate_quiz_cache()
     return len(norm)
 
 
@@ -203,4 +210,5 @@ def delete_test(test_id):
     if not existing:
         raise ValueError("Test not found")
     Test.delete(test_id)
+    invalidate_quiz_cache()
     return True

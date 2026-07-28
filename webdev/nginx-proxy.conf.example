@@ -1,0 +1,127 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  BizCheck — configul reverse-proxy-ului EXTERN (`nginx_proxy`)
+#
+#  ACEST FIȘIER NU E FOLOSIT DE DOCKER COMPOSE DIN webdev/.
+#  E documentația versionată a ceea ce trebuie să existe pe serverul din față,
+#  containerul/serviciul care termină TLS-ul. Până acum configul lui exista
+#  DOAR pe server, neversionat — dacă serverul se pierde, se pierde și el.
+#
+#  Instalare pe server:
+#     sudo cp nginx-proxy.conf.example /etc/nginx/sites-available/bizcheck.ua.com
+#     sudo ln -s /etc/nginx/sites-available/bizcheck.ua.com /etc/nginx/sites-enabled/
+#     sudo nginx -t && sudo systemctl reload nginx
+#
+#  Certificat (prima dată, cu proxy-ul deja pornit pe :80):
+#     sudo certbot certonly --webroot -w /var/www/certbot \
+#          -d bizcheck.ua.com -d www.bizcheck.ua.com
+#
+#  IMPORTANT: containerul din spate (webdev-frontend-1) NU are TLS. Toate
+#  redirecturile http→https și www→non-www sunt duplicate și acolo (vezi
+#  webdev/nginx.conf), pe baza X-Forwarded-Proto — deci configurația e corectă
+#  chiar dacă proxy-ul din față e schimbat sau lipsește temporar.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─── Upstream: containerul de frontend din rețeaua Docker a stack-ului ──────
+# Numele depinde de cum e pornit stack-ul:
+#   - același host, proxy în afara Docker →  127.0.0.1:5173  (portul din
+#     webdev/docker-compose.yml, legat pe 127.0.0.1)
+#   - proxy ÎN Docker, atașat la rețeaua `webdev_default` →  webdev-frontend-1:80
+upstream bizcheck_app {
+    server 127.0.0.1:5173;
+    keepalive 32;
+}
+
+# ─── 1. HTTP :80 — doar ACME + redirect spre HTTPS ──────────────────────────
+server {
+    listen 80;
+    listen [::]:80;
+    server_name bizcheck.ua.com www.bizcheck.ua.com;
+    server_tokens off;
+
+    # Let's Encrypt http-01. TREBUIE să rămână peste redirect (prefixul `^~`
+    # bate orice regex, iar aici e înaintea `return 301`).
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type "text/plain";
+        allow all;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ─── 2. HTTPS www → non-www (canonicalizare într-un singur hop) ─────────────
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;                 # nginx >= 1.25.1; pe versiuni vechi: `listen 443 ssl http2;`
+    server_name www.bizcheck.ua.com;
+    server_tokens off;
+
+    # Același certificat (acoperă ambele nume, dacă l-ai cerut cu -d www…).
+    ssl_certificate     /etc/letsencrypt/live/bizcheck.ua.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bizcheck.ua.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    return 301 https://bizcheck.ua.com$request_uri;
+}
+
+# ─── 3. HTTPS canonic ───────────────────────────────────────────────────────
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name bizcheck.ua.com;
+    server_tokens off;
+
+    ssl_certificate     /etc/letsencrypt/live/bizcheck.ua.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bizcheck.ua.com/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/bizcheck.ua.com/chain.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    resolver 1.1.1.1 8.8.8.8 valid=300s;
+    resolver_timeout 5s;
+
+    # HSTS se pune și în containerul din spate; aici e plasa de siguranță
+    # pentru răspunsurile generate de proxy (erori 502/504, redirecturi).
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    client_max_body_size 25m;
+
+    # Reînnoirea certificatului: certbot renew lovește tot :80, dar ținem
+    # locația și aici pentru cazul unui challenge redirecționat.
+    location ^~ /.well-known/ {
+        root /var/www/certbot;
+        allow all;
+        try_files $uri =404;
+        default_type "text/plain";
+    }
+
+    location / {
+        proxy_pass http://bizcheck_app;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        # OVERWRITE, nu append — vezi CLAUDE.md: backendul citește exact un hop
+        # prin ProxyFix(x_for=1), iar rate-limit-ul e cheiat pe IP-ul rezultat.
+        # Dacă adaugi ÎNCĂ un proxy în față (Cloudflare etc.), reconfigurezi
+        # ambele niveluri, altfel rate-limit-ul devine spoofabil.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;   # containerul din spate
+                                                      # decide redirectul pe baza lui
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header Connection "";               # păstrează keepalive spre upstream
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 10s;
+    }
+}

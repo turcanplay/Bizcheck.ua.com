@@ -8,7 +8,7 @@ from flask import Blueprint, request, jsonify, Response
 from services.submission_service import (
     create_submission, update_submission, save_submission_pdf,
     get_all_submissions, get_submission_pdf, get_submission_detail,
-    delete_submission, delete_all_submissions,
+    delete_submission, delete_all_submissions, count_submissions,
 )
 from models.submission import Submission
 from middleware.admin_middleware import admin_required, submission_owner_or_admin
@@ -164,7 +164,10 @@ def update(sub_id):
         from services.sales_notify import maybe_notify_sales
         maybe_notify_sales(sub_id)
     except Exception:
-        pass  # notification must never break the user-facing save
+        # Swallowed ON PURPOSE: the notification must never break the
+        # user-facing save. Logged with a stack trace so the failure is
+        # visible in `docker compose logs` instead of vanishing.
+        log.exception("[sales] enqueue failed after PATCH of submission %s", sub_id)
     return jsonify({"submission": sub})
 
 
@@ -244,6 +247,9 @@ def public_report_pdf(sub_id):
         last = re.sub(r'[^\w\-]', '_', (sub.get("last_name") or "").strip())[:30]
         fname = f"BizCheck_{first}_{last}.pdf".replace("__", "_").strip("_")
     except Exception:
+        # Cosmetic only — fall back to the id-based filename below, but log it:
+        # a failure here usually means PII decryption is broken.
+        log.warning("[report.pdf] could not build filename for sub %s", sub_id, exc_info=True)
         fname = ""
     if not fname or fname == "BizCheck_.pdf":
         fname = f"BizCheck_{sub_id}.pdf"
@@ -255,12 +261,69 @@ def public_report_pdf(sub_id):
     )
 
 
+# Pagination policy for GET /submissions (admin listing).
+# OPT-IN by design: the existing admin SPA calls this endpoint with no paging
+# params and renders `data.submissions` as a plain array, so silently slicing
+# the result would hide rows. Paging engages only when `page` or `per_page` is
+# present; without them the response is byte-for-byte what it was before, plus
+# the new `total` field and the X-Total-Count header.
+DEFAULT_PER_PAGE = 50
+MAX_PER_PAGE = 200
+
+
+def _paging_params(args):
+    """Parse ?page=&per_page= → (page, per_page) or (None, None) when absent.
+
+    Out-of-range values are clamped rather than rejected: a bad page number is
+    a UI bug, not an attack, and a 400 here would just break the table.
+    """
+    if "page" not in args and "per_page" not in args:
+        return None, None
+    try:
+        page = max(1, int(args.get("page", 1)))
+    except (TypeError, ValueError):
+        page = 1
+    try:
+        per_page = int(args.get("per_page", DEFAULT_PER_PAGE))
+    except (TypeError, ValueError):
+        per_page = DEFAULT_PER_PAGE
+    per_page = max(1, min(MAX_PER_PAGE, per_page))
+    return page, per_page
+
+
 @submissions_bp.route("", methods=["GET"])
 @admin_required
 def get_all():
+    """GET /submissions[?test_id=][&page=&per_page=] — admin listing.
+
+    Response (always): {"submissions": [...], "count": <len of this page>,
+                        "total": <rows matching the filter>}
+    Response (paged):  additionally {"page", "per_page", "total_pages"}
+    Header (always):   X-Total-Count: <total>
+    """
     test_id = request.args.get("test_id", type=int)
-    subs = get_all_submissions(test_id=test_id)
-    return jsonify({"submissions": subs, "count": len(subs)})
+    page, per_page = _paging_params(request.args)
+
+    total = count_submissions(test_id=test_id)
+    if page is None:
+        subs = get_all_submissions(test_id=test_id)
+        payload = {"submissions": subs, "count": len(subs), "total": total}
+    else:
+        subs = get_all_submissions(
+            test_id=test_id, limit=per_page, offset=(page - 1) * per_page,
+        )
+        payload = {
+            "submissions": subs,
+            "count": len(subs),
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": (total + per_page - 1) // per_page if per_page else 0,
+        }
+
+    resp = jsonify(payload)
+    resp.headers["X-Total-Count"] = str(total)
+    return resp
 
 
 @submissions_bp.route("/<int:sub_id>", methods=["GET"])
@@ -318,9 +381,14 @@ def export_excel():
     """
     from services.export_service import build_all_submissions_workbook, workbook_to_bytes
 
-    wb = build_all_submissions_workbook()
+    try:
+        wb = build_all_submissions_workbook()
+        data = workbook_to_bytes(wb)
+    except Exception:
+        log.exception("[export] all-submissions Excel failed")
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
     return Response(
-        workbook_to_bytes(wb),
+        data,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=bizcheck_submissions.xlsx"},
     )
@@ -346,6 +414,9 @@ def view_single_user_report(sub_id):
         page, _name = build_single_user_report_html(sub_id)
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] single-user HTML report failed for sub %s", sub_id)
+        return jsonify({"error": "Report generation failed. Check the server logs."}), 500
     return Response(page, mimetype="text/html; charset=utf-8")
 
 
@@ -356,10 +427,14 @@ def export_single_user_excel(sub_id):
     from services.export_service import build_single_user_workbook, workbook_to_bytes
     try:
         wb, stem = build_single_user_workbook(sub_id)
+        data = workbook_to_bytes(wb)
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] single-user Excel failed for sub %s", sub_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
     return Response(
-        workbook_to_bytes(wb),
+        data,
         mimetype=_XLSX_MIME,
         headers={"Content-Disposition": f'attachment; filename="BizCheck_{stem}.xlsx"'},
     )
@@ -370,9 +445,16 @@ def export_single_user_excel(sub_id):
 def export_test_combined_excel(test_id):
     """One Excel file for a test — summary sheet + one detail sheet per user."""
     from services.export_service import build_test_combined_workbook, workbook_to_bytes
-    wb = build_test_combined_workbook(test_id)
+    try:
+        wb = build_test_combined_workbook(test_id)
+        data = workbook_to_bytes(wb)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] combined Excel failed for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
     return Response(
-        workbook_to_bytes(wb),
+        data,
         mimetype=_XLSX_MIME,
         headers={
             "Content-Disposition": f'attachment; filename="BizCheck_test_{test_id}_combined.xlsx"',
@@ -385,7 +467,13 @@ def export_test_combined_excel(test_id):
 def export_test_excels_zip(test_id):
     """ZIP of per-user Excel files for a test."""
     from services.export_service import build_excels_zip_for_test
-    data = build_excels_zip_for_test(test_id)
+    try:
+        data = build_excels_zip_for_test(test_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] Excel ZIP failed for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
     return Response(
         data,
         mimetype="application/zip",
@@ -404,14 +492,21 @@ def export_test_pdfs_zip(test_id):
     from services.export_service import build_pdfs_zip_for_test
 
     # No cap for admin (max_bytes=None) — streaming from disk avoids OOM.
-    path = build_pdfs_zip_for_test(test_id)
+    try:
+        path = build_pdfs_zip_for_test(test_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] PDF ZIP failed for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
 
     @after_this_request
     def _cleanup(resp):
         try:
             os.remove(path)
         except OSError:
-            pass
+            # Temp file already gone / unlink raced — the OS reaps /tmp anyway.
+            log.warning("[export] could not remove temp zip %s", path, exc_info=True)
         return resp
 
     return send_file(

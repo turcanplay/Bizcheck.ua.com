@@ -24,13 +24,13 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
   const [bannerVisible, setBannerVisible] = useState(stored === null);
 
   // Re-applying a stored choice to the third-party tags is a genuine side effect
-  // (it calls fbq and injects the Metrica <script>), so it stays in an effect —
-  // it must not run during render, and `stored`'s initializer can be invoked
-  // twice under StrictMode. It sets no state, so it triggers no extra render.
+  // (it calls fbq), so it stays in an effect — it must not run during render,
+  // and `stored`'s initializer can be invoked twice under StrictMode. It sets no
+  // state, so it triggers no extra render.
   useEffect(() => {
     if (!stored) return;
     applyMarketingConsent(stored.marketing);  // marketing salvat → Meta Pixel
-    applyAnalyticsConsent(stored.analytics);  // statistici salvat → încarcă Yandex Metrica
+    applyAnalyticsConsent(stored.analytics);  // statistici salvat → niciun furnizor conectat
   }, [stored]);
 
   const acceptAll = useCallback(() => {

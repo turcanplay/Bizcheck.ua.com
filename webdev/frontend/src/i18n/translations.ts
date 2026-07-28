@@ -101,12 +101,12 @@ export const translations = {
     en: 'Smith',
   },
   placeholderEmail: {
-    uk: 'Office@bizcheck.md',
-    en: 'Office@bizcheck.md',
+    uk: 'name@company.com',
+    en: 'name@company.com',
   },
   placeholderPhone: {
-    uk: '+373 XX XXX XXX',
-    en: '+373 XX XXX XXX',
+    uk: '+380 XX XXX XX XX',
+    en: '+380 XX XXX XX XX',
   },
 
   // Start page — Company info (Step 2)
@@ -307,8 +307,8 @@ export const translations = {
 
   // Report
   reportTitle: {
-    uk: 'Звіт Bizcheck.md',
-    en: 'Bizcheck.md Report',
+    uk: 'Звіт Bizcheck.ua.com',
+    en: 'Bizcheck.ua.com Report',
   },
   reportSubtitle: {
     uk: 'Аналіз за категоріями · Оцінка ризиків бізнесу',
@@ -463,13 +463,10 @@ export const translations = {
   ctaEmailLabel:    { uk: 'EMAIL',    en: 'EMAIL' },
   ctaTelegramLabel: { uk: 'TELEGRAM', en: 'TELEGRAM' },
   ctaWebLabel:      { uk: 'ВЕБ',      en: 'WEB' },
-  ctaEmailValue:    { uk: 'office@bizcheck.md', en: 'office@bizcheck.md' },
-  ctaTelegramValue: { uk: '@CROWE_TM', en: '@CROWE_TM' },
-  ctaWebValue:      { uk: 'crowe-tm.md', en: 'crowe-tm.md' },
   ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   ctaDisclaimer: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
-    en: 'This report is generated automatically by the Bizcheck.md platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.ua.com і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
+    en: 'This report is generated automatically by the Bizcheck.ua.com platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
   // Loading / empty states
@@ -599,8 +596,8 @@ export const translations = {
   ctaEmailBtn:         { uk: 'Надіслати', en: 'Send' },
   ctaEmailSent:        { uk: 'Звіт уже в дорозі!',
                           en: 'The report is on its way!' },
-  ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.md (PDF). Перевірте також папку Спам.',
-                          en: 'In a few seconds you will receive an email at {email} with a button to open your Bizcheck.md report (PDF). Also check your Spam folder.' },
+  ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.ua.com (PDF). Перевірте також папку Спам.',
+                          en: 'In a few seconds you will receive an email at {email} with a button to open your Bizcheck.ua.com report (PDF). Also check your Spam folder.' },
   ctaEmailResend:      { uk: 'Надіслати ще раз', en: 'Send again' },
   ctaEmailResent:      { uk: 'Надіслано ще раз ✓', en: 'Sent again ✓' },
   ctaEmailComingSoon:  { uk: 'Незабаром', en: 'Coming soon' },
@@ -620,8 +617,8 @@ export const translations = {
   // Prominent "check Spam" notice on the email-sent success screen.
   ctaSpamNoticeTitle:  { uk: 'Перевірте папку СПАМ',
                           en: 'Check your SPAM folder' },
-  ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.md.',
-                          en: 'Sometimes the email lands in Spam or Promotions. If you do not see the report in your Inbox after a few minutes, look there for an email from Bizcheck.md.' },
+  ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.ua.com.',
+                          en: 'Sometimes the email lands in Spam or Promotions. If you do not see the report in your Inbox after a few minutes, look there for an email from Bizcheck.ua.com.' },
 
   // Download done state — shown after PDF saved + email dispatched
   ctaDownloadDoneTitle: {
@@ -652,8 +649,8 @@ export const translations = {
     en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   pdfFooterConfidential: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.md і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
-    en: 'This report is generated automatically by the Bizcheck.md platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.ua.com і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
+    en: 'This report is generated automatically by the Bizcheck.ua.com platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
   },
   pdfFooterGenerated: {
     uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу за участю профільних фахівців.',
@@ -666,8 +663,8 @@ export const translations = {
   heroNavLogin:  { uk: 'Увійти',  en: 'Log in' },
   heroNavSignup: { uk: 'Реєстрація', en: 'Sign up' },
   heroSearchPh:  { uk: 'Пошук тестів і шаблонів', en: 'Search tests and templates' },
-  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 У МОЛДОВІ', en: 'THE #1 PLATFORM IN MOLDOVA' },
-  heroTitleLine1: { uk: 'Bizcheck.md', en: 'Bizcheck.md' },
+  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 В УКРАЇНІ', en: 'THE #1 PLATFORM IN UKRAINE' },
+  heroTitleLine1: { uk: 'Bizcheck.ua.com', en: 'Bizcheck.ua.com' },
   heroTitleLine2: { uk: 'Чек-ап бізнесу', en: 'Business check-up' },
   heroDescLanding: {
     uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
@@ -807,15 +804,15 @@ export const translations = {
   footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    en: 'Crowe Turcan Mikhailenko' },
 
   // Crowe / founder block (landing, after Hero)
-  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.MD', en: 'WHO IS BEHIND BIZCHECK.MD' },
+  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.UA.COM', en: 'WHO IS BEHIND BIZCHECK.UA.COM' },
   croweTitle:   { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweBody1: {
     uk: 'Crowe Turcan Mikhailenko є частиною міжнародної мережі Crowe Global — однієї з провідних світових мереж у сфері аудиту, консалтингу та корпоративних рішень.',
     en: 'Crowe Turcan Mikhailenko is part of the international Crowe Global network — one of the world\'s leading networks in audit, consulting and corporate solutions.',
   },
   croweBody2: {
-    uk: 'Ми працюємо з місцевими та міжнародними компаніями, надаючи підтримку, адаптовану до юридичних, податкових і комерційних реалій Республіки Молдова.',
-    en: 'We work with local and international companies, providing support tailored to the legal, tax and commercial realities of the Republic of Moldova.',
+    uk: 'Ми працюємо з місцевими та міжнародними компаніями, надаючи підтримку, адаптовану до юридичних, податкових і комерційних реалій України.',
+    en: 'We work with local and international companies, providing support tailored to the legal, tax and commercial realities of Ukraine.',
   },
   croweBody3: {
     uk: 'Ми орієнтовані на практичні, зрозумілі й застосовні рішення, щоб наші клієнти могли ухвалювати впевнені та обґрунтовані рішення.',

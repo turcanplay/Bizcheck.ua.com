@@ -50,12 +50,12 @@ export default function QuizApp() {
   const test = tests.find(t => t.slug === selectedTestSlug);
   const testName = test ? (lang === 'en' ? test.name_en : test.name_uk) : '';
   const seoTitle = testName
-    ? `${testName} · Bizcheck.md · Crowe`
-    : (lang === 'en' ? 'Test Bizcheck.md · Crowe' : 'Тест Bizcheck.md · Crowe');
+    ? `${testName} · Bizcheck.ua.com · Crowe`
+    : (lang === 'en' ? 'Test Bizcheck.ua.com · Crowe' : 'Тест Bizcheck.ua.com · Crowe');
   const seoDesc = testName
     ? (lang === 'en'
-        ? `Take the "${testName}" test on Bizcheck.md and get a detailed report on your business risks.`
-        : `Пройдіть тест «${testName}» на Bizcheck.md і отримайте детальний звіт про ризики вашого бізнесу.`)
+        ? `Take the "${testName}" test on Bizcheck.ua.com and get a detailed report on your business risks.`
+        : `Пройдіть тест «${testName}» на Bizcheck.ua.com і отримайте детальний звіт про ризики вашого бізнесу.`)
     : undefined;
 
   // Quiz pages are dynamic — index but with light priority; CTA stage is noindex.

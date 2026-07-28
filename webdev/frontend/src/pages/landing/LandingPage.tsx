@@ -11,10 +11,10 @@ import FinalCta from './sections/FinalCta';
 import Footer from './sections/Footer';
 import './LandingPage.css';
 
-const LANDING_TITLE_UK = 'Bizcheck.md · Оцінка ризиків бізнесу · Crowe Turcan Mikhailenko';
-const LANDING_TITLE_EN = 'Bizcheck.md · Business Risk Assessment · Crowe Turcan Mikhailenko';
-const LANDING_DESC_UK  = 'Діагностика ризиків бізнесу за методологією Crowe. Безкоштовний онлайн-тест, детальний звіт у PDF, юридичні шаблони та консультації для МСБ.';
-const LANDING_DESC_EN  = 'Business risk diagnostics based on the Crowe methodology. A free online test, a detailed PDF report, legal templates, and consulting for SMEs in the Republic of Moldova.';
+const LANDING_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com';
+const LANDING_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.ua.com';
+const LANDING_DESC_UK  = 'Діагностика ризиків бізнесу за методологією Crowe для компаній в Україні. Безкоштовний онлайн-тест, детальний PDF-звіт, юридичні шаблони та консультації для МСБ.';
+const LANDING_DESC_EN  = 'Business risk diagnostics based on the Crowe methodology. A free online test, a detailed PDF report, legal templates, and consulting for SMEs in Ukraine.';
 
 export default function LandingPage() {
   const { lang } = useLang();

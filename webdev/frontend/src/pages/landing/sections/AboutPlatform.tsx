@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
 import './AboutPlatform.css';
 
 export default function AboutPlatform() {
   const { t, lang } = useLang();
+  const L = useLocalizedPath();
   const navigate = useNavigate();
   const ctaTarget = useCtaTarget('cta_about_test');
 
@@ -21,14 +23,14 @@ export default function AboutPlatform() {
     e.preventDefault();
     // Admin-configured test target wins; otherwise scroll to the catalog.
     if (ctaTarget.kind === 'route') {
-      navigate(ctaTarget.to);
+      navigate(L(ctaTarget.to));
       return;
     }
     const el = document.getElementById('resurse');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      navigate('/');
+      navigate(L('/'));
       requestAnimationFrame(() => {
         document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -69,7 +71,7 @@ export default function AboutPlatform() {
             <AboutPoint icon="check" text={t('aboutP3')} />
           </ul>
 
-          <Link to="/" className="about__cta" onClick={goToCatalog}>
+          <Link to={L('/')} className="about__cta" onClick={goToCatalog}>
             {t('aboutCta')}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M5 12h14M13 6l6 6-6 6"

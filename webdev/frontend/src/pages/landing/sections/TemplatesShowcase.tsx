@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { publicApi, type PublicTemplate } from '@/api/public';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 
 /**
  * TEMPLATES section — placeholder cards.
  * Design sources: /design/templates-section.png + /design/card-template.png
  * Logic already wired:
- *   - Free template → /sablon/:slug (delivery picker page)
- *   - Paid template → /plata/sablon/:slug → then /sablon/:slug?access=<token>
+ *   - Free template → /<lang>/templates/:slug (delivery picker page)
+ *   - Paid template → /<lang>/checkout/template/:slug → then /<lang>/templates/:slug?access=<token>
  */
 export default function TemplatesShowcase() {
   const nav = useNavigate();
+  const L = useLocalizedPath();
   const [items, setItems] = useState<PublicTemplate[]>([]);
   const [err, setErr] = useState('');
 
@@ -21,7 +23,7 @@ export default function TemplatesShowcase() {
   }, []);
 
   function onPick(t: PublicTemplate) {
-    nav(t.is_paid ? `/plata/sablon/${t.slug}` : `/sablon/${t.slug}`);
+    nav(L(t.is_paid ? `/checkout/template/${t.slug}` : `/templates/${t.slug}`));
   }
 
   return (

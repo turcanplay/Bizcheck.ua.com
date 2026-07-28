@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useQuiz } from '@/context/QuizContext';
 import croweLogo from './logo/Crowe.png';
 import './Header.css';
 
 export default function Header() {
   const { lang, setLang, t } = useLang();
+  const L = useLocalizedPath();
   const { tests, selectedTestSlug, phase } = useQuiz();
 
   const currentTest = tests.find(x => x.slug === selectedTestSlug);
@@ -18,11 +20,11 @@ export default function Header() {
 
   return (
     <header className="site-header">
-      <Link to="/" className="header-logo" aria-label="Bizcheck.md home">
+      <Link to={L('/')} className="header-logo" aria-label="Bizcheck.ua.com home">
         <img src={croweLogo} alt="Crowe" className="crowe-logo__img" />
         <div className="header-sep" />
         <div className="header-sub">
-          {showTestName ? testName : 'Bizcheck.md'}
+          {showTestName ? testName : 'Bizcheck.ua.com'}
         </div>
       </Link>
       <div className="header-right">

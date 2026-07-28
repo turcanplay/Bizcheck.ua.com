@@ -35,6 +35,31 @@ def bot_headers() -> dict:
     return {"X-Bot-Secret": BOT_SHARED_SECRET} if BOT_SHARED_SECRET else {}
 
 
+# --- Branding / contact -----------------------------------------------------
+# Single source of truth for the public brand + support address. Every string in
+# strings.py interpolates {site} / {contact} instead of hardcoding them, so the
+# UA launch only has to change these two values (or the env vars).
+# TODO: confirmă contactul pentru piața UA — the address below is the one
+# inherited from the MD launch and has NOT been confirmed for bizcheck.ua.com.
+SITE_NAME     = os.getenv("SITE_NAME", "Bizcheck.ua.com")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "office@bizcheck.md")
+
+
+# --- Backend retry policy ---------------------------------------------------
+# Transient failures (connect/read timeouts, 5xx) are retried with an
+# exponential backoff + jitter. 4xx are NOT retried: 403/404 are legitimate
+# answers ("expired link", "wrong token") and retrying only delays the message.
+RETRY_ATTEMPTS   = 3      # total attempts, i.e. 1 try + 2 retries
+RETRY_BASE_DELAY = 0.5    # seconds; doubles each retry (0.5 → 1.0 → 2.0)
+RETRY_MAX_DELAY  = 2.0
+RETRY_JITTER     = 0.25   # ± fraction of the delay, to de-synchronise retries
+
+
+# --- Supported UI languages -------------------------------------------------
+LANGUAGES    = ("uk", "en")
+DEFAULT_LANG = "uk"
+
+
 # --- Input validation -------------------------------------------------------
 EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$')
 PHONE_RE = re.compile(r'^\+?[\d\s\-()]{7,20}$')

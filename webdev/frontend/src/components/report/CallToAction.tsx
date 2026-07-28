@@ -1,5 +1,6 @@
 import { useLang } from '@/context/LanguageContext';
 import { useTelegramLink } from '@/hooks/useTelegramLink';
+import { COMPANY_NAME, CONTACT_EMAIL, CONTACT_PHONE } from '@/config/contact';
 import './CallToAction.css';
 
 interface CallToActionProps {
@@ -57,7 +58,7 @@ export default function CallToAction({ onRestart, submissionId, submissionToken 
 
         <div className="cta__footer">
           <div className="cta__crowe">
-            <strong>Crowe Turcan Mikhailenco</strong> · office@bizcheck.md · +373 79 027 317
+            <strong>{COMPANY_NAME}</strong> · {CONTACT_EMAIL} · {CONTACT_PHONE}
           </div>
           <button className="cta__restart" onClick={onRestart}>
             {t('ctaRestart')}

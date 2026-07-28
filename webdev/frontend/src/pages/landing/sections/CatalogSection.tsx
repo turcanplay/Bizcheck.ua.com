@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
@@ -63,6 +64,7 @@ function toUnified(tests: PublicTest[], templates: PublicTemplate[]): UnifiedIte
 
 export default function CatalogSection() {
   const { t, lang } = useLang();
+  const L = useLocalizedPath();
   const nav = useNavigate();
   const location = useLocation();
   const catalogCta = useCtaTarget('cta_catalog_test');
@@ -144,9 +146,9 @@ export default function CatalogSection() {
   function onCardClick(x: UnifiedItem) {
     if (x.is_coming_soon) return;
     if (x.kind === 'test') {
-      nav(x.is_paid ? `/plata/test/${x.slug}` : `/test/${x.slug}`);
+      nav(L(x.is_paid ? `/checkout/test/${x.slug}` : `/test/${x.slug}`));
     } else {
-      nav(x.is_paid ? `/plata/sablon/${x.slug}` : `/sablon/${x.slug}`);
+      nav(L(x.is_paid ? `/checkout/template/${x.slug}` : `/templates/${x.slug}`));
     }
   }
 
@@ -154,7 +156,7 @@ export default function CatalogSection() {
   // if none is set, falls back to showing the tests tab.
   function handleCatalogCta() {
     if (catalogCta.kind === 'route') {
-      nav(catalogCta.to);
+      nav(L(catalogCta.to));
     } else {
       setTab('tests');
       document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

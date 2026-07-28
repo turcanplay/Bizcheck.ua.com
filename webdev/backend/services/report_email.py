@@ -63,7 +63,10 @@ def dispatch_report_email(sub_id):
             if t:
                 test_name = (t.get("name_en") if lang == "en" else t.get("name_uk")) or t.get("name_uk") or ""
         except Exception:
-            pass
+            # Swallowed: the email still goes out, just with the generic
+            # "Звіт Bizcheck.ua.com" title instead of the real test name.
+            log.warning("[report-email] could not resolve the name of test %s",
+                        test_id, exc_info=True)
 
     # Friendly date in the user's language.
     try:

@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { publicApi, type PublicTest } from '@/api/public';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 
 /**
  * TESTS section — placeholder cards.
  * Design sources: /design/tests-section.png + /design/card-test.png
  * Logic already wired:
- *   - Free test  → navigate('/test/:slug')
- *   - Paid test  → navigate('/plata/test/:slug')
+ *   - Free test  → navigate('/<lang>/test/:slug')
+ *   - Paid test  → navigate('/<lang>/checkout/test/:slug')
  */
 export default function TestsShowcase() {
   const nav = useNavigate();
+  const L = useLocalizedPath();
   const [tests, setTests] = useState<PublicTest[]>([]);
   const [err, setErr] = useState('');
 
@@ -21,7 +23,7 @@ export default function TestsShowcase() {
   }, []);
 
   function onPick(t: PublicTest) {
-    nav(t.is_paid ? `/plata/test/${t.slug}` : `/test/${t.slug}`);
+    nav(L(t.is_paid ? `/checkout/test/${t.slug}` : `/test/${t.slug}`));
   }
 
   return (

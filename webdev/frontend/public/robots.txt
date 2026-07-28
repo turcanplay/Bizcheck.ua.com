@@ -1,8 +1,12 @@
-# Bizcheck.md — robots.txt
+# Bizcheck.ua.com — robots.txt
 # Crawlers may index public pages.
 
 User-agent: *
 Allow: /
+
+# Admin SPA and API are not content — keep them out of the index.
+Disallow: /admin_bizcheck_md_crowe/
+Disallow: /api_crowe_bizcheck/
 
 # Sitemap location for fast discovery.
 Sitemap: https://bizcheck.ua.com/sitemap.xml

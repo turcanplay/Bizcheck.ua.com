@@ -12,6 +12,7 @@ on-demand commands. It is SEPARATE from the client-facing report bot:
   • /client   — pick a test → pick a person → fetch that person's PDF.
   • /register — register THIS group as the destination for sales notifications.
   • /unregister — clear that registration.
+  • /help     — the command list (also published to Telegram's Menu button).
 
 Registration flow
 -----------------
@@ -38,11 +39,13 @@ registered). The backend endpoints are guarded by BOT_SHARED_SECRET (strict).
 import io
 import os
 import time
+import random
+import asyncio
 import logging
 
 import httpx
 from dotenv import load_dotenv
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import BotCommand, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import Conflict, NetworkError, TimedOut
 from telegram.ext import (
     Application, AIORateLimiter, CommandHandler, CallbackQueryHandler, ContextTypes,
@@ -74,13 +77,74 @@ _MAX_UPLOAD = 49_000_000
 _REG_TTL = 60.0
 _reg_cache: dict = {"chat_id": None, "at": 0.0}
 
+# How long a /client selection stays armed. After this the bot stops treating
+# plain group messages as a person search (see on_client_search).
+_CLIENT_TTL = 300.0
+
+# Retry policy for backend calls. Transient failures only — httpx.RequestError
+# (timeouts / refused connections) and 5xx. A 4xx is a real answer (403 wrong
+# secret, 404 no PDF, 413 too big) and is returned to the caller immediately.
+_RETRY_ATTEMPTS   = 3     # 1 try + 2 retries
+_RETRY_BASE_DELAY = 0.5   # doubles each retry: 0.5s → 1s → (capped) 2s
+_RETRY_MAX_DELAY  = 2.0
+_RETRY_JITTER     = 0.25
+
 
 def _headers() -> dict:
     return {"X-Bot-Secret": BOT_SHARED_SECRET} if BOT_SHARED_SECRET else {}
 
 
+def _backoff(attempt: int) -> float:
+    delay = min(_RETRY_BASE_DELAY * (2 ** attempt), _RETRY_MAX_DELAY)
+    return delay + random.uniform(-_RETRY_JITTER, _RETRY_JITTER) * delay
+
+
+async def _http(method: str, url: str, *, timeout: float, **kwargs):
+    """One backend call, retrying transient failures with an exponential backoff.
+
+    Returns the last response — including a 5xx once the retries are exhausted,
+    so callers keep branching on the status code exactly as before. Re-raises
+    the last ``httpx.RequestError`` when the backend was never reached.
+    """
+    headers = {**_headers(), **(kwargs.pop("headers", None) or {})}
+    resp = None
+    last_exc = None
+
+    for attempt in range(_RETRY_ATTEMPTS):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await getattr(client, method)(url, headers=headers, **kwargs)
+            if resp.status_code < 500:
+                return resp
+            last_exc = None
+        except httpx.RequestError as exc:
+            resp = None
+            last_exc = exc
+
+        if attempt == _RETRY_ATTEMPTS - 1:
+            break
+        delay = _backoff(attempt)
+        logger.warning(
+            "backend %s %s failed (%s), retry %d/%d in %.1fs",
+            method.upper(), url,
+            last_exc if last_exc is not None else f"HTTP {resp.status_code}",
+            attempt + 1, _RETRY_ATTEMPTS - 1, delay,
+        )
+        await asyncio.sleep(delay)
+
+    if resp is not None:
+        return resp
+    raise last_exc
+
+
 async def _registered_chat_id() -> str | None:
-    """Registered chat id from the backend, cached ~60s. None on error/unset."""
+    """Registered chat id from the backend, cached ~60s. None on error/unset.
+
+    Deliberately NOT retried: this runs on the authorisation path of every
+    group message, so retrying would stall each one for seconds while the
+    backend is down. It already fails closed and a failure is not cached, so
+    the next message retries naturally.
+    """
     now = time.monotonic()
     if _reg_cache["at"] and (now - _reg_cache["at"]) < _REG_TTL:
         return _reg_cache["chat_id"]
@@ -225,8 +289,7 @@ async def cmd_register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "registered_by": _issuer(update),
     }
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.post(f"{GROUP}/register", json=payload, headers=_headers())
+        resp = await _http("post", f"{GROUP}/register", timeout=20.0, json=payload)
     except httpx.RequestError as exc:
         logger.warning("group register backend unreachable: %s", exc)
         await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
@@ -255,8 +318,7 @@ async def cmd_unregister(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.post(f"{GROUP}/unregister", json={}, headers=_headers())
+        resp = await _http("post", f"{GROUP}/unregister", timeout=20.0, json={})
     except httpx.RequestError as exc:
         logger.warning("group unregister backend unreachable: %s", exc)
         await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
@@ -283,11 +345,13 @@ async def cmd_unregister(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 # ---------------------------------------------------------------------------
 
 async def _send_menu(update: Update, kind: str) -> None:
+    """Inline test picker. `kind` is the callback prefix — "xls" (/excel) or
+    "cl" (/client). /pdf does not use this menu: it just points at the admin
+    panel."""
     if not await _allowed(update):
         return
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.get(f"{EXPORTS}/tests", headers=_headers())
+        resp = await _http("get", f"{EXPORTS}/tests", timeout=20.0)
     except httpx.RequestError as exc:
         logger.warning("tests list backend unreachable: %s", exc)
         await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.")
@@ -305,8 +369,6 @@ async def _send_menu(update: Update, kind: str) -> None:
           for t in tests]
     if kind == "xls":
         prompt = "Оберіть тест, для якого потрібен Excel:"
-    elif kind == "pdf":
-        prompt = "Оберіть тест, для якого потрібен PDF-архів:"
     else:  # cl
         prompt = "Оберіть тест, щоб переглянути особу:"
     await update.message.reply_text(
@@ -333,6 +395,54 @@ async def cmd_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def cmd_client(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await _send_menu(update, "cl")
+
+
+# Command menu published to Telegram. Ukrainian only — this is an internal bot
+# for a Ukrainian-speaking team. Keep in sync with the handlers in main().
+_COMMANDS = (
+    ("excel",      "Excel-звіт за тестом і періодом"),
+    ("client",     "PDF однієї особи"),
+    ("pdf",        "Де завантажити PDF-архів"),
+    ("register",   "Реєструвати цю групу для сповіщень (власник)"),
+    ("unregister", "Скасувати реєстрацію групи (власник)"),
+    ("help",       "Список команд"),
+)
+
+_HELP_TEXT = (
+    "🤖 *BizCheck — внутрішній бот команди*\n\n"
+    "/excel — обрати тест і період, отримати Excel-звіт у цю тему\n"
+    "/client — обрати тест і особу, отримати її PDF "
+    "(можна ввести ім'я для пошуку)\n"
+    "/pdf — посилання на адмін-панель для повного архіву PDF\n"
+    "/register — зареєструвати цю групу для сповіщень про завершені тести "
+    "(лише власник групи)\n"
+    "/unregister — скасувати реєстрацію (лише власник групи)\n"
+    "/help — це повідомлення\n\n"
+    "Сповіщення «Новий лід» надсилає сам бекенд, окремою темою для кожного тесту."
+)
+
+
+async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """/help — the command list. Answered in the allowed group only."""
+    if not await _allowed(update):
+        return
+    await update.message.reply_text(
+        _HELP_TEXT,
+        parse_mode="Markdown",
+        message_thread_id=_thread_id(update),
+    )
+
+
+async def _post_init(app: Application) -> None:
+    """Publish the command menu so the team sees the commands in Telegram's
+    "Menu" button instead of having to remember them."""
+    try:
+        await app.bot.set_my_commands(
+            [BotCommand(name, desc) for name, desc in _COMMANDS]
+        )
+        logger.info("Group bot command menu published")
+    except Exception as exc:
+        logger.warning("Could not publish the command menu: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -375,12 +485,8 @@ async def _send_excel(chat, thread_id, test_id, period) -> None:
     """Fetch the period-scoped Excel for a test and drop it into the topic."""
     note = await chat.send_message("Генерую Excel…", message_thread_id=thread_id)
     try:
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            resp = await client.get(
-                f"{EXPORTS}/excel/{test_id}",
-                params={"period": period},
-                headers=_headers(),
-            )
+        resp = await _http("get", f"{EXPORTS}/excel/{test_id}",
+                           timeout=180.0, params={"period": period})
     except httpx.RequestError as exc:
         logger.warning("export backend unreachable: %s", exc)
         await note.edit_text("Бекенд недоступний. Спробуйте ще раз.")
@@ -456,8 +562,7 @@ async def on_client_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     chat = query.message.chat
 
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.get(f"{EXPORTS}/submissions/{tid}", headers=_headers())
+        resp = await _http("get", f"{EXPORTS}/submissions/{tid}", timeout=20.0)
     except httpx.RequestError as exc:
         logger.warning("submissions list backend unreachable: %s", exc)
         await chat.send_message("Бекенд недоступний. Спробуйте ще раз.",
@@ -474,7 +579,10 @@ async def on_client_test(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                                 message_thread_id=thread_id)
         return
 
+    # Arm the free-text person search, but only for a while (see _CLIENT_TTL):
+    # without an expiry every later group message would trigger a lookup.
     context.user_data["client_test"] = int(tid)
+    context.user_data["client_test_at"] = time.monotonic()
     await chat.send_message(
         "Оберіть особу (або введіть ім'я для пошуку):",
         reply_markup=_subs_keyboard(subs),
@@ -496,8 +604,7 @@ async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     note = await chat.send_message("Готую PDF…", message_thread_id=thread_id)
     try:
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            resp = await client.get(f"{EXPORTS}/pdf/{sid}", headers=_headers())
+        resp = await _http("get", f"{EXPORTS}/pdf/{sid}", timeout=180.0)
     except httpx.RequestError as exc:
         logger.warning("pdf backend unreachable: %s", exc)
         await note.edit_text("Бекенд недоступний. Спробуйте ще раз.")
@@ -535,21 +642,38 @@ async def on_client_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await note.edit_text("Не вдалося надіслати файл. Спробуйте ще раз.")
 
 
+def _armed_client_test(context) -> int | None:
+    """The test id of an ACTIVE /client flow, or None.
+
+    The flow expires after _CLIENT_TTL: an operator who ran /client an hour ago
+    must not have every subsequent group message treated as a name search.
+    Expiry is silent — the message is simply ignored.
+    """
+    tid = context.user_data.get("client_test")
+    if not tid:
+        return None
+    started = context.user_data.get("client_test_at")
+    if started is None or (time.monotonic() - started) > _CLIENT_TTL:
+        context.user_data.pop("client_test", None)
+        context.user_data.pop("client_test_at", None)
+        return None
+    return tid
+
+
 async def on_client_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not await _allowed(update):
         return
-    tid = context.user_data.get("client_test")
+    tid = _armed_client_test(context)
     if not tid:
-        return  # not in a /client flow — ignore random group text
+        return  # no active /client flow — ignore random group text
 
     q = (update.message.text or "").strip()
     if not q:
         return
 
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.get(f"{EXPORTS}/submissions/{tid}",
-                                    params={"q": q}, headers=_headers())
+        resp = await _http("get", f"{EXPORTS}/submissions/{tid}",
+                           timeout=20.0, params={"q": q})
     except httpx.RequestError as exc:
         logger.warning("submissions search backend unreachable: %s", exc)
         await update.message.reply_text("Бекенд недоступний. Спробуйте ще раз.",
@@ -566,6 +690,8 @@ async def on_client_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                                         message_thread_id=_thread_id(update))
         return
 
+    # The operator is clearly still working — slide the expiry window forward.
+    context.user_data["client_test_at"] = time.monotonic()
     await update.message.reply_text(
         "Оберіть особу:",
         reply_markup=_subs_keyboard(subs),
@@ -596,11 +722,13 @@ def main() -> None:
         Application.builder()
         .token(BOT_TOKEN)
         .rate_limiter(AIORateLimiter(max_retries=3))
+        .post_init(_post_init)
         .build()
     )
     app.add_handler(CommandHandler("excel", cmd_excel))
     app.add_handler(CommandHandler("pdf", cmd_pdf))
     app.add_handler(CommandHandler("client", cmd_client))
+    app.add_handler(CommandHandler("help", cmd_help))
     # Owner-gated, NOT _allowed()-gated — the group is not registered yet here.
     app.add_handler(CommandHandler("register", cmd_register))
     app.add_handler(CommandHandler("unregister", cmd_unregister))

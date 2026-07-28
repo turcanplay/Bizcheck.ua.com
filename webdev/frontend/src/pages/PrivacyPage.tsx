@@ -1,30 +1,33 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import Seo from '@/components/seo/Seo';
 import { breadcrumbSchema } from '@/components/seo/schema';
+import { COMPANY_NAME, COMPANY_WEBSITE_LABEL, CONTACT_EMAIL } from '@/config/contact';
 import { PRIVACY_BLOCKS } from './privacyContent';
 import './PrivacyPage.css';
 
 export default function PrivacyPage() {
   const { lang } = useLang();
+  const L = useLocalizedPath();
 
   return (
     <div className="privacy-page">
       <Seo
         title={lang === 'en'
-          ? 'Privacy Policy · Bizcheck.md'
-          : 'Політика конфіденційності · Bizcheck.md'}
+          ? 'Privacy Policy · Bizcheck.ua.com'
+          : 'Політика конфіденційності · Bizcheck.ua.com'}
         description={lang === 'en'
-          ? 'Personal data processing policy, cookies and terms of use of the Bizcheck.md platform by Crowe Turcan Mikhailenko.'
-          : 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.md від Crowe Turcan Mikhailenko.'}
-        path="/confidentialitate"
+          ? 'Personal data processing policy, cookies and terms of use of the Bizcheck.ua.com platform by Crowe Turcan Mikhailenko.'
+          : 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.ua.com від Crowe Turcan Mikhailenko.'}
+        path="/privacy"
         jsonLd={breadcrumbSchema([
-          { name: lang === 'en' ? 'Home' : 'Головна', path: '/' },
-          { name: lang === 'en' ? 'Privacy' : 'Конфіденційність', path: '/confidentialitate' },
+          { name: lang === 'en' ? 'Home' : 'Головна', path: L('/') },
+          { name: lang === 'en' ? 'Privacy' : 'Конфіденційність', path: L('/privacy') },
         ])}
       />
       <div className="privacy-page__inner">
-        <Link to="/" className="privacy-page__back">
+        <Link to={L('/')} className="privacy-page__back">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 7H2M6 3L2 7l4 4" />
           </svg>
@@ -55,8 +58,8 @@ export default function PrivacyPage() {
         })}
 
         <div className="privacy-page__contact">
-          <strong>Crowe Turcan Mikhailenko</strong>
-          <span>office@bizcheck.md · crowe-tm.md</span>
+          <strong>{COMPANY_NAME}</strong>
+          <span>{CONTACT_EMAIL} · {COMPANY_WEBSITE_LABEL}</span>
         </div>
       </div>
     </div>

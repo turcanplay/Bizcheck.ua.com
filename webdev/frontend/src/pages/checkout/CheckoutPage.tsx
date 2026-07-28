@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 
 /**
  * Checkout — placeholder pentru integrarea MAIB (se face într-o iterație ulterioară).
@@ -6,10 +7,11 @@ import { useParams, Link } from 'react-router-dom';
  */
 export default function CheckoutPage() {
   const { kind, slug } = useParams<{ kind: string; slug: string }>();
+  const L = useLocalizedPath();
 
   return (
     <div style={{ maxWidth: 560, margin: '80px auto', padding: 24, textAlign: 'center' }} data-page="checkout">
-      <Link to="/" style={{ color: '#0A3A6E', textDecoration: 'none' }}>← Назад</Link>
+      <Link to={L('/')} style={{ color: '#0A3A6E', textDecoration: 'none' }}>← Назад</Link>
       <h1 style={{ marginTop: 12 }}>💳 Безпечна оплата</h1>
       <p style={{ color: '#555' }}>
         Тип: <b>{kind}</b> · Елемент: <b>{slug}</b>

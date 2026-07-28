@@ -20,8 +20,15 @@ from telegram.ext import ContextTypes
 
 import backend
 from config import logger, EMAIL_RE, PHONE_RE
-from strings import _STRINGS, _t
+from strings import _STRINGS, _t, pick_lang
 from helpers import _zone
+
+
+def _client_lang(update: Update) -> str:
+    """Best guess at the user's language before the backend tells us the
+    submission language: Telegram's own `language_code`, else the default."""
+    tg_user = update.effective_user
+    return pick_lang(getattr(tg_user, "language_code", None) if tg_user else None)
 
 
 # ---------------------------------------------------------------------------
@@ -43,12 +50,20 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Otherwise a report delivery token.
         await _send_report(update, context, token=arg)
     else:
-        # User opened the bot directly without a token — no language known yet,
-        # so fall back to the Ukrainian welcome.
+        # User opened the bot directly without a token — the backend has not
+        # told us a submission language yet, so follow their Telegram client.
         await update.message.reply_text(
-            _t("uk", "welcome"),
+            _t(_client_lang(update), "welcome"),
             parse_mode="Markdown",
         )
+
+
+async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """/help — what this bot does and how to reach a human."""
+    await update.message.reply_text(
+        _t(_client_lang(update), "help"),
+        parse_mode="Markdown",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -61,17 +76,20 @@ async def _feedback_open(update: Update, token: str) -> None:
     tg_user = update.effective_user
     if not tg_user:
         return
+    lang = _client_lang(update)
     payload = {
         "token": token,
         "chat_id": tg_user.id,
         "username": tg_user.username or "",
-        "lang": "en",
+        # The backend renders the outreach question in this language — send the
+        # user's actual Telegram language, not a hardcoded one.
+        "lang": lang,
     }
     try:
         resp = await backend.feedback_open(payload)
     except httpx.RequestError as exc:
         logger.warning("feedback/open backend unreachable: %s", exc)
-        await update.message.reply_text(_t("uk", "feedback_error"))
+        await update.message.reply_text(_t(lang, "feedback_error"))
         return
 
     # On success the backend sends the question itself, so there is nothing to
@@ -79,7 +97,7 @@ async def _feedback_open(update: Update, token: str) -> None:
     # empty chat after tapping their personal link — tell them instead.
     if resp.status_code != 200:
         logger.warning("feedback/open returned %s", resp.status_code)
-        await update.message.reply_text(_t("uk", "feedback_error"))
+        await update.message.reply_text(_t(lang, "feedback_error"))
 
 
 # ---------------------------------------------------------------------------
@@ -105,31 +123,33 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     chat    = update.effective_chat
     tg_user = update.effective_user
 
-    # Use a neutral loading message first (we don't know the language yet)
-    status_msg = await chat.send_message("⏳ ...")
+    # The backend has not told us the submission language yet, so the first
+    # messages follow the user's Telegram client language.
+    ui_lang = _client_lang(update)
+    status_msg = await chat.send_message(_t(ui_lang, "loading"))
 
     # 1. Fetch report data from backend
     try:
         resp = await backend.get_report(token)
     except httpx.RequestError as exc:
         logger.error("Backend unreachable: %s", exc)
-        await status_msg.edit_text(_t("uk", "server_error"))
+        await status_msg.edit_text(_t(ui_lang, "server_error"))
         return
 
     if resp.status_code == 404:
-        await status_msg.edit_text(_t("uk", "expired"), parse_mode="Markdown")
+        await status_msg.edit_text(_t(ui_lang, "expired"), parse_mode="Markdown")
         # Expired/invalid link → the lead can't self-serve; flag it to the team.
         await _alert_delivery_failed(update, token, "expired")
         return
 
     if resp.status_code != 200:
         logger.error("Backend returned %s", resp.status_code)
-        await status_msg.edit_text(_t("uk", "server_fail"))
+        await status_msg.edit_text(_t(ui_lang, "server_fail"))
         await _alert_delivery_failed(update, token, "server_fail")
         return
 
     data        = resp.json()
-    lang        = data.get("language") or "uk"
+    lang        = data.get("language") or ui_lang
     first_name  = data.get("first_name", "")
     last_name   = data.get("last_name", "")
     total_score = int(round(data.get("total_score") or 0))
@@ -150,7 +170,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     if block_scores:
         lines.append(_t(lang, "blocks_header"))
         for b in block_scores:
-            title = b.get("title", f"Bloc {b.get('order', '')}")
+            title = b.get("title") or _t(lang, "block_fallback", order=b.get("order", ""))
             lines.append(f"└ {title}")
         lines.append("")
 

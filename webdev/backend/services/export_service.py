@@ -5,6 +5,7 @@ or per-user Excels as a ZIP archive.
 """
 import html
 import json
+import logging
 import os
 import re
 import tempfile
@@ -19,6 +20,9 @@ from models.block import Block
 from models.question import Question
 from models.submission import Submission
 from models.test import Test
+
+
+log = logging.getLogger(__name__)
 
 
 class ExportTooLarge(Exception):
@@ -598,7 +602,10 @@ def build_pdfs_zip_for_test(test_id, max_bytes=None) -> str:
         try:
             os.remove(tmp.name)
         except OSError:
-            pass
+            # Swallowed so the ORIGINAL export error is the one re-raised below,
+            # but a leaked temp file can fill the disk — say so.
+            log.warning("[export] could not remove the partial temp zip %s", tmp.name,
+                        exc_info=True)
         raise
     tmp.close()
     return tmp.name

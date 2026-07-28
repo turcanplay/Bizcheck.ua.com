@@ -8,8 +8,10 @@ POST /api/tg/contact/<token>   — save Telegram chat_id + username after delive
 
 import os
 import re
+import hmac
 import uuid
 import base64
+import logging
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, request
@@ -18,12 +20,73 @@ from utils.crypto import decrypt_value
 from middleware.admin_middleware import submission_owner_or_admin
 from utils.validators import clean_text, clean_optional, MAX_NAME
 
+log = logging.getLogger(__name__)
+
 tg_bp = Blueprint("telegram", __name__, url_prefix="/api_crowe_bizcheck/tg")
 
 _TOKEN_TTL_HOURS = 24
 
 _EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$')
 _PHONE_RE = re.compile(r'^\+?[\d\s\-()]{7,20}$')
+
+
+# ---------------------------------------------------------------------------
+# Shared-secret gate for the PII-writing /tg/* endpoints
+# ---------------------------------------------------------------------------
+# /contact, /email and /lead all WRITE personal data (email, phone, Telegram
+# identity) onto a submission. Until now the deep-link token was the only thing
+# guarding them — a leaked token was enough to plant PII. routes/tg_group.py and
+# routes/tg_admin.py already require `X-Bot-Secret`; these are the stragglers.
+#
+# STAGED ROLLOUT — the enforcement is behind a flag, not on by default:
+#
+#   * header PRESENT  → it MUST match BOT_SHARED_SECRET, else 403.
+#                       (No secret configured + a header sent → 403 too: a
+#                       caller claiming bot identity we cannot verify is
+#                       rejected, never trusted.)
+#   * header ABSENT   → allowed, with a warning, UNLESS TG_REQUIRE_BOT_SECRET
+#                       is enabled — then 403.
+#
+# webdev/tgbot/backend.py now injects `bot_headers()` on EVERY backend call, so
+# the bot already satisfies the strict path. The flag exists so the backend can
+# be deployed before/independently of the bot without a window in which report
+# delivery 403s. Cutover = set TG_REQUIRE_BOT_SECRET=1 once both services are
+# running with the SAME BOT_SHARED_SECRET; nothing else changes.
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def _bot_secret_required() -> bool:
+    return (os.getenv("TG_REQUIRE_BOT_SECRET") or "").strip().lower() in _TRUTHY
+
+
+def _bot_secret_ok(req, endpoint: str) -> bool:
+    """See the module comment above for the staged-rollout policy."""
+    secret = (os.getenv("BOT_SHARED_SECRET") or "").strip()
+    provided = req.headers.get("X-Bot-Secret", "")
+
+    if provided:
+        # hmac.compare_digest → no early-exit timing leak on the secret.
+        if secret and hmac.compare_digest(provided, secret):
+            return True
+        log.warning("[tg] %s: X-Bot-Secret present but invalid — rejected", endpoint)
+        return False
+
+    if _bot_secret_required():
+        log.warning("[tg] %s: X-Bot-Secret missing and TG_REQUIRE_BOT_SECRET is on "
+                    "— rejected", endpoint)
+        return False
+
+    log.warning("[tg] %s called WITHOUT X-Bot-Secret (allowed: TG_REQUIRE_BOT_SECRET "
+                "is off). Update webdev/tgbot to send the header, then enable it.",
+                endpoint)
+    return True
+
+
+def _reject_unauthorized_bot(endpoint: str):
+    """Return a 403 response when the bot gate fails, else None."""
+    if _bot_secret_ok(request, endpoint):
+        return None
+    return jsonify({"error": "forbidden"}), 403
 
 
 def _submission_id_for_valid_token(token):
@@ -184,6 +247,10 @@ def report_delivery_failed(token):
             from models.submission import Submission
             sub = Submission.find_by_id(row["id"])
     except Exception:
+        # Swallowed: the bot already told the user delivery failed; a DB hiccup
+        # here must not turn into a 500 that makes the bot retry in a loop.
+        log.exception("[tg] /report/<token>/failed: could not resolve the submission "
+                      "for the reported token (reason=%s)", reason_label)
         sub = None
 
     if sub:
@@ -194,7 +261,10 @@ def report_delivery_failed(token):
                 tg_username=tg_username or None, tg_chat_id=tg_chat_id,
             )
         except Exception:
-            pass
+            # Swallowed on purpose (always-200 contract), but a lost alert means
+            # a lost lead — must be visible in the logs.
+            log.exception("[tg] could not enqueue the delivery-failure alert for "
+                          "submission %s (reason=%s)", sub.get("id"), reason_label)
 
     # Always 200 — fire-and-forget, identical response for known/unknown tokens.
     return jsonify({"ok": True})
@@ -211,6 +281,10 @@ def save_tg_contact(token):
     Saves tg_chat_id, tg_username, tg_first_name, tg_last_name to the submission
     so the team can follow up with the user via Telegram.
     """
+    denied = _reject_unauthorized_bot("/tg/contact")
+    if denied:
+        return denied
+
     data = request.get_json(silent=True) or {}
 
     tg_chat_id = data.get("tg_chat_id")
@@ -261,7 +335,9 @@ def save_tg_contact(token):
         from services.sales_notify import maybe_notify_sales
         maybe_notify_sales(row["id"])
     except Exception:
-        pass
+        # Swallowed: the contact was saved, which is what the bot is waiting on.
+        log.exception("[tg] /contact: sales notification failed for submission %s",
+                      row["id"])
 
     # Schedule the automatic feedback question (no-op unless enabled in admin).
     # Fires `feedback_auto_delay_min` minutes after delivery; once per chat.
@@ -270,7 +346,10 @@ def save_tg_contact(token):
         lang_row = query("SELECT language FROM submissions WHERE id = %s", (row["id"],), fetch_one=True)
         maybe_schedule_auto(tg_chat_id, (lang_row or {}).get("language") or "en")
     except Exception:
-        pass
+        # Swallowed: an unscheduled feedback question is a nice-to-have, the
+        # saved contact is the thing that matters.
+        log.exception("[tg] /contact: could not schedule auto-feedback for chat %s "
+                      "(submission %s)", tg_chat_id, row["id"])
 
     return jsonify({"ok": True})
 
@@ -289,6 +368,10 @@ def send_report_email_via_tg(token):
     Returns {ok:true} or {error, reason}. reason ∈
     {"invalid_email","expired","pdf_not_ready","error"}.
     """
+    denied = _reject_unauthorized_bot("/tg/email")
+    if denied:
+        return denied
+
     data = request.get_json(silent=True) or {}
     email = clean_text(data.get("email"), max_len=254).lower()
     if not email or not _EMAIL_RE.match(email):
@@ -303,6 +386,7 @@ def send_report_email_via_tg(token):
         from models.submission import Submission
         Submission.update(sub_id, email=email)
     except Exception:
+        log.exception("[tg] /email: could not persist the email on submission %s", sub_id)
         return jsonify({"error": "Could not save email", "reason": "error"}), 500
 
     from services.report_email import dispatch_report_email
@@ -328,6 +412,10 @@ def save_lead_via_tg(token):
     Returns {ok:true} or {error, reason} where reason ∈
     {"invalid_email","invalid_phone","empty","expired","error"}.
     """
+    denied = _reject_unauthorized_bot("/tg/lead")
+    if denied:
+        return denied
+
     data = request.get_json(silent=True) or {}
     email = clean_text(data.get("email"), max_len=254).lower()
     phone = clean_text(data.get("phone"), max_len=20)
@@ -352,6 +440,8 @@ def save_lead_via_tg(token):
         from models.submission import Submission
         Submission.update(sub_id, **fields)
     except Exception:
+        log.exception("[tg] /lead: could not persist contacts on submission %s "
+                      "(fields=%s)", sub_id, sorted(fields))
         return jsonify({"error": "Could not save contacts", "reason": "error"}), 500
 
     # Lead now has name (from the quiz) + a contact channel → notify sales (fire-once).
@@ -359,6 +449,8 @@ def save_lead_via_tg(token):
         from services.sales_notify import maybe_notify_sales
         maybe_notify_sales(sub_id)
     except Exception:
-        pass
+        # Swallowed: the contacts ARE persisted, so the lead is not lost even if
+        # the Telegram notification could not be queued.
+        log.exception("[tg] /lead: sales notification failed for submission %s", sub_id)
 
     return jsonify({"ok": True})
