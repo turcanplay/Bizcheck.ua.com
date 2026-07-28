@@ -3,12 +3,19 @@
 JWT is read from the `admin_session` httpOnly cookie set by /admin/login.
 For mutating methods (POST/PATCH/PUT/DELETE) we additionally require a
 matching CSRF token (X-CSRF-Token header == admin_csrf cookie).
+
+A valid signature is not enough: the token must also not have been revoked.
+Signature + expiry alone made logout cosmetic and left a stolen cookie usable
+for the rest of its 8h TTL. See services/admin_session_service for the store
+and its multi-worker rationale.
 """
 
 import os
 from functools import wraps
 from flask import request, jsonify
 import jwt
+
+from services.admin_session_service import is_revoked
 
 
 SESSION_COOKIE = "admin_session"
@@ -40,7 +47,28 @@ def _decode_admin_jwt(token):
         return None
     if payload.get("role") != "admin":
         return None
+    if is_revoked(payload):
+        return None
     return payload
+
+
+def peek_admin_payload():
+    """Signature-verified payload of the `admin_session` cookie, or None.
+
+    Deliberately skips the revocation lookup that `_decode_admin_jwt` performs:
+    /admin/logout has to be able to read the jti of a token that is ALREADY
+    deny-listed (a second logout, a stale tab) without the check bouncing it.
+    Signature and expiry are still enforced, so this reveals nothing an
+    attacker could not already forge.
+    """
+    token = _extract_admin_jwt()
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return None
+    return payload if payload.get("role") == "admin" else None
 
 
 def _csrf_ok():
@@ -90,6 +118,11 @@ def admin_required(f):
 
         if payload.get("role") != "admin":
             return jsonify({"error": "Admin access required"}), 403
+
+        # 401, not 403: the credential itself is no longer valid, exactly like
+        # an expired one. The SPA already treats 401 as "bounce to login".
+        if is_revoked(payload):
+            return jsonify({"error": "Session has been revoked"}), 401
 
         if request.method not in SAFE_METHODS and not _csrf_ok():
             return jsonify({"error": "CSRF token missing or invalid"}), 403

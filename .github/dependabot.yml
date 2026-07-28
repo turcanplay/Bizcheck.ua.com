@@ -1,0 +1,155 @@
+# Dependabot — actualizări automate de dependențe (audit INFO-1)
+#
+# Ecosistemele de mai jos sunt exact cele care există în repo (verificate, nu
+# presupuse):
+#   pip    → webdev/backend, webdev/tgbot, webdev/groupbot   (requirements*.txt)
+#   npm    → webdev/frontend                                  (package.json + lock)
+#   docker → webdev (Dockerfile.frontend), webdev/backend,
+#            webdev/tgbot, webdev/groupbot                    (imagini de bază)
+#
+# NU e configurat `github-actions`: repo-ul nu are workflow-uri (.github/workflows
+# nu există). Adaugă blocul când apare primul workflow.
+#
+# ATENȚIE — docker-compose NU e acoperit. Dependabot scanează doar Dockerfile-uri,
+# nu `docker-compose.yml`. Imaginea `postgres:16-alpine` de acolo rămâne în
+# sarcina ta: verific-o manual la fiecare minor de Postgres.
+#
+# De ce `weekly` și nu `daily`: 7 manifeste × zilnic = zeci de PR-uri pe
+# săptămână pe un proiect fără CI care să le valideze automat. Săptămânal, luni
+# dimineața, cu totul grupat, dă un singur val de review.
+#
+# De ce grupuri: fără ele Dependabot deschide un PR PER pachet. Cu `patterns: ["*"]`
+# într-un grup, toate actualizările non-major dintr-un ecosistem intră într-un
+# singur PR. Actualizările MAJOR sunt scoase din grup intenționat — sunt
+# breaking, vrei să le vezi și să le testezi una câte una.
+
+version: 2
+
+updates:
+  # ─────────────────────── Python ───────────────────────
+  - package-ecosystem: "pip"
+    directory: "/webdev/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 3
+    labels: ["dependencies", "backend"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      backend-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "pip"
+    directory: "/webdev/tgbot"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "tgbot"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      tgbot-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "pip"
+    directory: "/webdev/groupbot"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "groupbot"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      groupbot-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # ─────────────────────── Node / SPA ───────────────────────
+  # Cel mai zgomotos ecosistem: două grupuri (runtime vs unelte de build) ca
+  # un bump de tooling să nu stea în același PR cu unul de React.
+  - package-ecosystem: "npm"
+    directory: "/webdev/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "frontend"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      frontend-dev-minor-patch:
+        dependency-type: "development"
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      frontend-prod-minor-patch:
+        dependency-type: "production"
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # ─────────────────────── Imagini Docker ───────────────────────
+  # Lunar: imaginile de bază (node:20-alpine, nginx:alpine, python:3.12-slim)
+  # se mișcă rar, iar un PR pe săptămână care schimbă doar digestul e zgomot.
+  - package-ecosystem: "docker"
+    directory: "/webdev"           # Dockerfile.frontend (node + nginx)
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+    groups:
+      base-images:
+        patterns: ["*"]
+
+  - package-ecosystem: "docker"
+    directory: "/webdev/backend"
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+    groups:
+      base-images:
+        patterns: ["*"]
+
+  - package-ecosystem: "docker"
+    directory: "/webdev/tgbot"
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+    groups:
+      base-images:
+        patterns: ["*"]
+
+  - package-ecosystem: "docker"
+    directory: "/webdev/groupbot"
+    schedule:
+      interval: "monthly"
+      timezone: "Europe/Kyiv"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+    groups:
+      base-images:
+        patterns: ["*"]

@@ -16,7 +16,8 @@ from flask import Blueprint, request, jsonify, make_response
 
 from services.auth_service import login_admin
 from services.admin_service import get_stats, get_users_with_scores
-from middleware.admin_middleware import admin_required
+from services import admin_session_service
+from middleware.admin_middleware import admin_required, peek_admin_payload
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api_crowe_bizcheck/admin")
 
@@ -87,8 +88,47 @@ def session():
 
 @admin_bp.route("/logout", methods=["POST"])
 def admin_logout():
-    """POST /api/admin/logout — Clear session cookies. Always 200 (idempotent)."""
+    """POST /api/admin/logout — Revoke the session, then clear the cookies.
+
+    Deleting the cookie only disarms the browser we are talking to; a copy of
+    the same JWT taken anywhere else stayed valid for the rest of its 8h TTL.
+    Deny-listing the `jti` is what actually ends the session, for every worker
+    and every holder of that token.
+
+    Still always 200 and idempotent: a missing/expired cookie, or a token that
+    is already revoked, is a no-op — `revoke()` swallows store errors so a
+    database hiccup can never leave the operator stuck with a cookie they
+    cannot clear.
+
+    No @admin_required on purpose: logout must never depend on CSRF state, and
+    the cookie is SameSite=Strict so a cross-site POST cannot carry it anyway.
+    """
+    admin_session_service.revoke(peek_admin_payload())
     resp = make_response(jsonify({"ok": True}))
+    _clear_admin_cookies(resp)
+    return resp
+
+
+@admin_bp.route("/sessions/revoke-all", methods=["POST"])
+@admin_required
+def admin_revoke_all_sessions():
+    """POST /api/admin/sessions/revoke-all — Kill EVERY admin session.
+
+    The break-glass action for a suspected credential compromise: it moves the
+    global `not_before` epoch to now, so every token issued earlier is refused
+    — including tokens held by an attacker, which would obviously never be
+    logged out, and legacy tokens that predate the `jti` claim.
+
+    The caller is logged out too (their own token is older than the new epoch);
+    that is intended, and the response clears their cookies so the SPA lands on
+    the login screen instead of looping on 401s. Change ADMIN_PASSWORD in .env
+    and restart before logging back in, otherwise the compromised credential is
+    still the one being used.
+
+    Mutating + @admin_required ⇒ the CSRF double-submit is enforced.
+    """
+    admin_session_service.revoke_all()
+    resp = make_response(jsonify({"ok": True, "revoked": "all"}))
     _clear_admin_cookies(resp)
     return resp
 

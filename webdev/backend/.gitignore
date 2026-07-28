@@ -4,3 +4,9 @@ __pycache__/
 venv/
 .venv/
 *.db
+
+# webdev/.gitignore are un `*.sql` global, menit dumpurilor de bază de date (care
+# conțin date de clienți). Scripturile de administrare din scripts/sql/ NU sunt
+# dumpuri — sunt cod versionat, fără date. Fără negarea de mai jos ar dispărea
+# din git în tăcere. Regula rămâne îngustă: doar directorul acela.
+!scripts/sql/*.sql

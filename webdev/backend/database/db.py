@@ -561,6 +561,34 @@ def migrate():
                 CREATE INDEX IF NOT EXISTS idx_tg_outreach_status  ON tg_outreach(status);
                 CREATE INDEX IF NOT EXISTS idx_tg_outreach_due
                     ON tg_outreach(due_at) WHERE status = 'scheduled';
+
+                -- ── Admin session revocation (audit INFO-3) ──────────────────
+                -- Deny-list of admin JWT `jti` values. Written by /admin/logout,
+                -- read by middleware/admin_middleware on every admin request.
+                -- MUST live in Postgres, not in a Python set: gunicorn runs
+                -- several worker PROCESSES and an in-memory list would only
+                -- revoke on the worker that handled the logout.
+                -- Self-limiting: rows are deleted once `expires_at` has passed
+                -- (models/admin_session.PURGE_SQL, run after every revocation),
+                -- because from that moment the token is rejected on expiry alone.
+                CREATE TABLE IF NOT EXISTS admin_revoked_tokens (
+                    jti        VARCHAR(64)  PRIMARY KEY,
+                    expires_at TIMESTAMPTZ  NOT NULL,
+                    revoked_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+                );
+                -- Supports the purge sweep.
+                CREATE INDEX IF NOT EXISTS idx_admin_revoked_expires
+                    ON admin_revoked_tokens(expires_at);
+
+                -- Global kill switch: at most ONE row (id = 1). Any admin token
+                -- with `iat` strictly older than `not_before` is refused. The row
+                -- is absent until the first global revocation, so a normal
+                -- install never pays for it.
+                CREATE TABLE IF NOT EXISTS admin_session_epoch (
+                    id         SMALLINT    PRIMARY KEY,
+                    not_before TIMESTAMPTZ NOT NULL,
+                    CONSTRAINT admin_session_epoch_singleton CHECK (id = 1)
+                );
             """)
 
             migrate_ro_to_uk(cur)
