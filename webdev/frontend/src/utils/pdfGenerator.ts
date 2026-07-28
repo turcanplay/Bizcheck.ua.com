@@ -1,11 +1,14 @@
 import type { Lang } from '@/i18n/translations';
 
 /**
- * Captures an HTML element as a JPEG image on a single PDF page,
- * then prepends the 2-page static preview PDF (language-dependent)
- * and appends a static outro page (common for all languages).
+ * Captures the report DOM — one A4 page per `[data-pdf-page]` element — as
+ * images, then wraps it in the static per-language assets from `public/pdf/`:
+ * a 1-page cover (`preview_<lang>.pdf`) in front and a 1-page outro
+ * (`outro_<lang>.pdf`) at the end. Both exist for every language in `Lang`
+ * (`uk`, `en`); the cover falls back to `preview_en.pdf` and the outro to the
+ * legacy `outro.pdf` only if an asset is missing or served as a non-PDF.
  *
- * Final result: preview pages + report page + outro page.
+ * Final result: cover page + report pages + outro page.
  */
 
 interface GenerateOptions {
