@@ -9,11 +9,13 @@ description: Add or change React components in webdev/frontend (quiz, report, la
 `documentation/frontend/04-utils-and-data.md`.
 
 ## The report layout is data-driven
-Which report components render is chosen by `test.report_type`:
+Which report components render is chosen by `test.report_type` (branching lives in `pages/ReportPage.tsx`;
+the canonical set is `CANONICAL_REPORT_TYPES` in `backend/services/test_service.py`):
 - `standard` → `QuestionChecklistSlice` (~5 questions/page).
+- `gdpr` → one `GdprQuestionPage` per question (content from `data/gdprExplanations.ts`).
 - `premium` → `BlockGrid` + `OverallScore` + `ZoneSection`.
 - `bizcheck` → premium **plus** a `BlockDetailPage` per block (content from `data/blockExplanations.ts`).
-Keep all three layouts working when you touch report components.
+Keep all four layouts working when you touch report components.
 
 ## Invariants that bite
 - The PDF is built **client-side** from the rendered DOM: report pages are `[data-pdf-page]`, clickable
@@ -21,8 +23,10 @@ Keep all three layouts working when you touch report components.
   `utils/pdfGenerator.ts` breaks. A4 portrait (210×297mm).
 - Zone thresholds/colors live in `utils/scoring.ts` (safe ≥80, developing 70–79, warning 65–69, risk <65)
   and mirror the backend `tests.scoring_zones` defaults — change both together.
-- All copy is bilingual (`t()`); add ro+ru keys in `i18n/translations.ts`.
-- `CookieBanner`/`cookieConsent.ts` gate Meta Pixel + Yandex Metrica — don't fire trackers before consent.
+- All copy is bilingual **uk (default) + en** (`t()`); add both keys in `i18n/translations.ts`.
+  Never add `ro`/`ru` keys.
+- `CookieBanner`/`cookieConsent.ts` gate Meta Pixel — don't fire trackers before consent. The analytics
+  category is recorded but injects nothing today (Yandex Metrica was removed).
 - New external asset/script domains require a CSP update in `webdev/nginx.conf` (`bizcheck-deployment`).
 
 ## Recipe — add/edit a component

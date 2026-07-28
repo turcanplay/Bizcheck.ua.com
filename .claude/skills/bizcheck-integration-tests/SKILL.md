@@ -16,10 +16,11 @@ This skill covers the suites that need a
 - Reflects the live auth model: admin = httpOnly cookie + CSRF; submission writes = `X-Submission-Token`.
 - The `admin_session` fixture logs in with `admin/admin` and **skips** the suite if login fails
   (`pytest.skip`), so it expects `ADMIN_USERNAME=admin` / `ADMIN_PASSWORD=admin` in the backend env.
-- Run:
+- **Opt-in:** `pytest.ini` `--ignore`s this file (and `security_test.py`), so a bare `pytest` never runs
+  it. Name it explicitly:
   ```
   cd webdev/backend
-  venv/Scripts/python -m pytest tests/test_security.py -v
+  venv/bin/python -m pytest tests/test_security.py -v
   ```
   Requires the `requests` dev dep in the venv and a backend listening on `http://localhost:4001`.
 
@@ -33,9 +34,12 @@ This skill covers the suites that need a
   python webdev/backend/tests/security_test.py --base http://localhost:4001
   ```
 
-### 3. `scripts/e2e_check.py` — 9-test in-container smoke suite
-- Health, tests list, quiz slug handling, submission create, PII encryption. Run inside the backend
-  container: `python scripts/e2e_check.py` (see `bizcheck-deployment`).
+### 3. `scripts/e2e_check.py` — in-container smoke suite
+- Health, tests list, quiz slug handling, submission create, Fernet-at-rest check, bad-slug rejection.
+  Run inside the backend container: `python scripts/e2e_check.py` (see `bizcheck-deployment`).
+- It talks to `http://localhost:4001` on the internal `/api/...` prefix and **hardcodes the expected test
+  slugs** (`business`, `gdpr`, `hr`) plus one block/one question each — it only passes against a DB seeded
+  that way, so treat mismatches as "the fixture drifted", not a regression.
 
 ## When to use which
 - Logic/auth/validator change → `bizcheck-backend-unit-tests` (no server, instant feedback).

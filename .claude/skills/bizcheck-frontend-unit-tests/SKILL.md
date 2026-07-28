@@ -1,39 +1,29 @@
 ---
 name: bizcheck-frontend-unit-tests
-description: Write or run FRONTEND (React/TypeScript) unit tests for webdev/frontend with Vitest + Testing Library. Use when adding/changing scoring, validators, cookie/consent logic, hooks, contexts, or components and you want fast jsdom tests. NOTE the repo has no test runner yet — this skill includes the one-time Vitest setup. For backend tests use bizcheck-backend-unit-tests.
+description: Write or run FRONTEND (React/TypeScript) unit tests for webdev/frontend with Vitest + Testing Library. Use when adding/changing scoring, validators, cookie/consent logic, hooks, contexts, or components and you want fast jsdom tests. For backend tests use bizcheck-backend-unit-tests.
 ---
 
 # BizCheck — Frontend Unit Tests (Vitest)
 
-The frontend (`webdev/frontend`, Vite + React 19 + TS, ESM) has **no test runner yet** — there is no
-`test` script and no vitest/jest devDeps. First run on a clean repo = set up Vitest, then write tests.
+Vitest + Testing Library are **already set up** in `webdev/frontend` (Vite + React 19 + TS, ESM):
+the `test` block lives in `vite.config.ts` (jsdom, `globals: true`, setup `src/test/setup.ts`,
+`include: src/**/*.{test,spec}.{ts,tsx}`), with `tsconfig.test.json` for the test TS config.
 Reference for what each module does: `documentation/frontend/04-utils-and-data.md`,
 `documentation/frontend/02-components.md`, `documentation/frontend/03-state-and-api.md`.
 
-## One-time setup (do this if it isn't already present)
+## Run
 
-1. Install devDeps (in `webdev/frontend`):
-   ```
-   npm i -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
-   ```
-2. Add the test block to `vite.config.ts` (Vitest reads the same config):
-   ```ts
-   /// <reference types="vitest/config" />
-   export default defineConfig({
-     // ...existing plugins/resolve...
-     test: { environment: 'jsdom', globals: true, setupFiles: './src/test/setup.ts' },
-   })
-   ```
-3. Create `src/test/setup.ts`:
-   ```ts
-   import '@testing-library/jest-dom'
-   ```
-4. Add scripts to `package.json`:
-   ```json
-   "test": "vitest run",
-   "test:watch": "vitest"
-   ```
-Run: `npm test` (CI/one-shot) or `npm run test:watch`. Filter: `npm test -- scoring`.
+```
+cd webdev/frontend
+npm run test:run          # one-shot (CI)
+npm test                  # watch
+npm run test:run -- scoring   # filter by file name
+```
+
+Existing suites to copy patterns from: `src/utils/quizContent.test.ts`, `src/i18n/routing.test.tsx`,
+`src/i18n/pickLang.test.ts`, `src/api/admin.test.ts`, `src/context/CookieConsentContext.test.tsx`,
+`src/components/report/CallToAction.test.tsx`, `src/pages/QuizPage.test.tsx`,
+`src/pages/admin/*.test.tsx`, `src/pages/landing/sections/Hero.test.tsx`.
 
 ## Test the pure logic first (highest value, no DOM)
 
@@ -46,8 +36,12 @@ These are the priority targets — real exports verified below:
 - **`src/utils/inputGuard.ts`** — `sanitizeText(value, maxLen=600)`, `sanitizeOneLine(value, maxLen=100)`
   (strips `<>`, control chars, collapses spaces), `validateField(value, rule)` → `'required'|'too_short'|'too_long'|null`.
 - **`src/utils/cookieConsent.ts`** — `loadConsent`, `saveConsent`, `clearConsent` (cookie round-trip;
-  stub `document.cookie`). For `applyMarketingConsent`/`applyAnalyticsConsent`, mock `window.fbq` and the
-  Yandex loader and assert they're called only on grant — do NOT let them load real third-party scripts.
+  stub `document.cookie`). For `applyMarketingConsent`, mock `window.fbq` and assert it is called only on
+  grant — do NOT let real third-party scripts load. `applyAnalyticsConsent` only records the choice today
+  (no tag is injected); `isAnalyticsGranted` reads it back.
+- **`src/i18n/routing.ts`** — `langFromPath`, `stripLangPrefix`, `localizePath`, `isLocalizableRoute`,
+  `readStoredLang`/`writeStoredLang`. Languages are **`uk` (default) + `en`** only; assert admin paths
+  stay unprefixed. Existing coverage: `src/i18n/routing.test.tsx`, `src/i18n/pickLang.test.ts`.
 
 ```ts
 import { describe, it, expect } from 'vitest'
@@ -71,7 +65,9 @@ Render, interact, assert on visible output — not implementation details.
 - `DonutChart` — renders the percentage label / correct stroke for a given prop.
 - `CookieBanner` — Accept/Reject/Customize call the consent context and hide the banner.
 Wrap components that read context in their providers (`LanguageProvider`, `QuizProvider`, etc.) or a small
-test wrapper. Assert via roles/text (`getByRole`, `getByText`), bilingual copy comes from i18n.
+test wrapper. **`LanguageProvider` reads the location and navigates, so it must be rendered inside a router**
+(`MemoryRouter initialEntries={['/uk/…']}`) — see `src/i18n/routing.test.tsx`.
+Assert via roles/text (`getByRole`, `getByText`); bilingual copy (uk/en) comes from i18n.
 
 ## Contexts & hooks
 - `QuizContext` — recording answers updates scores; `sessionStorage` persistence round-trips
@@ -83,12 +79,12 @@ test wrapper. Assert via roles/text (`getByRole`, `getByText`), bilingual copy c
   ```
 
 ## Don't unit-test in jsdom (belongs to e2e/manual)
-- **`src/utils/pdfGenerator.ts`** — uses `html2canvas`/`pdf-lib` + real layout/canvas; jsdom can't render
-  it. Verify the PDF via the real app (`/verify` or manual), not a unit test.
+- **`src/utils/pdfGenerator.ts`** — lazy-imports `html2canvas-pro`/`jspdf`/`pdf-lib` and needs real
+  layout/canvas; jsdom can't render it. Verify the PDF manually in the running app, not in a unit test.
 - Anything depending on actual network, real cookies for third parties, or pixel-accurate layout.
 
 ## Conventions & don'ts
 - Co-locate `*.test.ts` / `*.test.tsx` next to the source (or `__tests__/`). Use the `@/` alias.
-- Mock `api/admin.ts` & `api/public.ts` and `window.fbq`/Yandex — tests must not touch the network or load trackers.
+- Mock `api/admin.ts` & `api/public.ts` and `window.fbq` — tests must not touch the network or load trackers.
 - Keep scoring-zone expectations identical to the backend; if you change one, change both (see `bizcheck-frontend-state-api`).
 - Don't add a second framework (jest) — this project standardizes on Vitest (shares the Vite config).

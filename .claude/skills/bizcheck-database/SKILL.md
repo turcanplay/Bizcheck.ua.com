@@ -35,10 +35,16 @@ on every backend boot under `pg_advisory_xact_lock(1)` (serializes concurrent wo
 ## Seeding (out of request path)
 - There is NO seed. `migrate()` creates tables only — a fresh DB starts with zero
   tests/blocks/questions and the content is entered by hand in the admin panel.
-- `scripts/clear_quiz_content.py` — **DESTRUCTIVE, manual only**: empties an existing DB's quiz
+- `backend/scripts/clear_quiz_content.py` — **DESTRUCTIVE, manual only**: empties an existing DB's quiz
   content (interactive confirmation, `--dry-run`, `--with-submissions`). Never add a DELETE to
   `migrate()` to do this — it runs on every boot/replica and would destroy live data.
 
+## Bilingual columns
+Content tables carry `<col>_uk` / `<col>_en` pairs (`name_uk`, `title_en`, `text_uk`, …). Fresh databases
+are created with `_uk`/`_en` directly. `migrate_ro_to_uk()` / `migrate_ru_to_en()` in `db.py` are the
+one-way renames from the pre-Ukrainian schema — they are no-ops on a fresh DB and must stay idempotent.
+**Never add a `_ro` or `_ru` column back.**
+
 ## Don'ts
 - Don't drop columns or run non-idempotent DDL in `migrate()`.
-- Don't bind the standalone-bot Postgres (repo-root compose) to `0.0.0.0` — keep `127.0.0.1`.
+- Don't publish the Postgres port on any compose file — `db` stays internal to the compose network.

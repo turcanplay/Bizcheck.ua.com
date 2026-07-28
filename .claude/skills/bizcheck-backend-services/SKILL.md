@@ -12,12 +12,18 @@ Services are the only layer allowed to hold business logic and talk to the outsi
 (SMTP, Telegram Bot API, openpyxl). Routes call services; services call models.
 
 ## Key modules (see the doc for full signatures)
-- `block_service.get_quiz_data` — assembles the bilingual quiz JSON the frontend consumes. If you
-  change the quiz shape, update the frontend types/parser too (`bizcheck-frontend-state-api`).
+- `block_service.get_quiz_data` — assembles the bilingual (`_uk`/`_en`) quiz JSON the frontend consumes.
+  If you change the quiz shape, update the frontend types/parser too (`bizcheck-frontend-state-api`).
 - `email_service` + `email_templates` + `report_email` — report email pipeline (SMTP, async thread).
 - `sales_notify.maybe_notify_sales` — fire-once Telegram alert to the sales chat; edits the same message
   on later writes. Guarded by the atomic `submissions.sales_notified` claim — keep it idempotent.
 - `export_service` — Excel/ZIP builds; batch-fetch via `Question.find_by_blocks` to avoid N+1.
+  ZIPs are assembled **on disk** (`tempfile` + `zipfile`), not in memory.
+- `export_jobs` — the async, disk-spooled PDF-ZIP job. Both job state and artifact live under
+  `EXPORT_SPOOL_DIR/<token>/` (`state.json` + `archive.zip`) because gunicorn's 4 worker processes don't
+  share a module-level dict. Excel exports stay synchronous on purpose.
+- `admin_session_service` — admin JWT revocation (`jti` deny-list + global `not_before`) in Postgres.
+- `telegram_send`, `feedback` — Telegram delivery helper and the feedback/outreach flow.
 
 ## Invariants that bite
 - External calls (SMTP, Telegram) run in **daemon threads** (fire-and-forget). Keep them non-blocking;

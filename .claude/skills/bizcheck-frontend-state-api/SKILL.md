@@ -11,8 +11,13 @@ description: Work on frontend state or the API client in webdev/frontend. Use wh
 - `QuizContext` — the quiz/report state machine (blocks, phase, answers, userInfo, report,
   submissionId/Token, tests, dropdowns). Persists to `sessionStorage` (`bizcheck_quiz_state_v2`).
   All quiz reads/writes go here.
-- `LanguageContext` — `lang` (ro/ru, in `localStorage`) + `t()` / `tList()`.
-- `CookieConsentContext` — consent state; applies Meta Pixel / Yandex Metrica via `utils/cookieConsent.ts`.
+- `LanguageContext` — `lang` (**`uk` default / `en`**) + `t()` / `tList()`. The **URL prefix is the
+  source of truth** (`/uk/…`, `/en/…`); `localStorage` (`bizcheck_lang`) is only the preference used for
+  `/` and for the non-localized admin path. Helpers live in `i18n/routing.ts` (mirrored for build scripts
+  in `scripts/lib/routing.mjs` — keep both in sync). Must be mounted inside the router.
+- `CookieConsentContext` — consent state; applies Meta Pixel via `utils/cookieConsent.ts`
+  (`applyMarketingConsent`). The analytics category is stored only — Yandex Metrica was removed and no
+  analytics tag is injected today (`isAnalyticsGranted` is the hook for a future provider).
 
 ## API layer (`src/api/`) — use it, don't raw-`fetch`
 - `admin.ts` (`adminApi`, `adminFetch`): JWT in httpOnly `admin_session` cookie + `X-CSRF-Token` from
@@ -27,6 +32,8 @@ description: Work on frontend state or the API client in webdev/frontend. Use wh
 - The submission token is returned **once** at create — store it in context and reuse for
   PATCH/PDF/send-email/tg-link; never refetch it.
 - Add new endpoints as methods on `adminApi`/`publicApi`, not ad-hoc `fetch` in components.
+- Copy is bilingual **uk + en only** — add both keys in `i18n/translations.ts` (`Lang = 'uk' | 'en'`).
+  Never reintroduce `ro`/`ru` keys or a third language.
 
 ## Recipe — wire a new endpoint to the UI
 1. Add a method to `api/admin.ts` or `api/public.ts`.

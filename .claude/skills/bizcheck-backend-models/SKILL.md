@@ -19,7 +19,9 @@ Thin classes over **raw parameterized SQL** (no ORM), using helpers in `database
   is the reference — mirror it. Raw SELECTs return ciphertext.
 - `submission_token` is returned **only** by `Submission.create`; never expose it in `find_by_id`/`find_all`.
 - Token checks use indexed equality (`find_id_by_token`) — keep IDOR-safe lookups intact.
-- Batch over loops: use `find_by_blocks` / `find_by_questions` (`ANY(%s)`) patterns instead of N+1.
+- Batch over loops: use `Question.find_by_blocks` / `Answer.find_by_questions` (`ANY(%s)`) instead of N+1.
+- Bilingual content columns are `<field>_uk` / `<field>_en` pairs (`name_uk`, `title_en`, …) — mirror both
+  in every insert/select/update field list. There is no `_ro`/`_ru`; don't add one.
 
 ## Recipe — add a model method
 1. Add a `@staticmethod` to the relevant `models/<entity>.py`, following the file's existing style.

@@ -11,28 +11,32 @@ client and `monkeypatch` the service/model layer. Reference: `documentation/back
 
 ## Run
 
+`pytest.ini` already ignores the two live-server files, so a bare `pytest` **is** the no-DB/no-server sweep.
+
 ```
 cd webdev/backend
-venv/Scripts/python -m pytest tests/test_unit_security.py -v          # whole file
-venv/Scripts/python -m pytest tests/test_unit_security.py -k csrf     # filter by name
-venv/Scripts/python -m pytest tests/test_unit_security.py::TestCleanText -v   # one class
+python -m pytest                                       # whole unit sweep
+python -m pytest tests/test_unit_security.py -v        # one file
+python -m pytest tests/test_unit_security.py -k csrf   # filter by name
+python -m pytest tests/test_unit_security.py::TestCleanText -v   # one class
 ```
-`pytest` is a **dev-only** dep in the backend `venv` (not in `requirements.txt`). There is no
-`conftest.py`; each test file is self-contained.
+`pytest` is a **dev-only** dep in the backend `venv` (not in `requirements.txt`) — use
+`venv/bin/python -m pytest` if the venv is not active.
 
-## Non-negotiable file header (modules read env at import time)
+The unit suite is broad: `test_unit_security.py`, `test_unit_admin_session_revocation.py`,
+`test_unit_content_sanitization.py`, `test_unit_content_limits.py`, `test_unit_export_jobs.py`,
+`test_unit_export_excels_zip.py`, `test_unit_migration.py`, `test_unit_report_language.py`,
+`test_unit_sales_flow.py`, `test_unit_tg_group.py`, `test_unit_tg_feedback_auth.py`,
+`test_unit_perf_robustness.py`, plus `test_validators.py`, `test_crypto.py`, `test_auth_service.py`,
+`test_export_service.py`, `test_email_templates.py`, `test_sales_notify.py`, `test_services_misc.py`.
 
-Put this at the **top of every unit-test file, before importing anything under test**:
+## Environment: `tests/conftest.py` does it for you
 
-```python
-import os, sys
-os.environ.setdefault("JWT_SECRET", "unit-test-secret-do-not-use-in-prod")
-os.environ.setdefault("JWT_REFRESH_SECRET", "unit-test-refresh-secret")
-_HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(_HERE))   # makes backend/ importable
-```
-Import the code under test **inside** the test function/fixture (not at module top) so the env above is
-already set.
+`tests/conftest.py` sets `JWT_SECRET`, `JWT_REFRESH_SECRET`, `PII_ENCRYPTION_KEY`,
+`ADMIN_USERNAME`/`ADMIN_PASSWORD` and puts `backend/` on `sys.path` **before** anything under test is
+imported, and provides the shared doubles (e.g. the in-memory admin-session revocation store). Don't
+re-set those env vars per file. Still import the code under test **inside** the test function/fixture
+(not at module top) when the module reads env or opens a pool at import time.
 
 ## The four patterns (pick by what you're testing)
 
@@ -89,7 +93,8 @@ already set.
 Auth: 401 vs 403 distinctions, expired/wrong-secret/`alg:none` JWT rejection, CSRF double-submit,
 no-Bearer-for-admin, submission-token BOLA (token for sub 2 must 403 on sub 1), unknown-id → 403-not-404.
 Validators: HTML/control-char stripping, length cap, slug allow-list (reject `../`, `; DROP`, `<script>`),
-numeric clamp/snap, lang whitelist. Routes: mass-assignment guard (only allow-listed keys persist),
+numeric clamp/snap, lang whitelist (`clean_lang`: `uk`/`en` only, default `uk` — anything else, including
+`ro`/`ru`, must fall back). Routes: mass-assignment guard (only allow-listed keys persist),
 malformed input → 400-not-500, regression guards (e.g. `POST /submissions` must return `submission_token`).
 
 ## Conventions & don'ts

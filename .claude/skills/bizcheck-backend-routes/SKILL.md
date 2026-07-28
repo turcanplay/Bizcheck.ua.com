@@ -19,6 +19,9 @@ description: Add or change a Flask API endpoint in webdev/backend. Use when crea
   - `@submission_owner_or_admin` — public submission writer OR admin (token via `X-Submission-Token`).
   - public — no decorator.
   - `@auth_required` (Bearer) is **legacy**; do not use it for new public/admin endpoints.
+  - bot-facing (`tg_group.py`, `tg_admin.py`, `tg_feedback.py`) — `X-Bot-Secret`, fails closed.
+- Free-text columns are bilingual `<field>_uk` / `<field>_en` (uk is the default). A request language is
+  normalized by `clean_lang` — `uk`/`en` only.
 - Every free-text field from the request must pass `utils/validators.clean_text`/`clean_optional`;
   slugs via `clean_slug`. Never hand raw user strings to a service/model.
 - Wrong-token vs unknown-id must both return **403** (no enumeration); missing token → **401**.
@@ -30,7 +33,8 @@ description: Add or change a Flask API endpoint in webdev/backend. Use when crea
 4. If the blueprint is new, register it in `webdev/backend/server.py` (`app.register_blueprint(...)`)
    and add a rate limit next to the others (`limiter.limit(...)(<bp>)`).
 5. Return JSON (or a binary response for PDF/XLSX/ZIP). Use the existing error-shape `{ "error": ... }`.
-6. Add/extend a test in `webdev/backend/tests/test_unit_security.py` (no DB needed).
+6. Add/extend a test in `webdev/backend/tests/test_unit_*.py` (no DB needed; `tests/conftest.py`
+   supplies the env and the shared doubles).
 
 ## Don'ts
 - Don't add a Bearer-token path for admin auth.

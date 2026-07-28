@@ -8,8 +8,12 @@ description: Work on webdev infrastructure — docker-compose, nginx, Dockerfile
 **Read first:** `documentation/deployment.md` and `documentation/architecture/01-system-architecture.md`.
 
 ## Topology
-nginx (frontend container) is the single public entry. `backend` is `expose: 4001` only (no `ports:`),
-reachable only by nginx + tgbot. `db` (postgres:16) and `tgbot` are internal. Compose: `webdev/docker-compose.yml`.
+Compose: `webdev/docker-compose.yml`, five services — `db` (postgres:16-alpine), `backend`, `frontend`
+(nginx), `tgbot` (client bot), `groupbot` (internal sales-group bot).
+`backend` is `expose: 4001` only (no `ports:`), reachable only inside the network; `db`, `tgbot` and
+`groupbot` are internal too. The **only** host binding is `frontend` on
+`127.0.0.1:${FRONTEND_PORT:-5173}:80` — TLS is terminated by an external nginx
+(`webdev/nginx-proxy.conf.example`).
 
 ## Invariants that bite
 - **Never publish the backend port.** Don't add `ports:` to `backend` on any compose file.
@@ -18,11 +22,16 @@ reachable only by nginx + tgbot. `db` (postgres:16) and `tgbot` are internal. Co
 - The SPA **CSP lives in `webdev/nginx.conf`** (`location /`). New external script/font/API domain → edit it here.
   Flask only sets headers for `/api_crowe_bizcheck/*`.
 - SPA fallback `try_files … /index.html` powers React Router incl. the admin path — keep it.
+- nginx also holds the **301s from the pre-migration paths** to the language-prefixed ones
+  (`/test/…`→`/uk/test/…`, `/sablon/…`→`/uk/templates/…`, `/confidentialitate`+`/termeni`→`/uk/privacy`,
+  `/plata/…`→`/uk/checkout/…`). The SPA has a client-side fallback for the same set — change both together.
 - Gunicorn: 4 workers × 2 gthread threads, `--timeout 120`, `--max-requests 1000` recycling (`backend/Dockerfile`).
 - Required env at boot: `JWT_SECRET`, `JWT_REFRESH_SECRET`; production also `PII_ENCRYPTION_KEY`,
   `ADMIN_USERNAME`, `ADMIN_PASSWORD`. Full env table in `documentation/deployment.md`.
 - **Don't `docker compose up` after edits** — the user deploys on the server and tests there.
-- Repo-root compose Postgres stays bound to `127.0.0.1` (5433/5434), never `0.0.0.0`.
+- The PDF-ZIP export job spools to `EXPORT_SPOOL_DIR` (default `<tmp>/bizcheck_exports`) on the container
+  filesystem. Fine for the current single-container backend; scaling to more than one container requires
+  pointing it at a shared volume in every replica.
 
 ## Recipe — add a service / external domain / env var
 1. New service: add to `webdev/docker-compose.yml` (internal `expose`, not `ports`, unless it's the public proxy).
@@ -31,10 +40,14 @@ reachable only by nginx + tgbot. `db` (postgres:16) and `tgbot` are internal. Co
    and document it in `documentation/deployment.md`.
 
 ## Scripts
-- Smoke test: `backend/scripts/e2e_check.py`. Email: `scripts/send_test_email.py`, `scripts/smtp_simple_test.py`.
+- Backend (`webdev/backend/scripts/`): `e2e_check.py` (in-container smoke),
+  `send_test_email.py`, `smtp_simple_test.py`.
+- Host-side (`webdev/scripts/`): `backup-db.sh`, `check-telegram.sh`, `export-spool.sh`. Deploy: `webdev/deploy.sh`.
 - No seed script: a fresh DB starts empty and content is entered in the admin panel.
-- Wipe content by hand: `scripts/clear_quiz_content.py` (**destructive**, interactive, `--dry-run`).
-- Frontend build: `generate-sitemap.mjs` (prebuild), `generate-static-html.mjs` (postbuild).
+- Wipe content by hand: `backend/scripts/clear_quiz_content.py` (**destructive**, interactive, `--dry-run`).
+- Frontend build (`webdev/frontend/scripts/`): `generate-sitemap.mjs` (prebuild),
+  `generate-static-html.mjs` (postbuild), plus `lib/routing.mjs` — the Node mirror of `src/i18n/routing.ts`
+  that both scripts use to emit the `/uk/…` and `/en/…` URLs. Keep the two in sync.
 
 ## Don'ts
 - Don't expose backend/db ports publicly, weaken CSP/HSTS, or run `docker compose up` as a "test".
