@@ -13,6 +13,10 @@ bizzcheck_local.sql
 # Backupuri produse de webdev/scripts/backup-db.sh și de deploy.sh.
 backups/
 
+# Spool-ul joburilor de export (webdev/docker-compose.yml → EXPORT_SPOOL_HOST_DIR).
+# Arhive ZIP temporare de până la ~1,6 GB, pline cu PDF-urile clienților.
+export_spool/
+
 # Python
 venv/
 .venv/

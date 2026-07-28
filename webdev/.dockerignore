@@ -40,6 +40,12 @@ backups/
 **/*.sql
 **/*.sql.gz
 
+# ── Spool-ul exporturilor asincrone (bind mount al serviciului backend) ──
+# CRITIC: sunt arhive ZIP de până la ~1,6 GB. Fără excluderea asta, fiecare
+# `docker compose build frontend` ar trimite gigabytes spre daemon (contextul
+# serviciului frontend e chiar `webdev/`). Conțin și PDF-uri cu date de clienți.
+export_spool/
+
 # ── VCS / editor / OS ──
 .git
 .gitignore

@@ -68,6 +68,21 @@ FRONTEND_PORT="$(grep -E '^FRONTEND_PORT=' .env | tail -1 | cut -d= -f2- || true
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 BASE_URL="http://127.0.0.1:${FRONTEND_PORT}"
 
+# Spool-ul exporturilor (bind mount în serviciul backend). Îl creăm NOI, cu 0700:
+# dacă îl lasă Docker să-l creeze, iese 0755, iar înăuntru ajung arhive cu PDF-uri
+# de client. Directoarele per job sunt oricum 0700, dar rădăcina merită la fel.
+SPOOL_DIR="$(grep -E '^EXPORT_SPOOL_HOST_DIR=' .env | tail -1 | cut -d= -f2- || true)"
+SPOOL_DIR="${SPOOL_DIR:-./export_spool}"
+mkdir -p "$SPOOL_DIR" && chmod 700 "$SPOOL_DIR" 2>/dev/null || \
+  warn "Nu pot pregăti spool-ul de export ($SPOOL_DIR) — îl creează Docker la pornire"
+# Curățenia normală o face sweep() din backend (TTL-uri), dar nu există limită de
+# SPAȚIU. Semnalăm din timp dacă partiția e strâmtă pentru un export de ~1,6 GB.
+SPOOL_AVAIL_KB="$(df -Pk "$SPOOL_DIR" 2>/dev/null | awk 'NR==2 {print $4}')"
+if [ -n "${SPOOL_AVAIL_KB:-}" ] && [ "$SPOOL_AVAIL_KB" -lt 5242880 ]; then
+  warn "Sub 5 GB liberi pe partiția spool-ului ($SPOOL_DIR) — un export mare cere ~1,6 GB."
+  warn "  Curăță cu: ./scripts/export-spool.sh --purge"
+fi
+
 # ════════════════════════════════════════════════════════════
 # 2. git pull
 # ════════════════════════════════════════════════════════════
@@ -224,6 +239,7 @@ docker compose logs --tail=20 groupbot || true
 echo ""
 ok "Deploy reușit. Backup DB: ${BACKUP_FILE:-<nu s-a făcut>}"
 echo "  Testează în grup:  /excel   și   /pdf"
+echo "  Spool exporturi:   ./scripts/export-spool.sh   (ocupare disc + curățenie)"
 echo "  Rollback manual, dacă apar probleme mai târziu (numele imaginilor le vezi"
 echo "  cu 'docker compose images'; prefixul e numele directorului de proiect):"
 for entry in "${ROLLBACKABLE[@]:-}"; do

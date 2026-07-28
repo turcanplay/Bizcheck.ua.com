@@ -69,6 +69,43 @@ services:
       # Background loop that sends due feedback questions. "1" (default) = on,
       # "0" = off. Only set to "0" to disable the scheduler entirely.
       FEEDBACK_SCHEDULER: ${FEEDBACK_SCHEDULER:-1}
+      # ── Spool pentru joburile de export (services/export_jobs.py) ──
+      # Calea DIN CONTAINER e fixată aici, nu în .env: trebuie să fie identică cu
+      # ținta bind mountului de mai jos. Ce se configurează din .env e partea de
+      # GAZDĂ (EXPORT_SPOOL_HOST_DIR). Fără variabila asta modulul ar scrie în
+      # /tmp, adică în stratul de scriere al containerului (arhive de ~1,6 GB la
+      # 500 de submisii → container umflat, date pierdute la recreare, disc plin
+      # invizibil în `docker system df`).
+      EXPORT_SPOOL_DIR: /var/spool/bizcheck_exports
+      # TTL-uri de curățenie (secunde). sweep() rulează inline la create/status/
+      # download și după fiecare job — nu e nevoie de cron pentru cazul normal.
+      EXPORT_JOB_READY_TTL: ${EXPORT_JOB_READY_TTL:-3600}
+      EXPORT_JOB_DOWNLOADED_TTL: ${EXPORT_JOB_DOWNLOADED_TTL:-600}
+      EXPORT_JOB_FAILED_TTL: ${EXPORT_JOB_FAILED_TTL:-1800}
+      EXPORT_JOB_STALE_AFTER: ${EXPORT_JOB_STALE_AFTER:-900}
+    volumes:
+      # BIND MOUNT, nu volum numit — intenționat.
+      #   * Arhivele sunt uriașe (1,6 GB / 500 submisii) și strict temporare.
+      #     Operatorul trebuie să le poată VEDEA și șterge de pe gazdă, fără să
+      #     intre în container:  du -sh webdev/export_spool  /  ./scripts/export-spool.sh
+      #   * Pe multe VPS-uri /var/lib/docker (unde ar sta un volum numit) e pe
+      #     partiția root, mică. Cu bind mount muți spoolul pe alt disc doar
+      #     schimbând EXPORT_SPOOL_HOST_DIR în .env — fără să atingi compose-ul.
+      #   * Persistența pe care o dă un volum numit nu are valoare aici: un job
+      #     supraviețuiește oricum recreării containerului (state.json + arhiva
+      #     sunt în același director), iar restul e gunoi pe care îl vrei ușor de
+      #     aruncat, nu conservat de Docker.
+      #   ⚠ Directorul e EXCLUS din contextul de build (webdev/.dockerignore) și
+      #     din git (.gitignore). Nu-l muta sub backend/ — acolo ar intra în
+      #     `COPY . .` la build.
+      #   ⚠ SCALARE: spoolul e LOCAL containerului. Dacă backendul se scalează la
+      #     mai multe replici (deploy --scale backend=N, swarm, k8s), un job creat
+      #     de replica A e „unknown job" pentru replica B, iar descărcarea pică
+      #     aleatoriu. Cele 4 procese gunicorn DIN acest container partajează
+      #     corect directorul — problema apare abia la al doilea CONTAINER.
+      #     Atunci EXPORT_SPOOL_DIR trebuie mutat pe storage partajat (NFS/GlusterFS)
+      #     montat identic în fiecare replică.
+      - ${EXPORT_SPOOL_HOST_DIR:-./export_spool}:/var/spool/bizcheck_exports
     # Health probe. python:3.12-slim nu are curl/wget, deci folosim stdlib —
     # zero pachete în plus în imagine. /api/health e scutit de verificarea
     # ALLOWED_HOSTS (server.py), deci merge și cu Host: 127.0.0.1.
