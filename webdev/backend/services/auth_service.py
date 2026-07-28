@@ -2,12 +2,18 @@
 
 import os
 import hmac
+import secrets
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
 
 from models.user import User
+
+
+# Admin session lifetime. routes/admin.COOKIE_MAX_AGE mirrors this so the cookie
+# and the token die together.
+ADMIN_TOKEN_TTL = timedelta(hours=8)
 
 
 def hash_password(password):
@@ -61,13 +67,21 @@ def generate_admin_token():
     """
     Generate an admin JWT token (8 hours).
 
+    Carries a random `jti` so the session can be revoked before `exp` — logout
+    deny-lists that id (see services/admin_session_service). `iat` is what the
+    global kill switch compares against, so both claims are mandatory.
+    `token_urlsafe(24)` yields 32 chars, well inside admin_revoked_tokens.jti
+    VARCHAR(64), with 192 bits of entropy (collisions are not a concern).
+
     Returns:
         Encoded JWT string with role='admin'.
     """
+    now = datetime.now(timezone.utc)
     payload = {
         "role": "admin",
-        "exp": datetime.now(timezone.utc) + timedelta(hours=8),
-        "iat": datetime.now(timezone.utc),
+        "jti": secrets.token_urlsafe(24),
+        "exp": now + ADMIN_TOKEN_TTL,
+        "iat": now,
     }
     return jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
 

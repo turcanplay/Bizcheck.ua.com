@@ -486,50 +486,18 @@ def export_test_combined_excel(test_id):
     )
 
 
-@submissions_bp.route("/tests/<int:test_id>/export/excels-zip", methods=["GET"])
-@admin_required
-def export_test_excels_zip(test_id):
-    """ZIP of per-user Excel files for a test."""
-    from services.export_service import build_excels_zip_for_test
-    try:
-        data = build_excels_zip_for_test(test_id)
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception:
-        log.exception("[export] Excel ZIP failed for test %s", test_id)
-        return jsonify({"error": "Export failed. Check the server logs."}), 500
-    return Response(
-        data,
-        mimetype="application/zip",
-        headers={
-            "Content-Disposition": f'attachment; filename="BizCheck_test_{test_id}_excels.zip"',
-        },
-    )
+def _send_temp_zip(path, download_name):
+    """Stream a freshly built temp archive and delete it, always.
 
-
-@submissions_bp.route("/tests/<int:test_id>/export/pdfs-zip", methods=["GET"])
-@admin_required
-def export_test_pdfs_zip(test_id):
-    """ZIP of per-user PDF files for a test, streamed from disk (no size cap).
-
-    LEGACY / synchronous. Kept working so the current admin SPA does not break,
-    but it pins a gunicorn worker for the whole build (~32 s at 500 submissions).
-    New callers should use the job trio below:
-        POST .../export/pdfs-zip/jobs  →  GET /exports/jobs/{token}
-                                       →  GET /exports/jobs/{token}/download
+    The unlink is registered with ``after_this_request``, which runs while the
+    response is being finalized — i.e. AFTER ``send_file`` has already opened the
+    file, and BEFORE the body is handed to the WSGI server. On POSIX the open
+    descriptor keeps streaming from the now-unlinked inode, so the transfer still
+    completes and the bytes are reclaimed even if the client aborts halfway (an
+    end-of-stream hook would never fire in that case).
     """
     import os
-    from flask import send_file, after_this_request
-    from services.export_service import build_pdfs_zip_for_test
-
-    # No cap for admin (max_bytes=None) — streaming from disk avoids OOM.
-    try:
-        path = build_pdfs_zip_for_test(test_id)
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception:
-        log.exception("[export] PDF ZIP failed for test %s", test_id)
-        return jsonify({"error": "Export failed. Check the server logs."}), 500
+    from flask import after_this_request, send_file
 
     @after_this_request
     def _cleanup(resp):
@@ -544,8 +512,54 @@ def export_test_pdfs_zip(test_id):
         path,
         mimetype="application/zip",
         as_attachment=True,
-        download_name=f"BizCheck_test_{test_id}_pdfs.zip",
+        download_name=download_name,
     )
+
+
+@submissions_bp.route("/tests/<int:test_id>/export/excels-zip", methods=["GET"])
+@admin_required
+def export_test_excels_zip(test_id):
+    """ZIP of per-user Excel files for a test, streamed from a temp file.
+
+    Built on disk rather than in a BytesIO: the archive never sits whole in the
+    worker's heap, so N concurrent exports cost N open files instead of N copies
+    of the archive. Still synchronous — the build is well under a second.
+    """
+    from services.export_service import build_excels_zip_for_test
+    try:
+        path = build_excels_zip_for_test(test_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] Excel ZIP failed for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
+
+    return _send_temp_zip(path, f"BizCheck_test_{test_id}_excels.zip")
+
+
+@submissions_bp.route("/tests/<int:test_id>/export/pdfs-zip", methods=["GET"])
+@admin_required
+def export_test_pdfs_zip(test_id):
+    """ZIP of per-user PDF files for a test, streamed from disk (no size cap).
+
+    LEGACY / synchronous. Kept working so the current admin SPA does not break,
+    but it pins a gunicorn worker for the whole build (~32 s at 500 submissions).
+    New callers should use the job trio below:
+        POST .../export/pdfs-zip/jobs  →  GET /exports/jobs/{token}
+                                       →  GET /exports/jobs/{token}/download
+    """
+    from services.export_service import build_pdfs_zip_for_test
+
+    # No cap for admin (max_bytes=None) — streaming from disk avoids OOM.
+    try:
+        path = build_pdfs_zip_for_test(test_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception:
+        log.exception("[export] PDF ZIP failed for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
+
+    return _send_temp_zip(path, f"BizCheck_test_{test_id}_pdfs.zip")
 
 
 # ─────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 Builds a structured workbook for a test's submissions and packages PDFs
 or per-user Excels as a ZIP archive.
 """
+import gc
 import html
 import json
 import logging
@@ -658,26 +659,70 @@ def build_pdfs_zip_for_test(test_id, max_bytes=None, *, dest_dir=None,
     return tmp.name
 
 
-def build_excels_zip_for_test(test_id) -> bytes:
-    """ZIP containing one Excel per submission (individual detailed report)."""
+# How many per-user workbooks build_excels_zip_for_test discards before forcing
+# a full collection. Small enough that the openpyxl cycle garbage never becomes
+# a meaningful share of RSS, large enough that the collections stay noise.
+_GC_EVERY = 50
+
+
+def build_excels_zip_for_test(test_id, *, dest_dir=None) -> str:
+    """ZIP with one Excel per submission, written to a temp file on disk.
+
+    Same shape as ``build_pdfs_zip_for_test``: the archive is streamed into a
+    NamedTemporaryFile instead of a BytesIO, so a worker serving this export
+    holds ONE workbook at a time (tens of KB) rather than the whole archive.
+    The build is fast (<1 s up to 500 submissions) — this is purely about RSS,
+    not latency, which is why it stays synchronous and does NOT go through
+    services/export_jobs.py.
+
+    ``dest_dir`` — directory the temp file is created in (defaults to the system
+    temp dir), mirroring the PDF builder.
+
+    Returns the filesystem PATH to the temp .zip. The caller MUST remove it once
+    served — routes/submissions.py does that from an ``after_this_request`` hook,
+    which fires even when the client aborts mid-download.
+    """
     subs = _filter_submissions_for_test(test_id)
     blocks = _get_test_blocks(test_id)
     question_keys_ordered, question_labels = _collect_questions_for_blocks(blocks)
 
-    buf = BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        for s in subs:
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            name = f"{s.get('first_name') or ''} {s.get('last_name') or ''}".strip() or f"sub{s['id']}"
-            ws.title = _safe_sheet_name(name)
-            _fill_single_user_sheet(ws, s, question_keys_ordered, question_labels)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip", dir=dest_dir)
+    try:
+        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
+            for idx, s in enumerate(subs, 1):
+                wb = openpyxl.Workbook()
+                ws = wb.active
+                name = f"{s.get('first_name') or ''} {s.get('last_name') or ''}".strip() or f"sub{s['id']}"
+                ws.title = _safe_sheet_name(name)
+                _fill_single_user_sheet(ws, s, question_keys_ordered, question_labels)
 
-            date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
-            stem = _safe_filename(f"{s['id']}_{name}_{date_part}")
-            zf.writestr(f"{stem}.xlsx", workbook_to_bytes(wb))
-    buf.seek(0)
-    return buf.getvalue()
+                date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
+                stem = _safe_filename(f"{s['id']}_{name}_{date_part}")
+                zf.writestr(f"{stem}.xlsx", workbook_to_bytes(wb))
+
+                # openpyxl objects are mutually referential (ws.parent is the
+                # workbook, cell.parent is the sheet), so a discarded workbook is
+                # a REFERENCE CYCLE: refcounting cannot free it and it survives
+                # until a generational sweep reaches it. Left alone, one
+                # workbook's worth of garbage per submission piles up and the
+                # heap grows with the corpus again — measured 4.4 KB/submission,
+                # i.e. the exact leak this function moved to disk to avoid.
+                # A full collect every _GC_EVERY workbooks keeps the profile flat
+                # for well under 1% of the build time.
+                if idx % _GC_EVERY == 0:
+                    gc.collect()
+    except BaseException:
+        tmp.close()
+        try:
+            os.remove(tmp.name)
+        except OSError:
+            # Swallowed so the ORIGINAL export error is the one re-raised below,
+            # but a leaked temp file can fill the disk — say so.
+            log.warning("[export] could not remove the partial temp zip %s", tmp.name,
+                        exc_info=True)
+        raise
+    tmp.close()
+    return tmp.name
 
 
 # ──────────────────────────────────────────────────────────────────
