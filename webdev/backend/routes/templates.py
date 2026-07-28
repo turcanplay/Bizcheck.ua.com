@@ -15,7 +15,7 @@ from services.template_service import (
 from models.template import Template
 from middleware.admin_middleware import admin_required
 from utils.validators import (
-    clean_content, clean_content_optional, clean_slug, clean_bool, clean_text,
+    clean_authored, clean_authored_optional, clean_slug, clean_bool, clean_text,
     MAX_TITLE, MAX_LONG,
 )
 
@@ -34,9 +34,9 @@ def _clean_features(value):
     if value is None:
         return None
     if isinstance(value, str):
-        return clean_content(value, MAX_LONG)
+        return clean_authored(value, MAX_LONG, "features")
     if isinstance(value, (list, tuple)):
-        return [clean_content(v, MAX_FEATURE) for v in value]
+        return [clean_authored(v, MAX_FEATURE, f"features[{i}]") for i, v in enumerate(value)]
     return []
 
 
@@ -50,11 +50,11 @@ def _clean_template_payload(data):
     for key, cap in (("title_uk", MAX_TITLE), ("title_en", MAX_TITLE),
                      ("description_uk", MAX_LONG), ("description_en", MAX_LONG)):
         if key in out:
-            out[key] = clean_content(out[key], cap)
+            out[key] = clean_authored(out[key], cap, key)
     if "category" in out:
-        out["category"] = clean_content_optional(out["category"], MAX_CATEGORY)
+        out["category"] = clean_authored_optional(out["category"], MAX_CATEGORY, "category")
     if "currency" in out:
-        out["currency"] = clean_content(out["currency"] or "MDL", MAX_CURRENCY)
+        out["currency"] = clean_authored(out["currency"] or "MDL", MAX_CURRENCY, "currency")
     if "features" in out:
         out["features"] = _clean_features(out["features"])
     for key in ("is_active", "is_coming_soon", "is_paid"):
@@ -130,16 +130,16 @@ def admin_create():
         slug = clean_slug(raw_slug) if (raw_slug or "").strip() else ""
         t = create_template(
             slug=slug,
-            title_uk=clean_content(data.get("title_uk"), MAX_TITLE),
-            title_en=clean_content(data.get("title_en"), MAX_TITLE),
-            description_uk=clean_content(data.get("description_uk", ""), MAX_LONG),
-            description_en=clean_content(data.get("description_en", ""), MAX_LONG),
+            title_uk=clean_authored(data.get("title_uk"), MAX_TITLE, "title_uk"),
+            title_en=clean_authored(data.get("title_en"), MAX_TITLE, "title_en"),
+            description_uk=clean_authored(data.get("description_uk", ""), MAX_LONG, "description_uk"),
+            description_en=clean_authored(data.get("description_en", ""), MAX_LONG, "description_en"),
             is_active=clean_bool(data.get("is_active", True)),
             is_coming_soon=clean_bool(data.get("is_coming_soon", False)),
             is_paid=clean_bool(data.get("is_paid", False)),
             price=data.get("price"),                      # validated by _norm_price
-            currency=clean_content(data.get("currency") or "MDL", MAX_CURRENCY),
-            category=clean_content_optional(data.get("category"), MAX_CATEGORY),
+            currency=clean_authored(data.get("currency") or "MDL", MAX_CURRENCY, "currency"),
+            category=clean_authored_optional(data.get("category"), MAX_CATEGORY, "category"),
             features=_clean_features(data.get("features")),
         )
         return jsonify({"template": t}), 201

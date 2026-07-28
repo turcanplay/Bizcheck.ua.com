@@ -3,7 +3,9 @@
 from flask import Blueprint, request, jsonify
 from services.question_service import get_questions_by_block, get_all_questions, create_question, update_question, delete_question, delete_all_questions
 from middleware.admin_middleware import admin_required
-from utils.validators import clean_content, clean_content_optional, clean_int, MAX_LONG
+from utils.validators import (
+    clean_authored, clean_authored_optional, clean_int, MAX_LONG,
+)
 
 questions_bp = Blueprint("questions", __name__, url_prefix="/api_crowe_bizcheck/questions")
 
@@ -43,13 +45,13 @@ def _clean_answers(answers_list):
     if not isinstance(answers_list, (list, tuple)):
         raise ValueError("answers must be a list")
     out = []
-    for a in answers_list:
+    for i, a in enumerate(answers_list):
         if not isinstance(a, dict):
             raise ValueError("Each answer must be an object")
         nxt = a.get("next_question_id")
         out.append({
-            "text_uk": clean_content(a.get("text_uk"), MAX_ANSWER),
-            "text_en": clean_content(a.get("text_en"), MAX_ANSWER),
+            "text_uk": clean_authored(a.get("text_uk"), MAX_ANSWER, f"answers[{i}].text_uk"),
+            "text_en": clean_authored(a.get("text_en"), MAX_ANSWER, f"answers[{i}].text_en"),
             "score": _clean_score(a.get("score", 0)),
             "next_question_id": clean_int(nxt, min_value=1) if nxt not in (None, "") else None,
         })
@@ -80,10 +82,10 @@ def create():
     data = request.get_json(silent=True) or {}
     # Question text + notes are authored free text that flows into the PDF
     # report, the Excel export and Telegram → sanitize before store.
-    text_uk = clean_content(data.get("text_uk"), MAX_QUESTION)
-    text_en = clean_content(data.get("text_en"), MAX_QUESTION)
-    note_uk = clean_content_optional(data.get("note_uk"), MAX_QUESTION)
-    note_en = clean_content_optional(data.get("note_en"), MAX_QUESTION)
+    text_uk = clean_authored(data.get("text_uk"), MAX_QUESTION, "text_uk")
+    text_en = clean_authored(data.get("text_en"), MAX_QUESTION, "text_en")
+    note_uk = clean_authored_optional(data.get("note_uk"), MAX_QUESTION, "note_uk")
+    note_en = clean_authored_optional(data.get("note_en"), MAX_QUESTION, "note_en")
 
     errors = []
     block_id = data.get("block_id")
@@ -121,10 +123,10 @@ def create():
 def update(question_id):
     data = request.get_json(silent=True) or {}
     # update_question treats None as "leave as is" → only touch keys we got.
-    text_uk = clean_content(data["text_uk"], MAX_QUESTION) if "text_uk" in data else None
-    text_en = clean_content(data["text_en"], MAX_QUESTION) if "text_en" in data else None
-    note_uk = clean_content_optional(data["note_uk"], MAX_QUESTION) if "note_uk" in data else None
-    note_en = clean_content_optional(data["note_en"], MAX_QUESTION) if "note_en" in data else None
+    text_uk = clean_authored(data["text_uk"], MAX_QUESTION, "text_uk") if "text_uk" in data else None
+    text_en = clean_authored(data["text_en"], MAX_QUESTION, "text_en") if "text_en" in data else None
+    note_uk = clean_authored_optional(data["note_uk"], MAX_QUESTION, "note_uk") if "note_uk" in data else None
+    note_en = clean_authored_optional(data["note_en"], MAX_QUESTION, "note_en") if "note_en" in data else None
     try:
         block_id = clean_int(data["block_id"], min_value=1) if data.get("block_id") is not None else None
         parent = data.get("parent_question_id")

@@ -27,6 +27,44 @@ MAX_SLUG      = 80
 MAX_LANG      = 5
 
 
+class TextTooLong(Exception):
+    """A ``strict=True`` field was longer than its column/limit.
+
+    Deliberately NOT a ValueError. Several admin routes already wrap their whole
+    body in ``except ValueError`` to emit a generic 400 with ``str(e)``; that
+    would flatten this into a plain message and throw away the structured
+    payload the SPA needs to point at the offending input. Being its own type,
+    it travels untouched to the app-level handler registered in
+    middleware/errors.py.
+
+    Carries:
+      field            the request key that was too long
+      limit            the maximum number of characters accepted
+      length           length of the SANITIZED value (what is compared to limit)
+      submitted_length length of the raw value as received, after .strip()
+    """
+
+    def __init__(self, field, limit, length, submitted_length=None):
+        self.field = field or "value"
+        self.limit = int(limit)
+        self.length = int(length)
+        self.submitted_length = int(submitted_length if submitted_length is not None else length)
+        super().__init__(
+            f"Field '{self.field}' is too long: {self.length} characters after "
+            f"sanitization, the maximum is {self.limit}."
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            "error": str(self),
+            "code": "field_too_long",
+            "field": self.field,
+            "limit": self.limit,
+            "length": self.length,
+            "submitted_length": self.submitted_length,
+        }
+
+
 def _bleach(value: str) -> str:
     return bleach.clean(value, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRS, strip=True)
 
@@ -98,6 +136,8 @@ def clean_text(
     allow_empty: bool = True,
     strip_html: bool = True,
     unescape_entities: bool = False,
+    strict: bool = False,
+    field: str | None = None,
 ) -> str:
     """
     Normalize a user-submitted string:
@@ -109,6 +149,14 @@ def clean_text(
 
     `unescape_entities` — see clean_content() below. Off by default so the
     behavior of every existing caller is unchanged.
+
+    `strict` — raise TextTooLong instead of TRUNCATING when the sanitized value
+    is longer than max_len. Off by default: the public write paths (PATCH
+    /submissions, the nested answers_json / block_scores_json walk) receive
+    machine-generated payloads where clipping an oversized value is the correct,
+    non-blocking behavior. Turn it on for content a human AUTHORS in the admin
+    panel, where a silent 405 → 255 truncation is data loss the author never
+    sees. `field` names the offending key in the error.
     """
     if value is None:
         if allow_empty:
@@ -117,12 +165,15 @@ def clean_text(
     if not isinstance(value, str):
         value = str(value)
     value = value.strip()
+    submitted_length = len(value)
     # Bound the parser's input BEFORE sanitizing — see _cap_raw_input.
     value = _cap_raw_input(value, max_len)
     if strip_html:
         value = _strip_to_plain_text(value) if unescape_entities else _bleach(value)
     # remove NULL bytes and other C0 control chars except tab/newline
     value = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", value)
+    if strict and len(value) > max_len:
+        raise TextTooLong(field, max_len, len(value), submitted_length)
     return value[:max_len]
 
 
@@ -156,6 +207,38 @@ def clean_content_optional(value, max_len: int = MAX_LONG, **kw) -> str | None:
     """clean_content() that returns None instead of an empty string."""
     out = clean_content(value, max_len, **kw)
     return out or None
+
+
+# ---------------------------------------------------------------------------
+# Authored content, STRICT (admin write paths)
+# ---------------------------------------------------------------------------
+# clean_content() truncates at the column width and the route answers 200: a
+# 405-character block title is stored as 255 and the admin who typed it is told
+# nothing. On manually authored quiz copy that is silent data loss.
+#
+# These two wrappers raise TextTooLong instead, which middleware/errors.py turns
+# into a 400 naming the field and the limit. Rejection (rather than "save +
+# warn") is the right trade here because the admin SPA already caps every one of
+# these inputs with a matching `maxLength` (255 on titles, 2 000 on
+# descriptions), and the largest authored value in the production dump is an
+# 81-char block title against a 255 limit and a 282-char question against
+# 10 000 — so nothing legitimate is anywhere near a cap and a 400 can only ever
+# be reached by a client that bypassed the form. Saving a half-value and hoping
+# a warning is read would leave a corrupted row behind either way.
+#
+# Public / machine-generated paths (PATCH /submissions, the answers_json walk in
+# clean_json_content) keep the lenient truncating behavior on purpose: they must
+# not start failing a visitor's quiz because a payload grew.
+
+def clean_authored(value, max_len: int = MAX_LONG, field: str | None = None) -> str:
+    """clean_content() that REJECTS (TextTooLong) instead of truncating."""
+    return clean_content(value, max_len, strict=True, field=field)
+
+
+def clean_authored_optional(value, max_len: int = MAX_LONG,
+                            field: str | None = None) -> str | None:
+    """clean_content_optional() that REJECTS instead of truncating."""
+    return clean_content_optional(value, max_len, strict=True, field=field)
 
 
 # Depth guard for clean_json_content — a deeply nested payload must not blow the

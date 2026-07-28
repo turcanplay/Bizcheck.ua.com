@@ -23,6 +23,7 @@ from flask_limiter import Limiter
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database.db import migrate, close
+from middleware.errors import register_error_handlers
 from routes.auth import auth_bp
 from routes.blocks import blocks_bp
 from routes.questions import questions_bp
@@ -217,6 +218,10 @@ app.register_blueprint(health_bp)
 # ---------------------------------------------------------------------------
 # Global error handlers
 # ---------------------------------------------------------------------------
+
+# Domain exceptions (currently: TextTooLong → 400 with field/limit/length).
+register_error_handlers(app)
+
 
 @app.errorhandler(404)
 def not_found(e):

@@ -510,7 +510,14 @@ def export_test_excels_zip(test_id):
 @submissions_bp.route("/tests/<int:test_id>/export/pdfs-zip", methods=["GET"])
 @admin_required
 def export_test_pdfs_zip(test_id):
-    """ZIP of per-user PDF files for a test, streamed from disk (no size cap)."""
+    """ZIP of per-user PDF files for a test, streamed from disk (no size cap).
+
+    LEGACY / synchronous. Kept working so the current admin SPA does not break,
+    but it pins a gunicorn worker for the whole build (~32 s at 500 submissions).
+    New callers should use the job trio below:
+        POST .../export/pdfs-zip/jobs  →  GET /exports/jobs/{token}
+                                       →  GET /exports/jobs/{token}/download
+    """
     import os
     from flask import send_file, after_this_request
     from services.export_service import build_pdfs_zip_for_test
@@ -538,4 +545,89 @@ def export_test_pdfs_zip(test_id):
         mimetype="application/zip",
         as_attachment=True,
         download_name=f"BizCheck_test_{test_id}_pdfs.zip",
+    )
+
+
+# ─────────────────────────────────────────────────────────────
+#  Asynchronous PDF-ZIP export (job + status + download)
+# ─────────────────────────────────────────────────────────────
+# The synchronous route above blocks one of the 4 gunicorn workers for the whole
+# build. These three endpoints move that work to a background thread and let the
+# admin poll. State + artifact live in a shared spool directory so the polling
+# request can land on ANY worker — see services/export_jobs.py for the rationale.
+#
+# Auth is identical to the synchronous export: @admin_required on all three.
+# The job token is a 256-bit secrets.token_urlsafe value, never a counter, so
+# job ids cannot be enumerated even by another authenticated admin.
+
+
+@submissions_bp.route("/tests/<int:test_id>/export/pdfs-zip/jobs", methods=["POST"])
+@admin_required
+def start_test_pdfs_zip_job(test_id):
+    """Start (or join) an async PDF-ZIP export for a test. 202 + job record."""
+    from services import export_jobs
+
+    try:
+        job = export_jobs.create_job(
+            test_id,
+            kind=export_jobs.KIND_PDFS_ZIP,
+            filename=f"BizCheck_test_{test_id}_pdfs.zip",
+        )
+    except export_jobs.JobQueueFull:
+        return jsonify({"error": "Export queue is full. Try again in a few minutes."}), 503
+    except Exception:
+        log.exception("[export] could not start PDF ZIP job for test %s", test_id)
+        return jsonify({"error": "Export failed. Check the server logs."}), 500
+
+    return jsonify({"job": export_jobs.public_job(job)}), 202
+
+
+@submissions_bp.route("/exports/jobs/<token>", methods=["GET"])
+@admin_required
+def export_job_status(token):
+    """Poll an export job. 404 once it is unknown, expired or swept."""
+    from services import export_jobs
+
+    job = export_jobs.get_job(token)
+    if job is None:
+        return jsonify({"error": "Export job not found or expired"}), 404
+    return jsonify({"job": export_jobs.public_job(job)})
+
+
+@submissions_bp.route("/exports/jobs/<token>/download", methods=["GET"])
+@admin_required
+def export_job_download(token):
+    """Stream a finished export archive from the spool directory."""
+    from flask import send_file
+    from services import export_jobs
+
+    job = export_jobs.get_job(token)
+    if job is None:
+        return jsonify({"error": "Export job not found or expired"}), 404
+
+    state = job.get("state")
+    if state != export_jobs.STATE_READY:
+        # 409, not 404: the job exists, it is just not downloadable yet.
+        return jsonify({
+            "error": "Export is not ready",
+            "state": state,
+            "job_error": job.get("error"),
+        }), 409
+
+    path = export_jobs.artifact_path(token)
+    if not path:
+        log.error("[export] job %s is 'ready' but the archive is gone", token)
+        return jsonify({"error": "Export archive is no longer available"}), 410
+
+    # Marked BEFORE streaming: an after_this_request hook would not fire if the
+    # client aborts mid-transfer, and a job that is never marked would sit on the
+    # long "ready" TTL holding gigabytes.
+    export_jobs.mark_downloaded(token)
+
+    return send_file(
+        path,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=job.get("filename") or "BizCheck_export.zip",
+        conditional=True,          # keeps Range requests / resume working
     )

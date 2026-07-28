@@ -8,7 +8,7 @@ from services.test_service import (
 )
 from middleware.admin_middleware import admin_required
 from utils.validators import (
-    clean_content, clean_content_optional, clean_json_content, clean_slug,
+    clean_authored, clean_authored_optional, clean_json_content, clean_slug,
     clean_bool, clean_float, MAX_TITLE, MAX_LONG,
 )
 
@@ -33,9 +33,9 @@ def _clean_features(value):
     if value is None:
         return None
     if isinstance(value, str):
-        return clean_content(value, MAX_LONG)
+        return clean_authored(value, MAX_LONG, "features")
     if isinstance(value, (list, tuple)):
-        return [clean_content(v, MAX_FEATURE) for v in value]
+        return [clean_authored(v, MAX_FEATURE, f"features[{i}]") for i, v in enumerate(value)]
     return []
 
 
@@ -126,22 +126,22 @@ def admin_create():
         slug = clean_slug(raw_slug) if (raw_slug or "").strip() else ""
         t = create_test(
             slug=slug,
-            name_uk=clean_content(data.get("name_uk"), MAX_TITLE),
-            name_en=clean_content(data.get("name_en"), MAX_TITLE),
-            description_uk=clean_content(data.get("description_uk", ""), MAX_LONG),
-            description_en=clean_content(data.get("description_en", ""), MAX_LONG),
+            name_uk=clean_authored(data.get("name_uk"), MAX_TITLE, "name_uk"),
+            name_en=clean_authored(data.get("name_en"), MAX_TITLE, "name_en"),
+            description_uk=clean_authored(data.get("description_uk", ""), MAX_LONG, "description_uk"),
+            description_en=clean_authored(data.get("description_en", ""), MAX_LONG, "description_en"),
             is_active=clean_bool(data.get("is_active", True)),
             is_coming_soon=clean_bool(data.get("is_coming_soon", False)),
             is_paid=clean_bool(data.get("is_paid", False)),
             price=data.get("price"),                      # validated by _norm_price
-            currency=clean_content(data.get("currency") or "MDL", MAX_CURRENCY),
-            category=clean_content_optional(data.get("category"), MAX_CATEGORY),
+            currency=clean_authored(data.get("currency") or "MDL", MAX_CURRENCY, "currency"),
+            category=clean_authored_optional(data.get("category"), MAX_CATEGORY, "category"),
             features=_clean_features(data.get("features")),
             scoring_zones=_clean_scoring_zones(data.get("scoring_zones")),
             # Free-form JSON that reaches the report — sanitize every nested
             # string, leave the numbers/booleans alone.
             zone_recommendations=clean_json_content(data.get("zone_recommendations")),
-            report_type=clean_content(data.get("report_type") or "bizcheck", MAX_REPORT_TYPE),
+            report_type=clean_authored(data.get("report_type") or "bizcheck", MAX_REPORT_TYPE, "report_type"),
             order_index=data.get("order_index", 0),       # clamped by _norm_order
         )
         return jsonify({"test": t}), 201
@@ -175,13 +175,13 @@ def _clean_test_payload(data):
     for key, cap in (("name_uk", MAX_TITLE), ("name_en", MAX_TITLE),
                      ("description_uk", MAX_LONG), ("description_en", MAX_LONG)):
         if key in out:
-            out[key] = clean_content(out[key], cap)
+            out[key] = clean_authored(out[key], cap, key)
     if "category" in out:
-        out["category"] = clean_content_optional(out["category"], MAX_CATEGORY)
+        out["category"] = clean_authored_optional(out["category"], MAX_CATEGORY, "category")
     if "currency" in out:
-        out["currency"] = clean_content(out["currency"] or "MDL", MAX_CURRENCY)
+        out["currency"] = clean_authored(out["currency"] or "MDL", MAX_CURRENCY, "currency")
     if "report_type" in out:
-        out["report_type"] = clean_content(out["report_type"] or "bizcheck", MAX_REPORT_TYPE)
+        out["report_type"] = clean_authored(out["report_type"] or "bizcheck", MAX_REPORT_TYPE, "report_type")
     if "features" in out:
         out["features"] = _clean_features(out["features"])
     if "scoring_zones" in out:

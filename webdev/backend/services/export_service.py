@@ -590,7 +590,17 @@ def workbook_to_bytes(wb) -> bytes:
     return out.getvalue()
 
 
-def build_pdfs_zip_for_test(test_id, max_bytes=None) -> str:
+# How often build_pdfs_zip_for_test invokes its ``on_progress`` callback. The
+# callback is both a progress report AND the liveness heartbeat of an async
+# export job (services/export_jobs.py), so it must fire often enough that a job
+# is never mistaken for a dead worker, and rarely enough that writing the job
+# state file does not dominate the run. Every 10 submissions ≈ every 0.6 s at
+# the measured 16 s / 250 submissions.
+_PROGRESS_EVERY = 10
+
+
+def build_pdfs_zip_for_test(test_id, max_bytes=None, *, dest_dir=None,
+                            on_progress=None) -> str:
     """ZIP every submission's stored PDF for this test, written to a temp file.
 
     Streams to a NamedTemporaryFile on disk (not BytesIO) to keep memory flat.
@@ -599,27 +609,41 @@ def build_pdfs_zip_for_test(test_id, max_bytes=None) -> str:
     is ``None`` (default), NO size limit is applied — streaming from disk avoids
     OOM regardless of archive size.
 
+    ``dest_dir`` — directory the temp file is created in. Defaults to the system
+    temp dir. An async job passes its own spool directory so the finished archive
+    can be renamed into place with os.replace (same filesystem → atomic, and no
+    1.6 GB copy across devices).
+
+    ``on_progress`` — optional ``callable(done, total)`` invoked every
+    ``_PROGRESS_EVERY`` submissions and once at the end. Exceptions raised by
+    the callback are swallowed: progress reporting must never fail an export.
+
     Returns the filesystem PATH to the temp .zip (caller is responsible for
     removing it once served).
     """
     subs = _filter_submissions_for_test(test_id)
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+    total = len(subs)
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip", dir=dest_dir)
     try:
         with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zf:
-            for s in subs:
+            for idx, s in enumerate(subs, 1):
                 pdf = Submission.get_pdf(s["id"])
-                if not pdf:
-                    continue
-                date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
-                contact = s.get("phone") or s.get("email") or ""
-                stem = _safe_filename(
-                    f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}_{contact}_{date_part}"
-                )
-                zf.writestr(f"{stem}.pdf", pdf)
-                if max_bytes is not None:
-                    tmp.flush()
-                    if os.fstat(tmp.fileno()).st_size > max_bytes:
-                        raise ExportTooLarge()
+                if pdf:
+                    date_part = str(s.get("created_at") or "").replace(":", "-").replace(" ", "_")[:19]
+                    contact = s.get("phone") or s.get("email") or ""
+                    stem = _safe_filename(
+                        f"{s['id']}_{s.get('first_name') or ''}_{s.get('last_name') or ''}_{contact}_{date_part}"
+                    )
+                    zf.writestr(f"{stem}.pdf", pdf)
+                    if max_bytes is not None:
+                        tmp.flush()
+                        if os.fstat(tmp.fileno()).st_size > max_bytes:
+                            raise ExportTooLarge()
+                if on_progress is not None and (idx % _PROGRESS_EVERY == 0 or idx == total):
+                    try:
+                        on_progress(idx, total)
+                    except Exception:
+                        log.warning("[export] progress callback failed", exc_info=True)
     except BaseException:
         tmp.close()
         try:

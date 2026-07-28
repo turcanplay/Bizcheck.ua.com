@@ -5,7 +5,7 @@ from services.block_service import (
     get_all_blocks, create_block, update_block, delete_block, get_quiz_data,
 )
 from middleware.admin_middleware import admin_required
-from utils.validators import clean_content, clean_int, MAX_TITLE
+from utils.validators import clean_authored, clean_int, MAX_TITLE
 
 blocks_bp = Blueprint("blocks", __name__, url_prefix="/api_crowe_bizcheck/blocks")
 
@@ -36,8 +36,8 @@ def create():
     data = request.get_json(silent=True) or {}
     # Block titles are free text authored in the admin panel and re-emitted by
     # the PDF report / Excel export / Telegram messages → sanitize before store.
-    title_uk = clean_content(data.get("title_uk"), MAX_TITLE)
-    title_en = clean_content(data.get("title_en"), MAX_TITLE)
+    title_uk = clean_authored(data.get("title_uk"), MAX_TITLE, "title_uk")
+    title_en = clean_authored(data.get("title_en"), MAX_TITLE, "title_en")
 
     errors = []
     test_id = data.get("test_id")
@@ -69,8 +69,8 @@ def create():
 def update(block_id):
     data = request.get_json(silent=True) or {}
     # None ⇒ "leave as is" for update_block, so only touch keys actually sent.
-    title_uk = clean_content(data["title_uk"], MAX_TITLE) if "title_uk" in data else None
-    title_en = clean_content(data["title_en"], MAX_TITLE) if "title_en" in data else None
+    title_uk = clean_authored(data["title_uk"], MAX_TITLE, "title_uk") if "title_uk" in data else None
+    title_en = clean_authored(data["title_en"], MAX_TITLE, "title_en") if "title_en" in data else None
     try:
         order_index = (
             clean_int(data["order_index"], min_value=0, max_value=MAX_ORDER)
