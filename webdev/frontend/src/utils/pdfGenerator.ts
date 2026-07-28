@@ -141,10 +141,10 @@ export async function generateFullPdf({
     const cacheBust = `?v=${w.__pdfCacheKey}`;
     const fetchOpts: RequestInit = { cache: 'no-store' };
 
-    // ── 4. Fetch static preview PDF for the selected language ──
-    // TODO(i18n): public/pdf/preview_uk.pdf does not exist yet. Until the Ukrainian
-    // cover is designed, fall back to preview_en.pdf (the legacy cover asset) so the
-    // report keeps its 2 preview pages instead of silently losing them.
+    // ── 4. Fetch static cover PDF for the selected language ──
+    // Covers live in public/pdf/preview_<lang>.pdf. If an asset is missing or is
+    // served as something other than a PDF (bad deploy, 404 page), fall back to
+    // preview_en.pdf so the report still gets its cover instead of losing it.
     let previewResponse = await fetch(`/pdf/preview_${lang}.pdf${cacheBust}`, fetchOpts);
     let contentType = previewResponse.headers.get('content-type') || '';
     if (!previewResponse.ok || !contentType.includes('application/pdf')) {
@@ -167,7 +167,7 @@ export async function generateFullPdf({
     const reportPages = await mergedPdf.copyPages(reportDoc, reportDoc.getPageIndices());
     reportPages.forEach(page => mergedPdf.addPage(page));
 
-    // ── 6. Append static outro page (language-specific, fallback to common) ──
+    // ── 6. Append static outro page (language-specific, fallback to the common one) ──
     let outroResponse = await fetch(`/pdf/outro_${lang}.pdf${cacheBust}`, fetchOpts);
     let outroCt = outroResponse.headers.get('content-type') || '';
     if (!outroResponse.ok || !outroCt.includes('application/pdf')) {
