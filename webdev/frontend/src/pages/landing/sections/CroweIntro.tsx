@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '@/context/LanguageContext';
 import Picture from '@/components/ui/Picture';
+import { CROWE_GLOBAL_LABEL, CROWE_GLOBAL_URL } from '@/config/contact';
 import './CroweIntro.css';
 
 function ExternalIcon() {
@@ -135,14 +136,14 @@ export default function CroweIntro() {
             <span className="crowe__link-wrap">
               <a
                 className="crowe__link crowe__link--gold"
-                href="https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/"
+                href={CROWE_GLOBAL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${t('croweBtnCrowe')} · ${t('croweVisitHint')}`}
               >
                 <span className="crowe__link-main">
                   <span className="crowe__link-label">{t('croweBtnCrowe')}</span>
-                  <span className="crowe__link-domain">crowe.com</span>
+                  <span className="crowe__link-domain">{CROWE_GLOBAL_LABEL}</span>
                 </span>
                 <ExternalIcon />
               </a>
@@ -157,7 +158,7 @@ export default function CroweIntro() {
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                   <span className="crowe__preview-brand-title">{t('croweTitle')}</span>
-                  <span className="crowe__preview-brand-sub">crowe.com · Moldova</span>
+                  <span className="crowe__preview-brand-sub">{CROWE_GLOBAL_LABEL}</span>
                 </span>
               </span>
             </span>

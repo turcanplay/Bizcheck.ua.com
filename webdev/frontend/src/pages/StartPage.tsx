@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang } from '@/i18n/pickLang';
+import type { TranslationKey } from '@/i18n/translations';
 import './StartPage.css';
 
 export default function StartPage() {
   const {
     sectors, sizes, ages, revenues, setUserInfo, setPhase, blocks, loading,
+    answerableQuestionCount,
     createSubmission, updateSubmission,
     tests, selectedTestSlug, selectTest,
   } = useQuiz();
@@ -49,11 +52,17 @@ export default function StartPage() {
     setSectorList(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   }
 
-  const [warn, setWarn] = useState('');
+  // Typed as a real translation key so every showWarn() call is checked at
+  // compile time and the render site needs no `as` cast.
+  const [warn, setWarn] = useState<TranslationKey | ''>('');
 
   const totalQuestions = blocks.reduce((sum, b) => sum + b.questions.length, 0);
+  // The selected test has no content the user could answer. Content is entered
+  // by hand in the admin panel, so this is the normal state of a brand-new
+  // install — show it as an empty state, never start an unanswerable run.
+  const hasNoContent = !loading && answerableQuestionCount === 0;
 
-  function showWarn(key: string) {
+  function showWarn(key: TranslationKey) {
     setWarn(key);
     setTimeout(() => setWarn(''), 3000);
   }
@@ -77,6 +86,10 @@ export default function StartPage() {
   }
   async function handleStart() {
     if (!revenue) { showWarn('formWarnCompany'); return; }
+    // Guard BEFORE creating a submission: starting a test with zero questions
+    // used to move the phase to 'quiz', where QuizPage rendered nothing at all
+    // (blank page), and left an orphan submission row behind.
+    if (hasNoContent) { showWarn('noQuestions'); return; }
     const sector = sectorList.join(', ');
     setUserInfo({ firstName: '', lastName: '', email: '', phone: '', consent: false, sector, size, age, revenue });
 
@@ -131,7 +144,7 @@ export default function StartPage() {
           {loading && (
             <div className="start-form__notice">{t('loading')}</div>
           )}
-          {!loading && blocks.length === 0 && (
+          {hasNoContent && selectedTestSlug && (
             <div className="start-form__notice start-form__notice--warn">{t('noQuestions')}</div>
           )}
 
@@ -164,8 +177,8 @@ export default function StartPage() {
 
               <div className="start-form__test-grid">
                 {tests.map(tt => {
-                  const name = lang === 'uk' ? tt.name_uk : tt.name_en;
-                  const desc = lang === 'uk' ? tt.description_uk : tt.description_en;
+                  const name = pickLang(tt, 'name', lang);
+                  const desc = pickLang(tt, 'description', lang);
                   return (
                     <button
                       key={tt.slug}
@@ -179,12 +192,12 @@ export default function StartPage() {
                 })}
               </div>
 
-              {tests.length === 0 && !loading && (
+              {tests.length === 0 && (
                 <div className="start-form__notice start-form__notice--warn">{t('noQuestions')}</div>
               )}
 
               {warn && (
-                <div className="start-form__warn">{t(warn as 'formWarnTest')}</div>
+                <div className="start-form__warn">{t(warn)}</div>
               )}
             </>
           )}
@@ -238,7 +251,7 @@ export default function StartPage() {
                 </div>
               </div>
 
-              {warn && <div className="start-form__warn">{t(warn as 'formWarnCompany')}</div>}
+              {warn && <div className="start-form__warn">{t(warn)}</div>}
 
               <div className={fromDeepLink ? 'start-form__actions' : 'start-form__actions start-form__actions--split'}>
                 {!fromDeepLink && (
@@ -283,7 +296,7 @@ export default function StartPage() {
                 </div>
               </div>
 
-              {warn && <div className="start-form__warn">{t(warn as 'formWarnCompany')}</div>}
+              {warn && <div className="start-form__warn">{t(warn)}</div>}
 
               <div className="start-form__actions start-form__actions--split">
                 <button className="start-form__btn start-form__btn--back" onClick={() => setStep(1)}>
@@ -326,7 +339,7 @@ export default function StartPage() {
                 </div>
               </div>
 
-              {warn && <div className="start-form__warn">{t(warn as 'formWarnCompany')}</div>}
+              {warn && <div className="start-form__warn">{t(warn)}</div>}
 
               <div className="start-form__actions start-form__actions--split">
                 <button className="start-form__btn start-form__btn--back" onClick={() => setStep(2)}>
@@ -369,7 +382,7 @@ export default function StartPage() {
                 </div>
               </div>
 
-              {warn && <div className="start-form__warn">{t(warn as 'formWarnCompany' | 'formWarnServer')}</div>}
+              {warn && <div className="start-form__warn">{t(warn)}</div>}
 
               <div className="start-form__actions start-form__actions--split">
                 <button className="start-form__btn start-form__btn--back" onClick={() => setStep(3)}>

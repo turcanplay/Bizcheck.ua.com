@@ -2,6 +2,7 @@ import { useEffect, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { adminApi, type AdminTest, type AdminTestInput } from '@/api/admin';
 import AdminTestModal from './AdminTestModal';
+import { pickLang } from '@/i18n/pickLang';
 
 /** Display order: active tests first, then inactive — each group by saved
  *  order_index (then id as a stable tie-breaker). */
@@ -89,7 +90,7 @@ export default function AdminTests() {
   }
 
   async function onDelete(t: AdminTest) {
-    if (!confirm(`Видалити тест "${t.name_uk}"? Усі пов'язані блоки та запитання буде видалено.`)) return;
+    if (!confirm(`Видалити тест "${pickLang(t, 'name', 'uk')}"? Усі пов'язані блоки та запитання буде видалено.`)) return;
     await adminApi.deleteTest(t.id);
     await load();
   }
@@ -144,7 +145,7 @@ export default function AdminTests() {
                 ⠿
               </span>
               <div style={{ flex: 1, minWidth: 260 }}>
-                <div className="admin-test-card__title">{t.name_uk}</div>
+                <div className="admin-test-card__title">{pickLang(t, 'name', 'uk') || t.slug}</div>
                 {t.name_en && <div className="admin-test-card__subtitle">{t.name_en}</div>}
                 {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
               </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { adminApi, type AdminTest, type SiteSettings } from '@/api/admin';
+import { pickLang } from '@/i18n/pickLang';
 
 /**
  * "Налаштування сторінки" — admin sets which test each landing-page CTA button opens.
@@ -105,7 +106,7 @@ export default function AdminPageSettings() {
                 <option value="">— без цілі (прокрутити до каталогу) —</option>
                 {tests.map(test => (
                   <option key={test.slug} value={test.slug}>
-                    {test.name_uk || test.slug}
+                    {pickLang(test, 'name', 'uk') || test.slug}
                     {test.is_paid ? ' (платний)' : ''}
                     {!test.is_active ? ' — неактивний' : ''}
                   </option>

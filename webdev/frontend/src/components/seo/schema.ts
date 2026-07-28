@@ -26,7 +26,15 @@ export function articleSchema(opts: {
     publisher: {
       '@type': 'Organization',
       name: ORG_NAME,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/android-chrome-512x512.png` },
+      // Google wants a legible organisation logo, not the app icon:
+      // public/logo_email.png is 1081x300, dark wordmark on transparent.
+      // Must stay identical to the Organization "logo" node in index.html.
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo_email.png`,
+        width: 1081,
+        height: 300,
+      },
     },
   };
 }

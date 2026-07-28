@@ -3,6 +3,7 @@ import {
   COMPANY_NAME,
   COMPANY_WEBSITE,
   COMPANY_WEBSITE_LABEL,
+  CROWE_GLOBAL_URL,
   CONTACT_EMAIL,
   CONTACT_EMAIL_HREF,
   CONTACT_TELEGRAM,
@@ -54,7 +55,7 @@ export default function ReportFooter() {
 
         <div className="report-footer__bottom">
           <div className="report-footer__brand">
-            <a href="https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+            <a href={CROWE_GLOBAL_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
               <strong>{COMPANY_NAME}</strong>
             </a>
           </div>

@@ -55,7 +55,9 @@ export function adminFetch(input: string, init: RequestInit = {}): Promise<Respo
   return fetch(url, { ...init, method, headers, credentials: 'include' });
 }
 
-async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
+/** Like `request`, but also hands back the Response so callers can read
+ *  response headers (e.g. `X-Total-Count` on the submissions listing). */
+async function requestFull<T>(path: string, opts: RequestInit = {}): Promise<{ data: T; res: Response }> {
   const method = (opts.method || 'GET').toUpperCase();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -79,8 +81,118 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
     try { const body = await res.json(); msg = body.error || msg; } catch { /* ignore */ }
     throw new Error(msg);
   }
-  if (res.status === 204) return null as T;
-  return res.json() as Promise<T>;
+  if (res.status === 204) return { data: null as T, res };
+  return { data: (await res.json()) as T, res };
+}
+
+async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
+  return (await requestFull<T>(path, opts)).data;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ *  Submissions listing — pagination
+ *
+ *  GET /submissions[?test_id=][&page=&per_page=]
+ *
+ *  Paging on the backend is OPT-IN: it engages only when `page` or
+ *  `per_page` is present in the query string. Callers that genuinely need
+ *  every row (client-side search, cross-page statistics) simply omit the
+ *  `paging` argument and get the full, unsliced array exactly as before.
+ *
+ *  The server clamps `per_page` into [1, 200] instead of erroring; we clamp
+ *  client-side too so the UI never displays a page size the server silently
+ *  refused to honour.
+ * ────────────────────────────────────────────────────────────── */
+
+export const SUBMISSIONS_DEFAULT_PER_PAGE = 50;
+export const SUBMISSIONS_MAX_PER_PAGE = 200;
+
+export interface SubmissionsPaging {
+  page?: number;
+  perPage?: number;
+}
+
+/** Raw wire shape. `page`/`per_page`/`total_pages` appear only when paged. */
+interface SubmissionsRawResponse {
+  submissions?: AdminSubmission[];
+  count?: number;
+  total?: number;
+  page?: number;
+  per_page?: number;
+  total_pages?: number;
+}
+
+/** Normalized result — always has page/perPage/totalPages so the UI never
+ *  has to branch on whether the request was paged. */
+export interface SubmissionsResult {
+  submissions: AdminSubmission[];
+  /** Rows in THIS page (or all rows when unpaged). */
+  count: number;
+  /** Rows matching the filter across all pages. */
+  total: number;
+  page: number;
+  perPage: number;
+  totalPages: number;
+  /** True when the server actually paged the result. */
+  paginated: boolean;
+}
+
+export function clampPerPage(value: number | undefined): number {
+  if (!Number.isFinite(value as number)) return SUBMISSIONS_DEFAULT_PER_PAGE;
+  return Math.max(1, Math.min(SUBMISSIONS_MAX_PER_PAGE, Math.floor(value as number)));
+}
+
+export function buildSubmissionsQuery(testId?: number, paging?: SubmissionsPaging): string {
+  const qs = new URLSearchParams();
+  if (testId) qs.set('test_id', String(testId));
+  if (paging) {
+    qs.set('page', String(Math.max(1, Math.floor(paging.page ?? 1))));
+    qs.set('per_page', String(clampPerPage(paging.perPage ?? SUBMISSIONS_DEFAULT_PER_PAGE)));
+  }
+  const s = qs.toString();
+  return s ? `?${s}` : '';
+}
+
+/** Parse both response shapes (paged and unpaged) into one stable object.
+ *  `total` falls back to the X-Total-Count header and then to the page length,
+ *  so a backend that predates the `total` field still renders correctly. */
+export function normalizeSubmissionsResponse(
+  raw: SubmissionsRawResponse | null | undefined,
+  headerTotal?: string | null,
+): SubmissionsResult {
+  const submissions = raw?.submissions ?? [];
+  const count = typeof raw?.count === 'number' ? raw.count : submissions.length;
+
+  let total: number;
+  if (typeof raw?.total === 'number') {
+    total = raw.total;
+  } else {
+    const fromHeader = headerTotal != null ? Number(headerTotal) : NaN;
+    total = Number.isFinite(fromHeader) ? fromHeader : count;
+  }
+
+  const paginated = typeof raw?.page === 'number';
+  if (!paginated) {
+    return {
+      submissions, count, total,
+      page: 1,
+      perPage: Math.max(count, 1),
+      totalPages: total > 0 ? 1 : 0,
+      paginated: false,
+    };
+  }
+
+  const perPage = clampPerPage(raw?.per_page ?? SUBMISSIONS_DEFAULT_PER_PAGE);
+  const totalPages = typeof raw?.total_pages === 'number'
+    ? raw.total_pages
+    : Math.ceil(total / perPage);
+  return {
+    submissions, count, total,
+    page: Math.max(1, raw?.page ?? 1),
+    perPage,
+    totalPages,
+    paginated: true,
+  };
 }
 
 export const adminApi = {
@@ -107,10 +219,15 @@ export const adminApi = {
     request<{ message: string; count: number }>('/admin/tests/reorder', {
       method: 'POST', body: JSON.stringify({ items }),
     }),
-  listSubmissions: (testId?: number) =>
-    request<{ submissions: AdminSubmission[]; count: number }>(
-      `/submissions${testId ? `?test_id=${testId}` : ''}`,
-    ),
+  /** List submissions.
+   *  Omit `paging` → the server returns EVERY matching row (opt-in paging).
+   *  Pass `paging` → one page plus page metadata. */
+  listSubmissions: async (testId?: number, paging?: SubmissionsPaging): Promise<SubmissionsResult> => {
+    const { data, res } = await requestFull<SubmissionsRawResponse>(
+      `/submissions${buildSubmissionsQuery(testId, paging)}`,
+    );
+    return normalizeSubmissionsResponse(data, res.headers?.get?.('X-Total-Count'));
+  },
   deleteSubmission: (id: number) =>
     request<{ message: string }>(`/submissions/${id}`, { method: 'DELETE' }),
   deleteAllSubmissions: () =>

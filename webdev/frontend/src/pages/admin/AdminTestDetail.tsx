@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { adminApi, type AdminTest } from '@/api/admin';
 import AdminTestQuestions from './AdminTestQuestions';
 import AdminTestReports from './AdminTestReports';
+import { pickLang } from '@/i18n/pickLang';
 
 type Tab = 'questions' | 'reports';
 
@@ -31,7 +32,7 @@ export default function AdminTestDetail() {
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Link to="/admin_bizcheck_md_crowe/tests" className="admin-back-link">← Назад до тестів</Link>
-          <h2 style={{ margin: 0 }}>{test.name_uk.toUpperCase()}</h2>
+          <h2 style={{ margin: 0 }}>{(pickLang(test, 'name', 'uk') || test.slug).toUpperCase()}</h2>
         </div>
       </div>
 

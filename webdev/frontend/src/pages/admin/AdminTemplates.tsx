@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminApi, adminFetch, type AdminTemplate, type AdminTemplateInput } from '@/api/admin';
 import AdminTemplateModal from './AdminTemplateModal';
+import { pickLang } from '@/i18n/pickLang';
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState<AdminTemplate[]>([]);
@@ -34,7 +35,7 @@ export default function AdminTemplates() {
   }
 
   async function onDelete(t: AdminTemplate) {
-    if (!confirm(`Видалити шаблон "${t.title_uk}"? Усі прикріплені PDF-файли буде видалено.`)) return;
+    if (!confirm(`Видалити шаблон "${pickLang(t, 'title', 'uk')}"? Усі прикріплені PDF-файли буде видалено.`)) return;
     await adminApi.deleteTemplate(t.id);
     await load();
   }
@@ -74,7 +75,7 @@ export default function AdminTemplates() {
         <div className="admin-test-card" key={t.id}>
           <div className="admin-test-card__head">
             <div style={{ flex: 1, minWidth: 260 }}>
-              <div className="admin-test-card__title">📄 {t.title_uk}</div>
+              <div className="admin-test-card__title">📄 {pickLang(t, 'title', 'uk') || t.slug}</div>
               {t.title_en && <div className="admin-test-card__subtitle">{t.title_en}</div>}
               {t.description_uk && <div className="admin-test-card__desc">{t.description_uk}</div>}
             </div>

@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang } from '@/i18n/pickLang';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
@@ -116,13 +117,13 @@ export default function Hero() {
       const haystack = [t.name_uk, t.name_en, t.description_uk, t.description_en,
                         t.category ?? '', (t.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: lang === 'uk' ? t.name_uk : t.name_en, is_paid: t.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: pickLang(t, 'name', lang), is_paid: t.is_paid, _score: sc });
     });
     templates.forEach(tp => {
       const haystack = [tp.title_uk, tp.title_en, tp.description_uk, tp.description_en,
                         tp.category ?? '', (tp.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
-      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: lang === 'uk' ? tp.title_uk : tp.title_en, is_paid: tp.is_paid, _score: sc });
+      if (sc > 0) all.push({ kind: 'template', slug: tp.slug, title: pickLang(tp, 'title', lang), is_paid: tp.is_paid, _score: sc });
     });
     return all.sort((a, b) => b._score - a._score).slice(0, 8);
   }, [query, tests, templates, lang]);

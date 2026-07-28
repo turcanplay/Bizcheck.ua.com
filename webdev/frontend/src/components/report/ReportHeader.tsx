@@ -2,6 +2,7 @@ import type { ReportData } from '@/types';
 import { getZoneColor, getZone } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { useQuiz } from '@/context/QuizContext';
+import { pickLang } from '@/i18n/pickLang';
 import './ReportHeader.css';
 
 interface ReportHeaderProps {
@@ -13,9 +14,7 @@ export default function ReportHeader({ report }: ReportHeaderProps) {
   const { tests, selectedTestSlug } = useQuiz();
   const totalColor = getZoneColor(getZone(report.totalScore));
   const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
-  const testName = currentTest
-    ? (lang === 'uk' ? currentTest.name_uk : currentTest.name_en)
-    : '';
+  const testName = pickLang(currentTest, 'name', lang);
 
   return (
     <div className="report-header" data-pdf-section data-pdf-page>

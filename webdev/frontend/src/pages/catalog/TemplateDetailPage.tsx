@@ -6,6 +6,7 @@ import { productSchema, breadcrumbSchema } from '@/components/seo/schema';
 import { SITE_URL } from '@/components/seo/siteMeta';
 import { useLang } from '@/context/LanguageContext';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
+import { pickLang } from '@/i18n/pickLang';
 
 /**
  * Template detail + delivery picker.
@@ -42,8 +43,8 @@ export default function TemplateDetailPage() {
 
   // Language-neutral base path — <Seo> and localizePath() add the prefix.
   const path = `/templates/${slug}`;
-  const title = lang === 'en' ? (item.title_en || item.title_uk) : item.title_uk;
-  const description = lang === 'en' ? (item.description_en || item.description_uk) : item.description_uk;
+  const title = pickLang(item, 'title', lang);
+  const description = pickLang(item, 'description', lang);
   const seoDesc = (description || '').slice(0, 160) ||
     (lang === 'en'
       ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.ua.com platform.`

@@ -3,12 +3,17 @@
   "short_name": "Bizcheck.ua.com",
   "description": "Платформа самодіагностики ризиків бізнесу за методологією Crowe Turcan Mikhailenko. Тести, юридичні шаблони та консультації для МСБ в Україні.",
   "lang": "uk",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#082E5E",
-  "theme_color": "#082E5E",
+  "background_color": "#011E41",
+  "theme_color": "#011E41",
   "icons": [
-    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/favicon-16x16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

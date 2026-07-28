@@ -4,6 +4,14 @@ import { buildReport, calculateBlockScore } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { API_BASE } from '@/config/api';
 import { enqueueSave } from '@/utils/durableSave';
+import {
+  resolveBlocks,
+  getTopLevelQuestions,
+  findNextBlockWithQuestions,
+  findPrevBlockWithQuestions,
+  countAnswerableQuestions,
+  type ApiBlock,
+} from '@/utils/quizContent';
 
 interface QuizContextValue {
   blocks: Block[];
@@ -12,6 +20,10 @@ interface QuizContextValue {
   ages: string[];
   revenues: string[];
   loading: boolean;
+  /** Total answerable (top-level) questions across every block of the selected
+   *  test. 0 means the admin has not entered any quiz content yet — callers
+   *  must show an empty state instead of starting a run that cannot render. */
+  answerableQuestionCount: number;
 
   tests: TestOption[];
   testsLoaded: boolean;
@@ -76,57 +88,6 @@ function clearSavedState() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-/* ---- Bilingual API types ---- */
-interface ApiAnswer {
-  label_uk: string;
-  label_en: string;
-  key: string;
-  score: number;
-  next_question_id: number | null;
-}
-interface ApiQuestion {
-  id: string;
-  db_id: number;
-  parent_question_id: number | null;
-  text_uk: string;
-  text_en: string;
-  note_uk: string | null;
-  note_en: string | null;
-  options: ApiAnswer[];
-}
-interface ApiBlock {
-  id: number;
-  title_uk: string;
-  title_en: string;
-  questions: ApiQuestion[];
-}
-
-/** Resolve bilingual API data to single-language Block[] */
-function resolveBlocks(apiBlocks: ApiBlock[], lang: 'uk' | 'en'): Block[] {
-  return apiBlocks.map(b => ({
-    id: b.id,
-    title: lang === 'uk' ? b.title_uk : b.title_en,
-    questions: b.questions.map(q => ({
-      id: q.id,
-      db_id: q.db_id,
-      parent_question_id: q.parent_question_id,
-      text: lang === 'uk' ? q.text_uk : q.text_en,
-      note: lang === 'uk' ? q.note_uk : q.note_en,
-      options: q.options.map(o => ({
-        label: lang === 'uk' ? o.label_uk : o.label_en,
-        key: o.key,
-        score: o.score,
-        next_question_id: o.next_question_id,
-      })),
-    })),
-  }));
-}
-
-/** Get top-level questions (not sub-questions) for a block */
-function getTopLevelQuestions(block: Block): Question[] {
-  return block.questions.filter(q => q.parent_question_id === null || q.parent_question_id === undefined);
-}
-
 /** Build a map of db_id -> Question for fast lookup */
 function buildQuestionMap(blocks: Block[]): Map<number, { question: Question; blockIndex: number }> {
   const map = new Map<number, { question: Question; blockIndex: number }>();
@@ -186,12 +147,19 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     ? (questionMap.get(currentQuestionDbId)?.question ?? null)
     : null;
 
-  const topLevelQuestions = blocks[currentBlock] ? getTopLevelQuestions(blocks[currentBlock]) : [];
+  const topLevelQuestions = getTopLevelQuestions(blocks[currentBlock]);
   const topLevelQuestionCount = topLevelQuestions.length;
+  const answerableQuestionCount = countAnswerableQuestions(blocks);
   // Derive index from actual position in top-level list; fall back to topLevelIndex for sub-questions
   const _topLevelPos = topLevelQuestions.findIndex(q => q.db_id === currentQuestionDbId);
   const currentQuestionIndex = _topLevelPos >= 0 ? _topLevelPos + 1 : topLevelIndex + 1;
-  const canGoPrev = currentBlock > 0 || currentQuestionIndex > 1 || navigationStack.length > 0;
+  // "Back" is only offered when prevQuestion() can actually move somewhere:
+  // a branch to pop, an earlier question in this block, or an earlier block
+  // that HAS questions (a preceding empty block is not a valid target).
+  const canGoPrev =
+    navigationStack.length > 0 ||
+    currentQuestionIndex > 1 ||
+    findPrevBlockWithQuestions(blocks, currentBlock - 1) !== -1;
 
   /* Persist quiz state to sessionStorage */
   useEffect(() => {
@@ -356,16 +324,23 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuestionDbId, currentBlock]);
 
-  /** Initialize first question when entering a block */
+  /** Initialize the first question when entering a block.
+   *
+   * Quiz content is authored by hand, so an EMPTY block (created in the admin
+   * panel but not yet filled with questions) is a normal state. Landing on one
+   * used to leave `currentQuestionDbId` null forever → QuizPage rendered blank
+   * with no way forward. Skip ahead to the first block that actually has
+   * questions instead; if there is none, leave the question unset and let the
+   * caller surface the empty state. */
   function enterBlock(blockIndex: number) {
-    const block = blocksRef.current[blockIndex];
-    if (!block) return;
-    const topLevel = getTopLevelQuestions(block);
-    if (topLevel.length > 0) {
-      setCurrentQuestionDbId(topLevel[0].db_id);
-      setTopLevelIndex(0);
-      setNavigationStack([]);
-    }
+    const list = blocksRef.current;
+    const target = findNextBlockWithQuestions(list, blockIndex);
+    if (target === -1) return;
+    if (target !== blockIndex) setCurrentBlock(target);
+    const topLevel = getTopLevelQuestions(list[target]);
+    setCurrentQuestionDbId(topLevel[0].db_id);
+    setTopLevelIndex(0);
+    setNavigationStack([]);
   }
 
   const recordAnswer = useCallback((answerKey: string, score: number, optionKey: string) => {
@@ -413,10 +388,17 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       setNavigationStack([]);
       setTopLevelIndex(nextTopIdx);
       setCurrentQuestionDbId(topLevel[nextTopIdx].db_id);
-    } else if (currentBlock < blocksRef.current.length - 1) {
-      // Move directly to next block (no transition screen)
+      return;
+    }
+
+    // Move to the next block that actually HAS questions (no transition
+    // screen). Skipping empty blocks matters because content is entered by
+    // hand: a trailing empty block used to dead-end the run on a blank page
+    // instead of finishing the quiz.
+    const nextBlockIdx = findNextBlockWithQuestions(blocksRef.current, currentBlock + 1);
+    if (nextBlockIdx !== -1) {
       setNavigationStack([]);
-      setCurrentBlock(currentBlock + 1);
+      setCurrentBlock(nextBlockIdx);
     } else {
       // Last question of last block — generate report
       setAnswers(latestAnswers => {
@@ -456,11 +438,15 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       const prevIdx = topLevelIndex - 1;
       setTopLevelIndex(prevIdx);
       setCurrentQuestionDbId(topLevel[prevIdx].db_id);
-    } else if (currentBlock > 0) {
-      // Go to last question of previous block
-      const prevBlockIdx = currentBlock - 1;
-      const prevBlock = blocksRef.current[prevBlockIdx];
-      const prevTopLevel = getTopLevelQuestions(prevBlock);
+      return;
+    }
+
+    // Go to the last question of the closest EARLIER block that has questions.
+    // Empty blocks in between are skipped — stepping into one would clear the
+    // current question and blank the page.
+    const prevBlockIdx = findPrevBlockWithQuestions(blocksRef.current, currentBlock - 1);
+    if (prevBlockIdx !== -1) {
+      const prevTopLevel = getTopLevelQuestions(blocksRef.current[prevBlockIdx]);
       setCurrentBlock(prevBlockIdx);
       setTopLevelIndex(prevTopLevel.length - 1);
       setCurrentQuestionDbId(prevTopLevel[prevTopLevel.length - 1].db_id);
@@ -538,6 +524,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         ages,
         revenues,
         loading,
+        answerableQuestionCount,
         tests,
         testsLoaded,
         selectedTestSlug,

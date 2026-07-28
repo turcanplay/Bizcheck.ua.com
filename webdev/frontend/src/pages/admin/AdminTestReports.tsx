@@ -39,6 +39,13 @@ export default function AdminTestReports({ testId }: Props) {
 
   // Only real input is the testId prop. Filtering is client-side (see `filtered`
   // below), so filter state must NOT re-trigger a fetch.
+  //
+  // INTENTIONALLY UNPAGINATED. Every filter on this screen — free-text search
+  // across name/email/phone/TG, the date range, the delivery channel, "only
+  // with PDF" — runs over the whole array in `filtered`, and the header shows
+  // "<matches> / <total> звітів". Handing this component a single page would
+  // silently search only that page, so it asks for all rows of ONE test
+  // (backend paging is opt-in: no page/per_page param → full array).
   const load = useCallback(async () => {
     setLoading(true);
     try {

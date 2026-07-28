@@ -24,13 +24,14 @@
     <meta property="og:url" content="https://bizcheck.ua.com/uk/" />
     <meta property="og:title" content="Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com" />
     <meta property="og:description" content="Швидка діагностика ризиків бізнесу за методологією Crowe. Онлайн-тест, детальний PDF-звіт, конкретні рекомендації за зонами ризику." />
-    <!-- TODO(og): asset pătrat 512x512 (icon), nu un card social 1200x630.
-         Când există /og-image-1200x630.png, schimbă src + width/height aici,
-         în Seo.tsx și în src/config/siteMeta.ts. -->
-    <meta property="og:image" content="https://bizcheck.ua.com/android-chrome-512x512.png" />
-    <meta property="og:image:width" content="512" />
-    <meta property="og:image:height" content="512" />
+    <!-- Social card 1200x630 (public/og-image.png). Absolute URL is required by
+         Facebook/LinkedIn — a relative path is silently dropped by the scraper.
+         Keep in sync with DEFAULT_IMAGE* in src/config/siteMeta.ts. -->
+    <meta property="og:image" content="https://bizcheck.ua.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Bizcheck.ua.com — онлайн-оцінка ризиків бізнесу за методологією Crowe" />
     <meta property="og:locale" content="uk_UA" />
     <meta property="og:locale:alternate" content="en_US" />
 
@@ -38,11 +39,18 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com" />
     <meta name="twitter:description" content="Онлайн-платформа самодіагностики ризиків бізнесу. Crowe Turcan Mikhailenko." />
-    <meta name="twitter:image" content="https://bizcheck.ua.com/android-chrome-512x512.png" />
+    <meta name="twitter:image" content="https://bizcheck.ua.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Bizcheck.ua.com — онлайн-оцінка ризиків бізнесу за методологією Crowe" />
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+    <!-- Favicons. Every file below is generated from the Crowe pyramid mark on an
+         opaque Crowe Indigo (#011E41) square — apple-touch-icon cannot be
+         transparent (iOS fills it black) and Android maskable icons show
+         artefacts when they are. The declared sizes match the real pixels;
+         regenerate with the same source (public/logo_email.png) if the brand
+         mark ever changes. -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
@@ -63,7 +71,12 @@
           "name": "Crowe Turcan Mikhailenko",
           "alternateName": "Bizcheck.ua.com",
           "url": "https://bizcheck.ua.com/",
-          "logo": "https://bizcheck.ua.com/android-chrome-512x512.png",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://bizcheck.ua.com/logo_email.png",
+            "width": 1081,
+            "height": 300
+          },
           "email": "office@crowe-tm.md",
           "areaServed": "UA",
           "sameAs": [

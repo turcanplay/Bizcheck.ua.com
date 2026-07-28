@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useCookieConsent } from '@/context/CookieConsentContext';
-import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_PHONE, CONTACT_PHONE_TEL } from '@/config/contact';
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_PHONE, CONTACT_PHONE_TEL, CROWE_GLOBAL_URL } from '@/config/contact';
 import { BRAND } from '@/config/siteMeta';
 import './Footer.css';
 
@@ -55,7 +55,7 @@ export default function Footer() {
         <div className="footer__col">
           <div className="footer__col-title">{t('footerOfficial')}</div>
           <a href="https://turcan.md" target="_blank" rel="noopener noreferrer" className="footer__link">{t('footerLinkTurcan')}</a>
-          <a href="https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/" target="_blank" rel="noopener noreferrer" className="footer__link">{t('footerLinkCrowe')}</a>
+          <a href={CROWE_GLOBAL_URL} target="_blank" rel="noopener noreferrer" className="footer__link">{t('footerLinkCrowe')}</a>
         </div>
 
         <div className="footer__col">

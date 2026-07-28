@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang } from '@/i18n/pickLang';
 import { publicApi, type PublicTestimonial } from '@/api/public';
 import ReviewForm from './ReviewForm';
 import './Testimonials.css';
@@ -75,7 +76,7 @@ export default function Testimonials() {
 
           <div className="testimonials__cards" ref={cardsRef} onScroll={updateEdges}>
             {items.map(t => {
-              const quote = (lang === 'uk' ? t.quote_uk : t.quote_en) || t.quote_uk || t.quote_en;
+              const quote = pickLang(t, 'quote', lang);
               const initials = t.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
               return (
                 <div key={t.id} className="testimonial-card">

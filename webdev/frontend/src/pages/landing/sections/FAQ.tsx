@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang } from '@/i18n/pickLang';
 import { faqSchema } from '@/components/seo/schema';
 import { publicApi, type PublicFaqItem } from '@/api/public';
 import './FAQ.css';
@@ -22,8 +23,8 @@ export default function FAQ() {
   const localized = useMemo(
     () => items.map(f => ({
       id: f.id,
-      question: (lang === 'uk' ? f.question_uk : f.question_en) || f.question_uk || f.question_en,
-      answer:   (lang === 'uk' ? f.answer_uk   : f.answer_en)   || f.answer_uk   || f.answer_en,
+      question: pickLang(f, 'question', lang),
+      answer:   pickLang(f, 'answer', lang),
     })),
     [items, lang],
   );

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { adminApi, type AdminSubmission, type AdminTest } from '@/api/admin';
+import { pickLang } from '@/i18n/pickLang';
 
 export default function AdminUsers() {
   const [submissions, setSubmissions] = useState<AdminSubmission[]>([]);
@@ -8,6 +9,10 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // INTENTIONALLY UNPAGINATED: the search box below filters client-side across
+  // every user, in every test. Paginating here would turn "search all users"
+  // into "search the 50 users currently on screen". Backend paging is opt-in,
+  // so calling without page/per_page keeps returning the full array.
   useEffect(() => {
     (async () => {
       try {
@@ -25,7 +30,7 @@ export default function AdminUsers() {
   const testName = (id: number | null) => {
     if (!id) return '—';
     const t = tests.find(x => x.id === id);
-    return t ? t.name_uk : `#${id}`;
+    return t ? (pickLang(t, 'name', 'uk') || `#${id}`) : `#${id}`;
   };
 
   const filtered = useMemo(() => {

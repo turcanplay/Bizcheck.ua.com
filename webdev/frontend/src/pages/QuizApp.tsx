@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang } from '@/i18n/pickLang';
 import Seo from '@/components/seo/Seo';
 import Header from '@/components/layout/Header';
 import StartPage from '@/pages/StartPage';
@@ -48,7 +49,7 @@ export default function QuizApp() {
   }, [slug, selectedTestSlug, phase, submissionId, restartQuiz, selectTest]);
 
   const test = tests.find(t => t.slug === selectedTestSlug);
-  const testName = test ? (lang === 'en' ? test.name_en : test.name_uk) : '';
+  const testName = pickLang(test, 'name', lang);
   const seoTitle = testName
     ? `${testName} · Bizcheck.ua.com · Crowe`
     : (lang === 'en' ? 'Test Bizcheck.ua.com · Crowe' : 'Тест Bizcheck.ua.com · Crowe');

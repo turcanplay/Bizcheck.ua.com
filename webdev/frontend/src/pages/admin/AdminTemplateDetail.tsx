@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminApi, adminFetch, type AdminTemplate, type AdminTemplateFile } from '@/api/admin';
+import { pickLang } from '@/i18n/pickLang';
 
 function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -125,7 +126,7 @@ export default function AdminTemplateDetail() {
       <div className="admin-section-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Link to="/admin_bizcheck_md_crowe/templates" className="admin-back-link">← Назад до шаблонів</Link>
-          <h2 style={{ margin: 0 }}>📄 {template.title_uk}</h2>
+          <h2 style={{ margin: 0 }}>📄 {pickLang(template, 'title', 'uk') || template.slug}</h2>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button

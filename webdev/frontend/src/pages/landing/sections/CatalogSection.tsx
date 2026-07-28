@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
+import { pickLang, pickLangValue } from '@/i18n/pickLang';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
@@ -429,8 +430,8 @@ interface CardProps {
 }
 
 function Card({ item, lang, onClick, cta, badgeBasic, badgePremium, freeLabel }: CardProps) {
-  const title = lang === 'uk' ? item.title_uk : item.title_en;
-  const desc  = lang === 'uk' ? item.desc_uk  : item.desc_en;
+  const title = pickLang(item, 'title', lang);
+  const desc  = pickLangValue(item.desc_uk, item.desc_en, lang);
   const premium = item.is_paid;
   const comingSoon = item.is_coming_soon;
   const comingSoonCta = lang === 'uk' ? 'Незабаром' : 'Soon';

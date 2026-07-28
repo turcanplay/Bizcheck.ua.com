@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useQuiz } from '@/context/QuizContext';
+import { pickLang } from '@/i18n/pickLang';
 import croweLogo from './logo/Crowe.png';
 import './Header.css';
 
@@ -11,9 +12,7 @@ export default function Header() {
   const { tests, selectedTestSlug, phase } = useQuiz();
 
   const currentTest = tests.find(x => x.slug === selectedTestSlug);
-  const testName = currentTest
-    ? (lang === 'uk' ? currentTest.name_uk : currentTest.name_en)
-    : null;
+  const testName = pickLang(currentTest, 'name', lang);
 
   // Show test name only during quiz / cta phases where a test is active
   const showTestName = !!testName && (phase === 'quiz' || phase === 'cta' || phase === 'report');

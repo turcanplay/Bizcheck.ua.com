@@ -38,3 +38,44 @@
     top: auto;
   }
 }
+
+/* ── Empty / loading state ─────────────────────────────────────────
+   Shown when the selected test has no questions yet (content is entered
+   by hand from the admin panel) or while blocks are still loading.
+   Replaces what used to be a blank white page. */
+.quiz-page__notice {
+  max-width: 560px;
+  margin: 64px auto 0;
+  padding: 20px 24px;
+  border: 1px solid var(--line, #e2e2e2);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  color: var(--text2, #555);
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.quiz-page__notice--warn {
+  border-color: #f0c36d;
+  background: #fdf7e8;
+  color: #6b5320;
+}
+
+.quiz-page__notice-btn {
+  display: block;
+  margin: 16px auto 64px;
+  padding: 10px 22px;
+  border: 1px solid var(--line, #d8d8d8);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text2, #555);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+
+.quiz-page__notice-btn:hover {
+  border-color: var(--text, #222);
+  color: var(--text, #222);
+}

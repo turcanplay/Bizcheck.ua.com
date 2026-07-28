@@ -25,6 +25,17 @@ export const COMPANY_WEBSITE = 'https://crowe-tm.md';
 /** Same, without the scheme — for link labels. */
 export const COMPANY_WEBSITE_LABEL = 'crowe-tm.md';
 
+/**
+ * Crowe Global profile of the member firm. Points at the firm's main page, not
+ * the `/en-gb/moldova/` office sub-page: this site serves the Ukrainian market,
+ * so deep-linking visitors straight into the Moldova office page reads wrong.
+ * The operating entity itself stays Crowe Țurcan Mikhailenko (see COMPANY_NAME).
+ */
+export const CROWE_GLOBAL_URL = 'https://www.crowe.com/ua/crowemikhailenko';
+
+/** Label for CROWE_GLOBAL_URL — country-neutral on purpose. */
+export const CROWE_GLOBAL_LABEL = 'crowe.com';
+
 /** Legal / commercial name of the firm behind the platform. */
 export const COMPANY_NAME = 'Crowe Turcan Mikhailenko';
 

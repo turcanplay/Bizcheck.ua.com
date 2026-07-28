@@ -32,11 +32,12 @@ export const COUNTRY_NAME = 'Ukraine';
 export const CURRENCY = 'UAH';
 
 /** Default Open Graph / Twitter card image (full URL).
- *  TODO: this is the 512x512 app icon, not a 1200x630 social card — replace
- *  once a proper OG asset exists in `public/`. */
-export const DEFAULT_IMAGE = `${SITE_URL}/android-chrome-512x512.png`;
-export const DEFAULT_IMAGE_WIDTH = 512;
-export const DEFAULT_IMAGE_HEIGHT = 512;
+ *  `public/og-image.png` — 1200x630, the size Facebook/LinkedIn/Telegram need to
+ *  render a large card instead of a thumbnail. Must stay in sync with the
+ *  `og:image*` / `twitter:image` tags in `index.html`. */
+export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
+export const DEFAULT_IMAGE_WIDTH = 1200;
+export const DEFAULT_IMAGE_HEIGHT = 630;
 
 export const DEFAULT_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com';
 export const DEFAULT_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.ua.com';
