@@ -1,6 +1,11 @@
 // Privacy policy in Ukrainian and English, translated in full from the official
-// Romanian source ('Politica de protecție a datelor website_MOD.docx').
+// Romanian source ('Politica de protecție a datelor website_MOD.docx') and then
+// adapted to Ukrainian law for the bizcheck.ua.com launch: references to Moldovan
+// Law No. 195/2024, to the CNPDCP and to IDNP were replaced with the Law of Ukraine
+// "On Personal Data Protection" No. 2297-VI of 01.06.2010, the Ukrainian Parliament
+// Commissioner for Human Rights (Ombudsman) and RNOKPP/UNZR respectively.
 // Legal text — translated faithfully; do not alter the meaning.
+// Any further legal change must be reviewed by a Ukrainian-qualified lawyer.
 // `k`: 'title' | 'h2' (section heading) | 'p' (paragraph / list line).
 export interface PrivacyBlock { k: 'title' | 'h2' | 'p'; uk: string; en: string; }
 
@@ -17,8 +22,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "«Персональні дані» — це будь-яка інформація стосовно ідентифікованої або такої, що може бути ідентифікована, фізичної особи (далі — суб'єкт даних), як це визначено в Законі № 195/2024 про захист персональних даних. Фізична особа вважається такою, що може бути ідентифікована, коли вона може бути прямо чи опосередковано впізнана, зокрема за посиланням на ідентифікатор, такий як ім'я, прізвище, IDNP (персональний ідентифікаційний номер), дані про поведінку та спосіб придбання/закупівлі, а також один або декілька специфічних елементів її фізичної, економічної, культурної чи соціальної ідентичності.",
-    en: "“Personal data” means any information relating to an identified or identifiable natural person (hereinafter — the data subject), as defined in Law No. 195/2024 on the protection of personal data. A natural person is deemed identifiable where they can be identified, directly or indirectly, in particular by reference to an identifier such as first name, last name, IDNP (personal identification number), data concerning behaviour and manner of acquisition/purchase, as well as one or more specific elements of their physical, economic, cultural or social identity.",
+    uk: "«Персональні дані» — це відомості чи сукупність відомостей про фізичну особу, яка ідентифікована або може бути конкретно ідентифікована (далі — суб'єкт даних), як це визначено в Законі України «Про захист персональних даних» № 2297-VI від 01.06.2010. Фізична особа вважається такою, що може бути ідентифікована, коли вона може бути прямо чи опосередковано впізнана, зокрема за посиланням на ідентифікатор, такий як ім'я, прізвище, реєстраційний номер облікової картки платника податків (РНОКПП) або унікальний номер запису в Єдиному державному демографічному реєстрі (УНЗР), дані про поведінку та спосіб придбання/закупівлі, а також один або декілька специфічних елементів її фізичної, економічної, культурної чи соціальної ідентичності.",
+    en: "“Personal data” means information or a set of information about a natural person who is identified or can be specifically identified (hereinafter — the data subject), as defined in the Law of Ukraine “On Personal Data Protection” No. 2297-VI of 1 June 2010. A natural person is deemed identifiable where they can be identified, directly or indirectly, in particular by reference to an identifier such as first name, last name, the registration number of the taxpayer’s registration card (RNOKPP) or the unique record number in the Unified State Demographic Register (UNZR), data concerning behaviour and manner of acquisition/purchase, as well as one or more specific elements of their physical, economic, cultural or social identity.",
   },
   {
     k: "p",
@@ -27,13 +32,13 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "«Система обліку персональних даних» — це будь-яка структурована сукупність персональних даних, доступних за визначеними критеріями, незалежно від того, чи є вона централізованою, децентралізованою або розподіленою за функціональними чи географічними критеріями.",
-    en: "“Personal data filing system” means any structured set of personal data accessible according to specific criteria, whether centralised, decentralised or distributed on a functional or geographical basis.",
+    uk: "«Система обліку персональних даних» (у термінології Закону України «Про захист персональних даних» — база персональних даних, у тому числі у формі картотек) — це будь-яка структурована сукупність персональних даних, доступних за визначеними критеріями, незалежно від того, чи є вона централізованою, децентралізованою або розподіленою за функціональними чи географічними критеріями.",
+    en: "“Personal data filing system” (in the terminology of the Law of Ukraine “On Personal Data Protection” — a personal data database, including in the form of card indexes) means any structured set of personal data accessible according to specific criteria, whether centralised, decentralised or distributed on a functional or geographical basis.",
   },
   {
     k: "p",
-    uk: "«Оператор», у розумінні цієї Політики, — це компанія „Crowe Țurcan Mikhailenko” S.R.L., яка визначає цілі та засоби обробки персональних даних.",
-    en: "“Controller”, within the meaning of this Policy, means the company „Crowe Țurcan Mikhailenko” S.R.L., which determines the purposes and means of the processing of personal data.",
+    uk: "«Оператор», у розумінні цієї Політики, — це компанія „Crowe Țurcan Mikhailenko” S.R.L., яка визначає цілі та засоби обробки персональних даних. У термінології Закону України «Про захист персональних даних» такій особі відповідає поняття «володілець персональних даних»; особа, якій Оператор доручає обробку даних від свого імені, є «розпорядником персональних даних».",
+    en: "“Controller”, within the meaning of this Policy, means the company „Crowe Țurcan Mikhailenko” S.R.L., which determines the purposes and means of the processing of personal data. In the terminology of the Law of Ukraine “On Personal Data Protection” this corresponds to the notion of “owner of personal data”; a person entrusted by the Controller with processing data on its behalf is an “administrator (processor) of personal data”.",
   },
   {
     k: "p",
@@ -42,13 +47,13 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "«Національний центр із захисту персональних даних (CNPDCP)» — це незалежний публічний орган, заснований у Республіці Молдова, компетентний у сфері моніторингу дотримання законодавства про захист персональних даних.",
-    en: "“National Centre for Personal Data Protection (CNPDCP)” means the independent public authority established in the Republic of Moldova, competent to monitor compliance with the legislation on the protection of personal data.",
+    uk: "«Уповноважений Верховної Ради України з прав людини» (далі — Уповноважений) — це посадова особа, яка відповідно до Закону України «Про захист персональних даних» здійснює контроль за додержанням законодавства про захист персональних даних. В Україні не створено окремого спеціалізованого органу із захисту персональних даних: ці функції покладено на Уповноваженого та його Секретаріат. Контроль за додержанням законодавства про захист персональних даних здійснюють також суди.",
+    en: "“Ukrainian Parliament Commissioner for Human Rights” (hereinafter — the Commissioner, also known as the Ombudsman) means the official who, pursuant to the Law of Ukraine “On Personal Data Protection”, exercises control over compliance with the legislation on the protection of personal data. Ukraine has not established a separate specialised data protection agency: these functions are vested in the Commissioner and their Secretariat. Control over compliance with personal data protection legislation is also exercised by the courts.",
   },
   {
     k: "p",
-    uk: "Поняття та терміни цієї Політики, які не були визначені вище, тлумачаться відповідно до Закону № 195/2024 про захист персональних даних, окрім випадків, коли їм надано інше значення.",
-    en: "Concepts and terms in this Policy that have not been defined above shall be interpreted in accordance with Law No. 195/2024 on the protection of personal data, except where a different meaning is assigned to them.",
+    uk: "Поняття та терміни цієї Політики, які не були визначені вище, тлумачаться відповідно до Закону України «Про захист персональних даних» № 2297-VI від 01.06.2010 та інших актів законодавства України у цій сфері, окрім випадків, коли їм надано інше значення.",
+    en: "Concepts and terms in this Policy that have not been defined above shall be interpreted in accordance with the Law of Ukraine “On Personal Data Protection” No. 2297-VI of 1 June 2010 and other acts of Ukrainian legislation in this field, except where a different meaning is assigned to them.",
   },
   {
     k: "h2",
@@ -57,8 +62,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Ця Політика захисту персональних даних встановлює правила, принципи та процедури, що застосовуються в межах компанії „Crowe Țurcan Mikhailenko” S.R.L., щодо збирання, використання, зберігання, передачі та захисту персональних даних клієнтів, потенційних клієнтів, працівників, партнерів та інших осіб, які взаємодіють з компанією та/або залучені до договірних відносин, відповідно до законодавства Республіки Молдова та відповідних міжнародних стандартів, включно з Регламентом ЄС 2016/679 (GDPR), у застосовній мірі.",
-    en: "This Personal Data Protection Policy establishes the rules, principles and procedures applicable within the company „Crowe Țurcan Mikhailenko” S.R.L. regarding the collection, use, storage, transfer and protection of the personal data of clients, potential clients, employees, partners and other persons who interact with the company and/or are involved in contractual relationships, in accordance with the legislation of the Republic of Moldova and the relevant international standards, including EU Regulation 2016/679 (GDPR), to the extent applicable.",
+    uk: "Ця Політика захисту персональних даних встановлює правила, принципи та процедури, що застосовуються в межах компанії „Crowe Țurcan Mikhailenko” S.R.L., щодо збирання, використання, зберігання, передачі та захисту персональних даних клієнтів, потенційних клієнтів, працівників, партнерів та інших осіб, які взаємодіють з компанією та/або залучені до договірних відносин, відповідно до законодавства України, зокрема Закону України «Про захист персональних даних» № 2297-VI від 01.06.2010, міжнародних договорів України у цій сфері, у тому числі Конвенції Ради Європи про захист осіб у зв'язку з автоматизованою обробкою персональних даних (ETS № 108), ратифікованої Україною, а також відповідних міжнародних стандартів, включно з Регламентом ЄС 2016/679 (GDPR) — у тій мірі, у якій він є застосовним. Україна не є державою — членом Європейського Союзу, і GDPR не є частиною національного законодавства України; він застосовується до Оператора лише у випадках, прямо передбачених його статтею 3 (зокрема при обробці даних осіб, які перебувають у Європейському Союзі).",
+    en: "This Personal Data Protection Policy establishes the rules, principles and procedures applicable within the company „Crowe Țurcan Mikhailenko” S.R.L. regarding the collection, use, storage, transfer and protection of the personal data of clients, potential clients, employees, partners and other persons who interact with the company and/or are involved in contractual relationships, in accordance with the legislation of Ukraine, in particular the Law of Ukraine “On Personal Data Protection” No. 2297-VI of 1 June 2010, the international treaties of Ukraine in this field, including the Council of Europe Convention for the Protection of Individuals with regard to Automatic Processing of Personal Data (ETS No. 108), ratified by Ukraine, as well as the relevant international standards, including EU Regulation 2016/679 (GDPR) — to the extent applicable. Ukraine is not a Member State of the European Union and the GDPR does not form part of Ukrainian national law; it applies to the Controller only in the cases expressly provided for by its Article 3 (in particular, when processing the data of persons who are in the European Union).",
   },
   {
     k: "h2",
@@ -72,8 +77,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Забезпечення відповідності застосовному законодавству про захист персональних даних, включно із Законом № 195/2024 та відповідними стандартами;",
-    en: "Ensuring compliance with the applicable legislation on the protection of personal data, including Law No. 195/2024 and the relevant standards;",
+    uk: "Забезпечення відповідності застосовному законодавству про захист персональних даних, включно із Законом України «Про захист персональних даних» № 2297-VI та відповідними стандартами;",
+    en: "Ensuring compliance with the applicable legislation on the protection of personal data, including the Law of Ukraine “On Personal Data Protection” No. 2297-VI and the relevant standards;",
   },
   {
     k: "p",
@@ -122,8 +127,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Законність, справедливість і прозорість. Оператор обробляє персональні дані законно, справедливо та прозоро щодо суб'єкта даних (суб'єкта персональних даних), відповідно до Закону № 195/2024. Усі операції з обробки ґрунтуються на належній правовій підставі та повідомляються суб'єктам даних у зрозумілий і доступний спосіб.",
-    en: "Lawfulness, fairness and transparency. The Controller processes personal data lawfully, fairly and in a transparent manner in relation to the data subject (the subject of the personal data), in accordance with Law No. 195/2024. All processing operations are based on an appropriate legal basis and are communicated to data subjects in a clear and accessible manner.",
+    uk: "Законність, справедливість і прозорість. Оператор обробляє персональні дані законно, справедливо та прозоро щодо суб'єкта даних (суб'єкта персональних даних), відповідно до Закону України «Про захист персональних даних» № 2297-VI. Усі операції з обробки ґрунтуються на належній правовій підставі та повідомляються суб'єктам даних у зрозумілий і доступний спосіб.",
+    en: "Lawfulness, fairness and transparency. The Controller processes personal data lawfully, fairly and in a transparent manner in relation to the data subject (the subject of the personal data), in accordance with the Law of Ukraine “On Personal Data Protection” No. 2297-VI. All processing operations are based on an appropriate legal basis and are communicated to data subjects in a clear and accessible manner.",
   },
   {
     k: "p",
@@ -162,8 +167,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Дотримання прав суб'єкта даних. Оператор застосовує всі необхідні заходи для забезпечення ефективного захисту прав суб'єктів даних відповідно до чинного законодавства, а також відповідно до GDPR, надаючи зрозумілі та ефективні варіанти й методи подання запитів.",
-    en: "Observance of the rights of the data subject. The Controller applies all necessary measures to ensure the effective protection of the rights of data subjects in accordance with the legislation in force, as well as in accordance with the GDPR, by providing clear and effective options and methods for submitting requests.",
+    uk: "Дотримання прав суб'єкта даних. Оператор застосовує всі необхідні заходи для забезпечення ефективного захисту прав суб'єктів даних відповідно до чинного законодавства України, а також відповідно до GDPR — у тій мірі, у якій він є застосовним, надаючи зрозумілі та ефективні варіанти й методи подання запитів.",
+    en: "Observance of the rights of the data subject. The Controller applies all necessary measures to ensure the effective protection of the rights of data subjects in accordance with the legislation of Ukraine in force, as well as in accordance with the GDPR — to the extent applicable, by providing clear and effective options and methods for submitting requests.",
   },
   {
     k: "p",
@@ -302,8 +307,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Право подати скаргу. Суб'єкт даних має право подати скаргу до компетентного органу, якщо вважає, що обробка його персональних даних порушує законодавство.",
-    en: "Right to lodge a complaint. The data subject has the right to lodge a complaint with the competent authority if they consider that the processing of their personal data infringes the legislation.",
+    uk: "Право подати скаргу. Суб'єкт даних має право звернутися зі скаргою щодо обробки його персональних даних до Уповноваженого Верховної Ради України з прав людини або до суду, якщо вважає, що обробка його персональних даних порушує законодавство.",
+    en: "Right to lodge a complaint. The data subject has the right to lodge a complaint concerning the processing of their personal data with the Ukrainian Parliament Commissioner for Human Rights (the Ombudsman) or with a court, if they consider that the processing of their personal data infringes the legislation.",
   },
   {
     k: "p",
@@ -497,8 +502,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Оператор може передавати персональні дані до держав — членів Європейського Союзу чи Європейського економічного простору, а також до інших юрисдикцій, які забезпечують належний рівень захисту, згідно з переліком, встановленим CNPDCP відповідно до законодавства Республіки Молдова.",
-    en: "The Controller may transfer personal data to Member States of the European Union or of the European Economic Area, as well as to other jurisdictions which ensure an adequate level of protection, in accordance with the list established by the CNPDCP pursuant to the legislation of the Republic of Moldova.",
+    uk: "Оператор може передавати персональні дані іноземним суб'єктам відносин, пов'язаних з персональними даними, лише за умови забезпечення відповідною державою належного захисту персональних даних. Відповідно до Закону України «Про захист персональних даних» такими, що забезпечують належний захист персональних даних, визнаються держави — учасниці Європейського економічного простору, а також держави, які підписали Конвенцію Ради Європи про захист осіб у зв'язку з автоматизованою обробкою персональних даних; перелік інших держав, які забезпечують належний захист персональних даних, визначає Кабінет Міністрів України.",
+    en: "The Controller may transfer personal data to foreign parties to relations involving personal data only where the state concerned ensures an adequate level of protection of personal data. Under the Law of Ukraine “On Personal Data Protection”, the States parties to the European Economic Area, as well as the States which have signed the Council of Europe Convention for the Protection of Individuals with regard to Automatic Processing of Personal Data, are recognised as ensuring an adequate level of protection of personal data; the list of other States which ensure an adequate level of protection of personal data is determined by the Cabinet of Ministers of Ukraine.",
   },
   {
     k: "p",
@@ -527,8 +532,8 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "У ситуації, коли передача здійснюється до держав, які не забезпечують належного рівня захисту, Оператор впроваджує додаткові заходи безпеки, покликані забезпечити конфіденційність, цілісність і доступність даних під час передачі та подальшої обробки.",
-    en: "In situations where the transfer is carried out to countries which do not ensure an adequate level of protection, the Controller implements additional security measures designed to ensure the confidentiality, integrity and availability of the data during transfer and subsequent processing.",
+    uk: "У ситуації, коли передача здійснюється до держав, які не забезпечують належного рівня захисту, Оператор здійснює таку передачу лише у випадках, прямо передбачених Законом України «Про захист персональних даних», зокрема за наявності однозначної згоди суб'єкта даних, у разі необхідності укладення чи виконання правочину в інтересах суб'єкта даних, необхідності захисту життєво важливих інтересів суб'єкта даних, необхідності захисту суспільного інтересу або за умови надання Оператором відповідних гарантій щодо невтручання в особисте і сімейне життя суб'єкта даних. У таких випадках Оператор додатково впроваджує заходи безпеки, покликані забезпечити конфіденційність, цілісність і доступність даних під час передачі та подальшої обробки.",
+    en: "In situations where the transfer is carried out to countries which do not ensure an adequate level of protection, the Controller carries out such a transfer only in the cases expressly provided for by the Law of Ukraine “On Personal Data Protection”, in particular where the data subject has given unambiguous consent, where it is necessary for the conclusion or performance of a transaction in the interests of the data subject, where it is necessary to protect the vital interests of the data subject, where it is necessary to protect the public interest, or where the Controller provides appropriate safeguards regarding non-interference with the private and family life of the data subject. In such cases the Controller additionally implements security measures designed to ensure the confidentiality, integrity and availability of the data during transfer and subsequent processing.",
   },
   {
     k: "p",
@@ -872,13 +877,13 @@ export const PRIVACY_BLOCKS: PrivacyBlock[] = [
   },
   {
     k: "p",
-    uk: "Оператор співпрацює з компетентними органами у сфері захисту персональних даних і надає необхідну інформацію в межах та на умовах, передбачених законом.",
-    en: "The Controller cooperates with the competent authorities in the field of personal data protection and provides the necessary information within the limits and under the conditions provided for by law.",
+    uk: "Оператор співпрацює з компетентними органами у сфері захисту персональних даних, зокрема з Уповноваженим Верховної Ради України з прав людини, і надає необхідну інформацію в межах та на умовах, передбачених законодавством України.",
+    en: "The Controller cooperates with the competent authorities in the field of personal data protection, in particular with the Ukrainian Parliament Commissioner for Human Rights (the Ombudsman), and provides the necessary information within the limits and under the conditions provided for by the legislation of Ukraine.",
   },
   {
     k: "p",
-    uk: "У разі виникнення неясностей щодо тлумачення чи застосування цієї Політики переважають положення законодавства, застосовного у сфері захисту персональних даних.",
-    en: "In the event of any ambiguity regarding the interpretation or application of this Policy, the provisions of the legislation applicable in the field of personal data protection shall prevail.",
+    uk: "У разі виникнення неясностей щодо тлумачення чи застосування цієї Політики переважають положення законодавства України, застосовного у сфері захисту персональних даних.",
+    en: "In the event of any ambiguity regarding the interpretation or application of this Policy, the provisions of the legislation of Ukraine applicable in the field of personal data protection shall prevail.",
   },
   {
     k: "p",
