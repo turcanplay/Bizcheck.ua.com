@@ -393,12 +393,12 @@ export const BLOCK_EXPLANATIONS: BlockExplanation[] = [
     },
     regulatory: {
       uk: {
-        label: 'Кодекс законів про працю України № 322-VIII',
-        url: 'https://zakon.rada.gov.ua/laws/show/322-08',
+        label: 'Цивільний кодекс України № 435-IV, глава 46 «Право інтелектуальної власності на комерційну таємницю» (ст. 505–508)',
+        url: 'https://zakon.rada.gov.ua/laws/show/435-15',
       },
       en: {
-        label: 'Labour Code of Ukraine No. 322-VIII',
-        url: 'https://zakon.rada.gov.ua/laws/show/322-08',
+        label: 'Civil Code of Ukraine No. 435-IV, Chapter 46 "Intellectual property rights in a trade secret" (Arts. 505–508)',
+        url: 'https://zakon.rada.gov.ua/laws/show/435-15',
       },
     },
   },
