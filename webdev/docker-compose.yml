@@ -125,6 +125,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      # Variabile citite la BUILD-TIME de `npm run build` (Vite + generatoarele de
+      # sitemap/prerender). `environment:` nu ajută aici — acela e runtime-ul lui
+      # nginx, iar bundle-ul e deja compilat. Vezi comentariile din Dockerfile.frontend.
+      # Toate au default GOL: un build fără ele reușește, doar loghează avertismentul.
+      args:
+        # https://bizcheck.ua.com/api_crowe_bizcheck — fără el sitemap.xml și
+        # HTML-ul pre-randat conțin doar rutele statice (test/ și templates/ lipsesc).
+        # Se rezolvă din rețeaua containerului de build, deci trebuie URL PUBLIC.
+        SITEMAP_API_URL: ${SITEMAP_API_URL:-}
+        # Doar pentru build-uri de staging pe alt domeniu. Gol → https://bizcheck.ua.com.
+        SITEMAP_BASE_URL: ${SITEMAP_BASE_URL:-}
+        # Gol → SPA-ul folosește calea relativă /api_crowe_bizcheck prin nginx (corect
+        # în producție). Se setează doar dacă API-ul stă pe alt origin.
+        VITE_API_URL: ${VITE_API_URL:-}
     restart: unless-stopped
     # Legat doar la 127.0.0.1: reverse-proxy-ul (nginx_proxy) ajunge la container prin
     # rețeaua Docker (webdev-frontend-1:80), NU prin host. Astfel portul nu mai e expus

@@ -4,6 +4,37 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ .
+
+# ── Variabile de BUILD ale SPA-ului ─────────────────────────────────────────
+# Vite și cele două generatoare de SEO citesc `process.env` DOAR în momentul lui
+# `npm run build`, adică aici, în interiorul acestei imagini. Fără perechea
+# ARG + ENV nu există absolut nicio cale prin care o valoare din `.env` să ajungă
+# la build — de aceea sitemapul ieșea mereu incomplet.
+#
+# Lanțul complet:  .env → docker-compose.yml (frontend.build.args) → ARG → ENV → npm run build
+#
+# TOATE sunt OPȚIONALE. Gol = exact comportamentul de dinainte (avertisment în log,
+# nu eroare), pentru că fiecare consumator are un fallback:
+#   SITEMAP_API_URL   scripts/generate-sitemap.mjs:41 + generate-static-html.mjs:37
+#                     `|| ''` → lib/routing.mjs:70 întoarce [] → doar rutele statice.
+#                     Format așteptat: origine + prefixul de API, FĂRĂ slash final,
+#                     de ex. https://bizcheck.ua.com/api_crowe_bizcheck
+#                     (scripturile cer `${api}/tests` și `${api}/templates`).
+#                     ⚠ Se rezolvă din REȚEAUA CONTAINERULUI DE BUILD, care NU e
+#                       rețeaua compose: `http://backend:4001/...` NU se rezolvă, iar
+#                       `http://127.0.0.1:5173/...` e containerul însuși. Folosește
+#                       URL-ul PUBLIC.
+#   SITEMAP_BASE_URL  `|| SITE_URL` din lib/routing.mjs (https://bizcheck.ua.com).
+#                     Se setează doar pentru build-uri de staging.
+#   VITE_API_URL      src/config/api.ts:2 → `|| '/api_crowe_bizcheck'` (cale relativă
+#                     prin nginx). Șirul gol e falsy, deci fallbackul se aplică.
+ARG SITEMAP_API_URL=""
+ARG SITEMAP_BASE_URL=""
+ARG VITE_API_URL=""
+ENV SITEMAP_API_URL=$SITEMAP_API_URL \
+    SITEMAP_BASE_URL=$SITEMAP_BASE_URL \
+    VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 FROM nginx:alpine

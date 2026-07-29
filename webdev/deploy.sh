@@ -42,20 +42,79 @@ docker compose version >/dev/null 2>&1 || die "plugin-ul 'docker compose' lipse�
 info "Verific .env…"
 [ -f .env ] || die "Lipsește .env în $(pwd)"
 
-# Variabile fără de care deployul e sigur greșit → oprim înainte să stricăm ceva.
-REQUIRED_VARS=(DB_PASSWORD JWT_SECRET ADMIN_PASSWORD PII_ENCRYPTION_KEY)
+# ── Variabile OBLIGATORII ───────────────────────────────────
+# Fără ele deployul e sigur greșit → oprim înainte să stricăm ceva.
+#
+# Criteriul de intrare în listă e unul singur: „serviciul MOARE la boot fără ea",
+# adică restart-loop → healthcheck-ul nu devine verde → rollback la timeout, fără
+# nicio cauză vizibilă în ieșirea scriptului. Sursele, verificate una câte una:
+#   backend/server.py  `_required_env`            → JWT_SECRET, JWT_REFRESH_SECRET
+#                      (+ NODE_ENV=production)    → PII_ENCRYPTION_KEY, ADMIN_USERNAME,
+#                                                   ADMIN_PASSWORD
+#   tgbot/bot.py:94    `raise RuntimeError`       → TELEGRAM_BOT_TOKEN
+#   groupbot/bot.py:718 `raise RuntimeError`      → SALES_BOT_TOKEN
+#   docker-compose.yml DATABASE_URL               → DB_PASSWORD
+#
+# Baseline-ul de mai jos NU e sursa de adevăr — e doar punctul de plecare. Lista
+# se completează programatic din backend/server.py imediat sub el, ca cele două
+# să nu mai poată diverge (exact bugul care lăsa JWT_REFRESH_SECRET neverificat).
+REQUIRED_VARS=(
+  DB_PASSWORD
+  JWT_SECRET
+  JWT_REFRESH_SECRET
+  ADMIN_USERNAME
+  ADMIN_PASSWORD
+  PII_ENCRYPTION_KEY
+  TELEGRAM_BOT_TOKEN
+  SALES_BOT_TOKEN
+)
+
+# Citește lista reală cerută de backend la boot direct din sursă: liniile
+# `_required_env = [...]` și `_required_env += [...]` din backend/server.py.
+# Extragem doar literalii MAJUSCULE dintre ghilimele.
+backend_required_env() {
+  [ -f backend/server.py ] || return 0
+  awk '/_required_env[[:space:]]*\+?=/ { inlist = 1 }
+       inlist                          { print; if (/\]/) inlist = 0 }' backend/server.py \
+    | grep -oE '"[A-Z][A-Z0-9_]+"' | tr -d '"' | sort -u
+}
+
+drifted=""
+while IFS= read -r v; do
+  [ -n "$v" ] || continue
+  case " ${REQUIRED_VARS[*]} " in
+    *" $v "*) ;;                                   # deja în listă
+    *) REQUIRED_VARS+=("$v"); drifted="$drifted $v" ;;
+  esac
+done < <(backend_required_env)
+if [ -n "$drifted" ]; then
+  warn "backend/server.py cere variabile care lipseau din REQUIRED_VARS:${drifted}"
+  warn "  Le verific oricum, dar adaugă-le și în baseline-ul din deploy.sh."
+fi
+
 for v in "${REQUIRED_VARS[@]}"; do
   grep -qE "^${v}=.+" .env || die "$v lipsește sau e gol în .env"
-  if grep -qE "^${v}=(CHANGE_THIS|change_me)" .env; then
+  # Placeholderele livrate în .env.example: CHANGE_THIS_* / change_me* / YOUR_*.
+  if grep -qE "^${v}=(CHANGE_THIS|change_me|YOUR_)" .env; then
     die "$v e încă pe valoarea placeholder din .env.example"
   fi
 done
-# Variabile opționale — doar avertisment, aplicația pornește și fără ele.
-for v in SALES_BOT_TOKEN SALES_CHAT_ID BOT_SHARED_SECRET ALLOWED_HOSTS PUBLIC_BASE_URL SMTP_REPLY_TO; do
+
+# ── Variabile OPȚIONALE — doar avertisment ──────────────────
+# Aplicația pornește și fără ele; lipsa lor dezactivează o funcție, nu serviciul.
+for v in SALES_CHAT_ID BOT_SHARED_SECRET ALLOWED_HOSTS PUBLIC_BASE_URL SMTP_REPLY_TO; do
   grep -q "^${v}=" .env || warn "$v lipsește din .env"
 done
 if grep -qE '^SMTP_REPLY_TO=.*@example\.' .env; then
   warn "SMTP_REPLY_TO e încă pe adresa placeholder (@example.*) — clienții nu pot răspunde"
+fi
+# Opțională, dar goală = pierdere de trafic long-tail: sitemap.xml și HTML-ul
+# pre-randat rămân doar cu rutele statice (frontend/scripts/generate-sitemap.mjs,
+# generate-static-html.mjs). Buildul NU cade — de aceea e warning, nu die.
+if ! grep -qE '^SITEMAP_API_URL=.+' .env; then
+  warn "SITEMAP_API_URL e gol → paginile de test și de șablon LIPSESC din sitemap.xml"
+  warn "  și nu sunt pre-randate. Pentru producție, în .env:"
+  warn "  SITEMAP_API_URL=https://bizcheck.ua.com/api_crowe_bizcheck"
 fi
 ok ".env verificat"
 
@@ -169,6 +228,16 @@ rollback() {
 # ════════════════════════════════════════════════════════════
 # 5. Build + up pentru TOATE serviciile
 # ════════════════════════════════════════════════════════════
+# Sitemapul și HTML-ul pre-randat se generează în interiorul imaginii de frontend,
+# din conținutul citit prin SITEMAP_API_URL. Dacă s-a schimbat doar CONȚINUTUL din
+# admin (teste/șabloane noi), fișierele din frontend/ sunt identice → stratul
+# `RUN npm run build` vine din cache și sitemapul rămâne vechi. Atunci:
+#     FRONTEND_NO_CACHE=1 ./deploy.sh
+if [ "${FRONTEND_NO_CACHE:-0}" = "1" ]; then
+  info "FRONTEND_NO_CACHE=1 → rebuild fără cache pentru frontend (regenerez sitemapul)…"
+  docker compose build --no-cache frontend || rollback
+fi
+
 info "Build + restart: ${SERVICES[*]} (backendul rulează migrarea DB)…"
 docker compose up -d --build "${SERVICES[@]}" || rollback
 
