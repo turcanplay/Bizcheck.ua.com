@@ -1,5 +1,26 @@
 # Bizcheck.ua.com — robots.txt
 # Crawlers may index public pages.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# PRE-LAUNCH NOTE — do NOT change this file to "Disallow: /" while the site is
+# masked. It stays crawlable ON PURPOSE.
+#
+# While the pre-launch mask is on (webdev/scripts/site-mask.sh), nginx answers
+# 401 for every content URL and attaches `X-Robots-Tag: noindex, nofollow, …`
+# to that 401. That header is the mechanism that actually keeps a URL out of
+# the index.
+#
+# "Disallow: /" would be the wrong lever, twice over:
+#   1. it means "do not FETCH", not "do not INDEX" — a URL discovered from
+#      anywhere else (a backlink, an old sitemap, a shared link) can still end
+#      up in the index as a bare, description-less result;
+#   2. worse, blocking the fetch means Googlebot never reads the `X-Robots-Tag:
+#      noindex` on that URL, so the one signal that does remove it never
+#      arrives. Blocking crawling weakens noindex instead of reinforcing it.
+#
+# So: 401 on all content (nothing leaks) + noindex on that 401 (explicit
+# signal) + this file left readable so the signal is reachable at all.
+# ─────────────────────────────────────────────────────────────────────────────
 
 User-agent: *
 Allow: /
@@ -9,4 +30,7 @@ Disallow: /admin_bizcheck_md_crowe/
 Disallow: /api_crowe_bizcheck/
 
 # Sitemap location for fast discovery.
+# NOTE: sitemap.xml IS behind the pre-launch mask (401) — it is a ready-made
+# list of URLs to crawl. Expect a "couldn't fetch" in Search Console until
+# launch; re-submit it after `./scripts/site-mask.sh off`.
 Sitemap: https://bizcheck.ua.com/sitemap.xml

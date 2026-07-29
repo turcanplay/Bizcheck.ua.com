@@ -41,6 +41,21 @@ venv/
 *.env
 secrets.json
 
+# Masca de pre-lansare (Basic Auth + noindex) — vezi scripts/site-mask.sh
+# Directorul e bind mount în serviciul `frontend`. Ambele fișiere se generează
+# PE SERVER și nu au voie să ajungă în repo:
+#   htpasswd  — hashuri de parolă. Un hash apr1/bcrypt public = parolă spartă
+#               offline în ore. NICIODATĂ în git.
+#   mask.conf — comutatorul. Dacă ar fi versionat, masca ar fi mereu pornită
+#               pentru oricine clonează, iar „off" n-ar mai fi o operațiune
+#               locală de server, ci un commit.
+# Directorul însuși rămâne urmărit (.gitkeep), ca bind mountul să nu fie creat
+# de Docker cu proprietar root la primul `up`.
+nginx-maintenance/*
+!nginx-maintenance/.gitkeep
+htpasswd
+.htpasswd
+
 # SSL/TLS Certificates & Keys
 *.pem
 *.key

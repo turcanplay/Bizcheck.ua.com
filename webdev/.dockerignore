@@ -46,6 +46,12 @@ backups/
 # serviciului frontend e chiar `webdev/`). Conțin și PDF-uri cu date de clienți.
 export_spool/
 
+# ── Masca de pre-lansare (bind mount al serviciului frontend) ──
+# Conține htpasswd. Nu are ce căuta în contextul de build → nu ajunge nici
+# accidental într-un strat de imagine, de unde ar putea fi extras cu
+# `docker save` / `docker history` chiar dacă fișierul e șters ulterior.
+nginx-maintenance/
+
 # ── VCS / editor / OS ──
 .git
 .gitignore

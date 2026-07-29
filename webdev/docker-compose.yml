@@ -145,6 +145,25 @@ services:
     # public (finding pentest „Port 5174 dev server открыт").
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
+    volumes:
+      # ── Masca de pre-lansare (Basic Auth + noindex) ─────────────────────────
+      # BIND MOUNT read-only. Conține două fișiere, ambele generate PE SERVER și
+      # ținute în afara git-ului (webdev/.gitignore):
+      #   mask.conf  — prezența lui = masca e PORNITĂ. Conține auth_basic +
+      #                add_header X-Robots-Tag "noindex…". Un singur fișier =
+      #                un singur comutator: nu poți scoate parola și uita noindex-ul.
+      #   htpasswd   — perechile user/parolă (apr1/bcrypt). NICIODATĂ în repo.
+      # Se administrează exclusiv cu:  ./scripts/site-mask.sh on|off|status|adduser
+      #
+      # De ce mount și nu ceva copiat în imagine: `nginx.conf` e COPIAT la build
+      # (Dockerfile.frontend), deci orice schimbare în el cere rebuild + redeploy.
+      # Comutarea măștii trebuie să fie instantanee (`nginx -s reload`), altfel
+      # „scoate parola la lansare" devine o operațiune de deploy cu rollback.
+      #
+      # Directorul poate lipsi: `include /etc/nginx/maintenance/*.conf` cu glob
+      # fără potriviri e valid în nginx, deci containerul pornește oricum.
+      # `:ro` — nginx nu are de ce să scrie acolo.
+      - ./nginx-maintenance:/etc/nginx/maintenance:ro
     depends_on:
       # INTENȚIONAT service_started, NU service_healthy: SPA-ul e static și
       # trebuie să se ridice chiar dacă backendul e picat (utilizatorul vede
@@ -155,8 +174,14 @@ services:
     # nginx:alpine are busybox wget (nu are curl). Cererea pleacă cu
     # Host: 127.0.0.1 → nu declanșează redirectul www→non-www din nginx.conf,
     # iar lipsa lui X-Forwarded-Proto nu declanșează redirectul spre https.
+    #
+    # ⚠ Ținta e `/healthz`, NU `/`. `/` intră sub masca de pre-lansare (Basic
+    #   Auth) → ar răspunde 401 → busybox wget iese non-zero → container
+    #   „unhealthy" → deploy.sh ar face ROLLBACK la fiecare deploy cu masca
+    #   pornită. `/healthz` e o locație `=` fără mască, care servește tot
+    #   index.html (deci verifică în continuare că build-ul SPA-ului e prezent).
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3

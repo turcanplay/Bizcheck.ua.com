@@ -142,6 +142,34 @@ if [ -n "${SPOOL_AVAIL_KB:-}" ] && [ "$SPOOL_AVAIL_KB" -lt 5242880 ]; then
   warn "  Curăță cu: ./scripts/export-spool.sh --purge"
 fi
 
+# ── Masca de pre-lansare: Basic Auth + noindex ──────────────
+# Comutatorul e existența lui nginx-maintenance/mask.conf (bind mount în
+# serviciul `frontend`). Vezi scripts/site-mask.sh. Îl citim ACUM ca să știm
+# ce coduri HTTP trebuie să aștepte smoke-testul de la pasul 7 — altfel un
+# deploy cu masca pornită ar vedea 401 pe `/`, l-ar lua drept eșec și ar face
+# rollback la fiecare rulare.
+MASK_DIR="nginx-maintenance"
+MASK_FILE="${MASK_DIR}/mask.conf"
+MASK_HTPASSWD="${MASK_DIR}/htpasswd"
+mkdir -p "$MASK_DIR" 2>/dev/null || true
+if [ -f "$MASK_FILE" ]; then
+  MASK_ON=1
+  warn "MASCA DE PRE-LANSARE E PORNITĂ — site-ul cere user/parolă și trimite noindex."
+  # Fără fișierul de parole, nginx răspunde 500 pe TOT site-ul (nu 401).
+  [ -s "$MASK_HTPASSWD" ] || die "Masca e pornită dar $MASK_HTPASSWD lipsește/e gol →
+  nginx ar răspunde 500 pe tot site-ul. Rulează: ./scripts/site-mask.sh adduser <nume>"
+  # Fișierul e generat de site-mask.sh; dacă a fost editat manual și i-a rămas
+  # doar una dintre cele două directive, „un singur comutator" nu mai e adevărat.
+  grep -q 'auth_basic_user_file' "$MASK_FILE" \
+    || die "$MASK_FILE nu conține auth_basic_user_file (editat manual?). Regenerează: ./scripts/site-mask.sh on"
+  grep -q 'X-Robots-Tag' "$MASK_FILE" \
+    || die "$MASK_FILE nu conține X-Robots-Tag (editat manual?). Regenerează: ./scripts/site-mask.sh on"
+  ok "Mască: PORNITĂ ($(cut -d: -f1 "$MASK_HTPASSWD" | paste -sd, - 2>/dev/null) — utilizatori)"
+else
+  MASK_ON=0
+  ok "Mască: OPRITĂ (site public)"
+fi
+
 # ════════════════════════════════════════════════════════════
 # 2. git pull
 # ════════════════════════════════════════════════════════════
@@ -288,10 +316,64 @@ smoke() {
 
 info "Smoke-test pe ${BASE_URL}…"
 smoke "/api_crowe_bizcheck/health" 200 || rollback
-smoke "/" 200 || rollback
+smoke "/healthz" 200 || rollback     # ținta healthcheck-ului Docker al frontendului
+if [ "$MASK_ON" = "1" ]; then
+  smoke "/" 401 || rollback          # masca pornită → conținutul e închis
+else
+  smoke "/" 200 || rollback
+fi
 # Regresie de config: /robots.txt trebuie servit ca fișier real, nu ca SPA.
+# Rămâne 200 în AMBELE stări — cu masca pornită trebuie să fie citibil, altfel
+# crawlerul nu are de unde vedea semnalul de noindex de pe 401-uri.
 smoke "/robots.txt" 200 || warn "  /robots.txt nu răspunde 200 — verifică nginx.conf"
+# ACME: challenge-ul inexistent trebuie să dea 404, NU 401. Dacă dă 401, masca
+# a scăpat peste /.well-known/ → `certbot renew` va eșua în tăcere și
+# certificatul expiră peste ≤90 de zile, luând tot site-ul cu el.
+acme_code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
+  "${BASE_URL}/.well-known/acme-challenge/deploy-probe" 2>/dev/null | tail -1 || true)"
+case "${acme_code:-000}" in
+  404) ok "  /.well-known/acme-challenge/ → 404 (deschis, cum trebuie)" ;;
+  401|403) die "/.well-known/acme-challenge/ răspunde ${acme_code} → ACME BLOCAT.
+  Reînnoirea certificatului TLS va eșua și site-ul pică la expirare.
+  Scoate include-ul măștii din locația /.well-known/ din nginx.conf." ;;
+  *) warn "  /.well-known/acme-challenge/ → ${acme_code} (așteptat 404)" ;;
+esac
 ok "Smoke-test trecut"
+
+# ════════════════════════════════════════════════════════════
+# 7b. Coerența măștii: comutator ⇄ răspuns HTTP real
+# ════════════════════════════════════════════════════════════
+# Basic Auth și `noindex` stau în ACELAȘI fișier (mask.conf), deci nu pot
+# diverge prin uitare. Verificarea de aici prinde cazul rămas: cineva a editat
+# fișierul de mână, sau imaginea de frontend e veche și încă nu are include-ul.
+# Cea mai scumpă greșeală pe care o prinde: `noindex` uitat în producție DUPĂ
+# lansare — site invizibil în Google la nesfârșit, fără niciun simptom vizibil.
+info "Verific coerența măștii pe răspunsul HTTP…"
+mask_hdrs="$(curl -sS -D - -o /dev/null --max-time 15 "${BASE_URL}/" 2>/dev/null || true)"
+if printf '%s\n' "$mask_hdrs" | grep -qiE '^x-robots-tag:.*noindex'; then
+  has_noindex=1
+else
+  has_noindex=0
+fi
+if [ "$MASK_ON" = "1" ]; then
+  [ "$has_noindex" = "1" ] || die "Masca e PORNITĂ, dar răspunsul nu poartă X-Robots-Tag: noindex.
+  Cel mai probabil imaginea de frontend e mai veche decât nginx.conf →
+  reconstruiește: docker compose build --no-cache frontend && ./deploy.sh"
+  ok "  401 + X-Robots-Tag: noindex — coerent"
+else
+  if [ "$has_noindex" = "1" ]; then
+    echo ""
+    echo "════════════════════════════════════════════════════════════"
+    echo "✗  NOINDEX RĂMAS ÎN PRODUCȚIE, FĂRĂ MASCĂ"
+    echo "   Site-ul e public (200), dar trimite încă X-Robots-Tag: noindex."
+    echo "   Google îl va scoate din index și nu-l va mai reindexa — fără"
+    echo "   niciun simptom vizibil în browser. Asta e greșeala clasică."
+    echo "   Repară:  ./scripts/site-mask.sh off   (apoi redeploy dacă persistă)"
+    echo "════════════════════════════════════════════════════════════"
+    die "Opresc aici — nu raportez un deploy reușit cu noindex agățat."
+  fi
+  ok "  200, fără X-Robots-Tag — site indexabil"
+fi
 
 # ════════════════════════════════════════════════════════════
 # 8. Raport final
@@ -304,6 +386,20 @@ echo ""
 info "Ultimele log-uri (backend + groupbot):"
 docker compose logs --tail=20 backend || true
 docker compose logs --tail=20 groupbot || true
+
+if [ "$MASK_ON" = "1" ]; then
+  echo ""
+  echo "════════════════════════════════════════════════════════════"
+  echo "⚠  MASCA DE PRE-LANSARE E ACTIVĂ"
+  echo "   Site-ul cere user/parolă și NU e indexabil (X-Robots-Tag: noindex)."
+  echo "   Nu funcționează public, cât timp e pornită:"
+  echo "     • linkurile de raport din email și din Telegram (PUBLIC_BASE_URL)"
+  echo "     • previzualizările în rețele sociale / Telegram / Facebook"
+  echo "     • Search Console, sitemap.xml (401), orice crawler"
+  echo "   LA LANSARE, un singur pas — scoate ȘI parola, ȘI noindex-ul:"
+  echo "       ./scripts/site-mask.sh off"
+  echo "════════════════════════════════════════════════════════════"
+fi
 
 echo ""
 ok "Deploy reușit. Backup DB: ${BACKUP_FILE:-<nu s-a făcut>}"

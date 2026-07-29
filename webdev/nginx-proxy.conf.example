@@ -19,6 +19,27 @@
 #  redirecturile http→https și www→non-www sunt duplicate și acolo (vezi
 #  webdev/nginx.conf), pe baza X-Forwarded-Proto — deci configurația e corectă
 #  chiar dacă proxy-ul din față e schimbat sau lipsește temporar.
+#
+#  ─── Masca de pre-lansare (Basic Auth) ────────────────────────────────────
+#  Basic Auth se aplică în containerul din SPATE (webdev/nginx.conf +
+#  nginx-maintenance/mask.conf, comutate cu webdev/scripts/site-mask.sh).
+#  Proxy-ul ăsta nu are nimic de configurat, dar sunt două lucruri de NU stricat:
+#
+#   1. NU adăuga `proxy_set_header Authorization "";` (și nici o listă
+#      `proxy_pass_request_headers off`). nginx transmite implicit headerul
+#      Authorization spre upstream; dacă îl ștergi, nicio parolă corectă nu mai
+#      ajunge la containerul din spate → 401 în buclă infinită.
+#      Simetric, răspunsul 401 poartă `WWW-Authenticate`, pe care nginx îl
+#      transmite implicit înapoi spre client — nu-l pune în `proxy_hide_header`.
+#
+#   2. Basic Auth trimite parola în Base64, adică în clar. Funcționează doar
+#      pentru că blocul :80 de mai jos redirecționează TOT spre https înainte
+#      de orice autentificare. Nu scoate redirectul cât timp masca e activă.
+#
+#  ACME: challenge-ul e servit AICI, din /var/www/certbot (blocul :80 de mai
+#  jos), deci reînnoirea certificatului e complet independentă de mască. Nu
+#  muta webroot-ul în container fără să verifici că /.well-known/ a rămas
+#  neprotejat și acolo.
 # ═══════════════════════════════════════════════════════════════════════════
 
 # ─── Upstream: containerul de frontend din rețeaua Docker a stack-ului ──────

@@ -26,6 +26,8 @@ singure în `webdev/`, dar cron-ul și `docker compose` nu — de aceea `cd` e m
 
 1. [DNS + cerințe de server](#1-dns--cerințe-de-server)
 2. [TLS pe proxy-ul din față](#2-tls-pe-proxy-ul-din-față)
+   — inclusiv [2.5 masca de pre-lansare](#25-masca-de-pre-lansare--parolă-pe-tot-site-ul-noindex):
+   parolă pe tot site-ul + `noindex` cât timp introduci conținut
 3. [`.env`](#3-env)
 4. [Primul deploy](#4-primul-deploy)
 5. [Rolul Postgres ne-superuser](#5-rolul-postgres-ne-superuser-opțional-dar-recomandat) *(opțional)*
@@ -186,6 +188,138 @@ Reînnoirea lovește `:80`, unde blocul `acme-challenge` rămâne permanent (nu-
 (`ProxyFix(x_for=1)`), iar `X-Forwarded-For` e **suprascris**, nu adăugat, în ambele
 nginx-uri (`nginx.conf:147`, `nginx-proxy.conf.example:119`) — exact ca să nu se poată
 falsifica cheia de rate-limit. Un proxy în plus rupe presupunerea.
+
+### 2.5 Masca de pre-lansare — parolă pe tot site-ul + `noindex`
+
+Cât timp introduci conținut în panoul de admin, site-ul **nu trebuie** să fie nici
+vizitabil, nici indexabil. Masca se aplică în **nginx**, nu în SPA: un ecran de login
+făcut în React ar servi oricum `index.html` și tot bundle-ul JS, deci conținutul ar
+rămâne descărcabil și indexabil. Basic Auth taie cererea la margine, înainte de orice byte
+de conținut.
+
+**Comutatorul e un singur fișier:** `webdev/nginx-maintenance/mask.conf`. Există → mască
+pornită. Lipsește → mască oprită. Directorul e bind mount în serviciul `frontend`
+(`docker-compose.yml`), iar `nginx.conf` îl trage cu
+`include /etc/nginx/maintenance/*.conf;` în fiecare locație de conținut. Glob-ul fără
+potriviri e valid în nginx, deci configul merge și cu directorul gol sau lipsă.
+
+Fișierul conține **și** `auth_basic`, **și** `add_header X-Robots-Tag "noindex, …"`.
+Intenționat: la lansare un singur `rm` le scoate pe amândouă, deci nu poți scoate parola
+și uita `noindex`-ul (§10.9).
+
+#### Pornire (înainte de primul deploy public)
+
+```bash
+cd <repo>/webdev
+
+# 1. Parola. Se cere interactiv — NU o da ca argument (ajunge în `history` și în `ps aux`).
+#    NU inventa o parolă în repo: fișierul nu e și nu are voie să fie versionat.
+./scripts/site-mask.sh adduser crowe
+
+# 2. Pornește masca (scrie mask.conf și dă `nginx -s reload`, fără redeploy).
+./scripts/site-mask.sh on
+
+# 3. Verifici:
+./scripts/site-mask.sh status
+curl -sI https://bizcheck.ua.com/ | head -1                    # 401
+curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag       # noindex, nofollow, …
+curl -sI -u crowe:<parola> https://bizcheck.ua.com/ | head -1  # 200
+```
+
+Cum se generează hashul, dacă vrei să o faci manual: imaginea `nginx:alpine` **nu** conține
+`htpasswd` (e în `apache2-utils`/`httpd-tools`, care nu se instalează în imagine), iar
+directorul e montat `:ro`. Hashul se face **pe gazdă**, iar `site-mask.sh` alege singur
+prima variantă disponibilă:
+
+```bash
+# varianta care merge pe orice Debian/Ubuntu, fără pachete în plus (openssl e deja acolo):
+printf '%s' 'PAROLA' | openssl passwd -apr1 -stdin | \
+  sed 's/^/crowe:/' >> nginx-maintenance/htpasswd
+
+# dacă ai apache2-utils instalat (bcrypt, preferabil):
+htpasswd -B -c nginx-maintenance/htpasswd crowe
+
+# fără niciunul, dar cu Docker (bcrypt, fără să instalezi nimic pe gazdă):
+docker run --rm --entrypoint htpasswd httpd:2.4-alpine -nbB crowe 'PAROLA' \
+  >> nginx-maintenance/htpasswd
+```
+
+`nginx-maintenance/htpasswd` și `mask.conf` sunt în `.gitignore` (și în `.dockerignore`,
+ca să nu ajungă într-un strat de imagine). Doar `.gitkeep` e urmărit, ca bind mountul să
+nu fie creat de Docker cu proprietar `root`.
+
+#### Alt utilizator / ștergere
+
+```bash
+./scripts/site-mask.sh adduser coleg     # adaugă (sau schimbă parola unuia existent)
+./scripts/site-mask.sh deluser coleg
+```
+
+#### CE RĂMÂNE ACCESIBIL FĂRĂ PAROLĂ (și de ce)
+
+| Cale | De ce nu are voie să fie blocată |
+|---|---|
+| `/.well-known/` | ACME http-01. Blocat → `certbot renew` eșuează, certificatul expiră în ≤90 de zile și **tot site-ul pică**. Cel mai grav punct. |
+| `/api_crowe_bizcheck/health` | Smoke-testul din `deploy.sh:290`. Blocat → 401 în loc de 200 → **rollback automat la fiecare deploy**. |
+| `/healthz` | Healthcheck-ul Docker al containerului `frontend`. Blocat → container `unhealthy` → tot rollback. |
+| `/robots.txt` | Trebuie să rămână citibil — vezi §10.9. |
+
+**Certbot nu e afectat deloc** în setupul actual: challenge-ul e servit de proxy-ul din
+față, din `/var/www/certbot` (`nginx-proxy.conf.example:43`), deci nici nu ajunge la
+containerul mascat. Locația `/.well-known/` a rămas totuși deschisă și în container, ca
+plasă de siguranță dacă webroot-ul se mută vreodată. `deploy.sh` verifică la fiecare
+rulare că `/.well-known/acme-challenge/` întoarce **404, nu 401**, și se oprește altfel.
+
+**Boții Telegram nu trec prin nginx** — vorbesc direct cu `http://backend:4001` în rețeaua
+Docker (`tgbot/config.py:23`, `groupbot/bot.py:63`). Livrarea raportului în Telegram,
+`/excel`, `/pdf`, `/client` și notificările „Lead nou" funcționează normal cu masca pornită.
+
+#### CE SE RUPE cât timp masca e activă
+
+- **Linkul de descărcare a raportului din email** (`{PUBLIC_BASE_URL}/api_crowe_bizcheck/
+  submissions/<id>/report.pdf?t=…`, `services/report_email.py:115`) — clientul primește 401.
+- **Linkul spre panoul de admin din mesajele de grup** (`sales_notify.py:110`) — cere parola
+  Basic înainte de login-ul normal.
+- **Previzualizările** în Telegram / Facebook / LinkedIn (crawlerele lor primesc 401).
+- **`sitemap.xml`** răspunde 401 (deliberat — e o listă de URL-uri gata de indexat), deci
+  Search Console raportează „couldn't fetch" până la lansare.
+- **Panoul de admin** e sub Basic Auth (dublă autentificare). E o alegere, nu o scăpare:
+  a-l scuti ar cere un `location` paralel care duplică CSP-ul și restul headerelor, n-ar
+  ajuta oricum (panoul cheamă `/api_crowe_bizcheck/`, care e sub mască), iar așa pagina de
+  login nici nu e accesibilă public, nici atacabilă prin forță brută. Browserul cere parola
+  Basic o singură dată pe sesiune.
+
+#### Oprire — LA LANSARE
+
+```bash
+cd <repo>/webdev
+./scripts/site-mask.sh off     # scoate SIMULTAN parola și antetul noindex
+```
+
+**Verifici** (ambele, nu doar prima):
+
+```bash
+curl -sI https://bizcheck.ua.com/ | head -1                 # 200
+curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag    # NICIO linie
+curl -sI https://bizcheck.ua.com/sitemap.xml | head -1      # 200
+```
+
+Apoi retrimite `sitemap.xml` în Search Console (§8.3).
+
+#### Validare fără Docker (pe stația de lucru)
+
+```bash
+cd <repo>/webdev
+pip3 install crossplane                  # o singură dată
+python3 scripts/validate-nginx.py        # parsează configul în AMBELE stări ale măștii
+python3 scripts/validate-deploy-config.py
+```
+
+`validate-nginx.py` folosește `crossplane`, parserul oficial NGINX, și verifică pe arborele
+parsat: că `/.well-known/`, `/healthz`, `/api_crowe_bizcheck/health` și `/robots.txt` **nu**
+au `auth_basic`, că locațiile de conținut îl au când masca e pornită, că `X-Robots-Tag`
+apare exact acolo unde apare `auth_basic` și că are `always` (fără el nu s-ar aplica pe 401
+— adică exact pe singurul răspuns pe care îl vede un crawler).
 
 ---
 
@@ -826,6 +960,12 @@ curl -fsS https://bizcheck.ua.com/api_crowe_bizcheck/health          # {"status"
 curl -sI https://bizcheck.ua.com/robots.txt | head -1                # 200
 curl -sI https://bizcheck.ua.com/sitemap.xml | head -1               # 200
 
+# Masca de pre-lansare — rulează ASTA înainte să anunți lansarea (§2.5)
+./scripts/site-mask.sh status                                        # „OPRITĂ"
+curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag             # NICIO linie (§10.9)
+curl -sI https://bizcheck.ua.com/.well-known/acme-challenge/x | head -1   # 404, NU 401
+curl -sI https://bizcheck.ua.com/healthz | head -1                   # 200
+
 # Redirecturile 301 pentru rutele vechi (nginx.conf:87–101)
 for p in /confidentialitate /termeni /test/x /sablon/x /plata/test/x; do
   printf '%-22s ' "$p"; curl -sI "https://bizcheck.ua.com$p" | awk '/^[Ll]ocation/{print $2}'
@@ -963,3 +1103,31 @@ Restaurarea bazei se face din backupul pre-deploy afișat de script
 Regula proiectului (CLAUDE.md, „Don'ts"): se deployează pe server și se testează acolo.
 Și: nu adăuga `ports:` la `backend` sau `db` în niciun compose, și ține `frontend` legat pe
 `127.0.0.1`.
+
+### 10.9 `noindex` uitat în producție — greșeala cea mai scumpă
+
+Un `X-Robots-Tag: noindex` rămas după lansare **nu are niciun simptom vizibil**: site-ul
+arată perfect în browser, se încarcă rapid, nimeni nu primește nicio eroare. Doar Google îl
+scoate din index și nu-l mai reindexează, iar descoperi luni mai târziu, când te întrebi de
+ce nu vine trafic organic. Recuperarea poate dura săptămâni.
+
+Ce s-a făcut ca să nu se poată întâmpla:
+
+1. **Un singur comutator.** `auth_basic` și `add_header X-Robots-Tag` stau în **același
+   fișier** (`nginx-maintenance/mask.conf`). `./scripts/site-mask.sh off` le șterge pe
+   amândouă cu un `rm`. Nu există stare „fără parolă, dar cu noindex" la care să ajungi
+   prin uitare.
+2. **`deploy.sh` verifică pe răspunsul HTTP real**, la fiecare deploy: dacă masca e oprită
+   dar `/` încă trimite `noindex`, scriptul **oprește deployul cu eroare**, nu cu un
+   warning pe care l-ai scrola. Simetric, dacă masca e pornită dar `noindex` lipsește,
+   te trimite să reconstruiești imaginea de frontend.
+3. **`scripts/validate-nginx.py`** (crossplane, fără Docker) refuză configul în care
+   `X-Robots-Tag` apare într-o locație fără `auth_basic`.
+
+Și capcana-soră, cu semnul invers: **nu pune `Disallow: /` în `robots.txt`** ca „încă un
+strat" de protecție. `Disallow` înseamnă „nu descărca", nu „nu indexa": un URL descoperit
+dintr-un backlink poate ajunge tot în index, fără descriere. Mai rău, blochează exact
+cererea prin care Googlebot ar fi citit `noindex`-ul — deci **slăbește** protecția în loc
+s-o întărească. De aceea `robots.txt` rămâne `Allow: /` și accesibil chiar și cu masca
+pornită (comentariul e scris și în `webdev/frontend/public/robots.txt`, ca să nu fie
+„reparat" de cineva).
