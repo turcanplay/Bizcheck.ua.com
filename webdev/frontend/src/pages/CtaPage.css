@@ -65,12 +65,6 @@
   letter-spacing: 0.3px;
 }
 
-.cta-reveal__name {
-  font-size: clamp(11px, 2vw, 13px);
-  color: rgba(255,255,255,0.4);
-  margin: 0;
-}
-
 .cta-reveal__bar {
   width: clamp(120px, 40vw, 200px);
   height: 4px;
@@ -184,14 +178,6 @@
   to { transform: rotate(360deg); }
 }
 
-.cta-page__name {
-  font-size: clamp(12px, 2.5vw, 14px);
-  color: var(--gold, #F5A800);
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin: 0;
-}
-
 /* ── Delivery options (3 cards) ── */
 .cta-page__delivery-prompt {
   text-align: center;
@@ -269,10 +255,6 @@
   background: linear-gradient(135deg, rgba(0, 117, 201, 0.18), rgba(0, 117, 201, 0.08));
   color: #4A90D0;
 }
-.cta-page__option--email .cta-page__option-icon {
-  background: linear-gradient(135deg, rgba(0, 117, 201, 0.18), rgba(0, 117, 201, 0.08));
-  color: #CE8FDC;
-}
 .cta-page__option--telegram .cta-page__option-icon {
   background: linear-gradient(135deg, rgba(41, 161, 222, 0.22), rgba(41, 161, 222, 0.1));
   color: #5DC9F0;
@@ -321,11 +303,6 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
-.cta-page__option-btn--disabled {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  box-shadow: none !important;
-}
 
 .cta-page__error {
   text-align: center;
@@ -353,94 +330,6 @@
   .cta-page__option-desc { min-height: auto; }
 }
 
-/* ── Steps (legacy, kept for fallback) ── */
-.cta-page__steps {
-  display: flex;
-  align-items: center;
-  gap: clamp(4px, 2vw, 12px);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: clamp(10px, 2vw, 16px) clamp(8px, 3vw, 24px);
-  width: 100%;
-}
-
-.cta-page__step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  font-size: clamp(9px, 2vw, 12px);
-  font-weight: 500;
-  color: rgba(255,255,255,0.4);
-}
-
-.cta-page__step--done {
-  color: rgba(255,255,255,0.7);
-}
-
-.cta-page__step--active {
-  color: var(--gold, #F5A800);
-}
-
-.cta-page__step-num {
-  width: clamp(20px, 5vw, 28px);
-  height: clamp(20px, 5vw, 28px);
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(9px, 2vw, 12px);
-  font-weight: 700;
-}
-
-.cta-page__step--done .cta-page__step-num {
-  background: var(--gold, #F5A800);
-  border-color: var(--gold, #F5A800);
-}
-
-.cta-page__step--active .cta-page__step-num {
-  border-color: var(--gold, #F5A800);
-  color: var(--gold, #F5A800);
-}
-
-.cta-page__step-arrow {
-  color: rgba(255,255,255,0.2);
-  font-size: clamp(10px, 2vw, 16px);
-  flex-shrink: 0;
-}
-
-/* ── PDF status ── */
-.cta-page__pdf-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: clamp(11px, 2vw, 13px);
-  color: rgba(255,255,255,0.45);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 20px;
-  padding: 6px clamp(10px, 3vw, 16px);
-  transition: color 0.3s, border-color 0.3s;
-}
-
-.cta-page__pdf-status--ready {
-  color: rgba(22,163,74,0.9);
-  border-color: rgba(22,163,74,0.2);
-}
-
-/* ── Instruction text ── */
-.cta-page__instruction {
-  font-size: clamp(13px, 2.5vw, 15px);
-  color: rgba(255,255,255,0.55);
-  line-height: 1.6;
-  max-width: 420px;
-  margin: 0;
-  padding: 0 8px;
-}
-
 /* ── Error ── */
 .cta-page__tg-error {
   font-size: 13px;
@@ -455,40 +344,6 @@
   margin: 0;
 }
 
-/* ── Telegram button ── */
-.cta-page__tg-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 380px;
-  padding: clamp(12px, 3vw, 16px) clamp(16px, 5vw, 32px);
-  background: #229ED9;
-  color: #fff;
-  border: none;
-  border-radius: clamp(10px, 2vw, 12px);
-  font-size: clamp(14px, 3vw, 16px);
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(34,158,217,0.3);
-  position: relative;
-  z-index: 1;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.cta-page__tg-btn:hover:not(:disabled) {
-  background: #1A8FBF;
-  box-shadow: 0 8px 32px rgba(34,158,217,0.4);
-}
-
-.cta-page__tg-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
 /* ── Spinner ── */
 .cta-page__spinner {
   display: inline-block;
@@ -501,11 +356,6 @@
   flex-shrink: 0;
 }
 
-.cta-page__spinner--dark {
-  border-color: rgba(0,0,0,0.15);
-  border-top-color: rgba(0,0,0,0.6);
-}
-
 .cta-page__spinner--light {
   border-color: rgba(8, 46, 94, 0.2);
   border-top-color: var(--navy-deep, #011E41);
@@ -513,201 +363,6 @@
 
 @keyframes cta-spin {
   to { transform: rotate(360deg); }
-}
-
-/* ══════════════════════════════════════════
-   Contact gate — collected BEFORE delivery
-════════════════════════════════════════════ */
-.cta-contact {
-  width: 100%;
-  max-width: 440px;
-  margin: 18px auto 8px;
-  padding: 24px 22px 22px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 12px 40px -20px rgba(0, 0, 0, 0.5);
-}
-
-.cta-contact__title {
-  margin: 0 0 2px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold, #F5A800);
-  text-align: center;
-}
-
-.cta-contact__field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cta-contact__label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.65);
-}
-
-.cta-contact__input {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-  box-sizing: border-box;
-}
-
-.cta-contact__input::placeholder {
-  color: rgba(255, 255, 255, 0.28);
-}
-
-.cta-contact__input:focus {
-  border-color: rgba(253, 161, 0, 0.6);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.cta-contact__consent {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.45;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-}
-
-.cta-contact__checkbox {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.cta-contact__checkmark {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.04);
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
-  margin-top: 1px;
-}
-
-.cta-contact__checkbox:checked + .cta-contact__checkmark {
-  background: var(--gold, #F5A800);
-  border-color: var(--gold, #F5A800);
-}
-
-.cta-contact__checkbox:checked + .cta-contact__checkmark::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 2px;
-  width: 5px;
-  height: 9px;
-  border: solid #011E41;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.cta-contact__warn {
-  font-size: 12.5px;
-  color: #FCA5A5;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.25);
-  padding: 9px 12px;
-  border-radius: 8px;
-}
-
-.cta-contact__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 13px 18px;
-  border-radius: 12px;
-  border: none;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--gold, #F5A800) 0%, #FFC24D 100%);
-  color: #011E41;
-  box-shadow: 0 6px 18px -6px rgba(253, 161, 0, 0.55);
-  transition: transform .2s ease, box-shadow .2s ease;
-  margin-top: 4px;
-}
-
-.cta-contact__btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px -6px rgba(253, 161, 0, 0.72);
-}
-
-/* Email option — inline input state */
-.cta-page__option-email-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.cta-page__option-email-input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-.cta-page__option-email-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.cta-page__option-email-input:focus {
-  border-color: rgba(253, 161, 0, 0.6);
-}
-
-.cta-page__option-email-warn {
-  font-size: 11.5px;
-  color: #FCA5A5;
-  text-align: left;
-}
-
-.cta-page__option-email-ok {
-  font-size: 13px;
-  font-weight: 600;
-  color: #34D399;
-  padding: 10px 0 2px;
-}
-
-@media (max-width: 560px) {
-  .cta-contact {
-    padding: 20px 18px 18px;
-  }
 }
 
 /* ── Restart button — large, gold-outlined pill ── */
@@ -843,20 +498,12 @@
   margin: 0 0 22px;
 }
 
-.cta-frame__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
 .cta-frame__field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 14px;
 }
-.cta-frame__row .cta-frame__field { margin-bottom: 0; }
 
 .cta-frame__label {
   font-family: var(--font-sans);
@@ -1077,7 +724,6 @@
   }
   .cta-frame__title { font-size: 19px; }
   .cta-frame__sub { font-size: 13px; margin-bottom: 18px; }
-  .cta-frame__row { grid-template-columns: 1fr; gap: 12px; }
   .cta-frame__input { padding: 11px 12px; font-size: 14.5px; }
   .cta-frame__submit { padding: 13px 18px; font-size: 13.5px; }
   .cta-frame__back { font-size: 11.5px; padding: 7px 12px; margin-bottom: 14px; }

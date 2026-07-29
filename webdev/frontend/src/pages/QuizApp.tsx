@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
@@ -7,7 +7,30 @@ import Seo from '@/components/seo/Seo';
 import Header from '@/components/layout/Header';
 import StartPage from '@/pages/StartPage';
 import QuizPage from '@/pages/QuizPage';
-import CtaPage from '@/pages/CtaPage';
+
+/**
+ * The report (`phase === 'cta'`) is by far the heaviest thing in this route:
+ * the eight report components, `data/blockExplanations` (~74 KB) and
+ * `data/gdprExplanations` (~137 KB) of static legal copy, plus CtaPage.css +
+ * ReportPage.css. Statically imported, all of that had to arrive before the
+ * FIRST question could render, even though a visitor reaches it minutes later
+ * (and never at all if they abandon the quiz).
+ *
+ * Split out, it is fetched in the background right after this route paints
+ * (see the idle prefetch below), so the total bytes for someone who finishes
+ * the quiz are unchanged — they just no longer sit on the critical path.
+ */
+const CtaPage = lazy(() => import('@/pages/CtaPage'));
+
+/** Same look as the router-level fallback in App.tsx. */
+const ReportFallback = () => (
+  <div style={{
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    minHeight: '60vh', color: '#6B7280', fontSize: 14,
+  }}>
+    <span>…</span>
+  </div>
+);
 
 export default function QuizApp() {
   const { phase, selectedTestSlug, selectTest, restartQuiz, submissionId, tests } = useQuiz();
@@ -48,6 +71,21 @@ export default function QuizApp() {
     }
   }, [slug, selectedTestSlug, phase, submissionId, restartQuiz, selectTest]);
 
+  // Warm the report chunk once the browser is idle, so the transition to the
+  // CTA phase is instant even though the import is now dynamic. Skipped when
+  // we are already on `cta` — React is fetching it right then anyway.
+  useEffect(() => {
+    if (phase === 'cta') return;
+    const prefetch = () => { void import('@/pages/CtaPage'); };
+    const ric = window.requestIdleCallback;
+    if (typeof ric === 'function') {
+      const id = ric(prefetch, { timeout: 4000 });
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(prefetch, 1500);
+    return () => window.clearTimeout(id);
+  }, [phase]);
+
   const test = tests.find(t => t.slug === selectedTestSlug);
   const testName = pickLang(test, 'name', lang);
   const seoTitle = testName
@@ -73,7 +111,11 @@ export default function QuizApp() {
       <Header />
       {phase === 'start' && <StartPage />}
       {phase === 'quiz' && <QuizPage />}
-      {phase === 'cta' && <CtaPage />}
+      {phase === 'cta' && (
+        <Suspense fallback={<ReportFallback />}>
+          <CtaPage />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -11,10 +11,6 @@
     position: static;
   }
 
-  .quiz-progress {
-    display: none !important;
-  }
-
   .quiz-page {
     display: none !important;
   }

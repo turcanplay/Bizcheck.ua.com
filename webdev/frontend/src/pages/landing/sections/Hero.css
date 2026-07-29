@@ -29,10 +29,6 @@
 }
 /* Vector1 — big cloud extending past the laptop on the right */
 .hero__bg-img--right       { top: 60px;   right: -180px; width: 720px; opacity: .85; }
-/* Upper-left decoration (behind the rating badge) — no image uses it right now */
-.hero__bg-img--left-top    { top: -60px;  left: -80px;   width: 260px; opacity: .65; }
-/* Small accent lower-left of the hero copy — no image uses it right now */
-.hero__bg-img--left-bottom { bottom: 80px; left: 20px;   width: 170px; opacity: .45; transform: rotate(-14deg); }
 
 /* -------- Top nav bar -------- */
 .hero__nav {
@@ -310,32 +306,6 @@
 }
 .hero__lang-btn:hover:not(.is-active) { color: #011E41; }
 
-.hero__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  text-decoration: none;
-  transition: all .15s ease;
-  font-family: inherit;
-  border: 1px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.hero__btn--ghost {
-  color: #011E41;
-  background: transparent;
-}
-.hero__btn--ghost:hover { background: rgba(1, 30, 65,.06); }
-.hero__btn--primary {
-  background: #F5A800;
-  color: #011E41;
-}
-.hero__btn--primary:hover { background: #D99400; }
-
 /* -------- Body two columns -------- */
 .hero__body {
   position: relative;
@@ -587,7 +557,6 @@
 @media (max-width: 480px) {
   .hero { padding: 10px 16px 32px; }
   .hero__logo { font-size: 22px; }
-  .hero__nav-actions .hero__btn { padding: 8px 12px; }
   /* Stays a solid, comfortable CTA on mobile — just a touch tighter. */
   .hero__nav-tests {
     padding: 10px 16px;

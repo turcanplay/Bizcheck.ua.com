@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#011E41" />
 
+    <!-- LCP preload: the hero laptop is the landing's LCP element but lives in a
+         React component, so it is otherwise discovered only after the whole
+         module graph renders. Guarded to the landing routes (`/`, `/uk`, `/en`)
+         — the same shell serves every SPA route, and pushing 270 KB of unused
+         WebP at /uk/test/<slug> would be a net loss. `/` is included because it
+         redirects to the landing without a new document load. `type` makes
+         non-WebP browsers skip the hint. -->
+    <script>
+      (function(){try{if(!/^\/(uk\/?|en\/?)?$/.test(location.pathname))return;var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/webp';l.href='/images/hero/laptop.webp';l.fetchPriority='high';document.head.appendChild(l)}catch(e){}})();
+    </script>
+
+    <!-- Warms DNS+TLS for the Meta Pixel below. No `crossorigin` — fbevents.js is
+         injected as a plain <script src> (non-anonymous connection pool). -->
+    <link rel="preconnect" href="https://connect.facebook.net" />
+
     <!-- Primary meta -->
     <title>Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com</title>
     <meta name="description" content="Безкоштовна онлайн-оцінка ризиків бізнесу за методологією Crowe: тест за блоками, детальний PDF-звіт і юридичні шаблони для МСБ. Пройдіть тест зараз." />

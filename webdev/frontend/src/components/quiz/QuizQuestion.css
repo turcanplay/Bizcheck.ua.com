@@ -118,13 +118,6 @@
   margin-bottom: var(--space-xl);
 }
 
-.quiz-question__options--grid,
-.quiz-question__options--row {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .quiz-question__option {
   display: flex;
   align-items: center;

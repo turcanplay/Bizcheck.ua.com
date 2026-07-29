@@ -1,16 +1,6 @@
 /* Placeholder layout — will be fully restyled when Figma design arrives. */
 .landing { min-height: 100vh; display: flex; flex-direction: column; }
 
-.landing-hero {
-  padding: 80px 24px;
-  background: #0A3A6E;
-  color: #fff;
-  text-align: center;
-}
-.landing-hero__inner { max-width: 960px; margin: 0 auto; }
-.landing-hero h1 { font-size: 40px; margin-bottom: 12px; }
-.landing-hero p { opacity: .85; }
-
 .landing-tests, .landing-templates {
   padding: 64px 24px;
 }
@@ -37,8 +27,3 @@
 .landing-card__title { font-weight: 600; font-size: 17px; }
 .landing-card__desc  { font-size: 13px; color: #555; line-height: 1.5; }
 .landing-card__meta  { font-size: 13px; font-weight: 600; color: #0A3A6E; }
-
-.landing-footer {
-  padding: 24px; background: #111; color: #bbb; text-align: center;
-  margin-top: auto;
-}
