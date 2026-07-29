@@ -25,7 +25,7 @@ each one is scoped to a single subsystem so you never load context you won't use
 | Crowe brand design system — palette tokens, amber buttons, typography | [`frontend/05-design-system.md`](frontend/05-design-system.md) |
 | **Toate cele 3 suprafețe Telegram** (bot user, notificare vânzări, bot grup + `/register`, alertă eșec livrare) — set structurat cu cuprins | [`telegram/README.md`](telegram/README.md) |
 | ↳ arhivă istoric (changelog probleme rezolvate + restanțe) | [`telegram-boti-status.md`](telegram-boti-status.md) |
-| **Lansarea pe server, pas cu pas** (DNS → TLS → `.env` → primul deploy → boți → conținut → cron → verificare finală) — runbook, în română | [`runbook-lansare.md`](runbook-lansare.md) |
+| **Lansarea pe server, pas cu pas** (pregătirea serverului → DNS → TLS → `.env` → masca de pre-lansare → primul deploy → rol Postgres → boți → conținut → lansare + sitemap + Search Console → verificare finală) — runbook, în română, pentru un server gol | [`runbook-lansare.md`](runbook-lansare.md) |
 | Docker, nginx, Dockerfiles, env vars, scripts, build tooling | [`deployment.md`](deployment.md) |
 | ↳ historical: language migration (RO→UK, then RU→EN) — what changed, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
 | Off-page SEO runbook (Ukraine market) — the only copy | [`../webdev/SEO_GUIDE.md`](../webdev/SEO_GUIDE.md) |
@@ -42,7 +42,10 @@ each one is scoped to a single subsystem so you never load context you won't use
   - Admin SPA: `/admin_bizcheck_md_crowe/`
 - **Languages**: the app is Ukrainian (`uk`, default) + English (`en`). Public routes are
   language-prefixed (`/uk/…`, `/en/…`); the old unprefixed paths 301-redirect.
-- File references use `path:line` form so they are clickable in editors.
+- File references use `path:line` form so they are clickable in editors. **Exception:**
+  [`runbook-lansare.md`](runbook-lansare.md) deliberately cites `path` + named block
+  (e.g. "the `location /` block in `nginx.conf`") and no line numbers — it is followed
+  by hand on a server, where a stale line number is worse than no line number.
 - `webdev/` is the whole product. The standalone bot that used to live in `src/` is gone;
   only [`legacy/schema.sql`](legacy/schema.sql) remains, as an archive (see overview).
 - `webdev/docs/` was a second, older documentation set covering the same Telegram
