@@ -27,9 +27,14 @@ def create_submission(first_name, last_name, email, phone, consent, test_id=None
 
 
 def update_submission(submission_id, data):
-    """Update a submission with partial data (company info, answers, scores, status)."""
-    existing = Submission.find_by_id(submission_id)
-    if not existing:
+    """Update a submission with partial data (company info, answers, scores, status).
+
+    The pre-flight check uses Submission.exists (a `SELECT 1`): the old
+    find_by_id pulled the full row and decrypted 4 PII columns that this
+    function never reads. The UPDATE ... RETURNING below is what actually
+    produces the response, so nothing is lost.
+    """
+    if not Submission.exists(submission_id):
         raise ValueError("Submission not found")
 
     # Convert answers dict/list to JSON string if provided
@@ -46,8 +51,8 @@ def update_submission(submission_id, data):
 
 
 def save_submission_pdf(submission_id, pdf_bytes):
-    existing = Submission.find_by_id(submission_id)
-    if not existing:
+    # Existence check only — no need to read/decrypt the row (see exists()).
+    if not Submission.exists(submission_id):
         raise ValueError("Submission not found")
     Submission.save_pdf(submission_id, pdf_bytes)
 
@@ -76,8 +81,8 @@ def get_submission_detail(submission_id):
 
 def delete_submission(submission_id):
     """Delete a single submission."""
-    existing = Submission.find_by_id(submission_id)
-    if not existing:
+    # Existence check only — no need to read/decrypt the row (see exists()).
+    if not Submission.exists(submission_id):
         raise ValueError("Submission not found")
     Submission.delete(submission_id)
 

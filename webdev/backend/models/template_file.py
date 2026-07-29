@@ -26,8 +26,23 @@ class TemplateFile:
 
     @staticmethod
     def find_by_id(file_id):
+        """Full row INCLUDING the pdf_data BYTEA. Only for callers that need the
+        bytes (template_service.get_file_raw) — use find_meta_by_id otherwise."""
         return query(
             "SELECT * FROM template_files WHERE id = %s",
+            (file_id,), fetch_one=True,
+        )
+
+    @staticmethod
+    def find_meta_by_id(file_id):
+        """Metadata only — same row WITHOUT the pdf_data blob.
+
+        delete_file() used find_by_id purely to test existence, which
+        transferred the entire PDF (a few MB) from Postgres just to discard it.
+        """
+        return query(
+            """SELECT id, template_id, filename, file_size, order_index, created_at
+               FROM template_files WHERE id = %s""",
             (file_id,), fetch_one=True,
         )
 

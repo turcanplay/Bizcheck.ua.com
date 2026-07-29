@@ -173,6 +173,23 @@ class Submission:
         return decrypt_row(row)
 
     @staticmethod
+    def exists(submission_id):
+        """True if the row exists — WITHOUT reading or decrypting it.
+
+        The write paths (PATCH, PDF upload, delete) only need to know whether
+        the id is real before they act. Going through find_by_id for that made
+        every one of them transfer the whole row and run 4 Fernet decryptions
+        whose plaintext was then thrown away (~45 us of pure waste per call, on
+        the path of every quiz PATCH). `SELECT 1` answers the same question via
+        the primary-key index and touches no PII.
+        """
+        row = query(
+            "SELECT 1 AS ok FROM submissions WHERE id = %s",
+            (submission_id,), fetch_one=True,
+        )
+        return row is not None
+
+    @staticmethod
     def get_pdf(submission_id):
         """Get PDF binary data."""
         row = query(

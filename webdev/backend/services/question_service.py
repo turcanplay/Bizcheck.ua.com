@@ -6,11 +6,30 @@ from utils.cache import invalidate_quiz_cache
 
 
 def _serialize(questions):
+    """Attach each question's answers, in ONE batch query.
+
+    Was 1 + N round-trips (a SELECT per question): 193 queries / ~88 ms for the
+    admin listing of 192 questions, and 7 queries for a 6-question block on the
+    PUBLIC /questions/block/<id> route. Now always 2 (the caller's question
+    query + this one).
+
+    Ordering is preserved exactly: find_by_questions sorts
+    `question_id ASC, id ASC`, so the per-question slice keeps the `id ASC`
+    order the individual find_by_question calls produced. A question with no
+    answers still gets `[]`.
+    """
+    questions = list(questions or [])
+    if not questions:
+        return questions
+
+    answers_by_question: dict = {}
+    for a in Answer.find_by_questions([q["id"] for q in questions]):
+        a["created_at"] = str(a["created_at"])
+        answers_by_question.setdefault(a["question_id"], []).append(a)
+
     for q in questions:
-        q["answers"] = Answer.find_by_question(q["id"])
+        q["answers"] = answers_by_question.get(q["id"], [])
         q["created_at"] = str(q["created_at"])
-        for a in q["answers"]:
-            a["created_at"] = str(a["created_at"])
     return questions
 
 

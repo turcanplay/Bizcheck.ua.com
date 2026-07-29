@@ -71,13 +71,31 @@ def _real_client_ip():
 
 
 # --- Rate limiting ---
-# CAVEAT (documented, not yet fixed): with the default "memory://" backend every
-# gunicorn WORKER keeps its own counters, so the effective limit is
-# <configured> x <worker count>. Acceptable for the current traffic, but it is
-# the reason "5 per minute" on admin login is really 5 x N.
-# Point RATELIMIT_STORAGE_URI at a shared store (e.g. redis://redis:6379/0) to
-# make the limits global — that also requires adding the `redis` package to
-# requirements.txt and a redis service to docker-compose.
+# CAVEAT (investigated, deliberately NOT fixed in-process): with the default
+# "memory://" backend every gunicorn WORKER PROCESS keeps its own counters, so
+# the effective limit is <configured> x 4 workers. "5 per minute" on admin
+# login is really up to 20/min across the pool, and nginx spreads connections
+# unevenly so the true figure sits somewhere between 5 and 20.
+#
+# Why it is not fixed here: flask-limiter delegates storage to `limits` 5.8.0,
+# whose ONLY backends are MemoryStorage, MemcachedStorage, MongoDBStorage and
+# Redis(+Cluster/Sentinel). There is no filesystem, SQLite or Postgres backend
+# to point at — every shared option is a new network service, which this
+# deployment explicitly does not want. Sharing counters through the Postgres we
+# already run would mean writing a custom `limits` Storage subclass and paying
+# an extra DB round-trip on EVERY request, on the hot path, to tighten a limit
+# that is currently only loose by a factor of 4. That trade is not worth it at
+# this traffic level.
+#
+# Compensating controls already in place: the limits are keyed on the real
+# client IP (ProxyFix x_for=1 + nginx overwriting X-Forwarded-For, so the key
+# cannot be spoofed), admin login also has a 40/hour cap that bounds slow
+# brute-force regardless of the per-minute multiplication, and admin
+# credentials are bcrypt-verified.
+#
+# If the limits ever need to be exact: add a redis service to
+# webdev/docker-compose.yml, add `redis` to requirements.txt, and set
+# RATELIMIT_STORAGE_URI=redis://redis:6379/0 — the code below already honours it.
 _RATELIMIT_STORAGE = (os.getenv("RATELIMIT_STORAGE_URI") or "memory://").strip()
 limiter = Limiter(
     key_func=_real_client_ip,

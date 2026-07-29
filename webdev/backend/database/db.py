@@ -11,8 +11,31 @@ from psycopg2.extras import RealDictCursor
 _pool = None
 
 
-_POOL_MIN = int(os.getenv("DB_POOL_MIN", "5"))
-_POOL_MAX = int(os.getenv("DB_POOL_MAX", "20"))
+# Pool sizing is PER WORKER PROCESS — gunicorn runs 4 of them (see
+# backend/Dockerfile), so the real Postgres load is 4 x these numbers.
+#
+# Concurrent connection demand inside ONE worker:
+#     2  gunicorn gthread request threads  (--threads 2)
+#     1  feedback-scheduler thread         (services/feedback.py)
+#     1  export-jobs thread                (services/export_jobs.py)
+#     1  sales-notify thread               (services/sales_notify.py)
+#    ~1  ad-hoc email send thread          (services/email_service.py)
+#     = ~6 at a realistic peak.
+#
+# max=10 leaves ~1.6x headroom over that peak while capping the whole stack at
+# 4 x 10 = 40 connections — comfortably under the postgres:16-alpine default
+# max_connections=100 (minus 3 superuser-reserved). The previous max of 20
+# allowed 4 x 20 = 80, i.e. the backend alone could consume ~82% of the
+# server's connection slots and starve psql/pg_dump/a rolling deploy.
+#
+# min=2 keeps both request threads served with zero acquisition latency while
+# holding only 4 x 2 = 8 idle backends instead of 20; an idle Postgres backend
+# costs several MB of RSS, so the old min=5 pinned ~100-200 MB for nothing.
+#
+# Both are env-overridable if the traffic pattern changes — raise max only
+# together with max_connections on the server.
+_POOL_MIN = int(os.getenv("DB_POOL_MIN", "2"))
+_POOL_MAX = int(os.getenv("DB_POOL_MAX", "10"))
 
 
 def get_pool():

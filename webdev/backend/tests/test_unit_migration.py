@@ -126,6 +126,56 @@ class TestRoToUkMigration:
         )
 
 
+class TestMigrateIsIdempotentByConstruction:
+    """`migrate()` runs on EVERY boot, once per gunicorn worker.
+
+    The rename helpers are guarded dynamically (tested above). The big DDL
+    block is guarded STATICALLY — every statement has to carry an
+    IF NOT EXISTS / ON CONFLICT style guard, and nothing may drop a column.
+    This reads the real source of `migrate()` so a future ALTER that forgets
+    the guard fails here instead of on a second boot.
+    """
+
+    @staticmethod
+    def _ddl():
+        import inspect
+        import database.db as db
+        return inspect.getsource(db.migrate)
+
+    def test_every_create_is_guarded(self):
+        ddl = self._ddl()
+        for kind in ("CREATE TABLE", "CREATE INDEX", "CREATE UNIQUE INDEX"):
+            for line in ddl.splitlines():
+                stripped = line.strip()
+                if stripped.startswith(kind):
+                    assert "IF NOT EXISTS" in stripped, \
+                        f"unguarded {kind}: {stripped}"
+
+    def test_every_add_column_is_guarded(self):
+        for line in self._ddl().splitlines():
+            stripped = line.strip()
+            if "ADD COLUMN" in stripped and not stripped.startswith("--"):
+                assert "IF NOT EXISTS" in stripped, f"unguarded ADD COLUMN: {stripped}"
+
+    def test_no_column_or_table_drops(self):
+        """Drops are not idempotent across replicas — see CLAUDE.md."""
+        for line in self._ddl().splitlines():
+            stripped = line.strip()
+            if stripped.startswith("--"):
+                continue
+            for forbidden in ("DROP TABLE", "DROP COLUMN", "DROP INDEX"):
+                assert forbidden not in stripped, f"non-idempotent {forbidden}: {stripped}"
+
+    def test_boot_is_serialized_by_the_advisory_lock(self):
+        assert "pg_advisory_xact_lock(1)" in self._ddl()
+
+    def test_backfills_are_self_limiting(self):
+        """The report_type backfill must stay conditional (NOT EXISTS guard)."""
+        ddl = self._ddl()
+        assert "NOT EXISTS" in ddl
+        assert "NOT (scoring_zones ? 'risk')" in ddl
+
+
 def _post_en_db():
     """A database after ru->en has run: bilingual columns are `_uk` + `_en`."""
     return {t: {f"{c}_uk" for c in cols} | {f"{c}_en" for c in cols}

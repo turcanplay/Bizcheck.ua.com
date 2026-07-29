@@ -176,7 +176,8 @@ def add_file(template_id, filename, pdf_bytes):
 
 
 def delete_file(file_id):
-    existing = TemplateFile.find_by_id(file_id)
+    # Metadata-only lookup: the blob would be fetched and thrown away.
+    existing = TemplateFile.find_meta_by_id(file_id)
     if not existing:
         raise ValueError("File not found")
     TemplateFile.delete(file_id)

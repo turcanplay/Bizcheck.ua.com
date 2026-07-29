@@ -60,8 +60,10 @@ class TestSubmissionService:
 
     def test_update_serializes_dict_json_fields(self, monkeypatch):
         from services import submission_service as ss
-        monkeypatch.setattr("models.submission.Submission.find_by_id",
-                            staticmethod(lambda i: {"id": i}))
+        # Pre-flight is now Submission.exists (a `SELECT 1`), not find_by_id —
+        # the full row was fetched and its PII decrypted for nothing.
+        monkeypatch.setattr("models.submission.Submission.exists",
+                            staticmethod(lambda i: True))
         seen = {}
 
         def fake_update(sid, **data):
@@ -74,9 +76,46 @@ class TestSubmissionService:
 
     def test_update_unknown_submission_raises(self, monkeypatch):
         from services import submission_service as ss
-        monkeypatch.setattr("models.submission.Submission.find_by_id", staticmethod(lambda i: None))
+        monkeypatch.setattr("models.submission.Submission.exists",
+                            staticmethod(lambda i: False))
         with pytest.raises(ValueError, match="not found"):
             ss.update_submission(1, {"status": "x"})
+
+    def test_write_paths_never_read_or_decrypt_the_row(self, monkeypatch):
+        """The three write paths must gate on exists(), never on find_by_id().
+
+        find_by_id transfers every column and runs 4 Fernet decryptions whose
+        plaintext is then discarded. Wiring it back in would silently restore
+        that cost on the path of every quiz PATCH, so it is asserted here.
+        """
+        from services import submission_service as ss
+
+        def _boom(_i):
+            raise AssertionError("find_by_id must not be used as an existence check")
+
+        monkeypatch.setattr("models.submission.Submission.find_by_id", staticmethod(_boom))
+        monkeypatch.setattr("models.submission.Submission.exists", staticmethod(lambda i: True))
+        monkeypatch.setattr("models.submission.Submission.update",
+                            staticmethod(lambda sid, **d: {"id": sid, "created_at": "x"}))
+        monkeypatch.setattr("models.submission.Submission.save_pdf",
+                            staticmethod(lambda sid, b: None))
+        monkeypatch.setattr("models.submission.Submission.delete", staticmethod(lambda sid: None))
+
+        ss.update_submission(1, {"status": "completed"})
+        ss.save_submission_pdf(1, b"%PDF-1.4")
+        ss.delete_submission(1)
+
+    def test_write_paths_propagate_missing_row(self, monkeypatch):
+        """exists() == False must still raise "not found" on all three paths."""
+        from services import submission_service as ss
+        monkeypatch.setattr("models.submission.Submission.exists", staticmethod(lambda i: False))
+        for call in (
+            lambda: ss.update_submission(1, {"status": "x"}),
+            lambda: ss.save_submission_pdf(1, b"%PDF-1.4"),
+            lambda: ss.delete_submission(1),
+        ):
+            with pytest.raises(ValueError, match="not found"):
+                call()
 
     def test_get_pdf_missing_raises(self, monkeypatch):
         from services import submission_service as ss
@@ -165,12 +204,60 @@ class TestFeedback:
 class TestQuestionSerialize:
     def test_attaches_answers_and_stringifies_dates(self, monkeypatch):
         from services import question_service as qs
-        monkeypatch.setattr("models.answer.Answer.find_by_question",
-                            staticmethod(lambda qid: [{"id": 9, "created_at": 123}]))
+        # _serialize now batches through find_by_questions (1 query for all
+        # questions) instead of find_by_question (1 query per question).
+        monkeypatch.setattr(
+            "models.answer.Answer.find_by_questions",
+            staticmethod(lambda qids: [{"id": 9, "question_id": 1, "created_at": 123}]))
         out = qs._serialize([{"id": 1, "created_at": 456}])
         assert out[0]["answers"][0]["id"] == 9
         assert out[0]["created_at"] == "456"              # stringified
         assert out[0]["answers"][0]["created_at"] == "123"
+
+    def test_batches_into_one_query_and_keeps_per_question_grouping(self, monkeypatch):
+        """Same result as the old 1-query-per-question loop, in ONE round-trip.
+
+        Guards the N+1 fix: the admin listing of ~192 questions went from 193
+        queries to 2. Asserts the batch call happens exactly once, that each
+        question gets only its OWN answers, and that `id ASC` ordering within a
+        question is preserved.
+        """
+        from services import question_service as qs
+        calls = []
+
+        def fake_batch(qids):
+            calls.append(list(qids))
+            # find_by_questions sorts question_id ASC, id ASC.
+            return [
+                {"id": 10, "question_id": 1, "created_at": 1},
+                {"id": 11, "question_id": 1, "created_at": 1},
+                {"id": 20, "question_id": 2, "created_at": 1},
+            ]
+
+        monkeypatch.setattr("models.answer.Answer.find_by_questions",
+                            staticmethod(fake_batch))
+        monkeypatch.setattr(
+            "models.answer.Answer.find_by_question",
+            staticmethod(lambda qid: pytest.fail("per-question query = N+1 regression")))
+
+        out = qs._serialize([
+            {"id": 1, "created_at": 1},
+            {"id": 2, "created_at": 1},
+            {"id": 3, "created_at": 1},   # no answers
+        ])
+
+        assert len(calls) == 1                       # ONE batch round-trip
+        assert calls[0] == [1, 2, 3]                 # every id in that one call
+        assert [a["id"] for a in out[0]["answers"]] == [10, 11]   # own, in order
+        assert [a["id"] for a in out[1]["answers"]] == [20]
+        assert out[2]["answers"] == []               # answerless question → []
+
+    def test_empty_question_list_makes_no_query(self, monkeypatch):
+        from services import question_service as qs
+        monkeypatch.setattr(
+            "models.answer.Answer.find_by_questions",
+            staticmethod(lambda qids: pytest.fail("must not query for an empty list")))
+        assert qs._serialize([]) == []
 
 
 # ---------------------------------------------------------------------------
