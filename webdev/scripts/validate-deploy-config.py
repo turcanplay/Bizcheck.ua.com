@@ -199,6 +199,143 @@ if "SITEMAP_API_URL" in documented:
                 "de build (altă rețea decât compose) — folosește URL-ul public")
 
 # ---------------------------------------------------------------------------
+# 6. DATABASE_URL trebuie să fie SUPRASCRIIBIL din .env
+# ---------------------------------------------------------------------------
+# Bugul pe care îl blochează: ultimul pas al procedurii din
+# backend/DATABASE_ROLE.md e `echo "DATABASE_URL=..." >> .env`. Cât timp
+# valoarea din compose era un literal calculat din ${DB_USER}/${DB_PASSWORD},
+# pasul ăla era un NO-OP — niciun serviciu nu are `env_file:`, deci `.env` e
+# folosit exclusiv pentru substituția ${...}. Backendul rămânea pe superuser,
+# dar operatorul credea că a securizat baza. Asta e mai rău decât să n-o fi
+# făcut, pentru că elimină și suspiciunea.
+#
+# Verificăm SEMANTIC, nu prin potrivire de șabloane: reimplementăm regulile de
+# substituție ale Compose v2 (compose-go/template: potrivire pe acolade
+# echilibrate + substituție recursivă a valorii implicite) și rulăm valoarea
+# reală din compose în ambele scenarii.
+
+
+def compose_interpolate(value: str, env: dict[str, str]) -> str:
+    """Substituție în stilul Docker Compose v2 (compose-go/template).
+
+    Acoperă formele folosite în acest compose: $$, ${VAR}, ${VAR:-def},
+    ${VAR-def}, ${VAR:?err}, ${VAR?err}, $VAR. Valoarea implicită e
+    interpolată recursiv, deci ${A:-${B:-x}} funcționează — exact ce face
+    compose-go prin getFirstBraceClosingIndex (potrivire pe acolade
+    echilibrate, nu regex lacom/leneș).
+    """
+    out: list[str] = []
+    i = 0
+    n = len(value)
+    while i < n:
+        ch = value[i]
+        if ch != "$":
+            out.append(ch)
+            i += 1
+            continue
+        if i + 1 < n and value[i + 1] == "$":     # $$ = $ literal
+            out.append("$")
+            i += 2
+            continue
+        if i + 1 < n and value[i + 1] == "{":
+            depth = 0
+            j = i + 1
+            while j < n:
+                if value[j] == "{":
+                    depth += 1
+                elif value[j] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                j += 1
+            if j >= n:
+                raise ValueError(f"acoladă neînchisă în {value!r}")
+            body = value[i + 2:j]
+            i = j + 1
+            for op in (":-", ":?", ":+", "-", "?", "+"):
+                idx = body.find(op)
+                if idx > 0:
+                    name, arg = body[:idx], body[idx + len(op):]
+                    break
+            else:
+                name, op, arg = body, "", ""
+            cur = env.get(name)
+            if op in (":-", ":?", ":+"):
+                present = bool(cur)          # setat ȘI nevid
+            else:
+                present = cur is not None    # doar „setat"
+            if op in (":-", "-"):
+                out.append(cur if present else compose_interpolate(arg, env))
+            elif op in (":+", "+"):
+                out.append(compose_interpolate(arg, env) if present else "")
+            elif op in (":?", "?"):
+                if not present:
+                    raise ValueError(f"{name}: {arg}")
+                out.append(cur or "")
+            else:
+                out.append(cur or "")
+            continue
+        j = i + 1
+        while j < n and (value[j].isalnum() or value[j] == "_"):
+            j += 1
+        out.append(env.get(value[i + 1:j]) or "")
+        i = j
+    return "".join(out)
+
+
+backend_env = services.get("backend", {}).get("environment", {}) or {}
+if isinstance(backend_env, list):  # forma „KEY=value"
+    backend_env = dict(e.split("=", 1) for e in backend_env if "=" in e)
+db_url_raw = backend_env.get("DATABASE_URL")
+
+if check(isinstance(db_url_raw, str) and db_url_raw != "",
+         "docker-compose.yml: serviciul `backend` nu are DATABASE_URL"):
+    APP_URL = "postgresql://bizcheck_app:AppPw@db:5432/bizzcheck"
+    DEFAULT_URL = "postgresql://postgres:pw@db:5432/bizzcheck"
+    try:
+        # a) fără DATABASE_URL în .env → EXACT comportamentul de azi (superuser).
+        got_default = compose_interpolate(db_url_raw, {"DB_PASSWORD": "pw"})
+        check(got_default == DEFAULT_URL,
+              f"docker-compose.yml: fără DATABASE_URL în .env, backendul ar primi "
+              f"{got_default!r} în loc de {DEFAULT_URL!r} — s-a schimbat comportamentul implicit")
+
+        # b) cu DATABASE_URL în .env → trebuie să CÂȘTIGE. Dacă pică aici,
+        #    procedura din backend/DATABASE_ROLE.md redevine un no-op.
+        got_override = compose_interpolate(db_url_raw,
+                                           {"DB_PASSWORD": "pw", "DATABASE_URL": APP_URL})
+        check(got_override == APP_URL,
+              f"REGRESIE: `DATABASE_URL` din .env NU ajunge la backend (ar primi "
+              f"{got_override!r}). Scrie valoarea ca ${{DATABASE_URL:-<valoarea calculată>}}, "
+              f"altfel pasul final din backend/DATABASE_ROLE.md e un no-op silențios "
+              f"și baza rămâne pe superuser fără ca nimeni să observe.")
+
+        # c) DATABASE_URL= (setat, dar gol) → revenire la valoarea calculată,
+        #    adică rollbackul documentat funcționează și fără ștergerea liniei.
+        got_empty = compose_interpolate(db_url_raw, {"DB_PASSWORD": "pw", "DATABASE_URL": ""})
+        check(got_empty == DEFAULT_URL,
+              f"docker-compose.yml: `DATABASE_URL=` gol ar da {got_empty!r} — "
+              f"folosește `:-` (default la gol SAU nesetat), nu `-`")
+    except ValueError as exc:  # noqa: BLE001
+        check(False, f"docker-compose.yml: DATABASE_URL nu se poate interpola: {exc}")
+
+# Odată ce DATABASE_URL e suprascris pe rolul non-superuser, parola superuserului
+# nu mai are ce căuta în containerul backend (`docker inspect backend` o afișează
+# în clar). DB_USER/DB_PASSWORD rămân exclusiv ale serviciului `db`.
+for var in ("DB_USER", "DB_PASSWORD"):
+    check(var not in backend_env,
+          f"docker-compose.yml: `backend` primește `{var}` ca variabilă separată — "
+          f"credențialele superuserului nu trebuie să ajungă în containerul aplicației; "
+          f"backendul trebuie să aibă DOAR DATABASE_URL")
+
+# Healthcheck-ul bazei se autentifică cu utilizatorul serviciului `db`, nu cu al
+# aplicației: dacă cineva „mută" rolul aplicației în DB_USER, initdb îl ignoră pe
+# un volum existent și DSN-ul implicit devine greșit.
+db_health = services.get("db", {}).get("healthcheck", {}).get("test", [])
+check(any("DB_USER" in str(t) for t in db_health),
+      "docker-compose.yml: healthcheck-ul lui `db` nu mai folosește ${DB_USER} — "
+      "trebuie să rămână utilizatorul serviciului db, nu rolul aplicației")
+
+# ---------------------------------------------------------------------------
 # Raport
 # ---------------------------------------------------------------------------
 for w in warnings:

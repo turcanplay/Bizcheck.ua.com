@@ -25,7 +25,26 @@ services:
         condition: service_healthy
     environment:
       PORT: 4001
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-bizzcheck}
+      # DSN-ul backendului. Forma e `${DATABASE_URL:-<valoarea calculată>}`, adică:
+      #   • fără DATABASE_URL în .env → exact valoarea de dinainte (superuserul
+      #     `postgres` din DB_USER/DB_PASSWORD) — nimic nu se schimbă;
+      #   • cu DATABASE_URL în .env  → aceea câștigă și e SINGURA credențială DB
+      #     care ajunge în containerul backend (DB_PASSWORD nu mai e pasat nicăieri
+      #     către backend, deci `docker inspect backend` nu mai arată superuserul).
+      # Asta face procedura din backend/DATABASE_ROLE.md (rol dedicat `bizcheck_app`,
+      # non-superuser) să funcționeze efectiv. ÎNAINTE, literalul era calculat fix și
+      # `.env` era folosit DOAR pentru substituția ${...} — niciun serviciu nu are
+      # `env_file:` — deci `echo "DATABASE_URL=..." >> .env` era un no-op silențios:
+      # operatorul credea că a scos superuserul, dar backendul se conecta la fel.
+      # ⚠ DB_USER/DB_PASSWORD rămân ale serviciului `db` (POSTGRES_USER/PASSWORD la
+      #   initdb + pg_isready). NU pune `DB_USER=bizcheck_app` în .env.
+      # ⚠ Substituția imbricată în default e suportată de Docker Compose v2
+      #   (compose-go, getFirstBraceClosingIndex → potrivire pe acolade echilibrate);
+      #   verificată cu binarul real v2.39.1 și blocată de
+      #   scripts/validate-deploy-config.py ca să nu regreseze.
+      # ⚠ Parola din DATABASE_URL nu are voie să conțină `$` — Compose l-ar
+      #   interpreta ca variabilă și ar TRUNCHIA parola în tăcere.
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-bizzcheck}}
       JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_in_production}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}

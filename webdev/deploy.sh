@@ -376,6 +376,23 @@ else
 fi
 
 # ════════════════════════════════════════════════════════════
+# 7c. Rolul Postgres cu care rulează EFECTIV backendul
+# ════════════════════════════════════════════════════════════
+# Nu e fatal (deployul e valid și pe superuser), dar trebuie SPUS la fiecare
+# rulare. Verificarea prinde două lucruri pe containerul viu, nu pe fișiere:
+#   • DATABASE_URL scris în .env chiar ajunge în containerul backend — pasul
+#     final al procedurii din backend/DATABASE_ROLE.md a fost multă vreme un
+#     no-op silențios, iar operatorul rămânea convins că a scos superuserul;
+#   • rolul folosit chiar e non-superuser, cu CONNECTION LIMIT peste necesarul
+#     pool-ului (4 workeri gunicorn × DB_POOL_MAX).
+info "Verific rolul Postgres al backendului…"
+if [ -x scripts/check-db-role.sh ]; then
+  scripts/check-db-role.sh || warn "check-db-role.sh a semnalat probleme (vezi mai sus)"
+else
+  warn "scripts/check-db-role.sh lipsește sau nu e executabil — sar peste verificare"
+fi
+
+# ════════════════════════════════════════════════════════════
 # 8. Raport final
 # ════════════════════════════════════════════════════════════
 echo ""

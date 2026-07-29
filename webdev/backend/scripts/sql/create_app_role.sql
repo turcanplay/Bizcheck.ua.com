@@ -37,10 +37,14 @@
 \set ON_ERROR_STOP on
 
 -- Fail loudly instead of silently creating a passwordless role.
+-- The RAISE (rather than a bare \quit) is deliberate: psql's \quit takes no
+-- status argument, so the abort path used to exit 0 — a script that "failed"
+-- while telling the caller it succeeded. With ON_ERROR_STOP the exception below
+-- exits 3, so a wrapper/CI can actually detect it.
 \if :{?app_password}
 \else
   \echo '!! Missing -v app_password="''...''" — aborting.'
-  \quit 1
+  DO $$ BEGIN RAISE EXCEPTION 'app_password not provided'; END $$;
 \endif
 
 BEGIN;
@@ -54,7 +58,7 @@ BEGIN;
 SELECT format(
     'CREATE ROLE bizcheck_app LOGIN PASSWORD %L
        NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
-       CONNECTION LIMIT 30',
+       CONNECTION LIMIT 50',
     :app_password
 )
 WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'bizcheck_app')
@@ -65,21 +69,57 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'bizcheck_app')
 SELECT format(
     'ALTER ROLE bizcheck_app WITH PASSWORD %L
        NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
-       CONNECTION LIMIT 30',
+       CONNECTION LIMIT 50',
     :app_password
 )
 \gexec
 
--- CONNECTION LIMIT 30 must stay above DB_POOL_MAX (default 20, see
--- database/db.py) with headroom for psql/pg_dump, or the pool starves.
+-- WHY 50 AND NOT 30 (the value this script used to carry)
+-- ------------------------------------------------------
+-- The pool is sized PER WORKER PROCESS and gunicorn runs 4 of them
+-- (backend/Dockerfile: --workers 4). The real ceiling is therefore
+--     4 workers x DB_POOL_MAX (default 10, database/db.py) = 40 connections,
+-- not DB_POOL_MAX. The old limit of 30 was BELOW that ceiling, so a burst
+-- would have hit "too many connections for role bizcheck_app" — the role
+-- change would have looked like a random production outage. 50 keeps 10
+-- connections of headroom and stays far under the postgres:16-alpine default
+-- max_connections=100 (minus 3 superuser-reserved slots, which the superuser
+-- keeps for psql/pg_dump/a rolling deploy).
+-- If you raise DB_POOL_MAX, raise this too: ALTER ROLE ... CONNECTION LIMIT n.
+-- scripts/check-db-role.sh verifies this relation on the live cluster.
+
+-- Pin the schema: nothing else exists for this role to resolve into, but being
+-- explicit means a future schema can never silently shadow `public`.
+ALTER ROLE bizcheck_app SET search_path = public;
 
 -- ---------------------------------------------------------------------
 -- 2. Database-level privileges.
 --    CONNECT only. No CREATE on the database → the role cannot add new
 --    schemas next to its own.
+--
+--    The database name is taken from the connection (current_database())
+--    instead of being hard-coded as `bizzcheck`: DB_NAME is configurable in
+--    .env, and a hard-coded name made the script fail on any install that
+--    changed it — right in the middle of a security procedure.
 -- ---------------------------------------------------------------------
-REVOKE ALL ON DATABASE bizzcheck FROM PUBLIC;
-GRANT  CONNECT ON DATABASE bizzcheck TO bizcheck_app;
+SELECT format('REVOKE ALL ON DATABASE %I FROM PUBLIC', current_database())
+\gexec
+SELECT format('GRANT CONNECT ON DATABASE %I TO bizcheck_app', current_database())
+\gexec
+
+-- The maintenance databases the postgres image always creates (`postgres`,
+-- `template1`) grant CONNECT to PUBLIC by default, so without this the app
+-- role could still open a session there and read pg_catalog — the claim
+-- "no access to any other database in the cluster" was simply not true.
+-- It can do nothing there (no CREATE, owns nothing), but the door was open.
+-- Only PUBLIC's grant is touched; superusers are unaffected, and
+-- `pg_isready`/`psql -U postgres` keep working. Reverse with:
+--     GRANT CONNECT ON DATABASE postgres TO PUBLIC;
+SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', datname)
+  FROM pg_database
+ WHERE datname IN ('postgres', 'template1')
+   AND datname <> current_database()
+\gexec
 
 -- ---------------------------------------------------------------------
 -- 3. Schema ownership = the DDL privilege the migration needs.
@@ -123,9 +163,11 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- 5. DML on everything in the schema, now and in the future.
---    TRUNCATE and REFERENCES are deliberately NOT granted: the application
---    never truncates and never needs to create foreign keys onto tables it
---    does not own (it owns them all, so ownership covers that anyway).
+--
+--    Mostly belt-and-braces: the role OWNS these objects after step 4, and an
+--    owner already holds every privilege on them (including TRUNCATE, DROP and
+--    REFERENCES — do not claim otherwise). These grants matter for the objects
+--    step 4 could not reach and for anything postgres creates out of band.
 -- ---------------------------------------------------------------------
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES    IN SCHEMA public TO bizcheck_app;
 GRANT USAGE, SELECT                  ON ALL SEQUENCES IN SCHEMA public TO bizcheck_app;
@@ -138,18 +180,35 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
     GRANT USAGE, SELECT ON SEQUENCES TO bizcheck_app;
 
 -- ---------------------------------------------------------------------
--- 6. Close the doors the app never uses.
---    Note: pg_advisory_xact_lock (used by migrate() to serialise concurrent
---    worker boots) needs NO special privilege — it works for any role.
+-- 6. information_schema — migrate() reads it.
+--    migrate_ro_to_uk() / migrate_ru_to_en() decide whether to RENAME a column
+--    by querying information_schema.columns. That view only shows columns of
+--    tables the CURRENT user has some privilege on: a role without access sees
+--    zero rows, the rename is skipped SILENTLY, and the app then queries
+--    `name_uk` on a table that still has `name_ro`. That is the second reason
+--    step 4 (ownership transfer) is not optional — the first being DDL.
+--    USAGE here comes from PUBLIC by default; granting it explicitly makes the
+--    dependency visible instead of accidental.
+--    pg_advisory_xact_lock (used by migrate() to serialise concurrent worker
+--    boots) needs NO privilege at all — it works for any role.
 -- ---------------------------------------------------------------------
-REVOKE ALL ON SCHEMA information_schema FROM bizcheck_app;
-GRANT  USAGE ON SCHEMA information_schema TO bizcheck_app;   -- migrate() probes it
+GRANT USAGE ON SCHEMA information_schema TO bizcheck_app;
 
 COMMIT;
 
 -- ---------------------------------------------------------------------
--- 7. Verification — should print f,f,f,f for the four "can it" columns.
+-- 7. Verification — rolsuper/rolcreatedb/rolcreaterole/rolreplication must all
+--    print `f`, and rolconnlimit must be >= 4 x DB_POOL_MAX (see above).
 -- ---------------------------------------------------------------------
 SELECT rolname, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolconnlimit
   FROM pg_roles
  WHERE rolname = 'bizcheck_app';
+
+-- Nothing in `public` may still belong to postgres, or the next migrate() dies
+-- with "must be owner of table ...". Expected result: 0 rows.
+SELECT c.relname AS still_owned_by_postgres, pg_get_userbyid(c.relowner) AS owner
+  FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = 'public'
+   AND c.relkind IN ('r', 'S', 'v', 'm', 'p')
+   AND pg_get_userbyid(c.relowner) <> 'bizcheck_app';
