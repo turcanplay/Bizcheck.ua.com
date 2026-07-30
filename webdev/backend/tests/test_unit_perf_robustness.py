@@ -723,23 +723,23 @@ class TestBranding:
 
     def test_uk_subject_uses_the_ua_brand(self):
         subject, _, _ = self._render()
-        assert "Bizcheck.ua.com" in subject
+        assert "Bizcheck.com.ua" in subject
         assert "Bizcheck.md" not in subject
 
     def test_en_subject_uses_the_ua_brand(self):
         subject, _, _ = self._render(lang="en")
-        assert "Bizcheck.ua.com" in subject
+        assert "Bizcheck.com.ua" in subject
         assert "Bizcheck.md" not in subject
 
     def test_html_eyebrow_is_rebranded(self):
         _, html, _ = self._render()
-        assert "BIZCHECK.UA.COM" in html
+        assert "BIZCHECK.COM.UA" in html
         assert "BIZCHECK.MD" not in html
 
     def test_footer_points_at_the_ua_site(self):
         _, html, text = self._render()
-        assert "bizcheck.ua.com" in html
-        assert "bizcheck.ua.com" in text
+        assert "bizcheck.com.ua" in html
+        assert "bizcheck.com.ua" in text
 
     def test_corporate_site_url_stays_crowe_tm_md(self):
         """crowe-tm.md is the real Crowe firm site — NOT stale .md branding."""
@@ -749,16 +749,16 @@ class TestBranding:
     def test_reply_to_is_overridable_from_the_environment(self, monkeypatch):
         """The UA mailbox does not exist yet; it must be swappable without a deploy."""
         import importlib
-        monkeypatch.setenv("EMAIL_REPLY_TO", "office@bizcheck.ua.com")
+        monkeypatch.setenv("EMAIL_REPLY_TO", "office@bizcheck.com.ua")
         from services import email_templates as et
         importlib.reload(et)
         try:
-            assert et.DEFAULT_REPLY_TO == "office@bizcheck.ua.com"
+            assert et.DEFAULT_REPLY_TO == "office@bizcheck.com.ua"
             _, html, _ = et.render(
                 lang="uk", first_name="Ion", test_name="T", date_str="d",
                 score=50, logo_url="https://x/l.png",
             )
-            assert "office@bizcheck.ua.com" in html
+            assert "office@bizcheck.com.ua" in html
         finally:
             monkeypatch.delenv("EMAIL_REPLY_TO", raising=False)
             importlib.reload(et)

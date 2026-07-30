@@ -18,13 +18,13 @@ COPY frontend/ .
 #   SITEMAP_API_URL   scripts/generate-sitemap.mjs:41 + generate-static-html.mjs:37
 #                     `|| ''` → lib/routing.mjs:70 întoarce [] → doar rutele statice.
 #                     Format așteptat: origine + prefixul de API, FĂRĂ slash final,
-#                     de ex. https://bizcheck.ua.com/api_crowe_bizcheck
+#                     de ex. https://bizcheck.com.ua/api_crowe_bizcheck
 #                     (scripturile cer `${api}/tests` și `${api}/templates`).
 #                     ⚠ Se rezolvă din REȚEAUA CONTAINERULUI DE BUILD, care NU e
 #                       rețeaua compose: `http://backend:4001/...` NU se rezolvă, iar
 #                       `http://127.0.0.1:5173/...` e containerul însuși. Folosește
 #                       URL-ul PUBLIC.
-#   SITEMAP_BASE_URL  `|| SITE_URL` din lib/routing.mjs (https://bizcheck.ua.com).
+#   SITEMAP_BASE_URL  `|| SITE_URL` din lib/routing.mjs (https://bizcheck.com.ua).
 #                     Se setează doar pentru build-uri de staging.
 #   VITE_API_URL      src/config/api.ts:2 → `|| '/api_crowe_bizcheck'` (cale relativă
 #                     prin nginx). Șirul gol e falsy, deci fallbackul se aplică.

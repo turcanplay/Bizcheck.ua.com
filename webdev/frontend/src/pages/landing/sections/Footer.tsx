@@ -31,7 +31,7 @@ export default function Footer() {
     <footer className="footer" data-section="footer">
       <div className="footer__inner">
         <div className="footer__brand">
-          <Link to={L('/')} className="footer__logo">Bizcheck<span>.ua.com</span></Link>
+          <Link to={L('/')} className="footer__logo">Bizcheck<span>.com.ua</span></Link>
         </div>
 
         <div className="footer__col">

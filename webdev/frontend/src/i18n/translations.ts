@@ -307,8 +307,8 @@ export const translations = {
 
   // Report
   reportTitle: {
-    uk: 'Звіт Bizcheck.ua.com',
-    en: 'Bizcheck.ua.com Report',
+    uk: 'Звіт Bizcheck.com.ua',
+    en: 'Bizcheck.com.ua Report',
   },
   reportSubtitle: {
     uk: 'Аналіз за категоріями · Оцінка ризиків бізнесу',
@@ -449,8 +449,8 @@ export const translations = {
   ctaWebLabel:      { uk: 'ВЕБ',      en: 'WEB' },
   ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   ctaDisclaimer: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.ua.com і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
-    en: 'This report is generated automatically by the Bizcheck.ua.com platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
+    en: 'This report is generated automatically by the Bizcheck.com.ua platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
   // Loading / empty states
@@ -580,8 +580,8 @@ export const translations = {
   ctaEmailBtn:         { uk: 'Надіслати', en: 'Send' },
   ctaEmailSent:        { uk: 'Звіт уже в дорозі!',
                           en: 'The report is on its way!' },
-  ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.ua.com (PDF). Перевірте також папку Спам.',
-                          en: 'In a few seconds you will receive an email at {email} with a button to open your Bizcheck.ua.com report (PDF). Also check your Spam folder.' },
+  ctaEmailSentSub:     { uk: 'Через кілька секунд ви отримаєте лист на {email} з кнопкою для відкриття звіту Bizcheck.com.ua (PDF). Перевірте також папку Спам.',
+                          en: 'In a few seconds you will receive an email at {email} with a button to open your Bizcheck.com.ua report (PDF). Also check your Spam folder.' },
   ctaEmailResend:      { uk: 'Надіслати ще раз', en: 'Send again' },
   ctaEmailResent:      { uk: 'Надіслано ще раз ✓', en: 'Sent again ✓' },
   ctaEmailComingSoon:  { uk: 'Незабаром', en: 'Coming soon' },
@@ -601,8 +601,8 @@ export const translations = {
   // Prominent "check Spam" notice on the email-sent success screen.
   ctaSpamNoticeTitle:  { uk: 'Перевірте папку СПАМ',
                           en: 'Check your SPAM folder' },
-  ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.ua.com.',
-                          en: 'Sometimes the email lands in Spam or Promotions. If you do not see the report in your Inbox after a few minutes, look there for an email from Bizcheck.ua.com.' },
+  ctaSpamNoticeText:   { uk: 'Іноді лист потрапляє до Спаму або Промоакцій. Якщо не бачите звіт у «Вхідних» через кілька хвилин, пошукайте там лист від Bizcheck.com.ua.',
+                          en: 'Sometimes the email lands in Spam or Promotions. If you do not see the report in your Inbox after a few minutes, look there for an email from Bizcheck.com.ua.' },
 
   // Download done state — shown after PDF saved + email dispatched
   ctaDownloadDoneTitle: {
@@ -633,8 +633,8 @@ export const translations = {
     en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   pdfFooterConfidential: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.ua.com і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
-    en: 'This report is generated automatically by the Bizcheck.ua.com platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
+    en: 'This report is generated automatically by the Bizcheck.com.ua platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
   },
   pdfFooterGenerated: {
     uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу за участю профільних фахівців.',
@@ -648,7 +648,7 @@ export const translations = {
   heroNavSignup: { uk: 'Реєстрація', en: 'Sign up' },
   heroSearchPh:  { uk: 'Пошук тестів і шаблонів', en: 'Search tests and templates' },
   heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 В УКРАЇНІ', en: 'THE #1 PLATFORM IN UKRAINE' },
-  heroTitleLine1: { uk: 'Bizcheck.ua.com', en: 'Bizcheck.ua.com' },
+  heroTitleLine1: { uk: 'Bizcheck.com.ua', en: 'Bizcheck.com.ua' },
   heroTitleLine2: { uk: 'Чек-ап бізнесу', en: 'Business check-up' },
   heroDescLanding: {
     uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
@@ -788,7 +788,7 @@ export const translations = {
   footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    en: 'Crowe Turcan Mikhailenko' },
 
   // Crowe / founder block (landing, after Hero)
-  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.UA.COM', en: 'WHO IS BEHIND BIZCHECK.UA.COM' },
+  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.COM.UA', en: 'WHO IS BEHIND BIZCHECK.COM.UA' },
   croweTitle:   { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweBody1: {
     uk: 'Crowe Turcan Mikhailenko є частиною міжнародної мережі Crowe Global — однієї з провідних світових мереж у сфері аудиту, консалтингу та корпоративних рішень.',

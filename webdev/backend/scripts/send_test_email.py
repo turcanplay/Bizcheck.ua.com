@@ -30,7 +30,7 @@ def main() -> int:
     p.add_argument("--score", type=int, default=78, help="Score shown in the ring (0-100)")
     p.add_argument(
         "--link",
-        default="https://bizcheck.ua.com",
+        default="https://bizcheck.com.ua",
         help="URL the 'open report' button points to (any reachable URL is fine for a test)",
     )
     args = p.parse_args()

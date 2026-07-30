@@ -19,11 +19,11 @@ export default function Header() {
 
   return (
     <header className="site-header">
-      <Link to={L('/')} className="header-logo" aria-label="Bizcheck.ua.com home">
+      <Link to={L('/')} className="header-logo" aria-label="Bizcheck.com.ua home">
         <img src={croweLogo} alt="Crowe" className="crowe-logo__img" />
         <div className="header-sep" />
         <div className="header-sub">
-          {showTestName ? testName : 'Bizcheck.ua.com'}
+          {showTestName ? testName : 'Bizcheck.com.ua'}
         </div>
       </Link>
       <div className="header-right">

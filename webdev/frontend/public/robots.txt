@@ -1,4 +1,4 @@
-# Bizcheck.ua.com — robots.txt
+# Bizcheck.com.ua — robots.txt
 # Crawlers may index public pages.
 #
 # ─────────────────────────────────────────────────────────────────────────────
@@ -33,4 +33,4 @@ Disallow: /api_crowe_bizcheck/
 # NOTE: sitemap.xml IS behind the pre-launch mask (401) — it is a ready-made
 # list of URLs to crawl. Expect a "couldn't fetch" in Search Console until
 # launch; re-submit it after `./scripts/site-mask.sh off`.
-Sitemap: https://bizcheck.ua.com/sitemap.xml
+Sitemap: https://bizcheck.com.ua/sitemap.xml

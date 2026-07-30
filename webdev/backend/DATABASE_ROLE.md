@@ -167,7 +167,7 @@ docker compose logs -f backend       # migrate() trebuie să treacă fără eror
 #    'postgres'" → .env e ignorat; rulează ./scripts/validate-deploy-config.py.
 
 # 6. Smoke test.
-curl -fsS https://bizcheck.ua.com/api_crowe_bizcheck/health
+curl -fsS https://bizcheck.com.ua/api_crowe_bizcheck/health
 ```
 
 ### Ce NU se schimbă

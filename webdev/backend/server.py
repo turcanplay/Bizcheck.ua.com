@@ -142,7 +142,7 @@ if not _ALLOWED_HOSTS and os.getenv("NODE_ENV") == "production":
     # starting — but this IS a missing control, so it must be loud on every boot.
     logging.getLogger(__name__).warning(
         "ALLOWED_HOSTS is not set in production: the Host header is NOT validated. "
-        "Set ALLOWED_HOSTS=bizcheck.ua.com,www.bizcheck.ua.com")
+        "Set ALLOWED_HOSTS=bizcheck.com.ua,www.bizcheck.com.ua")
 
 
 @app.before_request

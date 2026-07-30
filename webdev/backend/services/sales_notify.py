@@ -1,7 +1,7 @@
 """
 Sales-team Telegram notification.
 
-When a visitor completes a test on bizcheck.ua.com and leaves contact details, a
+When a visitor completes a test on bizcheck.com.ua and leaves contact details, a
 TEXT notification is posted to a private Telegram group (a forum / topics group)
 where the sales people sit. The message carries the lead's name, phone, email,
 Telegram (if they chose the Telegram delivery), which test was completed + score.
@@ -107,7 +107,7 @@ def _esc(s) -> str:
 
 
 def _admin_url() -> str:
-    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.ua.com").rstrip("/")
+    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.com.ua").rstrip("/")
     return f"{base}/admin_bizcheck_md_crowe/"
 
 
@@ -163,7 +163,7 @@ def _build_caption(sub: dict, test_name: str, zones=None) -> str:
 
     sep = "➖➖➖➖➖➖➖➖➖➖"
     return (
-        "🆕 <b>Новий лід на bizcheck.ua.com</b>\n\n"
+        "🆕 <b>Новий лід на bizcheck.com.ua</b>\n\n"
         f"👤 <b>{_esc(name)}</b>\n"
         f"✉️ {_esc(email)}\n"
         f"📞 {_esc(phone)}\n"

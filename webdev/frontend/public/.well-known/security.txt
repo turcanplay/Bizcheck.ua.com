@@ -23,4 +23,4 @@ Preferred-Languages: uk, en
 
 # The one URI this file is authoritative for (RFC 9116 §2.5.2). A copy found
 # anywhere else without this line pointing back here is not ours.
-Canonical: https://bizcheck.ua.com/.well-known/security.txt
+Canonical: https://bizcheck.com.ua/.well-known/security.txt

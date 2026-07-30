@@ -15,12 +15,12 @@ from services.scoring import display_pct, zone_of
 # ---------------------------------------------------------------------------
 # Brand / contact configuration
 # ---------------------------------------------------------------------------
-# The product launched on the Ukrainian market as bizcheck.ua.com, so every
-# customer-facing string says "Bizcheck.ua.com". `site_url` deliberately still
+# The product launched on the Ukrainian market as bizcheck.com.ua, so every
+# customer-facing string says "Bizcheck.com.ua". `site_url` deliberately still
 # points at crowe-tm.md — that is the real corporate site of the Crowe firm
 # behind the product and is NOT a leftover of the .md branding.
-BRAND_NAME = "Bizcheck.ua.com"
-BRAND_EYEBROW = "BIZCHECK.UA.COM"
+BRAND_NAME = "Bizcheck.com.ua"
+BRAND_EYEBROW = "BIZCHECK.COM.UA"
 
 # TODO: adresa reală UA — no Ukrainian mailbox exists yet, so the .md address is
 # kept as the fallback. Override with EMAIL_REPLY_TO (and EMAIL_TELEGRAM_URL /
@@ -28,7 +28,7 @@ BRAND_EYEBROW = "BIZCHECK.UA.COM"
 # do NOT invent an address here.
 DEFAULT_REPLY_TO = os.getenv("EMAIL_REPLY_TO", "office@bizcheck.md")
 DEFAULT_SITE_URL = os.getenv("EMAIL_SITE_URL", "https://crowe-tm.md")
-DEFAULT_BIZCHECK_URL = os.getenv("PUBLIC_BASE_URL", "https://bizcheck.ua.com").rstrip("/")
+DEFAULT_BIZCHECK_URL = os.getenv("PUBLIC_BASE_URL", "https://bizcheck.com.ua").rstrip("/")
 DEFAULT_PRIVACY_URL = os.getenv(
     "EMAIL_PRIVACY_URL", f"{DEFAULT_BIZCHECK_URL}/confidentialitate")
 DEFAULT_TELEGRAM_URL = os.getenv("EMAIL_TELEGRAM_URL", "https://t.me/CROWE_TM")

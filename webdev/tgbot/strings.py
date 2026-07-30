@@ -7,7 +7,7 @@ for the requested language, falling back to Ukrainian.
 Two placeholders are injected automatically into every string, so the brand and
 the support address are never hardcoded in the copy:
 
-    {site}     → config.SITE_NAME      (e.g. "Bizcheck.ua.com")
+    {site}     → config.SITE_NAME      (e.g. "Bizcheck.com.ua")
     {contact}  → config.CONTACT_EMAIL  (support / sales address)
 
 `pick_lang()` maps Telegram's `User.language_code` onto a supported language —

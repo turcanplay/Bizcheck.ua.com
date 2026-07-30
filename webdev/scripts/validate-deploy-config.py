@@ -192,7 +192,7 @@ if "SITEMAP_API_URL" in documented:
     else:
         check(value.startswith("http") and value.rstrip("/") == value and "/api" in value,
               f".env.example: SITEMAP_API_URL={value!r} nu arată ca o origine + prefix de API "
-              f"fără slash final (ex. https://bizcheck.ua.com/api_crowe_bizcheck)")
+              f"fără slash final (ex. https://bizcheck.com.ua/api_crowe_bizcheck)")
         if "127.0.0.1" in value or "localhost" in value or "//backend" in value:
             warnings.append(
                 f".env.example: SITEMAP_API_URL={value!r} nu se poate rezolva din containerul "

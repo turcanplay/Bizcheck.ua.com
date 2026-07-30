@@ -1,6 +1,6 @@
 // Privacy policy in Ukrainian and English, translated in full from the official
 // Romanian source ('Politica de protecție a datelor website_MOD.docx') and then
-// adapted to Ukrainian law for the bizcheck.ua.com launch: references to Moldovan
+// adapted to Ukrainian law for the bizcheck.com.ua launch: references to Moldovan
 // Law No. 195/2024, to the CNPDCP and to IDNP were replaced with the Law of Ukraine
 // "On Personal Data Protection" No. 2297-VI of 01.06.2010, the Ukrainian Parliament
 // Commissioner for Human Rights (Ombudsman) and RNOKPP/UNZR respectively.

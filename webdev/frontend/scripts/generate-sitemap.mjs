@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build-time sitemap generator for Bizcheck.ua.com.
+ * Build-time sitemap generator for Bizcheck.com.ua.
  *
  * Emits EVERY page twice — once per language — with reciprocal `xhtml:link`
  * alternates plus `x-default` → the Ukrainian URL. Before the language lived
@@ -17,9 +17,9 @@
  *   $ node scripts/generate-sitemap.mjs
  *
  * Configurable via env:
- *   SITEMAP_BASE_URL   default https://bizcheck.ua.com
+ *   SITEMAP_BASE_URL   default https://bizcheck.com.ua
  *   SITEMAP_API_URL    unset by default → dynamic routes are skipped.
- *                      On the server: https://bizcheck.ua.com/api_crowe_bizcheck
+ *                      On the server: https://bizcheck.com.ua/api_crowe_bizcheck
  *                      Locally:       http://localhost:4001/api_crowe_bizcheck
  */
 import { writeFileSync } from 'node:fs';
@@ -93,7 +93,7 @@ function urlBlock(basePath, lang, meta) {
     console.warn(
       '[sitemap] dynamic routes omitted: SITEMAP_API_URL is not set, so every test and template '
       + 'page is missing from the sitemap. Set it before building for production, e.g. '
-      + 'SITEMAP_API_URL=https://bizcheck.ua.com/api_crowe_bizcheck npm run build',
+      + 'SITEMAP_API_URL=https://bizcheck.com.ua/api_crowe_bizcheck npm run build',
     );
   } else if (dynamic.length === 0) {
     console.warn(

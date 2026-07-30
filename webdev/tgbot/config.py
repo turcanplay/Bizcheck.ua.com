@@ -40,8 +40,8 @@ def bot_headers() -> dict:
 # strings.py interpolates {site} / {contact} instead of hardcoding them, so the
 # UA launch only has to change these two values (or the env vars).
 # TODO: confirmă contactul pentru piața UA — the address below is the one
-# inherited from the MD launch and has NOT been confirmed for bizcheck.ua.com.
-SITE_NAME     = os.getenv("SITE_NAME", "Bizcheck.ua.com")
+# inherited from the MD launch and has NOT been confirmed for bizcheck.com.ua.
+SITE_NAME     = os.getenv("SITE_NAME", "Bizcheck.com.ua")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "office@bizcheck.md")
 
 

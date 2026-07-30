@@ -30,7 +30,7 @@ export default function NotFoundPage() {
       data-page="not-found"
     >
       <Seo
-        title={en ? 'Page not found · Bizcheck.ua.com' : 'Сторінку не знайдено · Bizcheck.ua.com'}
+        title={en ? 'Page not found · Bizcheck.com.ua' : 'Сторінку не знайдено · Bizcheck.com.ua'}
         description={en
           ? 'The requested page does not exist or has been moved.'
           : 'Запитувана сторінка не існує або була переміщена.'}

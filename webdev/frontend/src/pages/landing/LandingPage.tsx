@@ -11,8 +11,8 @@ import FinalCta from './sections/FinalCta';
 import Footer from './sections/Footer';
 import './LandingPage.css';
 
-const LANDING_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com';
-const LANDING_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.ua.com';
+const LANDING_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.com.ua';
+const LANDING_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.com.ua';
 const LANDING_DESC_UK  = 'Діагностика ризиків бізнесу за методологією Crowe для компаній в Україні. Безкоштовний онлайн-тест, детальний PDF-звіт, юридичні шаблони та консультації для МСБ.';
 const LANDING_DESC_EN  = 'Business risk diagnostics based on the Crowe methodology. A free online test, a detailed PDF report, legal templates, and consulting for SMEs in Ukraine.';
 

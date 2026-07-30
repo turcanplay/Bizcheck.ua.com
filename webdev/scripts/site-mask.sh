@@ -176,7 +176,7 @@ cmd_off() {
   reload_nginx
   echo ""
   info "După lansare, verifică pe domeniul public:"
-  echo "    curl -sI https://bizcheck.ua.com/ | grep -iE 'HTTP/|x-robots-tag'"
+  echo "    curl -sI https://bizcheck.com.ua/ | grep -iE 'HTTP/|x-robots-tag'"
   echo "  Așteptat: 200, și NICIO linie x-robots-tag."
   echo "  Apoi retrimite sitemap.xml în Search Console (runbook §8.3)."
 }

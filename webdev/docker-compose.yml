@@ -56,9 +56,9 @@ services:
       # Blocks direct-IP probing. `backend` is the internal Docker service name the
       # tgbot uses (http://backend:4001), so it MUST stay in the list. Override in
       # .env if the domain changes.
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-bizcheck.ua.com,www.bizcheck.ua.com,backend,localhost,127.0.0.1}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-bizcheck.com.ua,www.bizcheck.com.ua,backend,localhost,127.0.0.1}
       # Base URL used to build the report download link inside report emails.
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://bizcheck.ua.com}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://bizcheck.com.ua}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-CROWE_BIZCHECK_bot}
       # SMTP (Office 365) — leave SMTP_PASSWORD empty to disable email delivery.
       SMTP_HOST: ${SMTP_HOST:-smtp.office365.com}
@@ -71,7 +71,7 @@ services:
       # e valabil, iar o adresă .ua inventată ar trimite răspunsurile clienților
       # în gol. Nu porni în producție fără SMTP_REPLY_TO setat în .env.
       SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@example.ua}
-      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.ua.com/logo_email.png}
+      EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.com.ua/logo_email.png}
       # Sales-team Telegram notification (private group with the notifier bot).
       # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
       SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}
@@ -149,11 +149,11 @@ services:
       # nginx, iar bundle-ul e deja compilat. Vezi comentariile din Dockerfile.frontend.
       # Toate au default GOL: un build fără ele reușește, doar loghează avertismentul.
       args:
-        # https://bizcheck.ua.com/api_crowe_bizcheck — fără el sitemap.xml și
+        # https://bizcheck.com.ua/api_crowe_bizcheck — fără el sitemap.xml și
         # HTML-ul pre-randat conțin doar rutele statice (test/ și templates/ lipsesc).
         # Se rezolvă din rețeaua containerului de build, deci trebuie URL PUBLIC.
         SITEMAP_API_URL: ${SITEMAP_API_URL:-}
-        # Doar pentru build-uri de staging pe alt domeniu. Gol → https://bizcheck.ua.com.
+        # Doar pentru build-uri de staging pe alt domeniu. Gol → https://bizcheck.com.ua.
         SITEMAP_BASE_URL: ${SITEMAP_BASE_URL:-}
         # Gol → SPA-ul folosește calea relativă /api_crowe_bizcheck prin nginx (corect
         # în producție). Se setează doar dacă API-ul stă pe alt origin.
@@ -249,7 +249,7 @@ services:
       # Must match BOT_SHARED_SECRET on the backend. REQUIRED for exports to work.
       BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
       # Link shown by /pdf (bulk PDFs are downloaded from the admin panel, not Telegram).
-      ADMIN_PANEL_URL: ${ADMIN_PANEL_URL:-https://bizcheck.ua.com/admin_bizcheck_md_crowe/}
+      ADMIN_PANEL_URL: ${ADMIN_PANEL_URL:-https://bizcheck.com.ua/admin_bizcheck_md_crowe/}
 
 volumes:
   pgdata:

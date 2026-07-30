@@ -239,7 +239,7 @@ def clean_env(monkeypatch):
     """A known-empty config baseline: nothing leaks in from the real shell."""
     for var in ("SALES_CHAT_ID", "SALES_TOPIC_ID", "SALES_BOT_TOKEN"):
         monkeypatch.delenv(var, raising=False)
-    monkeypatch.setenv("PUBLIC_BASE_URL", "https://bizcheck.ua.com")
+    monkeypatch.setenv("PUBLIC_BASE_URL", "https://bizcheck.com.ua")
 
 
 @pytest.fixture
@@ -740,7 +740,7 @@ class TestNotificationBody:
         urls = [b["url"] for row in p["reply_markup"]["inline_keyboard"] for b in row]
         assert any("t.me/ionel" in u for u in urls)
         assert any("mail.google.com" in u for u in urls)
-        assert "https://bizcheck.ua.com/admin_bizcheck_md_crowe/" in text
+        assert "https://bizcheck.com.ua/admin_bizcheck_md_crowe/" in text
 
     def test_html_in_lead_data_is_escaped_not_injected(self, world, tg, jobs):
         world.add_test(7, "BizCheck <Fiscal>", topic_id=42)

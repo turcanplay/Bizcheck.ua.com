@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Lightweight pseudo-prerender for Bizcheck.ua.com.
+ * Lightweight pseudo-prerender for Bizcheck.com.ua.
  *
  * Vite/Rolldown does not yet have a stable prerender plugin, and Puppeteer is
  * heavy for a CI-only need. So we cheat: for each known route × language we
@@ -48,23 +48,23 @@ const STATIC_ROUTES = [
   {
     path: '/',
     uk: {
-      title: 'Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com',
+      title: 'Оцінка ризиків бізнесу онлайн · Bizcheck.com.ua',
       description: 'Безкоштовна онлайн-оцінка ризиків бізнесу за методологією Crowe: тест за блоками, детальний PDF-звіт і юридичні шаблони для МСБ. Пройдіть тест зараз.',
     },
     en: {
-      title: 'Business Risk Assessment Online · Bizcheck.ua.com',
+      title: 'Business Risk Assessment Online · Bizcheck.com.ua',
       description: 'Free online business risk assessment based on the Crowe methodology: a block-by-block test, a detailed PDF report and legal templates for SMEs. Start now.',
     },
   },
   {
     path: '/privacy',
     uk: {
-      title: 'Політика конфіденційності · Bizcheck.ua.com',
-      description: 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.ua.com від Crowe Turcan Mikhailenko.',
+      title: 'Політика конфіденційності · Bizcheck.com.ua',
+      description: 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.com.ua від Crowe Turcan Mikhailenko.',
     },
     en: {
-      title: 'Privacy Policy · Bizcheck.ua.com',
-      description: 'Personal data processing policy, cookies and terms of use of the Bizcheck.ua.com platform by Crowe Turcan Mikhailenko.',
+      title: 'Privacy Policy · Bizcheck.com.ua',
+      description: 'Personal data processing policy, cookies and terms of use of the Bizcheck.com.ua platform by Crowe Turcan Mikhailenko.',
     },
   },
 ];

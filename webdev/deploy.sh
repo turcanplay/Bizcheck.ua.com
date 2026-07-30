@@ -114,7 +114,7 @@ fi
 if ! grep -qE '^SITEMAP_API_URL=.+' .env; then
   warn "SITEMAP_API_URL e gol → paginile de test și de șablon LIPSESC din sitemap.xml"
   warn "  și nu sunt pre-randate. Pentru producție, în .env:"
-  warn "  SITEMAP_API_URL=https://bizcheck.ua.com/api_crowe_bizcheck"
+  warn "  SITEMAP_API_URL=https://bizcheck.com.ua/api_crowe_bizcheck"
 fi
 ok ".env verificat"
 

@@ -64,7 +64,7 @@ BACKEND_URL       = os.getenv("BACKEND_URL", "http://backend:4001")
 BOT_TOKEN         = os.getenv("SALES_BOT_TOKEN", "")
 ALLOWED_CHAT_ID   = (os.getenv("SALES_CHAT_ID", "") or "").strip()
 BOT_SHARED_SECRET = os.getenv("BOT_SHARED_SECRET", "")
-ADMIN_PANEL_URL   = os.getenv("ADMIN_PANEL_URL", "https://bizcheck.ua.com/admin_bizcheck_md_crowe/")
+ADMIN_PANEL_URL   = os.getenv("ADMIN_PANEL_URL", "https://bizcheck.com.ua/admin_bizcheck_md_crowe/")
 
 EXPORTS = f"{BACKEND_URL}/api_crowe_bizcheck/tg/exports"
 GROUP   = f"{BACKEND_URL}/api_crowe_bizcheck/tg/group"

@@ -38,7 +38,7 @@ def _authorized(req) -> bool:
 
 
 def _admin_url() -> str:
-    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.ua.com").rstrip("/")
+    base = (os.getenv("PUBLIC_BASE_URL") or "https://bizcheck.com.ua").rstrip("/")
     return f"{base}/admin_bizcheck_md_crowe/"
 
 

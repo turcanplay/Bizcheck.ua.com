@@ -8,8 +8,8 @@
  * language or move a route, both files change.
  */
 
-export const SITE_URL = 'https://bizcheck.ua.com';
-export const BRAND = 'Bizcheck.ua.com';
+export const SITE_URL = 'https://bizcheck.com.ua';
+export const BRAND = 'Bizcheck.com.ua';
 export const SUPPORTED_LANGS = ['uk', 'en'];
 export const DEFAULT_LANG = 'uk';
 

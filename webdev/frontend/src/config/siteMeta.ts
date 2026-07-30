@@ -12,10 +12,10 @@
  *  Not build-time env: this frontend has no `args:` block in docker-compose and
  *  its VITE_* vars are never passed at build time, so a literal is the only
  *  thing that actually ships. */
-export const SITE_URL = 'https://bizcheck.ua.com';
+export const SITE_URL = 'https://bizcheck.com.ua';
 
 /** Public brand name. Used in <title>, og:site_name, JSON-LD alternateName. */
-export const BRAND = 'Bizcheck.ua.com';
+export const BRAND = 'Bizcheck.com.ua';
 
 /** Languages the SPA ships. `ru` was dropped — do not re-add it to hreflang. */
 export const SUPPORTED_LANGS = ['uk', 'en'] as const;
@@ -39,8 +39,8 @@ export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_IMAGE_WIDTH = 1200;
 export const DEFAULT_IMAGE_HEIGHT = 630;
 
-export const DEFAULT_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.ua.com';
-export const DEFAULT_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.ua.com';
+export const DEFAULT_TITLE_UK = 'Оцінка ризиків бізнесу онлайн · Bizcheck.com.ua';
+export const DEFAULT_TITLE_EN = 'Business Risk Assessment Online · Bizcheck.com.ua';
 export const DEFAULT_DESC_UK = 'Безкоштовна онлайн-оцінка ризиків бізнесу за методологією Crowe: тест за блоками, детальний PDF-звіт і юридичні шаблони для МСБ. Пройдіть тест зараз.';
 export const DEFAULT_DESC_EN = 'Free online business risk assessment based on the Crowe methodology: a block-by-block test, a detailed PDF report and legal templates for SMEs. Start now.';
 

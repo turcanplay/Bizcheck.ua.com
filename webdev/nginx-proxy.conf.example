@@ -7,13 +7,13 @@
 #  DOAR pe server, neversionat — dacă serverul se pierde, se pierde și el.
 #
 #  Instalare pe server:
-#     sudo cp nginx-proxy.conf.example /etc/nginx/sites-available/bizcheck.ua.com
-#     sudo ln -s /etc/nginx/sites-available/bizcheck.ua.com /etc/nginx/sites-enabled/
+#     sudo cp nginx-proxy.conf.example /etc/nginx/sites-available/bizcheck.com.ua
+#     sudo ln -s /etc/nginx/sites-available/bizcheck.com.ua /etc/nginx/sites-enabled/
 #     sudo nginx -t && sudo systemctl reload nginx
 #
 #  Certificat (prima dată, cu proxy-ul deja pornit pe :80):
 #     sudo certbot certonly --webroot -w /var/www/certbot \
-#          -d bizcheck.ua.com -d www.bizcheck.ua.com
+#          -d bizcheck.com.ua -d www.bizcheck.com.ua
 #
 #  IMPORTANT: containerul din spate (webdev-frontend-1) NU are TLS. Toate
 #  redirecturile http→https și www→non-www sunt duplicate și acolo (vezi
@@ -56,7 +56,7 @@ upstream bizcheck_app {
 server {
     listen 80;
     listen [::]:80;
-    server_name bizcheck.ua.com www.bizcheck.ua.com;
+    server_name bizcheck.com.ua www.bizcheck.com.ua;
     server_tokens off;
 
     # Let's Encrypt http-01. TREBUIE să rămână peste redirect (prefixul `^~`
@@ -77,18 +77,18 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;                 # nginx >= 1.25.1; pe versiuni vechi: `listen 443 ssl http2;`
-    server_name www.bizcheck.ua.com;
+    server_name www.bizcheck.com.ua;
     server_tokens off;
 
     # Același certificat (acoperă ambele nume, dacă l-ai cerut cu -d www…).
-    ssl_certificate     /etc/letsencrypt/live/bizcheck.ua.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/bizcheck.ua.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/bizcheck.com.ua/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bizcheck.com.ua/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 1d;
 
-    return 301 https://bizcheck.ua.com$request_uri;
+    return 301 https://bizcheck.com.ua$request_uri;
 }
 
 # ─── 3. HTTPS canonic ───────────────────────────────────────────────────────
@@ -96,12 +96,12 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    server_name bizcheck.ua.com;
+    server_name bizcheck.com.ua;
     server_tokens off;
 
-    ssl_certificate     /etc/letsencrypt/live/bizcheck.ua.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/bizcheck.ua.com/privkey.pem;
-    ssl_trusted_certificate /etc/letsencrypt/live/bizcheck.ua.com/chain.pem;
+    ssl_certificate     /etc/letsencrypt/live/bizcheck.com.ua/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bizcheck.com.ua/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/bizcheck.com.ua/chain.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;

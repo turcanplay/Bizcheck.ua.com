@@ -47,13 +47,13 @@ export default function TemplateDetailPage() {
   const description = pickLang(item, 'description', lang);
   const seoDesc = (description || '').slice(0, 160) ||
     (lang === 'en'
-      ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.ua.com platform.`
-      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.ua.com.`);
+      ? `Legal template ${title} by Crowe Turcan Mikhailenko on the Bizcheck.com.ua platform.`
+      : `Юридичний шаблон ${title} від Crowe Turcan Mikhailenko на платформі Bizcheck.com.ua.`);
 
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }} data-page="template-detail">
       <Seo
-        title={`${title} · Bizcheck.ua.com · Crowe`}
+        title={`${title} · Bizcheck.com.ua · Crowe`}
         description={seoDesc}
         path={path}
         ogType="product"

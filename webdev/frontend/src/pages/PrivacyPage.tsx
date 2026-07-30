@@ -15,11 +15,11 @@ export default function PrivacyPage() {
     <div className="privacy-page">
       <Seo
         title={lang === 'en'
-          ? 'Privacy Policy · Bizcheck.ua.com'
-          : 'Політика конфіденційності · Bizcheck.ua.com'}
+          ? 'Privacy Policy · Bizcheck.com.ua'
+          : 'Політика конфіденційності · Bizcheck.com.ua'}
         description={lang === 'en'
-          ? 'Personal data processing policy, cookies and terms of use of the Bizcheck.ua.com platform by Crowe Turcan Mikhailenko.'
-          : 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.ua.com від Crowe Turcan Mikhailenko.'}
+          ? 'Personal data processing policy, cookies and terms of use of the Bizcheck.com.ua platform by Crowe Turcan Mikhailenko.'
+          : 'Політика обробки персональних даних, cookies та умови використання платформи Bizcheck.com.ua від Crowe Turcan Mikhailenko.'}
         path="/privacy"
         jsonLd={breadcrumbSchema([
           { name: lang === 'en' ? 'Home' : 'Головна', path: L('/') },
