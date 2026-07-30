@@ -80,6 +80,19 @@ reload_nginx() {
   info "Validez configul în container (nginx -t)…"
   docker compose exec -T frontend nginx -t \
     || die "nginx -t a picat — NU am dat reload. Verifică ${MASK_FILE} și htpasswd."
+
+  # `nginx -t` NU citește auth_basic_user_file — doar verifică sintaxa. Un
+  # htpasswd pe care workerii nu-l pot deschide trece testul și abia apoi dă
+  # 500 la RULARE, pe fiecare cerere cu parolă corectă. Cererile FĂRĂ parolă
+  # întorc tot 401, deci simptomul e invizibil dacă probezi doar starea
+  # neautentificată — inclusiv în smoke-testul din deploy.sh.
+  # Workerii rulează ca `nginx`, nu ca root: testăm citirea exact ca ei.
+  if [ -f "$MASK_FILE" ] && ! docker compose exec -u nginx -T frontend \
+       test -r /etc/nginx/maintenance/htpasswd 2>/dev/null; then
+    die "Utilizatorul 'nginx' din container NU poate citi htpasswd → masca ar
+      întoarce 500 în loc de 200 la parola corectă. Repară drepturile:
+        chmod 644 ${HTPASSWD}"
+  fi
   docker compose exec -T frontend nginx -s reload \
     || die "reload eșuat — verifică 'docker compose logs frontend'"
   ok "nginx reîncărcat"
@@ -129,7 +142,14 @@ cmd_adduser() {
   grep -v "^${user}:" "$HTPASSWD" > "${HTPASSWD}.tmp" 2>/dev/null || true
   printf '%s\n' "$line" >> "${HTPASSWD}.tmp"
   mv "${HTPASSWD}.tmp" "$HTPASSWD"
-  chmod 640 "$HTPASSWD"
+  # 644, NU 640. Fișierul e bind-mount `:ro` în containerul `frontend`, unde
+  # workerii nginx rulează ca `nginx` (uid 101) — vezi `user nginx;` din
+  # nginx.conf al imaginii. Cu 640 root:root, uid 101 nu-l poate deschide și
+  # nginx întoarce 500 la fiecare cerere CU parolă corectă; fără parolă vine
+  # tot 401, deci masca pare că merge. Nu strâmta drepturile aici: pe gazdă
+  # fișierul e deja protejat de permisiunile directorului părinte (clona stă
+  # sub `/root`), iar conținutul e format din hashuri apr1/bcrypt, nu parole.
+  chmod 644 "$HTPASSWD"
   ok "Utilizator «${user}» salvat în ${HTPASSWD} ($(wc -l < "$HTPASSWD" | tr -d ' ') în total)"
   [ -f "$MASK_FILE" ] && reload_nginx || info "Masca e OPRITĂ — pornește-o cu: $0 on"
 }
@@ -141,7 +161,14 @@ cmd_deluser() {
   grep -q "^${user}:" "$HTPASSWD" || die "Utilizatorul «${user}» nu există"
   grep -v "^${user}:" "$HTPASSWD" > "${HTPASSWD}.tmp" || true
   mv "${HTPASSWD}.tmp" "$HTPASSWD"
-  chmod 640 "$HTPASSWD"
+  # 644, NU 640. Fișierul e bind-mount `:ro` în containerul `frontend`, unde
+  # workerii nginx rulează ca `nginx` (uid 101) — vezi `user nginx;` din
+  # nginx.conf al imaginii. Cu 640 root:root, uid 101 nu-l poate deschide și
+  # nginx întoarce 500 la fiecare cerere CU parolă corectă; fără parolă vine
+  # tot 401, deci masca pare că merge. Nu strâmta drepturile aici: pe gazdă
+  # fișierul e deja protejat de permisiunile directorului părinte (clona stă
+  # sub `/root`), iar conținutul e format din hashuri apr1/bcrypt, nu parole.
+  chmod 644 "$HTPASSWD"
   local left; left="$(wc -l < "$HTPASSWD" | tr -d ' ')"
   ok "Utilizator «${user}» șters (au rămas ${left})"
   if [ "$left" -eq 0 ] && [ -f "$MASK_FILE" ]; then
