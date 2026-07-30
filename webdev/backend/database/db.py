@@ -207,10 +207,11 @@ def migrate_ro_to_uk(cur):
     # The feedback prompt lives in site_settings under a per-language key.
     cur.execute(
         """
-        UPDATE site_settings SET key = 'feedback_prompt_uk'
-         WHERE key = 'feedback_prompt_ro'
+        UPDATE site_settings SET setting_key = 'feedback_prompt_uk'
+         WHERE setting_key = 'feedback_prompt_ro'
            AND NOT EXISTS (
-               SELECT 1 FROM site_settings s2 WHERE s2.key = 'feedback_prompt_uk'
+               SELECT 1 FROM site_settings s2
+                WHERE s2.setting_key = 'feedback_prompt_uk'
            );
         """
     )
@@ -253,10 +254,11 @@ def migrate_ru_to_en(cur):
     cur.execute("UPDATE tg_outreach  SET lang     = 'en' WHERE lang     = 'ru';")
     cur.execute(
         """
-        UPDATE site_settings SET key = 'feedback_prompt_en'
-         WHERE key = 'feedback_prompt_ru'
+        UPDATE site_settings SET setting_key = 'feedback_prompt_en'
+         WHERE setting_key = 'feedback_prompt_ru'
            AND NOT EXISTS (
-               SELECT 1 FROM site_settings s2 WHERE s2.key = 'feedback_prompt_en'
+               SELECT 1 FROM site_settings s2
+                WHERE s2.setting_key = 'feedback_prompt_en'
            );
         """
     )
