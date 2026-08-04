@@ -787,25 +787,40 @@ export const translations = {
   footerLinkTurcan:    { uk: 'ЦУРКАН Іван',                 en: 'TURCAN Ivan' },
   footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    en: 'Crowe Turcan Mikhailenko' },
 
-  // Crowe / founder block (landing, after Hero)
+  // Crowe / partners block (landing, after Hero).
+  // Two partner cards side by side: Ukraine first, then Moldova. The intro copy
+  // is deliberately short — the substance lives in the two bios below it.
   croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.COM.UA', en: 'WHO IS BEHIND BIZCHECK.COM.UA' },
   croweTitle:   { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweBody1: {
-    uk: 'Crowe Turcan Mikhailenko є частиною міжнародної мережі Crowe Global — однієї з провідних світових мереж у сфері аудиту, консалтингу та корпоративних рішень.',
-    en: 'Crowe Turcan Mikhailenko is part of the international Crowe Global network — one of the world\'s leading networks in audit, consulting and corporate solutions.',
+    uk: 'Crowe Turcan Mikhailenko — частина міжнародної мережі Crowe Global: аудит, податки та консалтинг для бізнесу в Україні й Молдові.',
+    en: 'Crowe Turcan Mikhailenko is part of the international Crowe Global network — audit, tax and consulting for businesses in Ukraine and Moldova.',
   },
   croweBody2: {
-    uk: 'Ми працюємо з місцевими та міжнародними компаніями, надаючи підтримку, адаптовану до юридичних, податкових і комерційних реалій України.',
-    en: 'We work with local and international companies, providing support tailored to the legal, tax and commercial realities of Ukraine.',
+    uk: 'За BIZCHECK стоять два партнери, які щодня працюють із податковими та юридичними ризиками компаній.',
+    en: 'BIZCHECK is backed by two partners who work with companies\' tax and legal risks every single day.',
   },
-  croweBody3: {
-    uk: 'Ми орієнтовані на практичні, зрозумілі й застосовні рішення, щоб наші клієнти могли ухвалювати впевнені та обґрунтовані рішення.',
-    en: 'We focus on practical, clear and applicable solutions so that our clients can make confident and well-founded decisions.',
+
+  // Partner 1 — Ukraine
+  croweUaName: { uk: 'ДМИТРО МИХАЙЛЕНКО', en: 'DMYTRO MYKHAILENKO' },
+  croweUaRole: { uk: 'Керуючий партнер · Crowe Mikhailenko', en: 'Managing Partner · Crowe Mikhailenko' },
+  croweUaBio: {
+    uk: 'Президент Асоціації податкових консультантів України та член Наглядової ради Палати податкових консультантів. Голова Комітету підприємців з податкових питань при ТПП України, юридичний радник ІТ-комітету Європейської Бізнес Асоціації.',
+    en: 'President of the Association of Tax Advisers of Ukraine and member of the Supervisory Board of the Chamber of Tax Advisers. Chairman of the Entrepreneurs\' Tax Committee at the Ukrainian Chamber of Commerce and Industry, and legal adviser to the IT Committee of the European Business Association.',
   },
+
+  // Partner 2 — Moldova (croweName / croweRole predate the two-partner layout)
   croweName: { uk: 'ЦУРКАН ІВАН', en: 'IVAN TURCAN' },
   croweRole: { uk: 'Засновник · Crowe Turcan Mikhailenko', en: 'Founder · Crowe Turcan Mikhailenko' },
-  croweBtnTurcan: { uk: 'Іван Цуркан', en: 'Ivan Turcan' },
-  croweBtnCrowe:  { uk: 'Crowe Mikhailenko', en: 'Crowe Mikhailenko' },
+  croweMdBio: {
+    uk: 'Розвиває практику Crowe в Республіці Молдова: супроводжує місцеві та міжнародні компанії з питань податків, права й комерційних ризиків. Робить ставку на практичні та зрозумілі рішення.',
+    en: 'Leads the Crowe practice in the Republic of Moldova, supporting local and international companies on tax, legal and commercial risk. Focused on practical, clear-cut solutions.',
+  },
+
+  croweBtnTurcan:      { uk: 'Іван Цуркан', en: 'Ivan Turcan' },
+  croweBtnCrowe:       { uk: 'Crowe Mikhailenko', en: 'Crowe Mikhailenko' },
+  croweBtnMikhailenko: { uk: 'Mikhailenko', en: 'Mikhailenko' },
+  croweBtnCroweTm:     { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweVisitHint: { uk: 'Перейти на офіційний сайт', en: 'Go to the official website' },
   croweCtaHint: {
     uk: 'Задля деталей відвідайте офіційні сайти та познайомтеся з нами:',

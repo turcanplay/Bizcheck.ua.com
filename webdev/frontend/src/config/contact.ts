@@ -36,6 +36,21 @@ export const CROWE_GLOBAL_URL = 'https://www.crowe.com/ua/crowemikhailenko';
 /** Label for CROWE_GLOBAL_URL — country-neutral on purpose. */
 export const CROWE_GLOBAL_LABEL = 'crowe.com';
 
+/**
+ * Moldova office sub-page on Crowe Global. Unlike CROWE_GLOBAL_URL this one is
+ * deliberately deep-linked: it is used only on the Moldova partner's card in
+ * the landing "who is behind BizCheck" block, where the country is the point.
+ */
+export const CROWE_MOLDOVA_URL = 'https://www.crowe.com/ua/crowemikhailenko/en-gb/moldova/';
+
+/** Ukrainian partner firm's own site. */
+export const MIKHAILENKO_URL = 'https://www.mikhailenko.com.ua/';
+export const MIKHAILENKO_LABEL = 'mikhailenko.com.ua';
+
+/** Moldovan partner's personal site. */
+export const TURCAN_URL = 'https://turcan.md';
+export const TURCAN_LABEL = 'turcan.md';
+
 /** Legal / commercial name of the firm behind the platform. */
 export const COMPANY_NAME = 'Crowe Turcan Mikhailenko';
 
