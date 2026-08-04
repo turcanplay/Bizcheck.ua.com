@@ -194,8 +194,8 @@ export default function Hero() {
       </div>
 
       <nav className="hero__nav">
-        <Link to={L("/")} className="hero__logo" aria-label="Bizcheck.md">
-          <span className="hero__logo-text">Bizcheck<span className="hero__logo-dot">.md</span></span>
+        <Link to={L("/")} className="hero__logo" aria-label="Bizcheck.com.ua">
+          <span className="hero__logo-text">Bizcheck<span className="hero__logo-dot">.com.ua</span></span>
         </Link>
 
         <div className="hero__search" ref={searchBoxRef}>
@@ -204,7 +204,7 @@ export default function Hero() {
             ref={menuBtnRef}
             className="hero__search-menu-btn"
             onClick={() => { setMenuOpen(o => !o); setSearchOpen(false); }}
-            aria-label="Meniu rapid"
+            aria-label={t('menuQuickLabel')}
             aria-expanded={menuOpen}
           >
             <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden>
@@ -406,7 +406,7 @@ export default function Hero() {
           <Picture
             className="hero__laptop"
             src="/images/hero/laptop.png"
-            alt="Bizcheck.md marketplace preview"
+            alt="Bizcheck.com.ua marketplace preview"
             width={1656}
             height={1080}
             priority

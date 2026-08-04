@@ -67,9 +67,9 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Crowe Turcan Mikhailenko}
       # TODO(UA): pune adresa reală de contact pentru piața Ucraina în .env.
-      # Defaultul de mai jos e un PLACEHOLDER — vechiul office@bizcheck.md nu mai
-      # e valabil, iar o adresă .ua inventată ar trimite răspunsurile clienților
-      # în gol. Nu porni în producție fără SMTP_REPLY_TO setat în .env.
+      # Defaultul de mai jos e un PLACEHOLDER — nu există încă o cutie poștală pe
+      # bizcheck.com.ua, iar o adresă .ua inventată ar trimite răspunsurile
+      # clienților în gol. Nu porni în producție fără SMTP_REPLY_TO setat în .env.
       SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@example.ua}
       EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.com.ua/logo_email.png}
       # Sales-team Telegram notification (private group with the notifier bot).

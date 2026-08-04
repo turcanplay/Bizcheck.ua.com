@@ -12,7 +12,14 @@ Configuration (read from env vars — see .env.example):
     SMTP_PASSWORD      <Office 365 app password — 16 chars>
     SMTP_FROM_NAME     Crowe Turcan Mikhailenko
     SMTP_REPLY_TO      office@bizcheck.md           (user replies go here)
-    EMAIL_LOGO_URL     https://bizcheck.md/logo_email.png
+    EMAIL_LOGO_URL     https://bizcheck.com.ua/logo_email.png
+
+The site now lives on bizcheck.com.ua, but the sending mailbox has deliberately
+NOT moved: office@bizcheck.md is the only box that exists, and it is the one
+SPF/DKIM/DMARC are aligned for. Changing the From/Reply-To address before a UA
+mailbox exists breaks SMTP auth and stops report delivery outright.
+TODO: switch SMTP_USER / SMTP_REPLY_TO to the @bizcheck.com.ua mailbox once it
+is provisioned and its DNS records pass — env vars only, no code change needed.
 
 Not configured? Sending is skipped and the queued task logs a warning.
 """
@@ -32,7 +39,8 @@ log = logging.getLogger(__name__)
 # Content-ID used for the inline (embedded) logo. Embedding the logo as a
 # `cid:` part instead of a remote <img src="https://..."> removes two spam
 # signals: an external image fetch, and a cross-domain image. Fetched once,
-# then cached. (Logo + From + links all stay on bizcheck.md.)
+# then cached. (Logo and every link point at bizcheck.com.ua; the From/Reply-To
+# mailbox is still office@bizcheck.md — see the module docstring.)
 _LOGO_CID = "reportlogo"
 _logo_cache: dict[str, bytes | None] = {}
 
@@ -84,7 +92,11 @@ def _build_message(
     from_name = _env("SMTP_FROM_NAME", "Crowe Turcan Mikhailenko")
     from_addr = _env("SMTP_USER")
     reply_to = _env("SMTP_REPLY_TO") or from_addr
-    from_domain = from_addr.split("@")[-1] if "@" in from_addr else "bizcheck.md"
+    # Normally the domain comes straight from the From address (today:
+    # bizcheck.md, the only mailbox that exists). The literal below is only a
+    # last-ditch fallback for a misconfigured SMTP_USER with no "@" — in that
+    # case there is no From domain to align with, so use the site domain.
+    from_domain = from_addr.split("@")[-1] if "@" in from_addr else "bizcheck.com.ua"
 
     msg["Subject"] = subject
     msg["From"] = formataddr((from_name, from_addr))

@@ -285,6 +285,18 @@ class TestEmailService:
         # A PDF attachment is present.
         assert any(p.get_filename() == "r.pdf" for p in msg.iter_attachments())
 
+    def test_build_message_message_id_falls_back_to_site_domain(self, monkeypatch):
+        """A misconfigured SMTP_USER (no "@") has no From domain to align with,
+        so the Message-ID falls back to the site domain — bizcheck.com.ua, not
+        the old .md one. The real mailbox stays @bizcheck.md; this is only the
+        degenerate branch."""
+        from services import email_service as es
+        monkeypatch.setenv("SMTP_USER", "office")  # no domain part at all
+        msg = es._build_message(
+            to_email="c@x.md", subject="s", html_body="<b>h</b>",
+            text_body="h", pdf_bytes=b"", pdf_filename="r.pdf")
+        assert "bizcheck.com.ua" in msg["Message-ID"]
+
     def test_build_message_without_pdf_has_no_attachment(self, monkeypatch):
         from services import email_service as es
         monkeypatch.setenv("SMTP_USER", "no-reply@bizcheck.md")

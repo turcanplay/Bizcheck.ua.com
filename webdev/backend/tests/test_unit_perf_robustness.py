@@ -12,6 +12,7 @@ monkeypatch, per CLAUDE.md):
   G. /api/health DB probe
 """
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -712,6 +713,27 @@ class TestHealth:
 # H. Branding — the UA launch
 # ---------------------------------------------------------------------------
 
+# The app moved from bizcheck.md to bizcheck.com.ua. Two different things wear
+# the old ".md" spelling and they must NOT be conflated:
+#
+#   * the displayed brand / a link to the retired domain — a regression, the
+#     customer reads it in their inbox;
+#   * the support mailbox (office@bizcheck.md) — still live, still routed, and
+#     tracked as a separate decision. It must never make this guard red.
+#
+# So we blank out every email address first, then look for the brand in ANY
+# casing (Bizcheck.md / bizcheck.md / BIZCHECK.MD / Bizcheck.MD), which is what
+# three literal `not in` assertions used to only half-cover.
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_STALE_BRAND_RE = re.compile(r"bizcheck\.md", re.IGNORECASE)
+
+
+def stale_brand_hits(text):
+    """Occurrences of the retired `Bizcheck.md` brand, any casing, with email
+    addresses masked out so `office@bizcheck.md` does not count as branding."""
+    return _STALE_BRAND_RE.findall(_EMAIL_RE.sub(" ", text or ""))
+
+
 class TestBranding:
 
     def _render(self, **kw):
@@ -723,23 +745,63 @@ class TestBranding:
 
     def test_uk_subject_uses_the_ua_brand(self):
         subject, _, _ = self._render()
-        assert "Bizcheck.com.ua" in subject
-        assert "Bizcheck.md" not in subject
+        assert "Bizcheck.com.ua" in subject, (
+            "the uk email subject lost the live brand — this is the first "
+            f"thing a client reads in their inbox. Subject was: {subject!r}"
+        )
+        stale = stale_brand_hits(subject)
+        assert not stale, (
+            "REGRESSION: the retired 'Bizcheck.md' brand is back in the uk "
+            f"subject line (found {stale}; the match is case-insensitive, so "
+            "BIZCHECK.MD / Bizcheck.MD count too). The app lives on "
+            "bizcheck.com.ua — a .md subject line makes every outgoing report "
+            "look like it came from the old, dead site."
+        )
 
     def test_en_subject_uses_the_ua_brand(self):
         subject, _, _ = self._render(lang="en")
-        assert "Bizcheck.com.ua" in subject
-        assert "Bizcheck.md" not in subject
+        assert "Bizcheck.com.ua" in subject, (
+            "the en email subject lost the live brand — this is the first "
+            f"thing a client reads in their inbox. Subject was: {subject!r}"
+        )
+        stale = stale_brand_hits(subject)
+        assert not stale, (
+            "REGRESSION: the retired 'Bizcheck.md' brand is back in the en "
+            f"subject line (found {stale}; the match is case-insensitive, so "
+            "BIZCHECK.MD / Bizcheck.MD count too). The app lives on "
+            "bizcheck.com.ua — a .md subject line makes every outgoing report "
+            "look like it came from the old, dead site."
+        )
 
     def test_html_eyebrow_is_rebranded(self):
         _, html, _ = self._render()
-        assert "BIZCHECK.COM.UA" in html
-        assert "BIZCHECK.MD" not in html
+        assert "BIZCHECK.COM.UA" in html, (
+            "the uppercase eyebrow at the top of the HTML email must read "
+            "BIZCHECK.COM.UA — it is the most prominent brand mark in the mail"
+        )
+        stale = stale_brand_hits(html)
+        assert not stale, (
+            "REGRESSION: the retired 'Bizcheck.md' brand is back in the HTML "
+            f"email body (found {stale}, any casing). Email addresses are "
+            "masked before this check, so office@bizcheck.md cannot be the "
+            "cause — this is displayed branding or a link to the dead domain."
+        )
 
     def test_footer_points_at_the_ua_site(self):
         _, html, text = self._render()
-        assert "bizcheck.com.ua" in html
-        assert "bizcheck.com.ua" in text
+        assert "bizcheck.com.ua" in html, "HTML footer must link the live site"
+        assert "bizcheck.com.ua" in text, (
+            "the plain-text alternative part must carry the live site too — "
+            "clients on text-only mail readers see only this part"
+        )
+        for part_name, part in (("html", html), ("text", text)):
+            stale = stale_brand_hits(part)
+            assert not stale, (
+                f"REGRESSION: the retired 'Bizcheck.md' brand survives in the "
+                f"{part_name} part of the email (found {stale}, any casing, "
+                "email addresses already excluded). Both MIME parts have to "
+                "agree on the brand — a mismatch reads as a phishing tell."
+            )
 
     def test_corporate_site_url_stays_crowe_tm_md(self):
         """crowe-tm.md is the real Crowe firm site — NOT stale .md branding."""

@@ -764,6 +764,7 @@ export const translations = {
   searchSuggestions:   { uk: 'Підказки',            en: 'Suggestions' },
   searchNoResults:     { uk: 'Нічого не знайдено',         en: 'Nothing found' },
   searchSeeAll:        { uk: 'Показати всі результати', en: 'Show all results' },
+  menuQuickLabel:      { uk: 'Швидке меню',        en: 'Quick menu' },
   menuJumpAbout:       { uk: 'Про платформу',    en: 'About the platform' },
   menuJumpWhy:         { uk: 'Чому Bizcheck',      en: 'Why Bizcheck' },
   menuJumpCatalog:     { uk: 'Повний каталог',     en: 'Full catalog' },

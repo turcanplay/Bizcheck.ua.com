@@ -37,10 +37,11 @@ def bot_headers() -> dict:
 
 # --- Branding / contact -----------------------------------------------------
 # Single source of truth for the public brand + support address. Every string in
-# strings.py interpolates {site} / {contact} instead of hardcoding them, so the
-# UA launch only has to change these two values (or the env vars).
-# TODO: confirmă contactul pentru piața UA — the address below is the one
-# inherited from the MD launch and has NOT been confirmed for bizcheck.com.ua.
+# strings.py interpolates {site} / {contact} instead of hardcoding them, so a
+# market change is a two-value edit (or an env-var override).
+# TODO: confirmă contactul pentru piața UA — adresa de mai jos e cutia poștală
+# reală și funcțională a firmei; nu există încă un echivalent pe
+# bizcheck.com.ua. Păstreaz-o până primești adresa UA confirmată.
 SITE_NAME     = os.getenv("SITE_NAME", "Bizcheck.com.ua")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "office@bizcheck.md")
 

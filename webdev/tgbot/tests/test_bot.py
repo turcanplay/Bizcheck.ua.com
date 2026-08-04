@@ -6,6 +6,7 @@ Run:
     cd webdev/tgbot && venv/bin/python -m pytest -q
 """
 import base64
+import re
 
 import httpx
 import pytest
@@ -23,6 +24,25 @@ from conftest import (
 
 TOKEN = "Aa1Bb2Cc3Dd4"
 PDF_BYTES = b"%PDF-1.4 fake report"
+
+# The product moved from bizcheck.md to bizcheck.com.ua. Two different things
+# still wear the old ".md" spelling and must NOT be conflated:
+#
+#   * the displayed brand / a link to the retired domain — a regression, the
+#     Telegram user reads it verbatim;
+#   * the support mailbox (office@bizcheck.md, injected as {contact}) — still
+#     live and tracked as a separate decision. It must never fail this guard.
+#
+# Blank out email addresses first, then match the brand case-insensitively so
+# Bizcheck.md / bizcheck.md / BIZCHECK.MD / Bizcheck.MD are all caught.
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_STALE_BRAND_RE = re.compile(r"bizcheck\.md", re.IGNORECASE)
+
+
+def stale_brand_hits(text):
+    """Occurrences of the retired `Bizcheck.md` brand, any casing, with email
+    addresses masked out so `office@bizcheck.md` does not count as branding."""
+    return _STALE_BRAND_RE.findall(_EMAIL_RE.sub(" ", text or ""))
 
 
 def _report_payload(**over):
@@ -272,11 +292,31 @@ class TestLanguage:
 
     def test_no_stale_brand_or_contact_anywhere(self):
         """REGRESSION: the copy said "Bizcheck.md" and mixed two support
-        addresses (office@crowe-tm.md vs office@bizcheck.md)."""
+        addresses (office@crowe-tm.md vs office@bizcheck.md).
+
+        Checked in every language, on the raw table AND on the rendered string
+        (where {site}/{contact} have been substituted), in any casing.
+        """
         for lang, table in _STRINGS.items():
             for key, value in table.items():
-                assert "Bizcheck.md" not in value, f"{lang}.{key}"
-                assert "crowe-tm.md" not in value, f"{lang}.{key}"
+                rendered = _t(lang, key)
+                for what, text in (("raw", value), ("rendered", rendered)):
+                    stale = stale_brand_hits(text)
+                    assert not stale, (
+                        f"{lang}.{key} ({what}): the retired 'Bizcheck.md' "
+                        f"brand is back in bot copy — found {stale}. The match "
+                        "is case-insensitive, so bizcheck.md / BIZCHECK.MD / "
+                        "Bizcheck.MD all trip it; email addresses are masked "
+                        "out first, so the still-live office@bizcheck.md "
+                        "mailbox is NOT what failed here. Telegram users read "
+                        "this text verbatim and the site is bizcheck.com.ua."
+                    )
+                assert "crowe-tm.md" not in value.lower(), (
+                    f"{lang}.{key}: crowe-tm.md is the corporate Crowe site, "
+                    "not the product's support channel. The copy used to send "
+                    "users to two different addresses; bot copy must route "
+                    "support through the {contact} placeholder only."
+                )
 
     def test_missing_placeholder_does_not_crash(self):
         """A copy edit must never blow up a handler mid-flow."""

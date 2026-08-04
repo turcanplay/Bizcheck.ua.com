@@ -66,7 +66,10 @@ def main() -> int:
     if ok:
         print("✅ SENT. Now check the inbox AND the Spam folder of:", args.to)
         print("   Tip: open the message → 'Show original' (Gmail) and confirm")
-        print("   SPF=pass, DKIM=pass, DMARC=pass, and that From domain == bizcheck.md.")
+        from_domain = (_env("SMTP_USER").split("@")[-1] or "?")
+        print(f"   SPF=pass, DKIM=pass, DMARC=pass, and that From domain == {from_domain}.")
+        print("   (The site is bizcheck.com.ua, but mail still goes out from the")
+        print("    bizcheck.md mailbox — that mismatch is expected for now.)")
         return 0
 
     print("❌ FAILED. Check the logs above / SMTP credentials (app password).")
