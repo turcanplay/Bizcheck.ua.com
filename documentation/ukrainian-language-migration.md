@@ -4,7 +4,7 @@
 > of the migration, kept because it records why the schema looks the way it does and how
 > the two boot migrations work. **It is not a to-do list any more** — the migration has
 > shipped and `uk` + `en` is simply how the app works today. The deploy steps in §2 and
-> the checks in §5 were valid then; the domain has since moved to `bizcheck.ua.com` and
+> the checks in §5 were valid then; the domain has since moved to `bizcheck.com.ua` and
 > the public routes are now language-prefixed, so the URLs below have been corrected
 > in place. For the current state, read
 > [`00-overview.md`](00-overview.md) and [`deployment.md`](deployment.md).
@@ -103,7 +103,7 @@ Each one:
    -- stored language values should be only uk / en
    SELECT DISTINCT language FROM submissions;
    ```
-3. **Public site** (`https://bizcheck.ua.com`): `/` lands on `/uk/`; the **UA / EN** switch works; report, privacy policy (`/uk/privacy`) and quiz show no Romanian or Russian. The legacy `/confidentialitate` must 301 to `/uk/privacy`.
+3. **Public site** (`https://bizcheck.com.ua`): `/` lands on `/uk/`; the **UA / EN** switch works; report, privacy policy (`/uk/privacy`) and quiz show no Romanian or Russian. The legacy `/confidentialitate` must 301 to `/uk/privacy`.
 4. **Admin panel** (`/admin_bizcheck_md_crowe/`): UI is Ukrainian; per-item field markers read **(UA)** / **(EN)**.
 5. **Telegram**: client bot and the group bot (`/excel`, `/pdf`) reply in Ukrainian.
 

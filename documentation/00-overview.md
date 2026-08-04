@@ -2,7 +2,7 @@
 
 ## What BizCheck is
 
-BizCheck is a public web app (live at **https://bizcheck.ua.com**) that lets a business
+BizCheck is a public web app (live at **https://bizcheck.com.ua**) that lets a business
 owner take a **diagnostic quiz** about their company, get an **automatic scored
 report** (per-block risk zones), and receive it as a **PDF** by email or via Telegram.
 It is operated by Crowe Turcan Mikhailenko. An admin panel manages tests, questions,

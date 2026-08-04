@@ -54,7 +54,7 @@ The pre-migration paths are 301'd by nginx (`webdev/nginx.conf`), with a client-
 | `/confidentialitate`, `/termeni` | `/uk/privacy` |
 | `/plata/:kind/:slug` | `/uk/checkout/:kind/:slug` |
 
-nginx also 301s `www.bizcheck.ua.com` → `https://bizcheck.ua.com` and http → https.
+nginx also 301s `www.bizcheck.com.ua` → `https://bizcheck.com.ua` and http → https.
 
 `CookieBanner` renders on all non-admin routes.
 

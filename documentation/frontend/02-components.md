@@ -40,7 +40,7 @@ Component roles:
 - **`ReportFooter.tsx`** — Crowe branding, confidentiality notice, generation timestamp.
 
 ## Layout (`components/layout/`)
-- **`Header.tsx`** — shows the test name during quiz/report/cta (else "Bizcheck.ua.com"); UA / EN toggle; Crowe logo.
+- **`Header.tsx`** — shows the test name during quiz/report/cta (else "Bizcheck.com.ua"); UA / EN toggle; Crowe logo.
 
 ## SEO (`components/seo/`)
 - **`Seo.tsx`** — per-page `<title>`, meta description, robots, canonical, hreflang, Open Graph, Twitter card.

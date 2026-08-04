@@ -27,7 +27,7 @@ de referință, ci un jurnal al deciziilor luate în timp.
 |---|---|---|
 | 1 | **Auth fail-open** pe `/tg/feedback/*`: cu `BOT_SHARED_SECRET` gol, oricine putea posta `/feedback/reply` cu un `chat_id` ghicit. | Acum fail-closed, ca `/tg/exports/*` și `/tg/group/*`. La deploy: fără secret setat, feedback-ul dă 403. |
 | 2 | `tg_exports_bp` fără rate limit, deși servește export Excel cu PII. | `10/min`. |
-| 3 | Default-uri `bizcheck.md` într-un deploy `.ua.com`. | Migrate peste tot: backend, groupbot, frontend (canonical, hreflang, og, JSON-LD, sitemap, robots.txt) și CSP-ul din nginx. |
+| 3 | Default-uri de domeniu rămase din brandingul anterior, într-un deploy `.ua.com`. | Migrate peste tot: backend, groupbot, frontend (canonical, hreflang, og, JSON-LD, sitemap, robots.txt) și CSP-ul din nginx. |
 | 4 | **Username de bot hardcodat în frontend** (`t.me/CROWE_BIZCHECK_bot`). | Eliminat: fără token de deep-link botul nu putea identifica userul, deci fallback-ul nu recupera nimic. |
 | 5 | `pdf_ready` calculat dar ignorat de frontend. | Cablat: dacă PDF-ul nu e gata, userul e reținut cu un mesaj. |
 | 6 | `_feedback_open` ignora răspunsul — un 502 lăsa userul fără niciun mesaj. | Verifică statusul și răspunde cu o eroare (cheie nouă în `strings.py`, UK+EN). |
@@ -50,8 +50,8 @@ de referință, ci un jurnal al deciziilor luate în timp.
    atunci, rapoartele UK folosesc coperțile `*_en.pdf`.
 2. **Conținutul quiz-ului** din Postgres — netradus, descopat intenționat.
 3. **Migrațiile pe Postgres-ul de producție** — primul boot pe server e proba reală.
-4. **Identitatea SMTP** (`office@bizcheck.md`) — lăsată intenționat neatinsă (mailbox real cu
-   SPF/DKIM/DMARC). De schimbat din config când adresa nouă e pregătită.
-5. **Numele de brand `Bizcheck.md`** în titluri/`og:site_name` — e branding, nu URL; decizie de marketing.
+4. **Identitatea SMTP** — expeditorul rămâne `office@bizcheck.md`, singura cutie poștală reală
+   și configurată (SPF/DKIM/DMARC); de acolo pleacă efectiv rapoartele. Rămâne așa **până**
+   când există o adresă echivalentă pe domeniul actual — atunci se schimbă din config.
 
 > Detalii de migrare a limbii: [`ukrainian-language-migration.md`](ukrainian-language-migration.md).

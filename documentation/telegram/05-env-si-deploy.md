@@ -21,7 +21,7 @@ Token-urile **nu se pun în documentație și nu intră în git** — se seteaz�
 | `SALES_TOPIC_ID` | `backend` | **Lasă-l gol** — altfel toate testele intră într-un singur topic, în loc de topic-per-test. |
 | `BOT_SHARED_SECRET` | `backend` + `tgbot` + `groupbot` | Gate pentru `/tg/feedback/*`, `/tg/exports/*` și `/tg/group/*`. **Livrat gol — obligatoriu de setat, altfel `/register` și feedback-ul dau 403.** |
 | `FEEDBACK_SCHEDULER` | `backend` | Bucla care trimite întrebările de feedback scadente. `1` (default) = on, `0` = off. |
-| `PUBLIC_BASE_URL` | `backend` | Baza link-urilor din notificări/emailuri. De setat pe `.ua.com`. |
+| `PUBLIC_BASE_URL` | `backend` | Baza link-urilor din notificări/emailuri. De setat pe `.com.ua`. |
 | `ADMIN_PANEL_URL` | `groupbot` | Link spre panoul admin din răspunsurile botului. |
 | `BACKEND_URL` | `tgbot`, `groupbot` | `http://backend:4001` intern. |
 
@@ -37,8 +37,8 @@ SALES_BOT_TOKEN=<tokenul botului de notificare>
 BOT_SHARED_SECRET=<generat: python -c "import secrets; print(secrets.token_urlsafe(32))">
 SALES_CHAT_ID=          # GOL — altfel are prioritate peste /register
 SALES_TOPIC_ID=         # GOL — altfel nu se mai creează topic per test
-PUBLIC_BASE_URL=https://bizcheck.ua.com
-ADMIN_PANEL_URL=https://bizcheck.ua.com/admin_bizcheck_md_crowe/
+PUBLIC_BASE_URL=https://bizcheck.com.ua
+ADMIN_PANEL_URL=https://bizcheck.com.ua/admin_bizcheck_md_crowe/
 ```
 
 Rebuild: **backend + groupbot** (`tgbot` și frontend-ul nu sunt afectate de această schimbare).

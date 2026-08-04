@@ -5,7 +5,7 @@ company, get an **automatically scored report** (per-block risk zones) and recei
 it as a **PDF** by email or through Telegram. An admin panel manages tests,
 questions, templates, testimonials, FAQ, submissions and contacts.
 
-Live at **https://bizcheck.ua.com**. Operated by Crowe Turcan Mikhailenko.
+Live at **https://bizcheck.com.ua**. Operated by Crowe Turcan Mikhailenko.
 Interface languages: **Ukrainian (default) + English**.
 
 ---

@@ -1,4 +1,4 @@
-# Runbook de lansare — bizcheck.ua.com
+# Runbook de lansare — bizcheck.com.ua
 
 Documentul se urmează **de sus în jos**, o singură dată, la prima punere în producție,
 pe un server **gol**. Fiecare pas are o comandă concretă și o linie „**Verifici**" — nu
@@ -22,7 +22,7 @@ Ce **nu** e aici (linkuri, nu copii):
   `deploy.sh`, `scripts/backup-db.sh`, `scripts/export-spool.sh` și `scripts/site-mask.sh`
   se repoziționează singure în `webdev/`, dar `cron` și `docker compose` nu — de aceea
   `cd` e mereu explicit.
-- În exemple clona e la `~/BIZZCHECK_BOT` (calea folosită și în exemplele de crontab din
+- În exemple clona e la `~/BIZCHECK_COM_UA` (calea folosită și în exemplele de crontab din
   antetele scripturilor). Notat `<repo>` acolo unde poate fi orice cale.
 - Referințele la cod sunt **fără numere de linie**, intenționat: se învechesc la fiecare
   commit. Se referă la fișier + blocul numit (ex. „blocul `location /` din `nginx.conf`").
@@ -109,10 +109,10 @@ accesibil din afară, ceva a fost modificat greșit în compose — vezi §10.8.
 
 **Verifici** (de pe altă mașină):
 ```bash
-nc -vz bizcheck.ua.com 443     # deschis
-nc -vz bizcheck.ua.com 4001    # trebuie să dea „refused"/timeout
-nc -vz bizcheck.ua.com 5432    # trebuie să dea „refused"/timeout
-nc -vz bizcheck.ua.com 5173    # trebuie să dea „refused"/timeout
+nc -vz bizcheck.com.ua 443     # deschis
+nc -vz bizcheck.com.ua 4001    # trebuie să dea „refused"/timeout
+nc -vz bizcheck.com.ua 5432    # trebuie să dea „refused"/timeout
+nc -vz bizcheck.com.ua 5173    # trebuie să dea „refused"/timeout
 ```
 
 ### 1.3 Clona repo-ului
@@ -121,8 +121,8 @@ nc -vz bizcheck.ua.com 5173    # trebuie să dea „refused"/timeout
 
 ```bash
 cd ~
-git clone https://github.com/turcanplay/Bizcheck.ua.com.git BIZZCHECK_BOT
-cd ~/BIZZCHECK_BOT/webdev
+git clone https://github.com/turcanplay/Bizcheck.ua.com.git BIZCHECK_COM_UA
+cd ~/BIZCHECK_COM_UA/webdev
 ```
 
 Dacă repo-ul e privat, configurează întâi accesul (cheie SSH pe server + URL `git@github…`,
@@ -131,8 +131,8 @@ altfel deployul se blochează la cerere de parolă.
 
 **Verifici:**
 ```bash
-git -C ~/BIZZCHECK_BOT rev-parse --short HEAD
-ls ~/BIZZCHECK_BOT/webdev/deploy.sh          # trebuie să existe și să fie executabil
+git -C ~/BIZCHECK_COM_UA rev-parse --short HEAD
+ls ~/BIZCHECK_COM_UA/webdev/deploy.sh        # trebuie să existe și să fie executabil
 ```
 
 ### 1.4 Înregistrări DNS
@@ -142,12 +142,12 @@ din `.env`:
 
 | Nume | Unde apare | Obligatoriu |
 |---|---|---|
-| `bizcheck.ua.com` | `server_name` în `webdev/nginx.conf` și în `nginx-proxy.conf.example`, `frontend/public/robots.txt` | **da** |
-| `www.bizcheck.ua.com` | `server_name` în ambele fișiere — redirect 301 spre non-www | **da** (altfel redirectul n-are ce rezolva) |
+| `bizcheck.com.ua` | `server_name` în `webdev/nginx.conf` și în `nginx-proxy.conf.example`, `frontend/public/robots.txt` | **da** |
+| `www.bizcheck.com.ua` | `server_name` în ambele fișiere — redirect 301 spre non-www | **da** (altfel redirectul n-are ce rezolva) |
 
 ```
-A     bizcheck.ua.com       → <IP_PUBLIC_SERVER>
-A     www.bizcheck.ua.com   → <IP_PUBLIC_SERVER>
+A     bizcheck.com.ua       → <IP_PUBLIC_SERVER>
+A     www.bizcheck.com.ua   → <IP_PUBLIC_SERVER>
 ```
 
 `<IP_PUBLIC_SERVER>` — **de confirmat**: IP-ul nu apare nicăieri în repo.
@@ -157,8 +157,8 @@ deja pe `[::]:80` și `[::]:443` (`nginx-proxy.conf.example`).
 
 **Verifici:**
 ```bash
-dig +short bizcheck.ua.com A
-dig +short www.bizcheck.ua.com A
+dig +short bizcheck.com.ua A
+dig +short www.bizcheck.com.ua A
 ```
 Ambele trebuie să întoarcă exact IP-ul serverului. Propagarea poate dura; nu trece la §2
 înainte, altfel `certbot` eșuează.
@@ -251,12 +251,12 @@ certificate care **încă nu există**, deci `nginx -t` ar eșua. Se pornește d
 
 ```bash
 cd <repo>/webdev
-sudo cp nginx-proxy.conf.example /etc/nginx/sites-available/bizcheck.ua.com
-sudo ln -s /etc/nginx/sites-available/bizcheck.ua.com /etc/nginx/sites-enabled/
+sudo cp nginx-proxy.conf.example /etc/nginx/sites-available/bizcheck.com.ua
+sudo ln -s /etc/nginx/sites-available/bizcheck.com.ua /etc/nginx/sites-enabled/
 
 # Comentează TEMPORAR cele două blocuri `server { listen 443 ssl; … }`
 # (secțiunile 2 și 3 din fișier). Lasă intact blocul `:80`.
-sudo nano /etc/nginx/sites-available/bizcheck.ua.com
+sudo nano /etc/nginx/sites-available/bizcheck.com.ua
 
 # OBLIGATORIU după comentare — fără reload, nginx rulează încă vechiul config
 # și certbot nu are cum să servească challenge-ul din /var/www/certbot.
@@ -270,7 +270,7 @@ sudo mkdir -p /var/www/certbot
 echo probe | sudo tee /var/www/certbot/.well-known/acme-challenge/probe >/dev/null 2>&1 || \
   { sudo mkdir -p /var/www/certbot/.well-known/acme-challenge && \
     echo probe | sudo tee /var/www/certbot/.well-known/acme-challenge/probe >/dev/null; }
-curl -s http://bizcheck.ua.com/.well-known/acme-challenge/probe        # → „probe"
+curl -s http://bizcheck.com.ua/.well-known/acme-challenge/probe        # → „probe"
 sudo rm -f /var/www/certbot/.well-known/acme-challenge/probe
 ```
 
@@ -285,7 +285,7 @@ Comanda e cea din antetul fișierului `nginx-proxy.conf.example`:
 ```bash
 sudo mkdir -p /var/www/certbot
 sudo certbot certonly --webroot -w /var/www/certbot \
-     -d bizcheck.ua.com -d www.bizcheck.ua.com
+     -d bizcheck.com.ua -d www.bizcheck.com.ua
 ```
 
 **De ce contează `/.well-known/`** — două locuri, două motive:
@@ -303,17 +303,17 @@ sudo certbot certonly --webroot -w /var/www/certbot \
 După emitere, **decomentează** cele două blocuri `443` și abia apoi:
 
 ```bash
-sudo nano /etc/nginx/sites-available/bizcheck.ua.com   # scoate comentariile
+sudo nano /etc/nginx/sites-available/bizcheck.com.ua   # scoate comentariile
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
 **Verifici:**
 ```bash
-curl -sI http://bizcheck.ua.com/ | head -1          # → 301
-curl -sI https://www.bizcheck.ua.com/ | grep -i location   # → https://bizcheck.ua.com/
-echo | openssl s_client -connect bizcheck.ua.com:443 -servername bizcheck.ua.com 2>/dev/null \
+curl -sI http://bizcheck.com.ua/ | head -1          # → 301
+curl -sI https://www.bizcheck.com.ua/ | grep -i location   # → https://bizcheck.com.ua/
+echo | openssl s_client -connect bizcheck.com.ua:443 -servername bizcheck.com.ua 2>/dev/null \
   | openssl x509 -noout -dates -subject
-curl -sI https://bizcheck.ua.com/ | head -1         # → 502 (vezi mai jos)
+curl -sI https://bizcheck.com.ua/ | head -1         # → 502 (vezi mai jos)
 ```
 
 ⚠ **Un `502 Bad Gateway` aici e rezultatul CORECT.** TLS-ul funcționează (n-ai primit
@@ -385,7 +385,7 @@ webroot-ul se mută vreodată. `deploy.sh` sondează ruta **direct pe container*
 (`http://127.0.0.1:$FRONTEND_PORT/.well-known/acme-challenge/deploy-probe`) și cere **404,
 nu 401**; pe 401/403 oprește deployul cu eroare.
 
-> ⚠ O sondă pe `https://bizcheck.ua.com/.well-known/…` **nu** verifică acest lucru: cererea
+> ⚠ O sondă pe `https://bizcheck.com.ua/.well-known/…` **nu** verifică acest lucru: cererea
 > e servită de blocul `location ^~ /.well-known/` al proxy-ului din față, din
 > `/var/www/certbot`, și nu atinge niciodată containerul. Ca să testezi containerul,
 > lovește-l pe `127.0.0.1:5173` (vezi §9.1).
@@ -538,6 +538,33 @@ timeout, fără cauză vizibilă. De aceea lista acoperă și boții, nu doar ba
 > care boții mor la pornire, validează `docker-compose.yml` și verifică lanțul de build-time
 > al frontendului. Cod de ieșire 0 = totul e consistent.
 
+### 3.2b `COMPOSE_PROJECT_NAME` — obligatorie, deși niciun script nu o verifică
+
+Nu vine din `.env.example` și nici `deploy.sh`, nici `validate-deploy-config.py` nu se plâng
+de lipsa ei. O adaugi cu mâna, **acum**, înainte de primul `./deploy.sh`:
+
+```
+COMPOSE_PROJECT_NAME=bizcheckua
+```
+
+De ce e obligatorie: Docker Compose deduce numele proiectului din **directorul părinte** al
+fișierului compose, iar acela e `webdev` în **ambele** clone de pe server — și în asta, și în
+cea a celuilalt produs (bizcheck.md), care rulează pe aceeași mașină. Fără variabilă, un
+`docker compose up` dat din directorul ăsta nu creează un stack nou: îl **adoptă pe cel viu al
+celuilalt produs** — aceleași nume de containere (`webdev-*`) și, mai grav, **același volum de
+bază de date** (`webdev_pgdata`). Cu variabila setată, containerele se numesc `bizcheckua-*`,
+iar volumul e `bizcheckua_pgdata`, complet separat.
+
+⚠ **Simptomul e înșelător.** Compose nu avertizează în niciun fel că a preluat stack-ul altcuiva;
+scrie doar `Recreating …` și iese cu 0. Deployul „reușește", iar ce s-a întâmplat se vede abia
+când constați că baza celuilalt produs a fost migrată peste.
+
+**Verifici** (acum, pe fișier; verificarea pe containere vine la 4.4):
+```bash
+cd <repo>/webdev
+grep '^COMPOSE_PROJECT_NAME=' .env      # → COMPOSE_PROJECT_NAME=bizcheckua
+```
+
 ### 3.3 Variabile cu PLACEHOLDER care TREBUIE schimbate
 
 Astea vin din `.env.example` cu valori care nu funcționează în producție. Coloana „semnal"
@@ -567,19 +594,19 @@ goală. `.env.example` livrează `BOT_SHARED_SECRET=` (linie prezentă, valoare 
 `ALLOWED_HOSTS`, `PUBLIC_BASE_URL` și `SMTP_REPLY_TO`.
 
 `SMTP_USER` / `SMTP_REPLY_TO` sunt marcate cu `TODO` chiar în sursă (`.env.example`,
-`docker-compose.yml`): vechile adrese `@bizcheck.md` nu mai sunt valabile pentru piața
-Ucraina. **Adresa reală UA — de confirmat.**
+`docker-compose.yml`): adresa de expeditor pentru piața Ucraina nu e încă stabilită.
+**Adresa reală — de confirmat înainte de a porni livrarea pe email** (vezi 1.5).
 
-### 3.4 Variabile care trebuie doar confirmate (defaulturile sunt deja `.ua.com`)
+### 3.4 Variabile care trebuie doar confirmate (defaulturile sunt deja `.com.ua`)
 
 Verifică, nu schimba fără motiv:
 
 ```
-CORS_ORIGIN=https://bizcheck.ua.com
-ALLOWED_HOSTS=bizcheck.ua.com,www.bizcheck.ua.com,backend,localhost,127.0.0.1
-PUBLIC_BASE_URL=https://bizcheck.ua.com
-ADMIN_PANEL_URL=https://bizcheck.ua.com/admin_bizcheck_md_crowe/
-EMAIL_LOGO_URL=https://bizcheck.ua.com/logo_email.png
+CORS_ORIGIN=https://bizcheck.com.ua
+ALLOWED_HOSTS=bizcheck.com.ua,www.bizcheck.com.ua,backend,localhost,127.0.0.1
+PUBLIC_BASE_URL=https://bizcheck.com.ua
+ADMIN_PANEL_URL=https://bizcheck.com.ua/admin_bizcheck_md_crowe/
+EMAIL_LOGO_URL=https://bizcheck.com.ua/logo_email.png
 NODE_ENV=production
 FRONTEND_PORT=5173
 ```
@@ -601,7 +628,7 @@ FRONTEND_PORT=5173
                     # Se decomentează DOAR la pasul 5, după ce ai creat rolul dedicat.
 SALES_CHAT_ID=      # gol → /register din grup decide ținta
 SALES_TOPIC_ID=     # gol → topic separat per test (altfel toate într-unul singur)
-SITEMAP_BASE_URL=   # gol → https://bizcheck.ua.com; se setează doar pe staging
+SITEMAP_BASE_URL=   # gol → https://bizcheck.com.ua; se setează doar pe staging
 VITE_API_URL=       # gol → calea relativă /api_crowe_bizcheck prin același nginx
 ```
 
@@ -629,7 +656,7 @@ Toate sunt opționale: dacă lipsesc, buildul reușește și doar loghează un a
 
 | Variabilă | Valoarea de producție | Efectul dacă e goală |
 |---|---|---|
-| `SITEMAP_API_URL` | `https://bizcheck.ua.com/api_crowe_bizcheck` | `sitemap.xml` conține doar rutele statice, iar `/uk/test/<slug>` și `/uk/templates/<slug>` nu sunt pre-randate → crawlerele fără JS văd shellul generic |
+| `SITEMAP_API_URL` | `https://bizcheck.com.ua/api_crowe_bizcheck` | `sitemap.xml` conține doar rutele statice, iar `/uk/test/<slug>` și `/uk/templates/<slug>` nu sunt pre-randate → crawlerele fără JS văd shellul generic |
 | `SITEMAP_BASE_URL` | *(gol)* | se folosește domeniul canonic din `frontend/scripts/lib/routing.mjs` |
 | `VITE_API_URL` | *(gol)* | SPA-ul cheamă `/api_crowe_bizcheck`, calea relativă servită de același nginx — corect în producție |
 
@@ -673,10 +700,11 @@ grep -cE '^(DB_PASSWORD|JWT_SECRET|JWT_REFRESH_SECRET|ADMIN_USERNAME|ADMIN_PASSW
 grep -cE '^(DB_PASSWORD|JWT_SECRET|JWT_REFRESH_SECRET|ADMIN_USERNAME|ADMIN_PASSWORD|PII_ENCRYPTION_KEY|TELEGRAM_BOT_TOKEN|SALES_BOT_TOKEN)=.+' .env
 
 # 4. Cele pe care deploy.sh NU le verifică — uită-te cu ochii la ele
+grep -E '^COMPOSE_PROJECT_NAME=bizcheckua$' .env # → OBLIGATORIU o linie (§3.2b)
 grep -E '^(SMTP_USER|SMTP_REPLY_TO)=' .env       # → nu trebuie să conțină @example.
 grep -E '^TELEGRAM_BOT_USERNAME=.+' .env         # → username real, fără `@`, nu YOUR_…
 grep -E '^BOT_SHARED_SECRET=.+' .env             # → trebuie să întoarcă o linie
-grep -E '^SITEMAP_API_URL=.+' .env               # → https://bizcheck.ua.com/api_crowe_bizcheck
+grep -E '^SITEMAP_API_URL=.+' .env               # → https://bizcheck.com.ua/api_crowe_bizcheck
 ```
 
 Dacă `deploy.sh` moare aici, mesajul spune exact ce variabilă e de vină — nu mai există
@@ -803,18 +831,23 @@ cd <repo>/webdev
 docker compose ps                       # 5 servicii (db, backend, frontend, tgbot, groupbot): Up (healthy)
 docker compose logs --tail=50 backend   # fără traceback, fără "FATAL:"
 
+# Stack-ul e al ACESTUI produs, nu al celuilalt de pe server (§3.2b):
+docker compose ps --format '{{.Name}}'  # → toate încep cu `bizcheckua-`, NU cu `webdev-`
+docker volume ls | grep pgdata          # → bizcheckua_pgdata (un `webdev_pgdata` recreat
+                                        #   acum înseamnă că ai pornit peste stack-ul altui produs)
+
 # Backendul e viu și vede baza (health face un SELECT 1 real; 503 dacă Postgres tace)
 curl -fsS http://127.0.0.1:5173/api_crowe_bizcheck/health      # → {"status":"ok"}
-curl -fsS https://bizcheck.ua.com/api_crowe_bizcheck/health    # → idem, prin proxy + TLS
+curl -fsS https://bizcheck.com.ua/api_crowe_bizcheck/health    # → idem, prin proxy + TLS
 
 # Masca — ABIA ACUM are sens, containerul există:
 ./scripts/site-mask.sh status                                  # „PORNITĂ", fără avertismente
-curl -sI https://bizcheck.ua.com/ | head -1                    # → 401
-curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag       # → noindex, nofollow, …
-curl -sI -u crowe:<parola> https://bizcheck.ua.com/ | head -1  # → 200
-curl -sI https://bizcheck.ua.com/robots.txt | head -1          # → 200 (rămâne citibil)
-curl -sI https://bizcheck.ua.com/sitemap.xml | head -1         # → 401 (deliberat, §2.5)
-curl -sI https://bizcheck.ua.com/healthz | head -1             # → 200
+curl -sI https://bizcheck.com.ua/ | head -1                    # → 401
+curl -sI https://bizcheck.com.ua/ | grep -i x-robots-tag       # → noindex, nofollow, …
+curl -sI -u crowe:<parola> https://bizcheck.com.ua/ | head -1  # → 200
+curl -sI https://bizcheck.com.ua/robots.txt | head -1          # → 200 (rămâne citibil)
+curl -sI https://bizcheck.com.ua/sitemap.xml | head -1         # → 401 (deliberat, §2.5)
+curl -sI https://bizcheck.com.ua/healthz | head -1             # → 200
 
 # ACME pe CONTAINER (nu prin proxy — vezi avertismentul din §2.5):
 curl -sI http://127.0.0.1:5173/.well-known/acme-challenge/probe | head -1   # → 404, NU 401
@@ -929,7 +962,7 @@ docker compose logs -f backend      # migrate() trebuie să treacă fără erori
 #      'bizcheck_app', dar backendul rulează cu 'postgres'" → .env e ignorat.
 
 # 6. Smoke test.
-curl -fsS https://bizcheck.ua.com/api_crowe_bizcheck/health
+curl -fsS https://bizcheck.com.ua/api_crowe_bizcheck/health
 ```
 
 **Rollback** (instantaneu, fără pierdere de date): șterge sau comentează linia
@@ -1083,7 +1116,7 @@ completat intră în **același** topic.
 Fără conținut, site-ul se ridică și e navigabil, dar fiecare secțiune arată o stare goală și
 **niciun test nu poate fi început**.
 
-Panoul: `https://bizcheck.ua.com/admin_bizcheck_md_crowe/`
+Panoul: `https://bizcheck.com.ua/admin_bizcheck_md_crowe/`
 
 ⚠ Cât timp masca e pornită, browserul cere **întâi** parola Basic (3.7), apoi urmează
 login-ul normal de admin. E dublă autentificare intenționată (§2.5).
@@ -1195,9 +1228,9 @@ cd <repo>/webdev
 
 ```bash
 ./scripts/site-mask.sh status                               # „OPRITĂ"
-curl -sI https://bizcheck.ua.com/ | head -1                 # 200
-curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag    # NICIO linie
-curl -sI https://bizcheck.ua.com/sitemap.xml | head -1      # 200
+curl -sI https://bizcheck.com.ua/ | head -1                 # 200
+curl -sI https://bizcheck.com.ua/ | grep -i x-robots-tag    # NICIO linie
+curl -sI https://bizcheck.com.ua/sitemap.xml | head -1      # 200
 ```
 
 Dacă `x-robots-tag` încă apare, imaginea de frontend e mai veche decât `nginx.conf` sau
@@ -1211,7 +1244,7 @@ scutește de regenerarea parolelor dacă vrei să repui masca (staging, hotfix).
 ### 8.1 Cron
 
 Ambele linii sunt cele documentate în antetele scripturilor. Înlocuiește
-`/home/USER/BIZZCHECK_BOT` cu calea reală a clonei.
+`/home/USER/BIZCHECK_COM_UA` cu calea reală a clonei.
 
 ```bash
 crontab -e
@@ -1219,10 +1252,10 @@ crontab -e
 
 ```cron
 # Backup DB zilnic la 03:15
-15 3 * * * cd /home/USER/BIZZCHECK_BOT/webdev && ./scripts/backup-db.sh >> backups/backup.log 2>&1
+15 3 * * * cd /home/USER/BIZCHECK_COM_UA/webdev && ./scripts/backup-db.sh >> backups/backup.log 2>&1
 
 # Santinelă zilnică pe spoolul de export, 04:30
-30 4 * * * cd /home/USER/BIZZCHECK_BOT/webdev && ./scripts/export-spool.sh >> backups/export-spool.log 2>&1
+30 4 * * * cd /home/USER/BIZCHECK_COM_UA/webdev && ./scripts/export-spool.sh >> backups/export-spool.log 2>&1
 ```
 
 Directorul `backups/` există deja — l-a creat `deploy.sh` la §4. (Dacă din vreun motiv rulezi
@@ -1286,9 +1319,9 @@ returned by …*").
 
 **Verifici:**
 ```bash
-curl -s https://bizcheck.ua.com/robots.txt
-curl -s https://bizcheck.ua.com/sitemap.xml | head -20
-curl -s https://bizcheck.ua.com/ | grep -E '<title>|hreflang'
+curl -s https://bizcheck.com.ua/robots.txt
+curl -s https://bizcheck.com.ua/sitemap.xml | head -20
+curl -s https://bizcheck.com.ua/ | grep -E '<title>|hreflang'
 ```
 În `sitemap.xml` trebuie să apară un `<loc>` pentru fiecare `/uk/test/<slug>` și
 `/en/test/<slug>` activ.
@@ -1298,10 +1331,10 @@ curl -s https://bizcheck.ua.com/ | grep -E '<title>|hreflang'
 Pașii compleți (sursa: `SEO_GUIDE.md`, secțiunea 1):
 
 1. <https://search.google.com/search-console>
-2. „Add property" → **Domain property** → `bizcheck.ua.com`
+2. „Add property" → **Domain property** → `bizcheck.com.ua`
 3. Adaugă în DNS TXT-ul de verificare (`google-site-verification=…`). Propagare 5–30 min.
 4. „Verify"
-5. **Sitemaps** → adaugă `sitemap.xml` → devine `https://bizcheck.ua.com/sitemap.xml`
+5. **Sitemaps** → adaugă `sitemap.xml` → devine `https://bizcheck.com.ua/sitemap.xml`
 6. Verifică raportul **hreflang** că perechea `uk` ↔ `en` e reciprocă
 7. Rezultatele în „Pages" / „Performance" apar în 24–72 h
 
@@ -1327,33 +1360,33 @@ răspund `401` — vezi 4.4 pentru varianta de verificare de dinainte de lansare
 ```bash
 cd <repo>/webdev
 docker compose ps                       # 5 servicii, toate healthy
-curl -sI https://bizcheck.ua.com/ | head -1                          # 200
-curl -sI http://bizcheck.ua.com/ | head -1                           # 301
-curl -sI https://www.bizcheck.ua.com/ | grep -i location             # → https://bizcheck.ua.com/
-curl -fsS https://bizcheck.ua.com/api_crowe_bizcheck/health          # {"status":"ok"}
-curl -sI https://bizcheck.ua.com/robots.txt | head -1                # 200
-curl -sI https://bizcheck.ua.com/sitemap.xml | head -1               # 200
-curl -sI https://bizcheck.ua.com/healthz | head -1                   # 200
+curl -sI https://bizcheck.com.ua/ | head -1                          # 200
+curl -sI http://bizcheck.com.ua/ | head -1                           # 301
+curl -sI https://www.bizcheck.com.ua/ | grep -i location             # → https://bizcheck.com.ua/
+curl -fsS https://bizcheck.com.ua/api_crowe_bizcheck/health          # {"status":"ok"}
+curl -sI https://bizcheck.com.ua/robots.txt | head -1                # 200
+curl -sI https://bizcheck.com.ua/sitemap.xml | head -1               # 200
+curl -sI https://bizcheck.com.ua/healthz | head -1                   # 200
 
 # Masca de pre-lansare — rulează ASTA înainte să anunți lansarea (§8.0, §10.9)
 ./scripts/site-mask.sh status                                        # „OPRITĂ"
-curl -sI https://bizcheck.ua.com/ | grep -i x-robots-tag             # NICIO linie
+curl -sI https://bizcheck.com.ua/ | grep -i x-robots-tag             # NICIO linie
 
 # ACME — DOUĂ sonde diferite, pentru două straturi diferite:
 #  a) proxy-ul din față, care servește challenge-ul real din /var/www/certbot
-curl -sI https://bizcheck.ua.com/.well-known/acme-challenge/probe | head -1   # 404
+curl -sI https://bizcheck.com.ua/.well-known/acme-challenge/probe | head -1   # 404
 #  b) containerul de frontend — singurul loc unde masca ar putea bloca ACME.
 #     Sonda (a) NU atinge containerul, deci nu verifică asta.
 curl -sI http://127.0.0.1:5173/.well-known/acme-challenge/probe | head -1     # 404, NU 401
 
 # Redirecturile 301 pentru rutele vechi (blocurile `location` din nginx.conf)
 for p in /confidentialitate /termeni /test/x /sablon/x /plata/test/x; do
-  printf '%-22s ' "$p"; curl -sI "https://bizcheck.ua.com$p" | awk '/^[Ll]ocation/{print $2}'
+  printf '%-22s ' "$p"; curl -sI "https://bizcheck.com.ua$p" | awk '/^[Ll]ocation/{print $2}'
 done
 # așteptat: /uk/privacy, /uk/privacy, /uk/test/x, /uk/templates/x, /uk/checkout/test/x
 
 # Headere de securitate
-curl -sI https://bizcheck.ua.com/ | grep -iE 'strict-transport|content-security|x-content-type|referrer-policy'
+curl -sI https://bizcheck.com.ua/ | grep -iE 'strict-transport|content-security|x-content-type|referrer-policy'
 
 # Nimic în afară de 80/443 nu trebuie să fie accesibil din exterior (§1.2)
 curl -s --max-time 5 http://<IP_PUBLIC_SERVER>:4001/api/health   # trebuie să eșueze
@@ -1363,7 +1396,7 @@ nc -vz <IP_PUBLIC_SERVER> 5432                                   # trebuie să e
 
 ### 9.2 În browser
 
-- [ ] `https://bizcheck.ua.com/` se încarcă **fără să ceară user/parolă**, lacătul e verde,
+- [ ] `https://bizcheck.com.ua/` se încarcă **fără să ceară user/parolă**, lacătul e verde,
       se redirectează la `/uk/`
 - [ ] Comutatorul **UA / EN** schimbă limba și URL-ul (`/uk/…` ↔ `/en/…`)
 - [ ] Catalogul afișează testul creat la pasul 7
@@ -1373,7 +1406,7 @@ nc -vz <IP_PUBLIC_SERVER> 5432                                   # trebuie să e
       ai lăsat flagul OFF (pasul 7.4)
 - [ ] `/uk/privacy` se deschide
 - [ ] Bannerul de cookie apare și consimțământul se reține
-- [ ] `https://bizcheck.ua.com/admin_bizcheck_md_crowe/` cere login (o **singură** dată, cel de
+- [ ] `https://bizcheck.com.ua/admin_bizcheck_md_crowe/` cere login (o **singură** dată, cel de
       admin) și acceptă `ADMIN_USERNAME` / `ADMIN_PASSWORD`
 - [ ] În DevTools → Application → Cookies: există `admin_session` (httpOnly) și `admin_csrf`;
       în `localStorage` **nu** există niciun token de sesiune

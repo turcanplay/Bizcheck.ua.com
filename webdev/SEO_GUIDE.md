@@ -1,10 +1,10 @@
-# SEO Bizcheck.ua.com — ghid de operare (piața Ucraina)
+# SEO Bizcheck.com.ua — ghid de operare (piața Ucraina)
 
 Acest document conține pașii **off-page** pe care codul NU îi poate face automat.
 Trebuie executați manual, o singură dată, după deploy. Restul SEO-ului se
 regenerează la fiecare build.
 
-Piața țintă: **Ucraina**. Domeniu: `https://bizcheck.ua.com`. Limbi: **uk** (default) + **en**.
+Piața țintă: **Ucraina**. Domeniu: `https://bizcheck.com.ua`. Limbi: **uk** (default) + **en**.
 Toate semnalele de geo/limbă din cod au fost mutate de pe Moldova pe Ucraina.
 
 ---
@@ -44,10 +44,10 @@ se va conecta exact în `applyAnalyticsConsent()`. Meta Pixel (marketing) nu a f
 
 1. <https://search.google.com/search-console>
 2. Login cu contul Google al firmei
-3. „Add property" → **Domain property** → `bizcheck.ua.com`
+3. „Add property" → **Domain property** → `bizcheck.com.ua`
 4. Adaugă în DNS TXT-ul de verificare (`google-site-verification=…`). Propagarea durează 5–30 min.
 5. „Verify"
-6. **Sitemaps** → adaugă `sitemap.xml` → devine `https://bizcheck.ua.com/sitemap.xml`
+6. **Sitemaps** → adaugă `sitemap.xml` → devine `https://bizcheck.com.ua/sitemap.xml`
 7. Verifică raportul de **hreflang** că perechea uk↔en e reciprocă.
 8. Rezultatele în „Pages" / „Performance" apar în 24–72h.
 
@@ -55,12 +55,12 @@ Notă: nu există un Search Console separat „pentru google.com.ua" — Google 
 Search Console global, iar country targeting manual nu mai există pentru domenii generice.
 Semnalul de geo vine din hreflang + limba conținutului + backlinks locali.
 `google.com.ua` e doar interfața locală de căutare, utilă pentru verificat manual poziții
-(`site:bizcheck.ua.com` pe <https://www.google.com.ua>).
+(`site:bizcheck.com.ua` pe <https://www.google.com.ua>).
 
 ### 2. Google Analytics 4
 
-1. <https://analytics.google.com> → „Create property" → „Bizcheck.ua.com"
-2. Property type **Web**, URL `https://bizcheck.ua.com`, fus orar Europe/Kyiv, monedă UAH
+1. <https://analytics.google.com> → „Create property" → „Bizcheck.com.ua"
+2. Property type **Web**, URL `https://bizcheck.com.ua`, fus orar Europe/Kyiv, monedă UAH
 3. Primești `G-XXXXXXXXXX`
 4. Trimite-l → se conectează în `applyAnalyticsConsent()` (gated pe consimțământul „Statistici")
    și se adaugă `https://www.googletagmanager.com` în CSP din `nginx.conf`
@@ -68,7 +68,7 @@ Semnalul de geo vine din hreflang + limba conținutului + backlinks locali.
 ### 3. Bing Webmaster Tools — bonus rapid
 
 1. <https://www.bing.com/webmasters>
-2. Add site `https://bizcheck.ua.com` → **Import from Google Search Console** (un click)
+2. Add site `https://bizcheck.com.ua` → **Import from Google Search Console** (un click)
 3. Submit sitemap
 
 Bing are cotă mică în UA, dar e gratis și alimentează și DuckDuckGo.
@@ -99,7 +99,7 @@ au devenit spam și fac mai mult rău decât bine).
 | **Camere de comerț / asociații de business locale** | backlinks de autoritate | medie | **de verificat** — depinde de statutul legal al firmei în UA |
 
 Regula pentru fiecare înregistrare:
-- URL-ul principal = `https://bizcheck.ua.com` (NU `crowe-tm.md` — vrem autoritate pe domeniul nou)
+- URL-ul principal = `https://bizcheck.com.ua` (NU `crowe-tm.md` — vrem autoritate pe domeniul nou)
 - Categorie: „аудит", „бізнес-консалтинг", „юридичні послуги" sau cea mai apropiată
 - Descriere 100–200 cuvinte **în ucraineană**, cu keywords integrate natural
 
@@ -139,9 +139,9 @@ La 2–4 săptămâni după deploy + Search Console verificat:
 1. **Search Console → Performance** — clicks, impressions, CTR, poziție medie per keyword.
    Filtrează pe „Country: Ukraine" ca să vezi doar piața relevantă.
 2. **Search Console → Pages** — indexate vs descoperite-neindexate
-3. **PageSpeed Insights** <https://pagespeed.web.dev/?url=https%3A%2F%2Fbizcheck.ua.com> —
+3. **PageSpeed Insights** <https://pagespeed.web.dev/?url=https%3A%2F%2Fbizcheck.com.ua> —
    lunar; țintă LCP < 2.5s, CLS < 0.1, INP < 200ms
-4. `site:bizcheck.ua.com` pe <https://www.google.com.ua>
+4. `site:bizcheck.com.ua` pe <https://www.google.com.ua>
 5. **Rich Results Test** <https://search.google.com/test/rich-results> — verifică pe landing
    că `FAQPage` e valid (e emis dinamic, deci depinde de ce FAQ e activ în DB)
 
@@ -162,9 +162,9 @@ docker compose build --no-cache frontend
 docker compose up -d frontend
 
 # Verificare
-curl -s https://bizcheck.ua.com/robots.txt
-curl -s https://bizcheck.ua.com/sitemap.xml | head -20
-curl -s https://bizcheck.ua.com/ | grep -E '<title>|hreflang|"areaServed"|"priceCurrency"'
+curl -s https://bizcheck.com.ua/robots.txt
+curl -s https://bizcheck.com.ua/sitemap.xml | head -20
+curl -s https://bizcheck.com.ua/ | grep -E '<title>|hreflang|"areaServed"|"priceCurrency"'
 ```
 
 ---
@@ -178,8 +178,8 @@ curl -s https://bizcheck.ua.com/ | grep -E '<title>|hreflang|"areaServed"|"price
   Până atunci `summary_large_image` va fi degradat de Facebook/X la un card mic.
 - **Datele de contact sunt încă moldovenești.** `frontend/src/config/contact.ts` centralizează
   `office@bizcheck.md`, `+373 79 027 317` și `crowe-tm.md`. Un email/telefon `+373` pe un site
-  `.ua.com` e un semnal de neîncredere pentru utilizatorii ucraineni și pentru E-E-A-T.
-  **Prioritate mare:** obține un email `@bizcheck.ua.com` și un număr `+380`, apoi schimbă
+  `.com.ua` e un semnal de neîncredere pentru utilizatorii ucraineni și pentru E-E-A-T.
+  **Prioritate mare:** obține un email `@bizcheck.com.ua` și un număr `+380`, apoi schimbă
   doar acel fișier — restul aplicației importă din el.
 - **`crowe-tm.md` a fost păstrat** — e site-ul real al firmei membre Crowe, deci un link
   legitim. Dacă apare un site ucrainean al grupului, schimbă `COMPANY_WEBSITE` în `contact.ts`.

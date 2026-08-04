@@ -2,7 +2,7 @@
 
 ## One codebase in this repo
 
-- `webdev/` — the public web app: Flask backend + React+Vite SPA + nginx + two Telegram bot services (`webdev/tgbot/` for clients, `webdev/groupbot/` for the internal sales group). This is what users hit at https://bizcheck.ua.com.
+- `webdev/` — the public web app: Flask backend + React+Vite SPA + nginx + two Telegram bot services (`webdev/tgbot/` for clients, `webdev/groupbot/` for the internal sales group). This is what users hit at https://bizcheck.com.ua.
 
 There is no longer a second application. The old standalone aiogram bot in `src/`, and the root `Dockerfile` / `docker-compose.yml` / `requirements.txt` / `pytest.ini` that served it, have been deleted; its schema is archived at `documentation/legacy/schema.sql`. Anything you find that still describes it is stale — fix it rather than following it.
 
