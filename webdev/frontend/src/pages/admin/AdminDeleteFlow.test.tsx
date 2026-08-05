@@ -42,6 +42,7 @@ const ITEM: AdminFaqItem = {
   answer_en: 'Yes.',
   order_index: 0,
   is_active: true,
+  created_at: '2026-08-05T00:00:00Z',
 };
 
 let confirmSpy: ReturnType<typeof vi.spyOn>;
