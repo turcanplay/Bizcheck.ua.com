@@ -227,8 +227,25 @@ export default function CtaPage() {
   useEffect(() => {
     if (!report || !submissionId || pdfSavedRef.current) return;
     pdfSavedRef.current = true;
-    const timer = setTimeout(() => generateAndSavePdf(), 3000);
-    return () => clearTimeout(timer);
+    // A flat 3s here was a guess at "the report DOM has rendered by now", and
+    // every user paid it in full even when the DOM was ready on the first
+    // frame. The condition is observable — the same scrollHeight check
+    // generateAndSavePdf already uses — so poll for it instead and keep the
+    // old 3s only as the ceiling, which makes this strictly faster.
+    let cancelled = false;
+    let rafId = 0;
+    const deadline = Date.now() + 3000;
+    const poll = () => {
+      if (cancelled) return;
+      const el = reportRef.current;
+      if ((el && el.scrollHeight >= 100) || Date.now() >= deadline) {
+        generateAndSavePdf();
+        return;
+      }
+      rafId = requestAnimationFrame(poll);
+    };
+    rafId = requestAnimationFrame(poll);
+    return () => { cancelled = true; cancelAnimationFrame(rafId); };
   }, [report, submissionId, generateAndSavePdf]);
 
   function handleSelectMethod(m: DeliveryMethod) {

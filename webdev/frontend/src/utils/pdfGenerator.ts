@@ -49,8 +49,25 @@ export async function generateFullPdf({
     // CTA page for the 800ms warmup window.
     wrapper.style.cssText = `position:fixed;top:0;left:-100000px;width:${renderWidth}px;overflow:visible;pointer-events:none;height:auto;`;
     rootEl.style.cssText = `width:${renderWidth}px;overflow:visible;background:#fff;`;
-    // Longer wait to let fonts, images, and nested layouts settle.
-    await new Promise(r => setTimeout(r, 800));
+    // A flat 800ms was a guess at "long enough". What actually has to finish is
+    // observable: a layout pass at the new 780px width, then webfont loading —
+    // glyph metrics decide line wrapping, so capturing before fonts land would
+    // paginate the report differently. The offsetHeight read must come first:
+    // font loading is only kicked off once layout asks for the glyphs, so
+    // `fonts.ready` awaited without it can resolve on a stale font set. Capped
+    // at the old 800ms so this can never be slower than what it replaces.
+    await Promise.race([
+      (async () => {
+        void rootEl.offsetHeight;
+        if (document.fonts && document.fonts.status !== 'loaded') {
+          await document.fonts.ready;
+        }
+        await new Promise<void>(res =>
+          requestAnimationFrame(() => requestAnimationFrame(() => res())),
+        );
+      })(),
+      new Promise<void>(res => setTimeout(res, 800)),
+    ]);
   }
 
   try {
@@ -77,13 +94,34 @@ export async function generateFullPdf({
         scrollX: 0,
         scrollY: 0,
         logging: false,
+        // html2canvas clones the ENTIRE documentElement before it rasterises
+        // anything, running getComputedStyle three times (element, ::before,
+        // ::after) on every node it clones. Unfiltered, each of the ~15 page
+        // captures re-cloned all ~15 pages, so the dominant cost grew with the
+        // square of the page count. Only `el` is ever drawn, and the pages are
+        // plain block siblings in `.report-pdf__body` with no sibling-dependent
+        // CSS, so dropping the others cannot change `el`'s own box; html2canvas
+        // re-measures the clone to position the render, so the shifted flow
+        // position is accounted for.
+        ignoreElements: (node: Element) =>
+          rootEl.contains(node) && !node.contains(el) && !el.contains(node),
         onclone: (doc: Document) => {
-          const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
-          styles.forEach(node => doc.head.appendChild(node.cloneNode(true)));
+          // html2canvas already clones <head>, serialising each <style>'s
+          // cssRules and preserving each <link href>. Re-appending every sheet
+          // made the browser parse the app's whole CSS bundle a second time and
+          // refetch every stylesheet, once per page. Kept only as a fallback in
+          // case a cloner ever drops styles outright.
+          if (doc.querySelectorAll('style, link[rel="stylesheet"]').length === 0) {
+            document
+              .querySelectorAll('style, link[rel="stylesheet"]')
+              .forEach(node => doc.head.appendChild(node.cloneNode(true)));
+          }
         },
       }) as HTMLCanvasElement;
 
-      if (canvas.width === 0 || canvas.height === 0) {
+      const canvasW = canvas.width;
+      const canvasH = canvas.height;
+      if (canvasW === 0 || canvasH === 0) {
         continue;
       }
 
@@ -91,13 +129,34 @@ export async function generateFullPdf({
       // low-quality fallback (jpegQuality < 0.9 signals a preference for smaller size).
       const useLossless = jpegQuality >= 0.9;
       const imgFormat = useLossless ? 'PNG' : 'JPEG';
-      const imgData = useLossless
-        ? canvas.toDataURL('image/png')
-        : canvas.toDataURL('image/jpeg', jpegQuality);
+      const mimeType = useLossless ? 'image/png' : 'image/jpeg';
+
+      // Hand jsPDF the encoded bytes directly. toDataURL base64-encodes ~1 MB
+      // per page on the main thread, and jsPDF then ran unescape +
+      // base64-decode + binaryStringToUint8Array over that same string just to
+      // get back to the bytes the canvas already had. toBlob encodes off the
+      // main thread and addImage takes a Uint8Array as-is.
+      let imgData: Uint8Array | string;
+      const blob = await new Promise<Blob | null>(res => {
+        canvas.toBlob(res, mimeType, useLossless ? undefined : jpegQuality);
+      });
+      if (blob) {
+        imgData = new Uint8Array(await blob.arrayBuffer());
+      } else {
+        imgData = useLossless
+          ? canvas.toDataURL('image/png')
+          : canvas.toDataURL('image/jpeg', jpegQuality);
+      }
+
+      // Release the backing store now. At scale 2 one page canvas is ~14 MB of
+      // RGBA; waiting for GC to notice keeps several alive at once, which is
+      // what makes a phone tab die halfway through a 15-page report.
+      canvas.width = 0;
+      canvas.height = 0;
 
       // Fit canvas to A4. Shorter pages are top-aligned (not centered),
       // so section headers always sit at the top of the printed page.
-      const canvasAspect = canvas.height / canvas.width;
+      const canvasAspect = canvasH / canvasW;
       const pageAspect = PDF_H / PDF_W;
       let drawW = PDF_W;
       let drawH = PDF_W * canvasAspect;
@@ -110,7 +169,10 @@ export async function generateFullPdf({
       }
 
       if (i > 0) reportPdf.addPage([PDF_W, PDF_H], 'p');
-      reportPdf.addImage(imgData, imgFormat, offsetX, offsetY, drawW, drawH);
+      // Explicit alias: with none, jsPDF derives one by hashing the image
+      // character by character in JS to dedupe repeats — a full extra pass over
+      // ~1 MB per page, and no two report pages are ever identical.
+      reportPdf.addImage(imgData, imgFormat, offsetX, offsetY, drawW, drawH, `pdfpage${i}`);
 
       // Overlay link annotations — only for links inside this page element
       try {
