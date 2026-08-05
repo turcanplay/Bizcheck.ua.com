@@ -85,6 +85,13 @@ Key generation: Fernet — `python -c "from cryptography.fernet import Fernet; p
 
 ## Backend scripts (`backend/scripts/`) — out of request path
 
+- **`import_test_content.py`** — programmatic content import (the equivalent of typing a test into
+  the admin panel). Loads a JSON file and creates a complete test hierarchy (blocks → questions
+  → answers) through the admin API — never SQL. Ensures sanitization, validation, and cache
+  invalidation; handles forward references via two-pass architecture (create without links, then
+  resolve and link in pass 2). Supports `--dry-run`, `--replace`, `--delay`, and `--base-url`.
+  Run inside the container: `docker compose exec backend python scripts/import_test_content.py --json
+  path/to/content.json [--dry-run]`. See [`quiz-content.md`](quiz-content.md) for full reference.
 - **`clear_quiz_content.py`** — **DESTRUCTIVE, manual only**: deletes tests/blocks/questions/answers
   from an existing DB so the quiz can be re-entered by hand in the admin panel. Interactive (type
   `DELETE` to confirm), supports `--dry-run` and `--with-submissions`. Submissions are kept and

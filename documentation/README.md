@@ -23,6 +23,7 @@ each one is scoped to a single subsystem so you never load context you won't use
 | React contexts (state) and the API client layer | [`frontend/03-state-and-api.md`](frontend/03-state-and-api.md) |
 | Scoring, PDF generation, cookies, i18n, TS types, block content | [`frontend/04-utils-and-data.md`](frontend/04-utils-and-data.md) |
 | Crowe brand design system — palette tokens, amber buttons, typography | [`frontend/05-design-system.md`](frontend/05-design-system.md) |
+| Quiz content import script, branching model, API payload field naming, the sub-question trap | [`quiz-content.md`](quiz-content.md) |
 | **Toate cele 3 suprafețe Telegram** (bot user, notificare vânzări, bot grup + `/register`, alertă eșec livrare) — set structurat cu cuprins | [`telegram/README.md`](telegram/README.md) |
 | ↳ arhivă istoric (changelog probleme rezolvate + restanțe) | [`telegram-boti-status.md`](telegram-boti-status.md) |
 | **Lansarea pe server, pas cu pas** (pregătirea serverului → DNS → TLS → `.env` → masca de pre-lansare → primul deploy → rol Postgres → boți → conținut → lansare + sitemap + Search Console → verificare finală) — runbook, în română, pentru un server gol | [`runbook-lansare.md`](runbook-lansare.md) |
