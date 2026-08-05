@@ -433,7 +433,7 @@ export const translations = {
     en: 'Crowe experts will help you carry out an in-depth risk analysis and develop a strategy to improve the efficiency of your business.',
   },
   ctaNote: {
-    uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
+    uk: 'Найближчим часом наші фахівці зв’яжуться з вами для обговорення результатів і наступних кроків.',
     en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   ctaBtn: {
@@ -447,10 +447,10 @@ export const translations = {
   ctaEmailLabel:    { uk: 'EMAIL',    en: 'EMAIL' },
   ctaTelegramLabel: { uk: 'TELEGRAM', en: 'TELEGRAM' },
   ctaWebLabel:      { uk: 'ВЕБ',      en: 'WEB' },
-  ctaCrowe: { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
+  ctaCrowe: { uk: 'Crowe Mikhailenko', en: 'Crowe Mikhailenko' },
   ctaDisclaimer: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua і має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров\'я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
-    en: 'This report is generated automatically by the Bizcheck.com.ua platform and is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua, і він має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров’я» або компетенцій компанії.\n\nПлатформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
+    en: 'This report is generated automatically by the Bizcheck.com.ua platform, and it is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.\n\nThe platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
   // Loading / empty states
@@ -629,15 +629,15 @@ export const translations = {
     en: 'Crowe experts will help you carry out an in-depth risk analysis and develop a strategy to improve the efficiency of your business.',
   },
   pdfFooterContact: {
-    uk: 'Найближчим часом наші фахівці зв\'яжуться з вами для обговорення результатів і наступних кроків.',
+    uk: 'Найближчим часом наші фахівці зв’яжуться з вами для обговорення результатів і наступних кроків.',
     en: 'Our specialists will contact you shortly to discuss the results and the next steps.',
   },
   pdfFooterConfidential: {
-    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua і має винятково ознайомлювальний характер. Він не є професійним, юридичним, фінансовим чи іншим висновком і не може розглядатися як оцінка діяльності, рівня «здоров\'я» або компетенцій компанії.',
-    en: 'This report is generated automatically by the Bizcheck.com.ua platform and is for reference purposes only. It does not constitute a professional, legal, financial or other opinion, and it cannot be regarded as an assessment of a company\'s activity, "health" or competencies.',
+    uk: 'Звіт сформовано автоматично платформою Bizcheck.com.ua, і він має винятково інформаційний характер. Він не є офіційним професійним, юридичним, фінансовим чи іншим висновком і не може вважатися оцінкою діяльності, рівня «здоров’я» або компетенцій компанії.',
+    en: 'This report is generated automatically by the Bizcheck.com.ua platform, and it is for informational purposes only. It does not constitute an official professional, legal, financial or other opinion, and it cannot be treated as an assessment of a company\'s activity, "health" or competencies.',
   },
   pdfFooterGenerated: {
-    uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу за участю профільних фахівців.',
+    uk: 'Платформа не гарантує повноту й точність результатів. Для прийняття рішень рекомендується проведення окремого аналізу із залученням профільних фахівців.',
     en: 'The platform does not guarantee the completeness and accuracy of the results. To make decisions, we recommend carrying out a separate analysis with the involvement of relevant specialists.',
   },
 
@@ -812,7 +812,7 @@ export const translations = {
 
   // Partner 2 — Moldova (croweName / croweRole predate the two-partner layout)
   croweName: { uk: 'ЦУРКАН ІВАН', en: 'IVAN TURCAN' },
-  croweRole: { uk: 'Засновник · Crowe Turcan Mikhailenko', en: 'Founder · Crowe Turcan Mikhailenko' },
+  croweRole: { uk: 'Керуючий партнер · Crowe Turcan Mikhailenko', en: 'Managing Partner · Crowe Turcan Mikhailenko' },
   croweMdBio: {
     uk: 'Розвиває практику Crowe в Республіці Молдова: супроводжує місцеві та міжнародні компанії з питань податків, права й комерційних ризиків. Робить ставку на практичні та зрозумілі рішення.',
     en: 'Leads the Crowe practice in the Republic of Moldova, supporting local and international companies on tax, legal and commercial risk. Focused on practical, clear-cut solutions.',
