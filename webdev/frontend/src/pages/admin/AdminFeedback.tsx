@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type CSSProperties } from 'react';
 import { adminApi, type TgReply, type TgContact, type FeedbackSendResult } from '@/api/admin';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 // ──────────────────────────────────────────────────────────────
 // Visual guide — explains how the whole thing works, at a glance.
@@ -151,9 +152,11 @@ export default function AdminFeedback() {
   useEffect(() => { load(); }, []);
 
   async function onDelete(r: TgReply) {
-    if (!confirm('Видалити цю відповідь?')) return;
-    await adminApi.deleteFeedback(r.id);
-    await load();
+    await confirmDelete({
+      message: 'Видалити цю відповідь?',
+      remove: () => adminApi.deleteFeedback(r.id),
+      reload: load,
+    });
   }
 
   return (

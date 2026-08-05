@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import { Link, useParams } from 'react-router-dom';
 import { adminApi, adminFetch, type AdminTemplate, type AdminTemplateFile } from '@/api/admin';
 import { pickLang } from '@/i18n/pickLang';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -78,9 +79,11 @@ export default function AdminTemplateDetail() {
   }
 
   async function deleteFile(file: AdminTemplateFile) {
-    if (!confirm(`Видалити файл "${file.filename}"?`)) return;
-    await adminApi.deleteTemplateFile(templateId, file.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити файл "${file.filename}"?`,
+      remove: () => adminApi.deleteTemplateFile(templateId, file.id),
+      reload: load,
+    });
   }
 
   async function downloadSingle(file: AdminTemplateFile) {

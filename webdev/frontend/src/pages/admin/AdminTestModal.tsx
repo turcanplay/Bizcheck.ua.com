@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { saveErrorMessage, type AdminTest, type AdminTestInput, type ReportType } from '@/api/admin';
+import { resolveZones } from '@/utils/scoring';
+import { translations } from '@/i18n/translations';
 
 interface Props {
   initial: AdminTest | null;
@@ -7,17 +9,42 @@ interface Props {
   onSave: (data: AdminTestInput, id: number | null) => Promise<void>;
 }
 
+/**
+ * The four scoring bands as the admin panel names them.
+ *
+ * Single source of truth for BOTH admin screens (this modal and the test list),
+ * and it is not a fourth invention of the vocabulary: the wording comes from
+ * `i18n/translations` — the same strings the public report prints — so the
+ * editor and the report can no longer disagree about which band is "Низький
+ * ризик". The two screens used to contradict each other outright: the list
+ * called `warn` „🟠 Низький", the modal called `safe` „🟢 Низький ризик".
+ *
+ * The admin panel is Ukrainian-only by design (no language switch), hence `.uk`.
+ * Key order is band order, highest threshold first.
+ */
+export const ZONE_LABELS = [
+  { key: 'safe',       icon: '🟢', label: translations.zoneSafe.uk },
+  { key: 'developing', icon: '🟡', label: translations.zoneDeveloping.uk },
+  { key: 'warn',       icon: '🟠', label: translations.zoneWarning.uk },
+  { key: 'risk',       icon: '🔴', label: translations.zoneRisk.uk },
+] as const;
+
 export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   const editing = !!initial;
+  // Repaired through the SAME function the report uses, so what the form shows
+  // is what `getZone()` will actually do: a missing band falls back to
+  // DEFAULT_ZONES and an inverted blob is clamped into descending order instead
+  // of being edited as-is (or, for `risk`, silently invented as 0).
+  const initialZones = resolveZones(initial?.scoring_zones);
   const [nameUk, setNameUk] = useState(initial?.name_uk ?? '');
   const [nameEn, setNameEn] = useState(initial?.name_en ?? '');
   const [descUk, setDescUk] = useState(initial?.description_uk ?? '');
   const [descEn, setDescEn] = useState(initial?.description_en ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
-  const [safe, setSafe] = useState(initial?.scoring_zones?.safe ?? 80);
-  const [developing, setDeveloping] = useState(initial?.scoring_zones?.developing ?? 70);
-  const [warn, setWarn] = useState(initial?.scoring_zones?.warn ?? 65);
-  const [risk, setRisk] = useState(initial?.scoring_zones?.risk ?? 0);
+  const [safe, setSafe] = useState(initialZones.safe);
+  const [developing, setDeveloping] = useState(initialZones.developing);
+  const [warn, setWarn] = useState(initialZones.warn);
+  const [risk, setRisk] = useState(initialZones.risk);
   // Three-state visibility: 'active' = vizibil + clickabil, 'coming_soon' =
   // vizibil cu overlay 'În curând' și buton dezactivat, 'hidden' = ascuns complet în catalog.
   type Visibility = 'active' | 'coming_soon' | 'hidden';
@@ -44,6 +71,13 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
   const [orderIndex, setOrderIndex] = useState<number>(initial?.order_index ?? 0);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const zoneFields: Record<(typeof ZONE_LABELS)[number]['key'], { value: number; set: (n: number) => void }> = {
+    safe:       { value: safe,       set: setSafe },
+    developing: { value: developing, set: setDeveloping },
+    warn:       { value: warn,       set: setWarn },
+    risk:       { value: risk,       set: setRisk },
+  };
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -170,22 +204,19 @@ export default function AdminTestModal({ initial, onClose, onSave }: Props) {
         <div className="admin-form-group">
           <label style={{ fontWeight: 600 }}>Зони оцінки (%)</label>
           <div className="admin-zones-grid">
-            <div>
-              <label style={{ fontSize: 12 }}>🟢 Низький ризик (≥%)</label>
-              <input type="number" min={0} max={100} value={safe} onChange={e => setSafe(+e.target.value)} />
-            </div>
-            <div>
-              <label style={{ fontSize: 12 }}>🟡 Помірний ризик (≥%)</label>
-              <input type="number" min={0} max={100} value={developing} onChange={e => setDeveloping(+e.target.value)} />
-            </div>
-            <div>
-              <label style={{ fontSize: 12 }}>🟠 Високий ризик (≥%)</label>
-              <input type="number" min={0} max={100} value={warn} onChange={e => setWarn(+e.target.value)} />
-            </div>
-            <div>
-              <label style={{ fontSize: 12 }}>🔴 Критичний ризик (≥%)</label>
-              <input type="number" min={0} max={100} value={risk} onChange={e => setRisk(+e.target.value)} />
-            </div>
+            {ZONE_LABELS.map(z => (
+              <div key={z.key}>
+                <label style={{ fontSize: 12 }} htmlFor={`zone-${z.key}`}>{z.icon} {z.label} (≥%)</label>
+                <input
+                  id={`zone-${z.key}`}
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={zoneFields[z.key].value}
+                  onChange={e => zoneFields[z.key].set(+e.target.value)}
+                />
+              </div>
+            ))}
           </div>
         </div>
 

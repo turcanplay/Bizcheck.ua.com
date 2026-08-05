@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { adminApi, saveErrorMessage, type AdminFaqItem, type AdminFaqInput } from '@/api/admin';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function AdminFaq() {
   const [items, setItems] = useState<AdminFaqItem[]>([]);
@@ -28,9 +29,11 @@ export default function AdminFaq() {
   }
 
   async function onDelete(f: AdminFaqItem) {
-    if (!confirm(`Видалити запитання "${f.question_uk || f.question_en}"?`)) return;
-    await adminApi.deleteFaq(f.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити запитання "${f.question_uk || f.question_en}"?`,
+      remove: () => adminApi.deleteFaq(f.id),
+      reload: load,
+    });
   }
 
   return (

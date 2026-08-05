@@ -4,6 +4,7 @@ import { buildReport, calculateBlockScore } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
 import { API_BASE } from '@/config/api';
 import { enqueueSave } from '@/utils/durableSave';
+import { readJson, writeJson, removeKey } from '@/utils/safeStorage';
 import {
   resolveBlocks,
   getTopLevelQuestions,
@@ -77,15 +78,11 @@ interface SavedState {
 }
 
 function loadSavedState(): Partial<SavedState> | null {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as Partial<SavedState>;
-  } catch { return null; }
+  return readJson<Partial<SavedState> | null>('session', SESSION_KEY, null);
 }
 
 function clearSavedState() {
-  sessionStorage.removeItem(SESSION_KEY);
+  removeKey('session', SESSION_KEY);
 }
 
 /** Build a map of db_id -> Question for fast lookup */
@@ -171,7 +168,11 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       phase, currentBlock, currentQuestionDbId, topLevelIndex,
       answers, selectedKeys, userInfo, submissionId, submissionToken, selectedTestSlug,
     };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
+    // Guarded: this runs on EVERY answer. A raw setItem throws in Safari
+    // private mode / on quota, inside an effect, and takes the quiz down —
+    // losing exactly the progress it was trying to preserve. Losing the resume
+    // snapshot is acceptable; the answers themselves go to the backend outbox.
+    writeJson('session', SESSION_KEY, state);
   }, [phase, currentBlock, currentQuestionDbId, topLevelIndex, answers, selectedKeys, userInfo, submissionId, submissionToken, selectedTestSlug]);
 
   /* Fetch available tests on mount */

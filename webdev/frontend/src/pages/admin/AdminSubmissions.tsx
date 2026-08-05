@@ -6,6 +6,7 @@ import {
   type AdminSubmission, type AdminTest,
 } from '@/api/admin';
 import { pickLang } from '@/i18n/pickLang';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 const PER_PAGE_CHOICES = [25, 50, 100, 200];
 
@@ -116,22 +117,21 @@ export default function AdminSubmissions() {
   }
 
   async function onDelete(id: number) {
-    if (!confirm('Видалити цю відповідь?')) return;
-    await adminApi.deleteSubmission(id);
-    reload();
+    await confirmDelete({
+      message: 'Видалити цю відповідь?',
+      remove: () => adminApi.deleteSubmission(id),
+      reload,
+    });
   }
 
   async function onDeleteAll() {
     if (total === 0) return;
-    // Масове видалення, НЕЗВОРОТНЕ (усі тести) — обовʼязкове підтвердження.
-    if (!confirm(`Видалити ВСІ ${total} відповідей з усіх тестів?\n\nДія є НЕЗВОРОТНОЮ.`)) return;
-    try {
-      await adminApi.deleteAllSubmissions();
-      goTo({ page: 1 }, true);
-      reload();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Помилка видалення');
-    }
+    await confirmDelete({
+      // Масове видалення, НЕЗВОРОТНЕ (усі тести) — обовʼязкове підтвердження.
+      message: `Видалити ВСІ ${total} відповідей з усіх тестів?\n\nДія є НЕЗВОРОТНОЮ.`,
+      remove: () => adminApi.deleteAllSubmissions(),
+      reload: () => { goTo({ page: 1 }, true); reload(); },
+    });
   }
 
   async function exportExcel() {

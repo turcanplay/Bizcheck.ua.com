@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { adminApi, saveErrorMessage, type AdminTestimonial, type AdminTestimonialInput } from '@/api/admin';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function AdminTestimonials() {
   const [items, setItems] = useState<AdminTestimonial[]>([]);
@@ -27,9 +28,11 @@ export default function AdminTestimonials() {
   }
 
   async function onDelete(t: AdminTestimonial) {
-    if (!confirm(`Видалити відгук "${t.name}"?`)) return;
-    await adminApi.deleteTestimonial(t.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити відгук "${t.name}"?`,
+      remove: () => adminApi.deleteTestimonial(t.id),
+      reload: load,
+    });
   }
 
   return (

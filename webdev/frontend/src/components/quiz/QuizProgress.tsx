@@ -1,16 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
+import { countAnswerableQuestions, getTopLevelQuestions } from '@/utils/quizContent';
 import './QuizProgress.css';
 
 export default function QuizProgress() {
-  const { blocks, currentBlock, answers, currentQuestionIndex, topLevelQuestionCount } = useQuiz();
+  const { blocks, currentBlock, currentQuestionIndex, topLevelQuestionCount } = useQuiz();
   const { t } = useLang();
 
-  const totalBlocks   = blocks.length;
-  const answeredCount = Object.keys(answers).length;
-  const totalQ        = blocks.reduce((s, b) => s + b.questions.length, 0);
-  const progressPct   = totalQ > 0 ? Math.round((answeredCount / totalQ) * 100) : 0;
+  const totalBlocks = blocks.length;
+
+  /* ── Progress ────────────────────────────────────────────────────────────
+   * The bar and the "3 / 21" counter sitting next to it MUST measure the same
+   * thing, otherwise they contradict each other on screen. They used to not:
+   * the counter showed a POSITION among the current block's top-level
+   * questions, while the bar showed ANSWERS COUNTED / ALL QUESTIONS — a
+   * denominator that also includes branch sub-questions the user may never be
+   * shown. On the production test (21 top-level, 25 rows) the counter reached
+   * 21/21 while the bar stopped at 84 %.
+   *
+   * The bar is therefore the counter, scaled to the whole run: the 1-based
+   * global position among ANSWERABLE (top-level) questions. Consequences:
+   *   • it cannot exceed 100 — sub-question answers move neither term;
+   *   • it is non-decreasing while moving forward, across block boundaries and
+   *     through branches (entering a sub-question holds the parent's position);
+   *   • it reads exactly 100 on the last question of the last block, which is
+   *     precisely when the counter reads N / N.
+   * Counting answers instead would drift from the counter again and, since
+   * `answers` is keyed by question id INCLUDING sub-questions, would climb past
+   * 100 % for anyone routed through a branch. */
+  const totalAnswerable = countAnswerableQuestions(blocks);
+  const questionsBefore = blocks
+    .slice(0, Math.max(0, currentBlock))
+    .reduce((s, b) => s + getTopLevelQuestions(b).length, 0);
+  const positionInBlock = Math.min(Math.max(currentQuestionIndex, 0), topLevelQuestionCount);
+  const globalPosition  = questionsBefore + positionInBlock;
+  const progressPct     = totalAnswerable > 0
+    ? Math.min(100, Math.max(0, Math.round((globalPosition / totalAnswerable) * 100)))
+    : 0;
 
   // Fade-slide title when block changes
   const [titleIn, setTitleIn]         = useState(true);
@@ -71,7 +98,13 @@ export default function QuizProgress() {
             <span className="qp__counter-slash">/</span>
             <span className="qp__counter-total">{topLevelQuestionCount}</span>
           </div>
-          <div className="qp__bar">
+          <div
+            className="qp__bar"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPct}
+          >
             <div className="qp__fill" style={{ width: `${progressPct}%` }} />
             <div className="qp__glow"  style={{ left:  `${Math.max(0, progressPct - 1)}%` }} />
           </div>

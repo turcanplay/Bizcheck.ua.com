@@ -1,8 +1,10 @@
 import { useEffect, useState, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { adminApi, type AdminTest, type AdminTestInput } from '@/api/admin';
-import AdminTestModal from './AdminTestModal';
+import AdminTestModal, { ZONE_LABELS } from './AdminTestModal';
 import { pickLang } from '@/i18n/pickLang';
+import { resolveZones } from '@/utils/scoring';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 /** Display order: active tests first, then inactive — each group by saved
  *  order_index (then id as a stable tie-breaker). */
@@ -90,9 +92,11 @@ export default function AdminTests() {
   }
 
   async function onDelete(t: AdminTest) {
-    if (!confirm(`Видалити тест "${pickLang(t, 'name', 'uk')}"? Усі пов'язані блоки та запитання буде видалено.`)) return;
-    await adminApi.deleteTest(t.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити тест "${pickLang(t, 'name', 'uk')}"? Усі пов'язані блоки та запитання буде видалено.`,
+      remove: () => adminApi.deleteTest(t.id),
+      reload: load,
+    });
   }
 
   function copyLink(slug: string) {
@@ -124,7 +128,12 @@ export default function AdminTests() {
 
       {tests.map(t => {
         const url = `${window.location.origin}/test/${t.slug}`;
-        const zones = t.scoring_zones || { safe: 80, developing: 70, warn: 65 };
+        // Same repair the report runs (`resolveZones`), NOT a private copy of
+        // the literals. This screen exists to tell the admin where the bands
+        // actually fall, so it has to agree with `getZone()`: a partial blob
+        // used to print "≥undefined%", a missing `risk` was never shown at all,
+        // and an inverted blob was echoed back raw while scoring clamped it.
+        const zones = resolveZones(t.scoring_zones);
         return (
           <div
             className={`admin-test-card${draggedId === t.id ? ' admin-test-card--dragging' : ''}${dragOverId === t.id ? ' admin-test-card--dragover' : ''}`}
@@ -164,9 +173,9 @@ export default function AdminTests() {
             </div>
 
             <div className="admin-test-card__meta">
-              <span>🟢 Безпечно: ≥{zones.safe}%</span>
-              <span>🟡 Середній: ≥{zones.developing}%</span>
-              <span>🟠 Низький: ≥{zones.warn}%</span>
+              {ZONE_LABELS.map(z => (
+                <span key={z.key}>{z.icon} {z.label}: ≥{zones[z.key]}%</span>
+              ))}
               {t.is_coming_soon
                 ? <span className="admin-badge admin-badge-blue">⏳ Незабаром</span>
                 : t.is_active

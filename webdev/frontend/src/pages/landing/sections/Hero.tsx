@@ -6,6 +6,7 @@ import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
+import { readJson, writeJson } from '@/utils/safeStorage';
 import Picture from '@/components/ui/Picture';
 import './Hero.css';
 
@@ -20,18 +21,16 @@ interface UnifiedHit {
 }
 
 function loadRecents(): string[] {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.filter(x => typeof x === 'string').slice(0, MAX_RECENT) : [];
-  } catch { return []; }
+  const arr = readJson<unknown>('local', RECENT_KEY, null);
+  return Array.isArray(arr) ? arr.filter(x => typeof x === 'string').slice(0, MAX_RECENT) : [];
 }
 function saveRecent(q: string) {
   if (!q.trim()) return;
   const cur = loadRecents().filter(x => x.toLowerCase() !== q.toLowerCase());
   cur.unshift(q.trim());
-  localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, MAX_RECENT)));
+  // Guarded: a recent-search list is a convenience. Storage full or disabled
+  // must never blow up the search submit handler.
+  writeJson('local', RECENT_KEY, cur.slice(0, MAX_RECENT));
 }
 
 const STOPWORDS = new Set(['на', 'для', 'и', 'с', 'по', 'та', 'і', 'й', 'у', 'в', 'з', 'до']);
@@ -72,13 +71,16 @@ export default function Hero() {
       .catch(() => {});
   }, []);
 
+  // Count and average come only from testimonials that actually exist. There
+  // used to be a REVIEW_BASE of 55 added on top, so the badge advertised
+  // "55+ reviews" on a site with none — the count below is now the real one,
+  // and at zero the badge falls through to its "coming soon" copy.
   const ratingStats = useMemo(() => {
-    const REVIEW_BASE = 55; // numărătoarea pornește de la 55, apoi se adaugă recenziile reale
-    if (testimonials.length === 0) return { avg: '—', avgNum: 0, count: REVIEW_BASE };
+    if (testimonials.length === 0) return { avg: '—', avgNum: 0, count: 0 };
     const sum = testimonials.reduce((s, x) => s + (x.rating || 0), 0);
     const avg = sum / testimonials.length;
-    // Comma as decimal separator (RO/RU convention): 4.5 → "4,5".
-    return { avg: avg.toFixed(1).replace('.', ','), avgNum: avg, count: REVIEW_BASE + testimonials.length };
+    // Comma as the decimal separator, per Ukrainian convention: 4.5 → "4,5".
+    return { avg: avg.toFixed(1).replace('.', ','), avgNum: avg, count: testimonials.length };
   }, [testimonials]);
 
   // Close on outside click

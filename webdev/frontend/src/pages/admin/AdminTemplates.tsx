@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { adminApi, adminFetch, type AdminTemplate, type AdminTemplateInput } from '@/api/admin';
 import AdminTemplateModal from './AdminTemplateModal';
 import { pickLang } from '@/i18n/pickLang';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState<AdminTemplate[]>([]);
@@ -35,9 +36,11 @@ export default function AdminTemplates() {
   }
 
   async function onDelete(t: AdminTemplate) {
-    if (!confirm(`Видалити шаблон "${pickLang(t, 'title', 'uk')}"? Усі прикріплені PDF-файли буде видалено.`)) return;
-    await adminApi.deleteTemplate(t.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити шаблон "${pickLang(t, 'title', 'uk')}"? Усі прикріплені PDF-файли буде видалено.`,
+      remove: () => adminApi.deleteTemplate(t.id),
+      reload: load,
+    });
   }
 
   async function downloadZip(t: AdminTemplate) {

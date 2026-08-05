@@ -3,6 +3,7 @@ import {
   adminApi,
   type AdminBlock, type AdminQuestion, type AdminQuestionInput,
 } from '@/api/admin';
+import { confirmDelete } from '@/utils/confirmDelete';
 import AdminBlockModal from './AdminBlockModal';
 import AdminQuestionModal from './AdminQuestionModal';
 
@@ -97,9 +98,11 @@ export default function AdminTestQuestions({ testId }: Props) {
     await load();
   }
   async function deleteBlock(b: AdminBlock) {
-    if (!confirm(`Видалити блок "${b.title_uk || b.title_en}"? Усі питання в ньому також буде видалено.`)) return;
-    await adminApi.deleteBlock(b.id);
-    await load();
+    await confirmDelete({
+      message: `Видалити блок "${b.title_uk || b.title_en}"? Усі питання в ньому також буде видалено.`,
+      remove: () => adminApi.deleteBlock(b.id),
+      reload: load,
+    });
   }
   async function saveQuestion(data: AdminQuestionInput, id: number | null) {
     if (id === null) await adminApi.createQuestion(data);
@@ -108,9 +111,11 @@ export default function AdminTestQuestions({ testId }: Props) {
     await load();
   }
   async function deleteQuestion(q: AdminQuestion) {
-    if (!confirm('Видалити це питання?')) return;
-    await adminApi.deleteQuestion(q.id);
-    await load();
+    await confirmDelete({
+      message: 'Видалити це питання?',
+      remove: () => adminApi.deleteQuestion(q.id),
+      reload: load,
+    });
   }
 
   // --- Drag & drop ----------------------------------------------------------

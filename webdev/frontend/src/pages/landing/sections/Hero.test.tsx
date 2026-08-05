@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import Hero from './Hero';
 import { LanguageProvider } from '@/context/LanguageContext';
 
@@ -179,5 +179,86 @@ describe('Hero <Star/> gradient ids', () => {
       .join('\n');
     expect(live).not.toContain('Math.random');
     expect(live).toContain('useId');
+  });
+});
+
+/**
+ * Recent-search persistence. The bug: `saveRecent()` called
+ * `localStorage.setItem` bare, inside the search submit handler. In Safari
+ * private mode (or once the origin's quota is full) that throws, submitSearch
+ * dies on its first line and the user's search simply never happens — the whole
+ * handler is aborted by a failed *convenience* write. It now goes through
+ * utils/safeStorage, which degrades to a no-op.
+ */
+describe('Hero recent searches survive a hostile localStorage', () => {
+  function LocationProbe() {
+    const loc = useLocation();
+    return <div data-testid="loc">{loc.pathname + loc.search}</div>;
+  }
+
+  async function renderWithLocation() {
+    localStorage.setItem('bizcheck_lang', 'uk');
+    const utils = render(
+      <MemoryRouter>
+        <LanguageProvider>
+          <Hero />
+          <LocationProbe />
+        </LanguageProvider>
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    return utils;
+  }
+
+  /** Make every write throw, the way a full/blocked store does. */
+  function breakWrites() {
+    return vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('QuotaExceededError', 'QuotaExceededError');
+    });
+  }
+
+  it('still performs the search when the write throws', async () => {
+    await renderWithLocation();
+    const spy = breakWrites();
+
+    await userEvent.type(screen.getByRole('textbox'), 'audit{Enter}');
+
+    // The navigation after saveRecent() is what the old code never reached.
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('q=audit'));
+    expect(spy).toHaveBeenCalled(); // the write really was attempted and really did throw
+    spy.mockRestore();
+  });
+
+  it('keeps the Hero mounted and usable after a failed write', async () => {
+    await renderWithLocation();
+    const spy = breakWrites();
+
+    await userEvent.type(screen.getByRole('textbox'), 'audit{Enter}');
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('q=audit'));
+
+    spy.mockRestore();
+    // Component alive: it still accepts input after the failure.
+    await userEvent.type(screen.getByRole('textbox'), 'x');
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
+
+  it('persists the search and reads it back when storage works', async () => {
+    await renderWithLocation();
+
+    await userEvent.type(screen.getByRole('textbox'), 'аудит{Enter}');
+
+    await waitFor(() =>
+      expect(JSON.parse(localStorage.getItem('bizcheck_recent_searches') ?? '[]')).toContain('аудит'),
+    );
+  });
+
+  it('ignores a corrupt recents entry instead of throwing', async () => {
+    localStorage.setItem('bizcheck_recent_searches', '{not json');
+    await renderWithLocation();
+
+    await userEvent.type(screen.getByRole('textbox'), 'audit{Enter}');
+
+    await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('q=audit'));
+    expect(JSON.parse(localStorage.getItem('bizcheck_recent_searches') ?? '[]')).toEqual(['audit']);
   });
 });
