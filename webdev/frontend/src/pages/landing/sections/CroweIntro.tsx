@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
-import type { ReactNode, SyntheticEvent } from 'react';
+import type { CSSProperties, ReactNode, SyntheticEvent } from 'react';
 import { useLang } from '@/context/LanguageContext';
 import Picture from '@/components/ui/Picture';
+import { PARTNERS } from '@/data/partners';
+import { pickLangValue } from '@/i18n/pickLang';
+import type { Lang } from '@/i18n/translations';
 import {
   CROWE_GLOBAL_LABEL,
   CROWE_GLOBAL_URL,
@@ -132,8 +135,69 @@ function PartnerCard({ photo, name, role, bio, links, visitHint, revealClass }: 
   );
 }
 
+/**
+ * One partner tile in the grid below the two managing partners.
+ *
+ * `--i` drives the staggered reveal: each tile waits a little longer than the
+ * one before it, so the row assembles left-to-right instead of all at once.
+ */
+function PartnerTile({ slug, name, role, index }: {
+  slug: string;
+  name: string;
+  role: string;
+  index: number;
+}) {
+  return (
+    <li className="crowe-team__item" style={{ '--i': index } as CSSProperties}>
+      <figure className="crowe-team__card">
+        <span className="crowe-team__frame">
+          <Picture
+            className="crowe-team__photo"
+            src={`/images/team/${slug}.jpg`}
+            alt={name}
+            width={512}
+            height={512}
+            onError={hideOnError}
+          />
+        </span>
+        <figcaption className="crowe-team__caption">
+          <span className="crowe-team__name">{name}</span>
+          <span className="crowe-team__role">{role}</span>
+        </figcaption>
+      </figure>
+    </li>
+  );
+}
+
+/** The 5-per-row partner grid. Names and roles come from src/data/partners.ts. */
+function PartnersGrid({ lang, eyebrow, title }: { lang: Lang; eyebrow: string; title: string }) {
+  return (
+    <div className="crowe-team crowe-reveal crowe-reveal--third">
+      <header className="crowe-team__header">
+        <span className="crowe__eyebrow">
+          <span className="crowe__eyebrow-dot" aria-hidden />
+          {eyebrow}
+        </span>
+        <h3 className="crowe-team__title">{title}</h3>
+      </header>
+
+      <ul className="crowe-team__grid">
+        {PARTNERS.map((p, i) => (
+          <PartnerTile
+            key={p.slug}
+            slug={p.slug}
+            name={pickLangValue(p.name.uk, p.name.en, lang)}
+            role={pickLangValue(p.role.uk, p.role.en, lang)}
+            index={i}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function CroweIntro() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -267,6 +331,8 @@ export default function CroweIntro() {
             ]}
           />
         </div>
+
+        <PartnersGrid lang={lang} eyebrow={t('croweTeamEyebrow')} title={t('croweTeamTitle')} />
       </div>
     </section>
   );

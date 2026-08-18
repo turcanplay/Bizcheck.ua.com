@@ -828,6 +828,14 @@ export const translations = {
     en: 'For details, visit the official websites and get to know us:',
   },
 
+  // Partner grid under the two managing partners. Names/roles themselves live
+  // in src/data/partners.ts — only the heading is UI copy.
+  croweTeamEyebrow: { uk: 'ПАРТНЕРИ CROWE MIKHAILENKO', en: 'CROWE MIKHAILENKO PARTNERS' },
+  croweTeamTitle: {
+    uk: 'Команда партнерів в Україні',
+    en: 'The partner team in Ukraine',
+  },
+
   // Cookie banner
   cookieTitle: {
     uk: 'Цей сайт використовує cookie-файли',
