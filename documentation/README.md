@@ -31,6 +31,7 @@ each one is scoped to a single subsystem so you never load context you won't use
 | ↳ historical: language migration (RO→UK, then RU→EN) — what changed, the DB rename migrations | [`ukrainian-language-migration.md`](ukrainian-language-migration.md) |
 | Off-page SEO runbook (Ukraine market) — the only copy | [`../webdev/SEO_GUIDE.md`](../webdev/SEO_GUIDE.md) |
 | ↳ historical: security audit (Mar–Apr 2026), with still-open follow-ups | [`../webdev/SECURITY_AUDIT_REPORT.md`](../webdev/SECURITY_AUDIT_REPORT.md) |
+| **Ce e în curs** — jurnal de modificări, registru de bug-uri, restanțe și decizii așteptate de la client. Spațiu de lucru, nu referință | [`mapa-de-lucru/README.md`](mapa-de-lucru/README.md) |
 
 ## Conventions used in these docs
 

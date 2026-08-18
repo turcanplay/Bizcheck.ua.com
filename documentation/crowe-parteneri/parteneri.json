@@ -1,0 +1,157 @@
+{
+  "sursa": "Crowe mikhailenko_2026_ua.pptx (30 slide-uri, ucraineană)",
+  "extras_la": "2026-08-18",
+  "firma": {
+    "nume_ua": "Crowe Mikhailenko",
+    "retea": "Crowe Global — TOP-10 mondial audit & consulting, prezență în peste 150 de țări",
+    "site": "https://mikhailenko.com.ua",
+    "profil_crowe": "https://www.crowe.com/ua/crowemikhailenko",
+    "email": "crowelf@crowe.com.ua",
+    "telefon": "+38 063 466 8242",
+    "social": {
+      "facebook_sau_youtube": "CroweLFUkraine",
+      "instagram_sau_telegram": "crowemikhailenko",
+      "linkedin": "crowe-mikhailenko"
+    }
+  },
+  "parteneri": [
+    {
+      "nume": "Дмитро", "prenume": "Михайленко",
+      "nume_complet_ua": "Дмитро Михайленко",
+      "nume_translit": "Dmytro Mykhailenko",
+      "functie_ua": "Керуючий партнер",
+      "functie_ro": "Partener administrator (managing partner)",
+      "foto": "foto/dmytro-mykhailenko.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8,
+      "slide_bio": 10,
+      "practici": ["Практика міжнародного оподаткування (slide 11)", "Практика оцінки (slide 23)"],
+      "contact": { "telefon": "+38 050 533 75 85", "email": "mikhailenko@crowe.com.ua" },
+      "bio_ua": "Один із найвідоміших податкових юристів України, експерт зі стратегічного структурування бізнесу та вирішення складних регуляторних питань. Професійну діяльність розпочав у 1995 році, входить до ТОП-100 найкращих податкових юристів країни. Команда, яку він очолює, відзначена міжнародним рейтингом The Legal500. Автор п'яти книг, понад 500 публікацій і кількох законопроєктів. Понад 500 виступів на конференціях та бізнес-форумах. Бере участь у роботі громадських рад при Міністерстві фінансів України та Комітеті Верховної Ради з питань податкової та митної політики. Президент Асоціації податкових консультантів, голова Комітету з оподаткування при ТПП України, Голова податкового комітету КБУ, радник ІТ комітету Європейської Бізнес Асоціації."
+    },
+    {
+      "nume": "Ольга", "prenume": "Богданова",
+      "nume_complet_ua": "Ольга Богданова",
+      "nume_translit": "Olha Bohdanova",
+      "functie_ua": "Партнер, сертифікований аудитор",
+      "functie_ro": "Partener, auditor certificat",
+      "foto": "foto/olha-bohdanova.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8,
+      "slide_bio": 9,
+      "practici": ["Практика оцінки (slide 23)"],
+      "contact": {},
+      "bio_ua": "Понад 25 років досвіду в сфері бухгалтерського обліку в різних секторах економіки — виробництво, будівництво, сільське господарство, торгівля, сфера послуг. У 2010 році заснувала аудиторську фірму, яка згодом була перейменована в Crowe A&A Ukraine (член Crowe Global). Останні три роки спеціалізується на аудиті та консультуванні промислових та аграрних підприємств, співпрацює з аграрним та податковим комітетами Верховної Ради України. Провідний тренер та доповідач на міжнародних аграрних конференціях, активно співпрацює з ВАР (Всеукраїнська Аграрна Рада). Автор статей у виданнях «ПроАгро», «Баланс-Агро», «Бізнес», «Новое время» та інших."
+    },
+    {
+      "nume": "Андрій", "prenume": "Духницький",
+      "nume_complet_ua": "Андрій Духницький",
+      "nume_translit": "Andrii Dukhnytskyi",
+      "functie_ua": "Партнер, керівник корпоративної практики",
+      "functie_ro": "Partener, șeful practicii corporative",
+      "foto": "foto/andrii-dukhnytskyi.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8, "slide_practica": 14,
+      "practici": ["Корпоративна практика"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Владислав", "prenume": "Папакін",
+      "nume_complet_ua": "Владислав Папакін",
+      "nume_translit": "Vladyslav Papakin",
+      "functie_ua": "Партнер, керівник практики трансфертного ціноутворення",
+      "functie_ro": "Partener, șeful practicii de prețuri de transfer",
+      "foto": "foto/vladyslav-papakin.png",
+      "foto_px": "300x300",
+      "slide_echipa": 8, "slide_practica": 13,
+      "practici": ["Практика трансфертного ціноутворення"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Сергій", "prenume": "Клюца",
+      "nume_complet_ua": "Сергій Клюца",
+      "nume_translit": "Serhii Kliutsa",
+      "functie_ua": "Партнер, керівник практики адвокатів",
+      "functie_ro": "Partener, șeful practicii de avocatură",
+      "foto": "foto/serhii-kliutsa.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8, "slide_practica": 18,
+      "practici": ["Практика адвокатів"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Тетяна", "prenume": "Гончаренко",
+      "nume_complet_ua": "Тетяна Гончаренко",
+      "nume_translit": "Tetiana Honcharenko",
+      "functie_ua": "Партнер, член наглядової ради",
+      "functie_ro": "Partener, membru al consiliului de supraveghere",
+      "foto": "foto/tetiana-honcharenko.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8, "slide_practica": 17,
+      "practici": ["Практика фандрайзингу (ca partener)"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Руслан", "prenume": "Земляний",
+      "nume_complet_ua": "Руслан Земляний",
+      "nume_translit": "Ruslan Zemlianyi",
+      "functie_ua": "Партнер, керівник практики з питань інвестування і розвитку бізнесу",
+      "functie_ro": "Partener, șeful practicii de investiții și dezvoltare de business",
+      "foto": "foto/ruslan-zemlianyi.png",
+      "foto_px": "600x600",
+      "slide_echipa": 8, "slide_practica": 16,
+      "practici": ["Практика консультування з питань інвестицій та розвитку бізнесу"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Андрій", "prenume": "Сисоєв",
+      "nume_complet_ua": "Андрій Сисоєв",
+      "nume_translit": "Andrii Sysoiev",
+      "functie_ua": "Партнер, член наглядової ради",
+      "functie_ro": "Partener, membru al consiliului de supraveghere",
+      "foto": "foto/andrii-sysoiev.png",
+      "foto_px": "510x490",
+      "slide_echipa": 8, "slide_practica": null,
+      "practici": [],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Артем", "prenume": "Василенко",
+      "nume_complet_ua": "Артем Василенко",
+      "nume_translit": "Artem Vasylenko",
+      "functie_ua": "Партнер, керівник практики IT",
+      "functie_ro": "Partener, șeful practicii IT",
+      "foto": "foto/artem-vasylenko.jpeg",
+      "foto_px": "780x730",
+      "foto_nota": "luată de pe slide-ul 21 (practica IT) — rezoluție mai bună decât cea din grila echipei",
+      "slide_echipa": 8, "slide_practica": 21,
+      "practici": ["Практика IT"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Володимир", "prenume": "Заїка",
+      "nume_complet_ua": "Володимир Заїка",
+      "nume_translit": "Volodymyr Zaika",
+      "functie_ua": "Партнер, керівник HR-практики",
+      "functie_ro": "Partener, șeful practicii HR",
+      "foto": "foto/volodymyr-zaika.png",
+      "foto_px": "1500x1500",
+      "slide_echipa": 8, "slide_practica": 22,
+      "practici": ["Практика HR"],
+      "contact": {}, "bio_ua": null
+    },
+    {
+      "nume": "Єфрем", "prenume": "Лащук",
+      "nume_complet_ua": "Єфрем Лащук",
+      "nume_translit": "Yefrem Lashchuk",
+      "functie_ua": "Партнер, керівник практики GR та публічної адвокації",
+      "functie_ro": "Partener, șeful practicii GR și advocacy public",
+      "foto": "foto/yefrem-lashchuk.png",
+      "foto_px": "252x277",
+      "slide_echipa": 8, "slide_practica": 20,
+      "practici": ["Практика GR та публічної адвокації"],
+      "contact": {}, "bio_ua": null,
+      "atentie": "CONTRADICȚIE ÎN PREZENTARE: pe slide-ul 8 (echipa) titlul lui e doar «Керівник практики GR та публічної адвокації», fără «Партнер»; pe slide-ul 20 e «Партнер, керівник практики». L-am inclus ca partener pe baza slide-ului 20 — de confirmat cu clientul."
+    }
+  ]
+}
