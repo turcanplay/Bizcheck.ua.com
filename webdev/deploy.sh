@@ -54,6 +54,10 @@ info "Verific .env…"
 #   tgbot/bot.py:94    `raise RuntimeError`       → TELEGRAM_BOT_TOKEN
 #   groupbot/bot.py:718 `raise RuntimeError`      → SALES_BOT_TOKEN
 #   docker-compose.yml DATABASE_URL               → DB_PASSWORD
+#   docker-compose.yml `:?`                     → TELEGRAM_BOT_USERNAME (compose
+#                                                 refuză să pornească fără ea; fără
+#                                                 handle, linkul din raport ar duce
+#                                                 clientul în alt bot, tăcut)
 #
 # Baseline-ul de mai jos NU e sursa de adevăr — e doar punctul de plecare. Lista
 # se completează programatic din backend/server.py imediat sub el, ca cele două
@@ -66,6 +70,7 @@ REQUIRED_VARS=(
   ADMIN_PASSWORD
   PII_ENCRYPTION_KEY
   TELEGRAM_BOT_TOKEN
+  TELEGRAM_BOT_USERNAME
   SALES_BOT_TOKEN
 )
 
@@ -105,8 +110,46 @@ done
 for v in SALES_CHAT_ID BOT_SHARED_SECRET ALLOWED_HOSTS PUBLIC_BASE_URL SMTP_REPLY_TO; do
   grep -q "^${v}=" .env || warn "$v lipsește din .env"
 done
-if grep -qE '^SMTP_REPLY_TO=.*@example\.' .env; then
-  warn "SMTP_REPLY_TO e încă pe adresa placeholder (@example.*) — clienții nu pot răspunde"
+# ── Placeholderele de adresă: avertisment SAU blocant, după context ─────────
+# Regula de intrare în REQUIRED_VARS e „serviciul MOARE la boot fără ea", iar
+# SMTP_REPLY_TO nu omoară nimic — deci nu are ce căuta acolo. Dar cât timp
+# trimiterea de emailuri e PORNITĂ, o adresă @example.* nu e o scăpare de
+# configurare, e o eroare care ajunge la client: răspunsul lui la raport pleacă
+# spre un domeniu rezervat de IANA și se pierde definitiv, fără bounce util.
+# De aceea verificarea e CONDIȚIONATĂ de SMTP_PASSWORD (singurul comutator real
+# al funcției — services/email_service.py._smtp_configured):
+#   * email dezactivat (SMTP_PASSWORD gol) → doar avertisment. Un deploy de
+#     staging sau un rollback de urgență nu trebuie oprit de un câmp cosmetic.
+#   * email activat → die. Riscul asumat: un redeploy urgent al unui site care
+#     deja rulează în starea asta greșită e BLOCAT până se corectează .env.
+#     Fixul e o linie în .env, fără rebuild; iar pentru cazul în care chiar nu
+#     poți repara acum, există supapa explicită de mai jos.
+smtp_enabled() { grep -qE '^SMTP_PASSWORD=.+' .env; }
+for v in SMTP_REPLY_TO SMTP_USER; do
+  grep -qE "^${v}=.*@example\." .env || continue
+  if smtp_enabled && [ "${ALLOW_PLACEHOLDER_EMAIL:-0}" != "1" ]; then
+    die "$v e pe adresa placeholder (@example.*) dar trimiterea de emailuri e ACTIVĂ
+  (SMTP_PASSWORD e setat) → emailurile pleacă de la / trimit răspunsurile către un
+  domeniu inexistent. Pune adresa reală în .env și reia deployul.
+  Supapă pentru un rollback urgent:  ALLOW_PLACEHOLDER_EMAIL=1 ./deploy.sh"
+  fi
+  warn "$v e încă pe adresa placeholder (@example.*) — clienții nu pot răspunde"
+done
+
+# ── Identitatea de piață rămasă pe defaultul MOLDOVENESC ────────────────────
+# Variabilele astea sunt acum pasate prin docker-compose.yml, dar defaulturile
+# din sursă (tgbot/config.py, backend/services/email_templates.py) sunt încă
+# .md / crowe-tm.md / @CROWE_TM. Goale în .env = defaultul acela ajunge la
+# client. Nu blocăm — nu există încă un contact UA cu care să le înlocuiești —
+# dar nu mai lăsăm situația să treacă tăcut.
+md_defaults=""
+for v in CONTACT_EMAIL EMAIL_REPLY_TO EMAIL_SITE_URL EMAIL_TELEGRAM_URL EMAIL_TELEGRAM_HANDLE; do
+  grep -qE "^${v}=.+" .env || md_defaults="$md_defaults $v"
+done
+if [ -n "$md_defaults" ]; then
+  warn "identitate de contact pe defaultul moldovenesc din cod (.md / crowe-tm.md /"
+  warn "  @CROWE_TM) pentru:${md_defaults}"
+  warn "  Completează-le în .env de îndată ce există contactele pentru piața UA."
 fi
 # Opțională, dar goală = pierdere de trafic long-tail: sitemap.xml și HTML-ul
 # pre-randat rămân doar cu rutele statice (frontend/scripts/generate-sitemap.mjs,

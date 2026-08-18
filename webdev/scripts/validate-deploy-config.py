@@ -17,6 +17,10 @@ Verificările de aici prind exact aceste divergențe, citind sursele de adevăr:
      e în REQUIRED_VARS din deploy.sh
   4. lanțul de build-time e complet: compose build.args → ARG → ENV în Dockerfile
   5. .env.example documentează fiecare variabilă obligatorie și fiecare build arg
+  6. DATABASE_URL din .env chiar ajunge la backend (procedura DATABASE_ROLE.md)
+  7. fiecare variabilă citită de codul unui serviciu e și pasată prin
+     `environment:` — altfel, neexistând `env_file:`, valoarea din .env e un
+     no-op silențios și codul rămâne pe defaultul din sursă
 
 Rulare:
     python3 scripts/validate-deploy-config.py          # din webdev/
@@ -334,6 +338,111 @@ db_health = services.get("db", {}).get("healthcheck", {}).get("test", [])
 check(any("DB_USER" in str(t) for t in db_health),
       "docker-compose.yml: healthcheck-ul lui `db` nu mai folosește ${DB_USER} — "
       "trebuie să rămână utilizatorul serviciului db, nu rolul aplicației")
+
+# ---------------------------------------------------------------------------
+# 7. Drift „variabilă CITITĂ de cod, dar care nu poate ajunge în container"
+# ---------------------------------------------------------------------------
+# Clasa de bug pe care o prinde, cea mai tăcută din tot proiectul: niciun
+# serviciu nu are `env_file:`, deci `.env` e folosit EXCLUSIV pentru substituția
+# ${...} din docker-compose.yml. O variabilă citită cu os.getenv() în cod, dar
+# neenumerată în blocul `environment:` al serviciului ei, nu ajunge NICIODATĂ în
+# container: operatorul o scrie în .env, nu primește nicio eroare, și aplicația
+# rulează mai departe pe defaultul din sursă. Așa a trimis botul ucrainean luni
+# de zile adresa office@bizcheck.md, și așa a rămas TG_REQUIRE_BOT_SECRET
+# imposibil de activat pe rutele care scriu PII.
+#
+# Regula: fiecare nume de variabilă citit din codul unui serviciu trebuie ori
+# pasat prin `environment:`, ori enumerat EXPLICIT mai jos, cu motiv. Lista de
+# excepții e intenționat mică — o variabilă nouă care nu ajunge în container e
+# o EROARE până când cineva decide altfel, în scris.
+#
+# Directoarele `scripts/` sunt sărite: sunt unelte rulate manual de operator pe
+# gazdă (import de conținut, teste SMTP, e2e), cu mediul shellului lui, nu al
+# containerului.
+ENV_NOT_PASSED_OK = {
+    "backend": {
+        # Fallback-urile psycopg2 din database/db.py, folosite doar când
+        # DATABASE_URL lipsește. NU se pasează intenționat: credențialele
+        # superuserului nu au ce căuta în containerul aplicației — vezi
+        # verificarea 6 de mai sus, care le și INTERZICE explicit.
+        "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
+    },
+    "tgbot": set(),
+    "groupbot": set(),
+}
+
+# os.getenv("X") / os.environ.get("X") / os.environ["X"] / _env("X")
+# (`_env` / `_env_int` sunt helperele din services/email_service.py,
+#  services/sales_notify.py și services/export_jobs.py).
+_ENV_READ_PATTERNS = (
+    re.compile(r'os\.(?:getenv|environ\.get)\(\s*["\']([A-Z][A-Z0-9_]+)["\']'),
+    re.compile(r'os\.environ\[\s*["\']([A-Z][A-Z0-9_]+)["\']'),
+    # `_env`, `_env_int`, … — helperele subțiri de peste os.getenv.
+    re.compile(r'\b_env\w*\(\s*["\']([A-Z][A-Z0-9_]+)["\']'),
+)
+_SKIP_DIRS = {"venv", ".venv", "tests", "scripts", "node_modules", "__pycache__"}
+
+# Invers: variabile pasate DELIBERAT unui serviciu care nu le citește. Fiecare
+# are nevoie de un motiv scris, altfel rămâne semnalată ca configurare moartă.
+ENV_PASSED_UNREAD_OK = {
+    "backend": set(),
+    "tgbot": set(),
+    "groupbot": set(),
+}
+
+
+def env_names_read_by(service_dir: str) -> dict[str, str]:
+    """{VAR: fișierul în care apare prima dată} pentru codul serviciului."""
+    found: dict[str, str] = {}
+    for path in sorted((ROOT / service_dir).rglob("*.py")):
+        if _SKIP_DIRS & set(path.relative_to(ROOT).parts):
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for pat in _ENV_READ_PATTERNS:
+            for name in pat.findall(text):
+                found.setdefault(name, str(path.relative_to(ROOT)))
+    return found
+
+
+for svc_name, allowed in ENV_NOT_PASSED_OK.items():
+    svc_env = services.get(svc_name, {}).get("environment", {}) or {}
+    if isinstance(svc_env, list):  # forma „KEY=value"
+        svc_env = dict(e.split("=", 1) for e in svc_env if "=" in e)
+    read_names = env_names_read_by(svc_name)
+    check(bool(read_names),
+          f"{svc_name}/: nu am găsit niciun `os.getenv(...)` — s-a mutat codul?")
+    for name, where in sorted(read_names.items()):
+        if name in allowed:
+            continue
+        check(name in svc_env,
+              f"NU AJUNGE ÎN CONTAINER: `{name}` e citit în {where}, dar serviciul "
+              f"`{svc_name}` nu îl are în `environment:` din docker-compose.yml. "
+              f"Niciun serviciu nu are `env_file:`, deci variabila scrisă în .env e "
+              f"un no-op silențios și codul rămâne pe defaultul din sursă. "
+              f"Adaugă `{name}: ${{{name}:-<defaultul din cod>}}` la serviciu și "
+              f"documenteaz-o în .env.example — sau, dacă e intenționat, treci-o în "
+              f"ENV_NOT_PASSED_OK din acest script, cu motivul scris.")
+    # Invers: o variabilă pasată degeaba nu e o eroare (poate fi citită de o
+    # bibliotecă), dar merită semnalată — e cod mort de configurare.
+    for name in sorted(set(svc_env) - set(read_names)):
+        if name in ENV_PASSED_UNREAD_OK.get(svc_name, set()):
+            continue
+        warnings.append(
+            f"docker-compose.yml: `{svc_name}` primește `{name}`, dar nu l-am găsit "
+            f"citit nicăieri în {svc_name}/ — configurare moartă sau redenumită?")
+
+# Fiecare variabilă pe care compose o ia din .env (`${VAR...}`) trebuie să existe
+# și în .env.example, altfel operatorul nu are de unde ști că poate s-o seteze.
+# Comentariile din compose se scot ÎNAINTE de scanare: altfel un `${VAR:-...}`
+# scris ca exemplu într-un comentariu ar fi raportat ca variabilă nedocumentată.
+compose_raw = re.sub(r"(?m)^\s*#.*$", "", read("docker-compose.yml"))
+# `#DATABASE_URL=` (documentat, dar comentat intenționat) contează ca documentat.
+env_example_names = set(re.findall(r"^\s*#?\s*([A-Z][A-Z0-9_]+)=",
+                                   read(".env.example"), re.M))
+for name in sorted(set(re.findall(r"\$\{([A-Z][A-Z0-9_]+)[:?}-]", compose_raw))):
+    check(name in env_example_names,
+          f".env.example: `{name}` e substituit în docker-compose.yml, dar nu e "
+          f"documentat → operatorul nu are cum să afle că variabila există")
 
 # ---------------------------------------------------------------------------
 # Raport
