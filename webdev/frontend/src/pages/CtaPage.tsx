@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
@@ -7,6 +7,7 @@ import { API_BASE } from '@/config/api';
 import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from '@/config/contact';
 import { publicApi } from '@/api/public';
 import { enqueueSave, isPending, wasDropped, flushAndConfirm } from '@/utils/durableSave';
+import { sanitizeOneLine } from '@/utils/inputGuard';
 import ReportHeader from '@/components/report/ReportHeader';
 import BlockGrid from '@/components/report/BlockGrid';
 import OverallScore from '@/components/report/OverallScore';
@@ -18,7 +19,7 @@ import ReportFooter from '@/components/report/ReportFooter';
 import { findBlockExplanation } from '@/data/blockExplanations';
 import { getZone, getZoneColor, displayPct } from '@/utils/scoring';
 import type { TranslationKey } from '@/i18n/translations';
-import type { Zone, Question } from '@/types';
+import { normalizeReportType, type Zone, type Question } from '@/types';
 
 import './ReportPage.css';
 import './CtaPage.css';
@@ -36,6 +37,10 @@ const ZONE_EMOJI: Record<Zone, string> = {
   safe: '🟢', developing: '🟡', warning: '🟠', risk: '🔴',
 };
 
+// Shape checks for the contact form. `utils/inputGuard` deliberately has no
+// counterpart: it only sanitizes (strip tags/control chars, cap length) and
+// checks length via `validateField`, so there is nothing to unify with. The
+// sanitizing half of that module IS used below, on the free-text name field.
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$/;
 const PHONE_RE = /^\+?[\d\s\-()]{7,20}$/;
 
@@ -53,6 +58,16 @@ export default function CtaPage() {
   // Email delivery is admin-toggleable (site setting). Off → card shows "coming soon".
   const [emailEnabled, setEmailEnabled] = useState(false);
   const pdfSavedRef = useRef(false);
+  // Synchronous in-flight guards. `disabled` only takes effect on the next
+  // render, so a double click (or a click landing in the same tick as a state
+  // update) can otherwise fire the same request twice.
+  const pdfRunningRef = useRef(false);
+  const downloadingRef = useRef(false);
+  const resendingRef = useRef(false);
+  // The auto-dismiss timer for the form warning. Without holding the id, a
+  // second warning inherits the first one's countdown and can vanish instantly.
+  const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (warnTimerRef.current) clearTimeout(warnTimerRef.current); }, []);
 
   // ── Save-gate: verify in the background that every answer reached the server.
   // 'ok'     → nothing pending (default) or confirmed saved
@@ -166,10 +181,27 @@ export default function CtaPage() {
     return () => { clearInterval(interval); clearTimeout(t1); clearTimeout(t2); };
   }, [report]);
 
+  // Which report layout to render. Resolved here (not inline in the JSX) so an
+  // unknown `report_type` warns once per value instead of on every re-render.
+  const currentTest = useMemo(
+    () => tests.find(tt => tt.slug === selectedTestSlug),
+    [tests, selectedTestSlug],
+  );
+  const reportType = useMemo(
+    () => normalizeReportType(currentTest?.report_type),
+    [currentTest?.report_type],
+  );
+
   const generateAndSavePdf = useCallback(async (attempt = 1): Promise<void> => {
     const MAX_ATTEMPTS = 3;
     if (!reportRef.current || !report || !submissionId) {
       return;
+    }
+    // Only the outermost call takes the lock; the retry recursion below is the
+    // same logical run and must be allowed through.
+    if (attempt === 1) {
+      if (pdfRunningRef.current) return;
+      pdfRunningRef.current = true;
     }
 
     try {
@@ -178,7 +210,7 @@ export default function CtaPage() {
       if (el.scrollHeight < 100) {
         if (attempt < MAX_ATTEMPTS) {
           await new Promise(r => setTimeout(r, 3000));
-          return generateAndSavePdf(attempt + 1);
+          return await generateAndSavePdf(attempt + 1);
         }
       }
 
@@ -218,9 +250,11 @@ export default function CtaPage() {
     } catch (err) {
       if (attempt < MAX_ATTEMPTS) {
         await new Promise(r => setTimeout(r, 3000));
-        return generateAndSavePdf(attempt + 1);
+        return await generateAndSavePdf(attempt + 1);
       }
       setPdfError(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (attempt === 1) pdfRunningRef.current = false;
     }
   }, [report, submissionId, submissionToken, lang]);
 
@@ -252,6 +286,8 @@ export default function CtaPage() {
     setSelectedMethod(m);
     setFormWarn('');
     setDownloadDone(false);
+    // Without this a stale "Sent again ✓" survives into the next submission.
+    setResent(false);
     resetTelegram();
   }
 
@@ -259,12 +295,14 @@ export default function CtaPage() {
     setSelectedMethod(null);
     setFormWarn('');
     setDownloadDone(false);
+    setResent(false);
     resetTelegram();
   }
 
   function warn(key: string) {
     setFormWarn(key);
-    setTimeout(() => setFormWarn(''), 3500);
+    if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+    warnTimerRef.current = setTimeout(() => setFormWarn(''), 3500);
   }
 
   // First word → first_name, the remainder → last_name.
@@ -280,6 +318,7 @@ export default function CtaPage() {
   }
 
   async function handleSubmitDownload() {
+    if (downloadingRef.current) return;
     const { first, last } = splitFullName(formFullName);
     const phone = downloadPhone.trim();
     const em = emailValue.trim().toLowerCase();
@@ -293,6 +332,7 @@ export default function CtaPage() {
 
     // Email-only delivery: send the stored PDF to the user's inbox. No browser
     // download. `downloading` doubles as the "sending…" indicator on the button.
+    downloadingRef.current = true;
     setDownloading(true);
     try {
       if (submissionId) {
@@ -333,6 +373,7 @@ export default function CtaPage() {
       // Network failure is non-fatal: the submission is saved; admin can resend.
     } finally {
       setDownloading(false);
+      downloadingRef.current = false;
     }
 
     setDownloadDone(true);
@@ -341,7 +382,8 @@ export default function CtaPage() {
   // Resend the report email without re-validating the form — contact is already
   // stored. Retries while the PDF finishes saving (same 409 logic as submit).
   async function handleResendEmail() {
-    if (!submissionId) return;
+    if (!submissionId || resendingRef.current) return;
+    resendingRef.current = true;
     setResending(true);
     setResent(false);
     try {
@@ -362,6 +404,7 @@ export default function CtaPage() {
       // Non-fatal — submission is saved; admin can resend from the panel.
     } finally {
       setResending(false);
+      resendingRef.current = false;
     }
   }
 
@@ -411,15 +454,12 @@ export default function CtaPage() {
           <ReportHeader report={report} />
           <div className="report-pdf__body">
             {(() => {
-              const currentTest = tests.find(tt => tt.slug === selectedTestSlug);
-              const rt = currentTest?.report_type ?? 'bizcheck';
-
               // ── GDPR layout ──
               // One page per question: question + given answer, then the fixed
               // UK/EN explanation. Question position (1-based) maps to the
               // explanation order. Without this branch a `gdpr` test silently
               // fell through to the bizcheck tree and shipped the wrong PDF.
-              if (rt === 'gdpr') {
+              if (reportType === 'gdpr') {
                 const flatQuestions: QuestionWithMeta[] = [];
                 blocks.forEach(block => {
                   block.questions.filter(q => !q.parent_question_id).forEach(q => {
@@ -445,7 +485,7 @@ export default function CtaPage() {
               // ── STANDARD layout ────────────────────────────
               // Cover → [checklist, 5 questions/page] → OverallScore+Footer → outro
               // No BlockGrid and no ZoneSections — redundant for this layout.
-              if (rt === 'standard') {
+              if (reportType === 'standard') {
                 const flatQuestions: QuestionWithMeta[] = [];
                 blocks.forEach(block => {
                   block.questions.filter(q => !q.parent_question_id).forEach(q => {
@@ -508,7 +548,7 @@ export default function CtaPage() {
                     </div>
                   ))}
 
-                  {rt === 'bizcheck' && report.blockScores
+                  {reportType === 'bizcheck' && report.blockScores
                     .filter(b => findBlockExplanation(b.order) !== null)
                     .sort((a, b) => a.order - b.order)
                     .map(block => (
@@ -564,7 +604,7 @@ export default function CtaPage() {
           <div className="cta-page__error">
             <p>⚠️ {t('ctaPdfError')}</p>
             <button
-              onClick={() => { setPdfError(''); pdfSavedRef.current = false; generateAndSavePdf(); }}
+              onClick={() => { setPdfError(''); void generateAndSavePdf(); }}
             >
               {t('ctaPdfRetry')}
             </button>
@@ -642,7 +682,7 @@ export default function CtaPage() {
                 className="cta-frame__input"
                 placeholder={t('placeholderFullName')}
                 value={formFullName}
-                onChange={e => setFormFullName(e.target.value.slice(0, 120))}
+                onChange={e => setFormFullName(sanitizeOneLine(e.target.value, 120))}
                 autoFocus
               />
             </label>
@@ -752,7 +792,9 @@ export default function CtaPage() {
                   (selectedMethod === 'telegram' && tgLoading))
                   ? <span className="cta-page__spinner cta-page__spinner--light" />
                   : !pdfDone
-                    ? t('ctaPdfPreparing')
+                    // A failed PDF leaves this button disabled; saying
+                    // "preparing" forever hides the retry that is right above.
+                    ? (pdfError ? t('ctaPdfError') : t('ctaPdfPreparing'))
                     : (
                       <>
                         {selectedMethod === 'download' && t('ctaEmailBtn')}

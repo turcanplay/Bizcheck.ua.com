@@ -246,7 +246,12 @@ export async function generateFullPdf({
       outroPages.forEach(page => mergedPdf.addPage(page));
     }
 
-    const mergedBytes = await mergedPdf.save() as unknown as Uint8Array<ArrayBuffer>;
+    // pdf-lib types `save()` as Uint8Array<ArrayBufferLike>, which TS refuses to
+    // hand to Blob because ArrayBufferLike also covers SharedArrayBuffer. The
+    // runtime value is always backed by a plain ArrayBuffer, so re-wrapping it
+    // narrows the type honestly instead of asserting it away. The one copy this
+    // costs replaces the copy `output()` used to make below, so it is a wash.
+    const mergedBytes = new Uint8Array(await mergedPdf.save());
 
     // Wrap in jsPDF-like object so callers can use .save() and .output()
     return {
@@ -261,10 +266,9 @@ export async function generateFullPdf({
       },
       output(type: string): string {
         if (type === 'datauristring') {
-          const bytes = new Uint8Array(mergedBytes);
           const chunks: string[] = [];
-          for (let i = 0; i < bytes.length; i += 8192) {
-            chunks.push(String.fromCharCode(...bytes.subarray(i, i + 8192)));
+          for (let i = 0; i < mergedBytes.length; i += 8192) {
+            chunks.push(String.fromCharCode(...mergedBytes.subarray(i, i + 8192)));
           }
           const base64 = btoa(chunks.join(''));
           return `data:application/pdf;base64,${base64}`;

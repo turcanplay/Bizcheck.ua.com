@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { API_BASE } from '@/config/api';
 
 /**
@@ -23,6 +23,10 @@ export function useTelegramLink(submissionId: number | null, submissionToken?: s
   const [tgLoading, setTgLoading] = useState(false);
   const [tgError, setTgError] = useState(false);
   const [tgPending, setTgPending] = useState(false);
+  // `tgLoading` only disables the button on the NEXT render, so a double click
+  // could mint two deep-link tokens and race two navigations. This ref closes
+  // the window synchronously.
+  const inFlightRef = useRef(false);
 
   const openTelegram = useCallback(async () => {
     // Without a submission there is no deep-link token, so the bot could not
@@ -32,6 +36,8 @@ export function useTelegramLink(submissionId: number | null, submissionToken?: s
       return;
     }
 
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setTgLoading(true);
     setTgError(false);
     setTgPending(false);
@@ -55,6 +61,7 @@ export function useTelegramLink(submissionId: number | null, submissionToken?: s
       setTgError(true);
     } finally {
       setTgLoading(false);
+      inFlightRef.current = false;
     }
   }, [submissionId, submissionToken]);
 

@@ -42,6 +42,37 @@ export interface ScoringZones {
   risk: number;
 }
 
+/**
+ * Report layouts the SPA knows how to render. This is the single source of
+ * truth on the client and mirrors `CANONICAL_REPORT_TYPES` in the backend's
+ * `services/test_service.py` — keep the two in sync.
+ */
+export const REPORT_TYPES = ['bizcheck', 'standard', 'premium', 'gdpr'] as const;
+
+export type ReportType = (typeof REPORT_TYPES)[number];
+
+/** Layout used when a test carries no `report_type` (legacy rows / legacy API). */
+export const DEFAULT_REPORT_TYPE: ReportType = 'bizcheck';
+
+/**
+ * Narrow an API-supplied `report_type` to a layout this build can render.
+ *
+ * `null`/`undefined` is a legitimate "not set" and defaults silently. Any other
+ * value means the backend knows a layout this bundle does not (new report type
+ * shipped server-side first, or a corrupted row): the user would otherwise get
+ * the `bizcheck` report with no trace anywhere. The default is deliberately
+ * unchanged — this only makes the fallback observable.
+ */
+export function normalizeReportType(value: unknown): ReportType {
+  if (value === null || value === undefined) return DEFAULT_REPORT_TYPE;
+  if ((REPORT_TYPES as readonly unknown[]).includes(value)) return value as ReportType;
+  console.warn(
+    `[report] Unknown report_type ${JSON.stringify(value)} — falling back to ` +
+    `"${DEFAULT_REPORT_TYPE}". Known types: ${REPORT_TYPES.join(', ')}.`,
+  );
+  return DEFAULT_REPORT_TYPE;
+}
+
 export interface TestOption {
   id: number;
   slug: string;
@@ -49,7 +80,7 @@ export interface TestOption {
   name_en: string;
   description_uk: string;
   description_en: string;
-  report_type?: 'standard' | 'premium' | 'bizcheck' | 'gdpr';
+  report_type?: ReportType;
   /** Optional: absent on a legacy API response → `resolveZones()` defaults. */
   scoring_zones?: Partial<ScoringZones> | null;
 }
