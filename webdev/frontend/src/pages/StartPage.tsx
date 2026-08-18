@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuiz } from '@/context/QuizContext';
 import { useLang } from '@/context/LanguageContext';
 import { pickLang } from '@/i18n/pickLang';
@@ -14,10 +14,18 @@ export default function StartPage() {
     tests, selectedTestSlug, selectTest,
   } = useQuiz();
   const { t, lang, setLang } = useLang();
-  const location = useLocation();
+  const { slug: routeSlug } = useParams<{ slug?: string }>();
 
-  // Deep-link `/test/:slug` pre-selects the test and hides Step 0 entirely.
-  const fromDeepLink = location.pathname.startsWith('/test/');
+  // Deep-link `/:lang/test/:slug` pre-selects the test and hides Step 0.
+  //
+  // Read the slug off the ROUTE PARAM, not off `location.pathname`. The old
+  // check was `pathname.startsWith('/test/')`, which the language prefix
+  // introduced by the i18n migration made permanently false (`/uk/test/x`,
+  // `/en/test/x`). Every deep link therefore rendered the "back to the test
+  // picker" button, and picking a different test there only changed the
+  // context slug — QuizApp's effect immediately snapped it back to the slug in
+  // the URL, so the visitor silently got the test they had not chosen.
+  const fromDeepLink = Boolean(routeSlug);
 
   // Step 0 picks the test; deep-link or restored slug => skip to Step 1.
   // Personal info is now collected on the CTA page, so Step 1 is skipped.

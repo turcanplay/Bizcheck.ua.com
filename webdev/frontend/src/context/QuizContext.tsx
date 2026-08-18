@@ -291,7 +291,13 @@ export function QuizProvider({ children }: { children: ReactNode }) {
           return id;
         }
       } else {
-        console.error('[Submission] 400 error:', JSON.stringify(data));
+        // NEVER log the response body. The endpoint echoes back the payload it
+        // rejected, and that payload carries the visitor's email and phone —
+        // JSON.stringify(data) dumped that PII into the browser console, where
+        // any extension, screen-share or support screenshot can pick it up.
+        // Status plus the shape of the error is all that is needed to debug.
+        const errorCount = Array.isArray(data?.errors) ? data.errors.length : 0;
+        console.error('[Submission] create failed', { status: res.status, errorCount });
       }
     } catch (err) { console.error('[Submission] Network error:', err); }
     return null;
@@ -343,7 +349,12 @@ export function QuizProvider({ children }: { children: ReactNode }) {
    * caller surface the empty state. */
   function enterBlock(blockIndex: number) {
     const list = blocksRef.current;
-    const target = findNextBlockWithQuestions(list, blockIndex);
+    let target = findNextBlockWithQuestions(list, blockIndex);
+    // A restored block index can point past the end of the current content
+    // (blocks deleted in the admin panel between two visits). Searching forward
+    // finds nothing there, which used to leave the run with no question at all
+    // — a blank page. Fall back to the first block that has questions.
+    if (target === -1 && blockIndex > 0) target = findNextBlockWithQuestions(list, 0);
     if (target === -1) return;
     if (target !== blockIndex) setCurrentBlock(target);
     const topLevel = getTopLevelQuestions(list[target]);
@@ -469,21 +480,32 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     // enterBlock will be called via effect
   }, []);
 
-  // When block changes and phase is quiz, initialize the first question.
-  // Skip ONLY if a restored question actually exists (page refresh mid-quiz).
-  // If the session was reset (e.g. fresh start via CTA) currentQuestionDbId is
-  // null — we must initialize, otherwise QuizPage renders blank until a refresh.
-  const restoredRef = useRef(!!saved.current?.currentQuestionDbId);
+  // Keep a question of the CURRENT block selected while the quiz is running.
+  //
+  // The guard here used to be a one-shot ref ("we restored a question, keep
+  // it"), consumed by the effect's first run. But this effect re-runs on every
+  // new `blocks` identity, and `blocks` is re-created right after the fetch by
+  // the language re-resolve below — so a second run always followed and called
+  // enterBlock() unconditionally, resetting the position to the block's first
+  // question. Three reproducible consequences:
+  //   * an F5 mid-quiz restored the saved question and then jumped back to
+  //     question 1 of the block, which is exactly the progress the restore
+  //     path exists to preserve;
+  //   * toggling the language mid-quiz did the same;
+  //   * prevQuestion() stepping into an earlier block selects that block's
+  //     LAST question, and this effect immediately reset it to the first.
+  // The condition is now stateless: keep the current question when it belongs
+  // to the current block, otherwise (re)initialize the block. A restored id
+  // that no longer exists (question deleted in the admin panel) therefore
+  // re-initializes instead of leaving `currentQuestion` null forever.
   useEffect(() => {
-    if (phase === 'quiz' && blocks.length > 0) {
-      if (restoredRef.current) {
-        restoredRef.current = false;
-        if (currentQuestionDbId !== null) return;  // genuine restore → keep it
-      }
-      enterBlock(currentBlock);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBlock, phase, blocks]);
+    if (phase !== 'quiz' || blocks.length === 0) return;
+    const inCurrentBlock =
+      currentQuestionDbId !== null &&
+      (blocks[currentBlock]?.questions.some(q => q.db_id === currentQuestionDbId) ?? false);
+    if (inCurrentBlock) return;
+    enterBlock(currentBlock);
+  }, [currentBlock, phase, blocks, currentQuestionDbId]);
 
   // If phase is 'cta' but report is null (page refresh), regenerate from saved data
   useEffect(() => {
