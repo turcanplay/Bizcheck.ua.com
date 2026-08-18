@@ -151,7 +151,7 @@
 }
 .catalog__filters-chevron {
   margin-left: auto;
-  color: #9BA3B8;
+  color: #66708A;
   transition: transform .25s cubic-bezier(.2, .8, .2, 1);
   display: none;
 }
@@ -170,7 +170,7 @@
   border: 1.5px solid transparent;
   border-radius: 12px;
   margin-bottom: 24px;
-  color: #8B92A5;
+  color: #66708A;
   transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
 }
 .catalog__search:hover {
@@ -193,7 +193,7 @@
   font-family: inherit;
   letter-spacing: -0.005em;
 }
-.catalog__search input::placeholder { color: #9BA3B8; }
+.catalog__search input::placeholder { color: #66708A; }
 
 .catalog__filter-group {
   margin-bottom: 22px;
@@ -366,7 +366,7 @@
 .catalog__empty {
   padding: 40px;
   text-align: center;
-  color: #8B92A5;
+  color: #66708A;
   font-size: 14px;
 }
 
@@ -525,7 +525,11 @@
   .catalog__header { margin-bottom: 36px; }
   .catalog__subtitle-intro { font-size: 14.5px; }
   .catalog__layout { grid-template-columns: 1fr; gap: 24px; }
-  .catalog__sidebar { position: static; }
+  /* `relative`, not `static`: the sidebar is the containing block for its own
+     ::before accent bar. Going static hands that bar to `.catalog` (the nearest
+     positioned ancestor), which paints it full-width across the top of the
+     whole section instead of on the sidebar. */
+  .catalog__sidebar { position: relative; }
   .catalog__grid { grid-template-columns: 1fr 1fr; }
   .catalog__split { grid-template-columns: 1fr 1fr; }
 }
@@ -538,7 +542,7 @@
 @media (max-width: 1000px) {
   .catalog__sidebar {
     padding: 14px 16px;
-    position: static;
+    position: relative;
   }
   .catalog__filters-title {
     cursor: pointer;

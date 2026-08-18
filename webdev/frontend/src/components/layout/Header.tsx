@@ -20,7 +20,10 @@ export default function Header() {
   return (
     <header className="site-header">
       <Link to={L('/')} className="header-logo" aria-label="Bizcheck.com.ua home">
-        <img src={croweLogo} alt="Crowe" className="crowe-logo__img" />
+        {/* Natural size of Crowe.png (465×138). Without it the browser reserves
+            no width before the bytes land and the separator + subtitle jump
+            ~121px sideways once the logo paints. */}
+        <img src={croweLogo} alt="Crowe" className="crowe-logo__img" width={465} height={138} />
         <div className="header-sep" />
         <div className="header-sub">
           {showTestName ? testName : 'Bizcheck.com.ua'}

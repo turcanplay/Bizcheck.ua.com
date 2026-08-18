@@ -181,7 +181,7 @@
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: #8B92A5;
+  color: #66708A;
   padding: 8px 12px 6px;
 }
 .hero__search-hit {
@@ -208,7 +208,9 @@
   padding: 2px 8px;
   border-radius: 999px;
 }
-.hero__search-hit-badge.is-basic   { background: #FFF3D6; color: #B87D00; }
+/* #B87D00 on this amber wash is 3.19:1; #8A5E00 is 5.17:1 — the paired
+   .is-premium badge already sits at 5.4:1, so this brings the two in line. */
+.hero__search-hit-badge.is-basic   { background: #FFF3D6; color: #8A5E00; }
 .hero__search-hit-badge.is-premium { background: #D6E1EF; color: #005A9C; }
 
 .hero__search-all {
@@ -233,7 +235,7 @@
   padding: 24px 12px;
   text-align: center;
   font-size: 13px;
-  color: #8B92A5;
+  color: #66708A;
 }
 .hero__search input {
   flex: 1;
@@ -244,7 +246,7 @@
   color: #011E41;
   font-family: inherit;
 }
-.hero__search input::placeholder { color: #8B92A5; }
+.hero__search input::placeholder { color: #66708A; }
 
 .hero__nav-actions {
   display: inline-flex;
@@ -504,8 +506,8 @@
 .hero__badge-num {
   font-size: 16px; font-weight: 700; color: #011E41; margin-top: 4px;
 }
-.hero__badge-num span { font-size: 12px; font-weight: 500; color: #8B92A5; }
-.hero__badge-sub { font-size: 11px; color: #8B92A5; }
+.hero__badge-num span { font-size: 12px; font-weight: 500; color: #66708A; }
+.hero__badge-sub { font-size: 11px; color: #66708A; }
 
 .hero__badge--purchases {
   top: 48%;

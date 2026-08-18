@@ -19,6 +19,10 @@
   color: inherit;
   cursor: pointer;
   transition: opacity .2s ease;
+  /* Lets the flex item shrink so .header-sub can ellipsis instead of pushing
+     .header-right out of the bar. */
+  min-width: 0;
+  overflow: hidden;
 }
 .header-logo:hover { opacity: .85; }
 .header-logo:hover .header-sub { color: #FFC24D; }
@@ -28,6 +32,9 @@
   width: auto;
   object-fit: contain;
   display: block;
+  /* The <img> also carries width/height attributes; this keeps the reserved box
+     correct once `width: auto` takes over. */
+  flex-shrink: 0;
 }
 
 .header-sep {
@@ -43,6 +50,14 @@
   letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--gold);
+  /* This slot also renders the active test's admin-entered name during the
+     quiz/cta phases. Ukrainian names run far past the 'Bizcheck.com.ua'
+     placeholder they were sized for, and the bar is a hard 60px — wrapping
+     would spill out of it. Truncate instead. */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-right {

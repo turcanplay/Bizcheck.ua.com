@@ -926,7 +926,10 @@
 .cta-recovery .start-form__pill.selected {
   border-color: transparent;
   background: linear-gradient(135deg, #B87D00 0%, #F5A800 100%);
-  color: #fff;
+  /* White ran 3.5:1 at the dark end of this gradient and 2.0:1 at the amber end
+     — both under WCAG AA. Crowe Indigo is what every other amber control in the
+     app uses and clears 4.7:1 across the whole ramp. */
+  color: #011E41;
   box-shadow: 0 6px 14px -4px rgba(138, 90, 0, 0.4);
 }
 
@@ -940,7 +943,8 @@
   border: none;
   border-radius: 12px;
   background: linear-gradient(135deg, #B87D00 0%, #F5A800 100%);
-  color: #fff;
+  /* Same amber ramp as the pill above — see there. */
+  color: #011E41;
   font-family: inherit;
   font-size: 14px;
   font-weight: 800;
@@ -958,8 +962,8 @@
   cursor: not-allowed;
 }
 .cta-recovery__save .cta-page__status-spinner {
-  border-color: rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border-color: rgba(1, 30, 65, 0.25);
+  border-top-color: #011E41;
 }
 
 .cta-recovery__ok {

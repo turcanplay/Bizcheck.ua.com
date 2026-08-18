@@ -25,14 +25,17 @@
   color: var(--ink, #011E41);
 }
 
+/* White on Crowe Amber is 2.00:1 — unreadable, and it is the one place in the
+   app that did it (the header's .lang-toggle__btn--active already pairs amber
+   with Crowe Indigo, 9.4:1). Matched to that. */
 .start-form__lang-btn--active {
   background: var(--gold, #F5A800);
-  color: #fff;
+  color: var(--navy-deep, #011E41);
 }
 
 .start-form__lang-btn--active:hover {
   background: var(--gold, #F5A800);
-  color: #fff;
+  color: var(--navy-deep, #011E41);
 }
 
 /* Hero */

@@ -39,7 +39,10 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--gold-dark, #a87a00);
+  /* Was var(--gold-dark) (#D99400) on the 10%-amber wash — 2.39:1, well under
+     WCAG AA 4.5:1 for 11px text. This darker amber lands at 5.3:1 on the same
+     wash while staying in the Crowe amber family. */
+  color: #8A5E00;
   background: linear-gradient(135deg, rgba(253, 161, 0, 0.10), rgba(253, 200, 80, 0.10));
   border: 1px solid rgba(253, 161, 0, 0.20);
   padding: 7px 14px 7px 12px;

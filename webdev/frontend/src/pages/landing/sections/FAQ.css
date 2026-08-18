@@ -112,28 +112,26 @@
 }
 .faq-item__head:hover { background: rgba(0, 117, 201, 0.03); }
 
+/* Single rule. There used to be two `.faq-item__num` blocks whose `color` and
+   `background` contradicted each other (the first painted the label transparent
+   and pushed the number through a `::before { content: attr(data-num) }`), plus
+   the `::before` itself — which resolved to an empty string because the JSX
+   renders the number as text content and never sets data-num. Only the values
+   below were ever visible. */
 .faq-item__num {
   font-weight: 700;
   font-size: 13px;
-  color: transparent;
   min-width: 32px;
   height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(1, 30, 65, 0.05), rgba(245, 168, 0, 0.12));
-  background-clip: padding-box;
-  font-family: ui-monospace, 'Menlo', monospace;
-  position: relative;
-}
-.faq-item__num::before {
-  content: attr(data-num);
-}
-.faq-item__num {
   background: linear-gradient(135deg, rgba(0, 117, 201, 0.12), rgba(0, 117, 201, 0.12));
   color: #0075C9;
   letter-spacing: -0.01em;
+  font-family: ui-monospace, 'Menlo', monospace;
+  position: relative;
 }
 .faq-item.is-open .faq-item__num {
   background: linear-gradient(135deg, #0A3A6E, #0075C9);

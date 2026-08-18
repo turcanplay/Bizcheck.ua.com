@@ -36,7 +36,10 @@
   border: none;
   border-radius: 50%;
   background: #F1F5F9;
-  color: #64748B;
+  /* The close glyph is the only affordance on this control; #64748B gave 4.34:1
+     at 22px normal weight, which is under AA (large-text relief starts at 24px
+     for non-bold). #475569 is 6.9:1. */
+  color: #475569;
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
@@ -90,14 +93,14 @@
   box-shadow: 0 0 0 4px rgba(0, 117, 201, 0.1);
 }
 .review-field input::placeholder,
-.review-field textarea::placeholder { color: #94A3B8; }
+.review-field textarea::placeholder { color: #66708A; }
 
 .review-counter {
   position: absolute;
   right: 4px;
   bottom: -16px;
   font-size: 11px;
-  color: #94A3B8;
+  color: #66708A;
 }
 
 /* --- Star picker --- */
@@ -188,9 +191,15 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.18);
 }
+/* The animation runs forever, so it — not the rules above — decides the button's
+   box-shadow at every moment (animations outrank plain author declarations, and
+   `animation-play-state: paused` on :hover freezes the value instead of
+   releasing it). Both the base ring and the :hover ring were therefore never
+   painted, and the amber button wore a blue glow. Keeping the keyframes amber
+   makes all three agree. */
 @keyframes rvCtaPulse {
-  0%, 100% { box-shadow: 0 14px 34px -10px rgba(0, 117, 201, 0.55), 0 0 0 6px rgba(0, 117, 201, 0.08); }
-  50%      { box-shadow: 0 14px 34px -10px rgba(0, 117, 201, 0.55), 0 0 0 12px rgba(0, 117, 201, 0.04); }
+  0%, 100% { box-shadow: 0 14px 34px -10px rgba(245, 168, 0, 0.55), 0 0 0 6px rgba(245, 168, 0, 0.10); }
+  50%      { box-shadow: 0 14px 34px -10px rgba(245, 168, 0, 0.55), 0 0 0 12px rgba(245, 168, 0, 0.05); }
 }
 @media (prefers-reduced-motion: reduce) {
   .review-cta { animation: none; }

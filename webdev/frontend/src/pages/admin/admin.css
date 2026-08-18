@@ -60,8 +60,10 @@
 .admin-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* Login */
-.admin-login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-.admin-login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; width: 380px; }
+.admin-login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px 16px; }
+/* `width: 380px` alone overflowed every viewport narrower than 380px (the wrap
+   is a centring flex box with no padding, so nothing clamped it). */
+.admin-login-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; width: 380px; max-width: 100%; }
 .admin-login-card h2 { margin-bottom: 24px; text-align: center; }
 
 /* Forms */
@@ -225,7 +227,10 @@
 }
 .admin-report-type-desc {
   font-size: 11.5px;
-  color: var(--text2, #64748B);
+  /* These radio cards deliberately use a light surface (#fff) inside the dark
+     admin theme, so the theme's --text2 (#8b8fa7) lands at 3.19:1 on them —
+     under WCAG AA. Use the light-theme muted directly (4.76:1). */
+  color: #64748B;
   line-height: 1.35;
 }
 @media (max-width: 640px) {
@@ -269,7 +274,8 @@
 }
 .admin-visibility-desc {
   font-size: 11px;
-  color: var(--text2, #64748B);
+  /* Same light-on-dark-theme card as .admin-report-type-desc — see there. */
+  color: #64748B;
   line-height: 1.35;
 }
 @media (max-width: 640px) {

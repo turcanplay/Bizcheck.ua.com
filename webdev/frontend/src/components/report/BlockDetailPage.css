@@ -69,12 +69,13 @@
   line-height: 1.2;
   letter-spacing: -0.015em;
   margin: 0;
-  color: #011E41;
-  background: linear-gradient(135deg, #0A3A6E 0%, #0075C9 100%);
-  -webkit-background-clip: text;
-          background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  /* PDF-SAFE. This heading is captured by html2canvas-pro, whose background-clip
+     parser folds every value other than padding-box/content-box back to
+     border-box, and which has no -webkit-text-fill-color support at all. The old
+     gradient-text trick therefore rendered in the delivered PDF as a solid blue
+     rectangle with the block title painted `transparent` on top of it — the
+     title was invisible on every per-block detail page. Solid indigo instead. */
+  color: #0A3A6E;
 }
 
 .block-detail__essence-text {
