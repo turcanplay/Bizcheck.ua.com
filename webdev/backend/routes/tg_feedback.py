@@ -37,6 +37,7 @@ from models.tg_outreach import TgOutreach
 from middleware.admin_middleware import admin_required
 from utils.validators import clean_text, clean_optional, MAX_NAME
 import services.feedback as fb
+from services.telegram_send import deep_link
 
 admin_feedback_bp = Blueprint("admin_feedback", __name__, url_prefix="/api_crowe_bizcheck/admin")
 tg_feedback_bp = Blueprint("tg_feedback", __name__, url_prefix="/api_crowe_bizcheck/tg/feedback")
@@ -49,8 +50,13 @@ _norm_lang = fb.norm_lang
 _THANKS = fb.THANKS
 
 
-def _bot_username():
-    return os.getenv("TELEGRAM_BOT_USERNAME", "CROWE_BIZCHECK_bot")
+def _feedback_link(token: str) -> str:
+    """Personal outreach deep-link, or "" when TELEGRAM_BOT_USERNAME is unset.
+
+    Empty is the honest answer: a link built from a fallback handle points at a
+    bot that never got this token, so the admin would forward a dead link.
+    """
+    return deep_link(f"fb_{token}") or ""
 
 
 def _public_row(row):
@@ -71,7 +77,7 @@ def _public_row(row):
         "answered_at": str(row.get("answered_at") or "") if row.get("answered_at") else "",
     }
     if row.get("mode") == "link":
-        out["link"] = f"https://t.me/{_bot_username()}?start=fb_{row['token']}"
+        out["link"] = _feedback_link(row["token"])
     return out
 
 
@@ -258,7 +264,7 @@ def send_feedback():
         )
         results.append({
             "target": str(raw).strip(), "status": "link", "username": username,
-            "link": f"https://t.me/{_bot_username()}?start=fb_{token}",
+            "link": _feedback_link(token),
         })
 
     return jsonify({

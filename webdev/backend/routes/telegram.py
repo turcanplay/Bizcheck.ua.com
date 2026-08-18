@@ -19,6 +19,7 @@ from database.db import execute, query
 from utils.crypto import decrypt_value
 from middleware.admin_middleware import submission_owner_or_admin
 from services.scoring import resolve_zones
+from services.telegram_send import bot_username, deep_link
 from utils.validators import clean_text, clean_optional, MAX_NAME
 
 log = logging.getLogger(__name__)
@@ -122,7 +123,12 @@ def generate_tg_link(sub_id):
     """
     token = uuid.uuid4().hex
     expires = datetime.now(timezone.utc) + timedelta(hours=_TOKEN_TTL_HOURS)
-    bot_username = os.getenv("TELEGRAM_BOT_USERNAME", "CROWE_BIZCHECK_bot")
+
+    # No handle configured → no link. Handing back a link built from a default
+    # handle would send the client into a DIFFERENT bot, one that never received
+    # this token and so cannot recognize them: a dead end with no error anywhere.
+    if not bot_username():
+        return jsonify({"error": "Telegram delivery is not configured"}), 503
 
     existing = query(
         "SELECT tg_token, tg_token_expires, pdf_data IS NOT NULL AS has_pdf FROM submissions WHERE id = %s",
@@ -141,7 +147,7 @@ def generate_tg_link(sub_id):
         if datetime.now(timezone.utc) < ex_exp:
             return jsonify({
                 "token": existing["tg_token"],
-                "url": f"https://t.me/{bot_username}?start={existing['tg_token']}",
+                "url": deep_link(existing["tg_token"]),
                 "pdf_ready": pdf_ready,
             })
 
@@ -152,7 +158,7 @@ def generate_tg_link(sub_id):
 
     return jsonify({
         "token": token,
-        "url": f"https://t.me/{bot_username}?start={token}",
+        "url": deep_link(token),
         "pdf_ready": pdf_ready,
     })
 

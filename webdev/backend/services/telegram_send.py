@@ -33,6 +33,30 @@ def is_configured() -> bool:
     return bool(_token())
 
 
+def bot_username() -> str:
+    """Handle of the client-facing bot — deliberately WITHOUT a fallback.
+
+    A hardcoded default here is worse than nothing: it builds
+    `t.me/<some other bot>?start=<token>` links carrying a token that the other
+    bot never received, so the person lands in a bot that cannot recognize them
+    and no error is logged anywhere. Unset therefore means "deep links are not
+    configured", and every caller has to say so out loud.
+    """
+    return (os.getenv("TELEGRAM_BOT_USERNAME") or "").strip().lstrip("@")
+
+
+def deep_link(start: str) -> str | None:
+    """`t.me/<bot>?start=<payload>`, or None when the handle is not configured."""
+    username = bot_username()
+    if not username:
+        log.error(
+            "TELEGRAM_BOT_USERNAME is not set — refusing to build a deep link "
+            "rather than pointing the user at the wrong bot"
+        )
+        return None
+    return f"https://t.me/{username}?start={start}"
+
+
 _MAX_RETRY = 3       # how many times to wait-and-retry on a 429
 _RETRY_CAP_SEC = 30  # never sleep longer than this on a single retry_after
 
