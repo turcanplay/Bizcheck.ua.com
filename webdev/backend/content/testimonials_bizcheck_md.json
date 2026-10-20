@@ -1,0 +1,50 @@
+{
+  "_source": "Public reviews from https://bizcheck.md/api_crowe_bizcheck/testimonials, fetched 2026-10-20. Names, roles and ratings as published there; quotes translated from the RO/RU originals. The role carries the origin so visitors can see these come from the Moldovan platform.",
+  "testimonials": [
+    {
+      "name": "Cernoutan Alexandru",
+      "role": "RIKIPAL · Bizcheck.md, Moldova",
+      "rating": 5,
+      "order_index": 1,
+      "lang": "uk",
+      "quote_uk": "Коли бізнес працює стабільно й уже давно займає сильну позицію на ринку, здається, що всі ключові процеси давно зрозумілі та вибудувані правильно. Але тест BizCheck показав, що навіть в успішній компанії завжди є сенс поглянути на процеси глибше й системніше.\n\nТест справді протвережує: він допомагає побачити можливі ризики та зрозуміти, де варто заздалегідь себе убезпечити. Особливо в Молдові, де штрафи можуть бути серйозними, важливо не чекати проблем, а бути на крок попереду.",
+      "quote_en": "When a business runs steadily and has long held a strong position in the market, it feels as if all the key processes are understood and set up correctly. But the BizCheck test showed that even in a successful company it always makes sense to look at processes more deeply and systematically.\n\nThe test is a real wake-up call: it helps you see possible risks and understand where you should protect yourself in advance. Especially in Moldova, where fines can be serious, it is important not to wait for problems but to stay one step ahead."
+    },
+    {
+      "name": "Alexandra D",
+      "role": "CEO · Bizcheck.md, Moldova",
+      "rating": 4.5,
+      "order_index": 2,
+      "lang": "uk",
+      "quote_uk": "PDF-звіт зроблено чудово: він дає повну й професійну картину стану компанії — саме те, що мені було потрібно для ухвалення обґрунтованих рішень.",
+      "quote_en": "The PDF report is excellently made: it gives a complete, professional picture of the company's situation — exactly what I needed to make informed decisions."
+    },
+    {
+      "name": "Chistol Maxim",
+      "role": "SEO · Bizcheck.md, Moldova",
+      "rating": 5,
+      "order_index": 3,
+      "lang": "uk",
+      "quote_uk": "Дуже ціную, що платформа пропонує також юридичні шаблони разом із консультацією — це комплексне рішення, яке заощаджує дорогоцінні час і гроші.",
+      "quote_en": "I really value that the platform also offers legal templates together with consultation — it is a complete solution that saves precious time and money."
+    },
+    {
+      "name": "Petranov Vlad",
+      "role": "Bizcheck.md, Moldova",
+      "rating": 5,
+      "order_index": 4,
+      "lang": "uk",
+      "quote_uk": "Дуже зручний тест — буквально за пару хвилин дає розуміння, на що варто звернути увагу. Звіт детальний і максимально зрозумілий.",
+      "quote_en": "A very convenient test — in just a couple of minutes it shows you what to pay attention to. The report is detailed and as clear as it gets."
+    },
+    {
+      "name": "Popa Chirill",
+      "role": "Підприємець · Bizcheck.md, Moldova",
+      "rating": 5,
+      "order_index": 5,
+      "lang": "uk",
+      "quote_uk": "Дякую! Дуже корисний звіт.",
+      "quote_en": "Thank you! A very useful report."
+    }
+  ]
+}
