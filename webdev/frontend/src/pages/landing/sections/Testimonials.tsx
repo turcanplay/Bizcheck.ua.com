@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLang } from '@/context/LanguageContext';
 import { pickLang } from '@/i18n/pickLang';
-import { publicApi, type PublicTestimonial } from '@/api/public';
+import { publicApi, TESTIMONIAL_ADDED_EVENT, type PublicTestimonial } from '@/api/public';
 import ReviewForm from './ReviewForm';
 import './Testimonials.css';
 
@@ -33,6 +33,7 @@ export default function Testimonials() {
   // Show the freshly-submitted review immediately (it's already live server-side).
   function handleSubmitted(created: PublicTestimonial) {
     setItems(prev => [...prev, created]);
+    window.dispatchEvent(new CustomEvent(TESTIMONIAL_ADDED_EVENT, { detail: created }));
   }
 
   function scrollByDir(dir: 1 | -1) {

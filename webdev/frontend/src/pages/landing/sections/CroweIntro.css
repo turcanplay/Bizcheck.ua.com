@@ -182,16 +182,6 @@
   text-align: center;
 }
 
-/* --- Short hint under the shared intro copy --- */
-.crowe__cta-hint {
-  margin: var(--space-lg) 0 0;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--ink-60);
-}
-
 /* --- Links / buttons (with hover preview) --- */
 /* One column: each card is roughly half the section wide, and the labels
    ("Crowe Turcan Mikhailenko") do not survive being halved again. */
@@ -446,7 +436,6 @@
   .crowe__caption { margin-top: -26px; }
   .crowe__caption-name { font-size: 19px; }
   .crowe__caption-role { font-size: 12px; }
-  .crowe__cta-hint { font-size: 13px; }
   /* Buttons are already one per row here; just tighten them up. */
   .crowe__links { gap: 10px; margin-top: 16px; }
   .crowe__link { min-height: 64px; padding: 12px 16px; gap: 8px; }

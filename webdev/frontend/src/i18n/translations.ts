@@ -654,7 +654,7 @@ export const translations = {
     uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
     en: 'Professional tests and templates for the growth and compliance of your business.',
   },
-  heroCta:           { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
+  heroCta:           { uk: 'Перевірте свою компанію зараз', en: 'Check your company now' },
   heroTrustTitle:    { uk: 'Понад 130+ компаній', en: 'Over 130+ companies' },
   heroTrustSub:      { uk: 'довіряють Crowe Turcan Mikhailenko', en: 'trust Crowe Turcan Mikhailenko' },
   heroRatingSub:     { uk: 'із 230+ відгуків', en: 'from 230+ reviews' },
@@ -674,7 +674,7 @@ export const translations = {
     uk: 'Усі ресурси прості у використанні, редаговані та адаптовані до будь-якого типу компанії.',
     en: 'All resources are easy to use, editable and adaptable to any type of company.',
   },
-  aboutCta: { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
+  aboutCta: { uk: 'Перевірте свою компанію зараз', en: 'Check your company now' },
   aboutIllustrationAlt: {
     uk: 'Bizcheck на ноутбуці, планшеті й телефоні',
     en: 'Bizcheck on a laptop, tablet and phone',
@@ -757,7 +757,7 @@ export const translations = {
                       en: 'Start optimizing your business right now' },
   finalCtaSubtitle: { uk: 'Інтерактивні тести. Професійні шаблони. Спрощені процеси.',
                       en: 'Interactive tests. Professional templates. Simplified processes.' },
-  finalCtaButton:   { uk: 'Перевірте компанію зараз', en: 'Check your company now' },
+  finalCtaButton:   { uk: 'Перевірте свою компанію зараз', en: 'Check your company now' },
 
   // Hero search & menu
   searchRecent:        { uk: 'Останні запити',     en: 'Recent searches' },
@@ -823,10 +823,6 @@ export const translations = {
   croweBtnMikhailenko: { uk: 'Mikhailenko', en: 'Mikhailenko' },
   croweBtnCroweTm:     { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
   croweVisitHint: { uk: 'Перейти на офіційний сайт', en: 'Go to the official website' },
-  croweCtaHint: {
-    uk: 'Задля деталей відвідайте офіційні сайти та познайомтеся з нами:',
-    en: 'For details, visit the official websites and get to know us:',
-  },
 
   // Partner grid under the two managing partners. Names/roles themselves live
   // in src/data/partners.ts — only the heading is UI copy.

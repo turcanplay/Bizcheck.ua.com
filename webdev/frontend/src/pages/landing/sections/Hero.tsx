@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import { pickLang } from '@/i18n/pickLang';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
-import { publicApi, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
+import { publicApi, TESTIMONIAL_ADDED_EVENT, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
 import { useCtaTarget } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
 import { readJson, writeJson } from '@/utils/safeStorage';
@@ -69,6 +69,16 @@ export default function Hero() {
     publicApi.listTestimonials()
       .then(r => setTestimonials(r.testimonials ?? []))
       .catch(() => {});
+  }, []);
+
+  // A review left in the Testimonials section moves the badge right away.
+  useEffect(() => {
+    function onAdded(e: Event) {
+      const created = (e as CustomEvent<PublicTestimonial>).detail;
+      if (created) setTestimonials(prev => [...prev, created]);
+    }
+    window.addEventListener(TESTIMONIAL_ADDED_EVENT, onAdded);
+    return () => window.removeEventListener(TESTIMONIAL_ADDED_EVENT, onAdded);
   }, []);
 
   // Count and average come only from testimonials that actually exist. There
@@ -378,14 +388,24 @@ export default function Hero() {
                 <Star key={i} fill={starFill(ratingStats.avgNum, i)} />
               ))}
             </div>
-            <div className="hero__badge-num">{ratingStats.avg}<span>/5</span></div>
-            <div className="hero__badge-sub">
-              {ratingStats.count === 0
-                ? (lang === 'uk' ? 'відгуки незабаром' : 'reviews coming soon')
-                : (lang === 'uk'
+            {ratingStats.count === 0 ? (
+              <button
+                type="button"
+                className="hero__badge-sub hero__badge-first"
+                onClick={() => jumpToSection('testimonials')}
+              >
+                {lang === 'uk' ? 'Залиште перший відгук →' : 'Leave the first review →'}
+              </button>
+            ) : (
+              <>
+                <div className="hero__badge-num">{ratingStats.avg}<span>/5</span></div>
+                <div className="hero__badge-sub">
+                  {lang === 'uk'
                     ? `з ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} відгуків`
-                    : `from ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} reviews`)}
-            </div>
+                    : `from ${ratingStats.count}${ratingStats.count >= 10 ? '+' : ''} reviews`}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="hero__badge hero__badge--purchases">

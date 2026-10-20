@@ -119,7 +119,7 @@ function PartnerCard({ photo, name, role, bio, links, visitHint, revealClass }: 
               rel="noopener noreferrer"
               aria-label={`${link.label} · ${visitHint}`}
             >
-              <span className="crowe__link-main">
+              <span className="crowe__link-main" translate="no">
                 <span className="crowe__link-label">{link.label}</span>
                 <span className="crowe__link-domain">{link.domain}</span>
               </span>
@@ -255,8 +255,6 @@ export default function CroweIntro() {
 
           <p className="crowe__body">{t('croweBody1')}</p>
           <p className="crowe__body">{t('croweBody2')}</p>
-
-          <p className="crowe__cta-hint">{t('croweCtaHint')}</p>
         </header>
 
         <div className="crowe__people">

@@ -95,6 +95,11 @@ export interface SiteSettings {
   email_delivery_enabled: string;
 }
 
+/** Window event fired with the new PublicTestimonial as `detail` once a visitor's
+ *  review is accepted, so other landing widgets (the hero rating badge) can
+ *  update without refetching. */
+export const TESTIMONIAL_ADDED_EVENT = 'bizcheck:testimonial-added';
+
 export type CtaKey = 'cta_hero_test' | 'cta_about_test' | 'cta_final_test' | 'cta_catalog_test';
 
 export const publicApi = {

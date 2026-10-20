@@ -112,12 +112,19 @@ export default function CatalogSection() {
     return [...set].sort((a, b) => a.localeCompare(b));
   }, [items]);
 
+  // Hide fully inactive items from the public catalog (defense in depth — the
+  // backend already filters them out, but we don't trust upstream payloads).
+  const activeItems = useMemo(() => items.filter(x => x.is_active), [items]);
+
+  // Tabs and filters only make sense once there is something to choose between.
+  // With a single item they are hidden and the URL/tab state is ignored, so a
+  // stale ?tab=templates cannot leave the lone test filtered out of view.
+  const hasChoice = activeItems.length > 1;
+
   const filtered = useMemo(() => {
+    if (!hasChoice) return activeItems;
     const q = search.trim().toLowerCase();
-    return items.filter(x => {
-      // Hide fully inactive items from the public catalog (defense in depth — the
-      // backend already filters them out, but we don't trust upstream payloads).
-      if (!x.is_active) return false;
+    return activeItems.filter(x => {
       // Tab
       if (tab === 'tests' && x.kind !== 'test') return false;
       if (tab === 'templates' && x.kind !== 'template') return false;
@@ -139,7 +146,7 @@ export default function CatalogSection() {
       }
       return true;
     });
-  }, [items, tab, search, categoriesSel, typesSel, pricesSel]);
+  }, [activeItems, hasChoice, tab, search, categoriesSel, typesSel, pricesSel]);
 
   const testsInView = filtered.filter(x => x.kind === 'test');
   const templatesInView = filtered.filter(x => x.kind === 'template');
@@ -187,9 +194,13 @@ export default function CatalogSection() {
           })()}
         </h2>
         <p className="catalog__subtitle-intro">
-          {lang === 'uk'
-            ? 'Тести та шаблони в одному місці.'
-            : 'Tests and templates in one place.'}
+          {hasChoice
+            ? (lang === 'uk'
+                ? 'Тести та шаблони в одному місці.'
+                : 'Tests and templates in one place.')
+            : (lang === 'uk'
+                ? 'Один універсальний тест для перевірки вашого бізнесу: юридичні, податкові та управлінські ризики в одному чек-апі.'
+                : 'One universal test to check your business: legal, tax and management risks in a single check-up.')}
         </p>
         <button type="button" className="catalog__cta" onClick={handleCatalogCta}>
           {t('heroCta')}
@@ -199,8 +210,9 @@ export default function CatalogSection() {
         </button>
       </div>
 
-      <div className="catalog__layout">
+      <div className={`catalog__layout ${hasChoice ? '' : 'catalog__layout--single'}`}>
         {/* --- Sidebar filters --- */}
+        {hasChoice && (
         <aside className={`catalog__sidebar ${filtersOpen ? 'is-open' : ''}`}>
           <button
             type="button"
@@ -293,9 +305,11 @@ export default function CatalogSection() {
           </div>
           </div>
         </aside>
+        )}
 
         {/* --- Right side: tabs + cards --- */}
         <div className="catalog__content">
+          {hasChoice && (
           <div className="catalog__tabs" role="tablist">
             <button
               role="tab"
@@ -313,6 +327,7 @@ export default function CatalogSection() {
               onClick={() => setTab('templates')}
             >{t('catalogTabTemplates')}</button>
           </div>
+          )}
 
           {loading && <div className="catalog__empty">...</div>}
 
@@ -320,7 +335,7 @@ export default function CatalogSection() {
             <div className="catalog__empty">{t('catalogEmpty')}</div>
           )}
 
-          {!loading && (tab === 'all' || tab === 'tests') && testsInView.length > 0 && (
+          {!loading && (!hasChoice || tab === 'all' || tab === 'tests') && testsInView.length > 0 && (
             <>
               <h3 className="catalog__subtitle">{t('catalogSectionTests')}</h3>
               <CatalogGroup
@@ -336,7 +351,7 @@ export default function CatalogSection() {
             </>
           )}
 
-          {!loading && (tab === 'all' || tab === 'templates') && templatesInView.length > 0 && (
+          {!loading && (!hasChoice || tab === 'all' || tab === 'templates') && templatesInView.length > 0 && (
             <>
               <h3 className="catalog__subtitle">{t('catalogSectionTemplates')}</h3>
               <CatalogGroup

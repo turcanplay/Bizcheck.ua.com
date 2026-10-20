@@ -508,6 +508,19 @@
 }
 .hero__badge-num span { font-size: 12px; font-weight: 500; color: #66708A; }
 .hero__badge-sub { font-size: 11px; color: #66708A; }
+.hero__badge-first {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0075C9;
+  cursor: pointer;
+  text-align: left;
+}
+.hero__badge-first:hover { text-decoration: underline; }
 
 .hero__badge--purchases {
   top: 48%;

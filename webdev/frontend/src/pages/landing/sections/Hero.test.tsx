@@ -22,6 +22,7 @@ import { LanguageProvider } from '@/context/LanguageContext';
  */
 
 vi.mock('@/api/public', () => ({
+  TESTIMONIAL_ADDED_EVENT: 'bizcheck:testimonial-added',
   publicApi: {
     listTests: vi.fn().mockResolvedValue({ tests: [] }),
     listTemplates: vi.fn().mockResolvedValue({ templates: [] }),
@@ -260,5 +261,20 @@ describe('Hero recent searches survive a hostile localStorage', () => {
 
     await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('q=audit'));
     expect(JSON.parse(localStorage.getItem('bizcheck_recent_searches') ?? '[]')).toEqual(['audit']);
+  });
+});
+
+describe('Hero rating badge', () => {
+  it('counts a review submitted elsewhere on the page without refetching', async () => {
+    await renderHeroSettled();
+    expect(screen.getByText('з 2 відгуків')).toBeInTheDocument();
+
+    window.dispatchEvent(new CustomEvent('bizcheck:testimonial-added', {
+      detail: { id: 3, name: 'C', rating: 3, text: 'ok', is_approved: true },
+    }));
+
+    // (4 + 5 + 3) / 3 = 4.0
+    await waitFor(() => expect(screen.getByText('з 3 відгуків')).toBeInTheDocument());
+    expect(screen.getByText('4,0')).toBeInTheDocument();
   });
 });

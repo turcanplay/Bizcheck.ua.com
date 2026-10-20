@@ -283,6 +283,14 @@
   margin-top: 1px;
 }
 
+/* Two-column desktop: both columns sit on the row's bottom edge and the
+   floating badge drops to the visual's bottom, so the badge and the CTA share
+   one centre line (both are ~66px tall) instead of the badge floating higher. */
+@media (min-width: 1001px) {
+  .about__inner { align-items: end; }
+  .about__visual-card--floating { bottom: 0; }
+}
+
 @media (max-width: 1000px) {
   .about { padding: 80px 24px 88px; }
   .about__inner { grid-template-columns: 1fr; gap: 56px; }
