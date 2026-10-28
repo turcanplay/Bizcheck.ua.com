@@ -192,6 +192,12 @@ def update(sub_id):
         # user-facing save. Logged with a stack trace so the failure is
         # visible in `docker compose logs` instead of vanishing.
         log.exception("[sales] enqueue failed after PATCH of submission %s", sub_id)
+    # Same rule for the client's CRM webhook — independent fire-once claim.
+    try:
+        from services.crm_notify import maybe_notify_crm
+        maybe_notify_crm(sub_id)
+    except Exception:
+        log.exception("[crm] enqueue failed after PATCH of submission %s", sub_id)
     return jsonify({"submission": sub})
 
 

@@ -39,6 +39,7 @@ from routes.tg_feedback import admin_feedback_bp, tg_feedback_bp
 from routes.tg_admin import tg_exports_bp
 from routes.tg_group import tg_group_bp
 from routes.health import health_bp
+from routes.crm import crm_bp
 
 # ---------------------------------------------------------------------------
 # App factory
@@ -119,6 +120,8 @@ limiter.limit("30 per minute")(tg_feedback_bp)
 limiter.limit("20 per minute")(tg_group_bp)
 # Excel/PDF exports are heavy (full PII dumps built on the fly) — keep them modest.
 limiter.limit("10 per minute")(tg_exports_bp)
+# CRM pull API (API-key gated, read-only lead export) — one poll per second is plenty.
+limiter.limit("60 per minute")(crm_bp)
 limiter.limit("20 per minute", methods=["POST", "PUT", "DELETE"])(admin_feedback_bp)
 limiter.limit("5 per minute", methods=["POST", "PUT", "DELETE"])(admin_tests_bp)
 limiter.limit("10 per minute", methods=["POST", "PUT", "DELETE"])(admin_templates_bp)
@@ -219,6 +222,7 @@ app.register_blueprint(tg_feedback_bp)
 app.register_blueprint(tg_exports_bp)
 app.register_blueprint(tg_group_bp)
 app.register_blueprint(health_bp)
+app.register_blueprint(crm_bp)
 
 # ---------------------------------------------------------------------------
 # Admin panel now lives in the React SPA under /admin/*.

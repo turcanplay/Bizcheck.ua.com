@@ -184,7 +184,7 @@ cmd_on() {
   ok "Mască PORNITĂ → ${MASK_FILE}"
   echo "  • tot conținutul public cere user/parolă (401)"
   echo "  • răspunsurile poartă X-Robots-Tag: noindex, nofollow, …"
-  echo "  • rămân deschise: /.well-known/, /healthz, /api_crowe_bizcheck/health, /robots.txt"
+  echo "  • rămân deschise: /.well-known/, /healthz, /api_crowe_bizcheck/health, /api_crowe_bizcheck/crm/ (cheie API), /robots.txt"
   warn "Cât timp e pornită NU funcționează pentru publicul larg: linkurile de raport"
   warn "  din email/Telegram, previzualizările în rețele sociale, Search Console."
   reload_nginx

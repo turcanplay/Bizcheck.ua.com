@@ -105,6 +105,11 @@ services:
       # `<PUBLIC_BASE_URL>/confidentialitate` — o rută LEGACY, care în nginx.conf
       # face 301 către /uk/privacy. Aici ținta e direct cea canonică.
       EMAIL_PRIVACY_URL: ${EMAIL_PRIVACY_URL:-${PUBLIC_BASE_URL:-https://bizcheck.com.ua}/uk/privacy}
+      # CRM integration (services/crm_notify.py push + routes/crm.py pull).
+      # Empty CRM_WEBHOOK_URL → no push; empty CRM_API_KEY → /crm/* answers 403.
+      CRM_WEBHOOK_URL: ${CRM_WEBHOOK_URL:-}
+      CRM_WEBHOOK_SECRET: ${CRM_WEBHOOK_SECRET:-}
+      CRM_API_KEY: ${CRM_API_KEY:-}
       # Sales-team Telegram notification (private group with the notifier bot).
       # Leave SALES_BOT_TOKEN empty to disable. SALES_CHAT_ID = group id (negative).
       SALES_BOT_TOKEN: ${SALES_BOT_TOKEN:-}

@@ -19,10 +19,11 @@ _pool = None
 #     1  feedback-scheduler thread         (services/feedback.py)
 #     1  export-jobs thread                (services/export_jobs.py)
 #     1  sales-notify thread               (services/sales_notify.py)
+#     1  crm-notify thread                 (services/crm_notify.py)
 #    ~1  ad-hoc email send thread          (services/email_service.py)
-#     = ~6 at a realistic peak.
+#     = ~7 at a realistic peak.
 #
-# max=10 leaves ~1.6x headroom over that peak while capping the whole stack at
+# max=10 leaves ~1.4x headroom over that peak while capping the whole stack at
 # 4 x 10 = 40 connections — comfortably under the postgres:16-alpine default
 # max_connections=100 (minus 3 superuser-reserved). The previous max of 20
 # allowed 4 x 20 = 80, i.e. the backend alone could consume ~82% of the
@@ -459,6 +460,8 @@ def migrate():
                 -- (e.g. email/phone left in the bot) can EDIT the same message in-place.
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS sales_msg_id     BIGINT       DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS sales_msg_is_doc BOOLEAN      NOT NULL DEFAULT FALSE;
+                -- Fire-once guard for the outbound CRM webhook (see services/crm_notify.py).
+                ALTER TABLE submissions ADD COLUMN IF NOT EXISTS crm_notified     BOOLEAN      NOT NULL DEFAULT FALSE;
 
                 CREATE INDEX IF NOT EXISTS idx_submissions_test       ON submissions(test_id);
                 CREATE INDEX IF NOT EXISTS idx_submissions_tg_token   ON submissions(tg_token);

@@ -88,6 +88,28 @@ class Submission:
         )
 
     @staticmethod
+    def claim_crm_notification(submission_id):
+        """Atomically claim the right to push this lead to the CRM webhook
+        (services/crm_notify.py). Returns the id if THIS call won, or None if it
+        was already claimed. Independent of the sales claim on purpose."""
+        row = execute(
+            """UPDATE submissions SET crm_notified = TRUE
+               WHERE id = %s AND crm_notified = FALSE
+               RETURNING id""",
+            (submission_id,),
+        )
+        return row["id"] if row else None
+
+    @staticmethod
+    def release_crm_notification(submission_id):
+        """Undo a CRM claim when the delivery ultimately failed, so a later
+        write path re-attempts instead of the lead never reaching the CRM."""
+        execute(
+            "UPDATE submissions SET crm_notified = FALSE WHERE id = %s",
+            (submission_id,),
+        )
+
+    @staticmethod
     def set_sales_message(submission_id, msg_id, is_doc):
         """Remember the Telegram message_id of the sales notification so later
         contact updates can EDIT the same message instead of sending a new one."""
@@ -228,6 +250,34 @@ class Submission:
             f"SELECT {_SELECT_COLS} FROM submissions{where}"
             f" ORDER BY created_at DESC, id DESC{tail}",
             tuple(params) if params else None,
+            fetch_all=True,
+        )
+        return decrypt_rows(rows)
+
+    @staticmethod
+    def list_for_crm(since=None, since_id=None, limit=50):
+        """Submissions for the CRM pull API (routes/crm.py), oldest-first by id.
+
+        `since_id` (id > since_id) is the robust cursor; `since` (aware datetime,
+        created_at > since) is the convenience one. Both may be combined (AND).
+        Ordered by the primary key so a CRM paging with next_since_id never
+        skips or repeats a row. Decrypted like every other read — the
+        completeness filter (name + contact) runs on the PLAINTEXT in the route,
+        because the encrypted PII columns can't be tested in SQL.
+        """
+        clauses, params = [], []
+        if since_id is not None:
+            clauses.append("id > %s")
+            params.append(int(since_id))
+        if since is not None:
+            clauses.append("created_at > %s")
+            params.append(since)
+        where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+        params.append(max(1, int(limit)))
+
+        rows = query(
+            f"SELECT {_SELECT_COLS} FROM submissions{where} ORDER BY id ASC LIMIT %s",
+            tuple(params),
             fetch_all=True,
         )
         return decrypt_rows(rows)

@@ -355,6 +355,11 @@ def save_tg_contact(token):
         # Swallowed: the contact was saved, which is what the bot is waiting on.
         log.exception("[tg] /contact: sales notification failed for submission %s",
                       row["id"])
+    try:
+        from services.crm_notify import maybe_notify_crm
+        maybe_notify_crm(row["id"])
+    except Exception:
+        log.exception("[tg] /contact: CRM webhook failed for submission %s", row["id"])
 
     # Schedule the automatic feedback question (no-op unless enabled in admin).
     # Fires `feedback_auto_delay_min` minutes after delivery; once per chat.
@@ -469,5 +474,10 @@ def save_lead_via_tg(token):
         # Swallowed: the contacts ARE persisted, so the lead is not lost even if
         # the Telegram notification could not be queued.
         log.exception("[tg] /lead: sales notification failed for submission %s", sub_id)
+    try:
+        from services.crm_notify import maybe_notify_crm
+        maybe_notify_crm(sub_id)
+    except Exception:
+        log.exception("[tg] /lead: CRM webhook failed for submission %s", sub_id)
 
     return jsonify({"ok": True})
