@@ -69,10 +69,6 @@ export default function WhyBizcheck() {
   return (
     <section className="why" data-section="why" id="why-bizcheck">
       <div className="why__header">
-        <span className="why__eyebrow">
-          <span className="why__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ПЕРЕВАГИ' : 'ADVANTAGES'}
-        </span>
         <h2 className="why__title">
           {lang === 'uk' ? (
             <>Чому <span className="why__title-accent">Bizcheck</span>?</>
@@ -80,9 +76,6 @@ export default function WhyBizcheck() {
             <>Why <span className="why__title-accent">Bizcheck</span>?</>
           )}
         </h2>
-        <p className="why__subtitle">{lang === 'uk'
-          ? 'Bizcheck.com.ua — цифрова платформа для підприємців і компаній, які хочуть оптимізувати процеси, вчасно бачити юридичні та податкові ризики й дотримуватися вимог законодавства.'
-          : 'Bizcheck.com.ua is a digital platform for entrepreneurs and companies that want to optimize their processes, spot legal and tax risks early and comply with legal requirements.'}</p>
       </div>
 
       <div className="why__grid">

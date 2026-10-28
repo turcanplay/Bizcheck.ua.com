@@ -333,15 +333,10 @@ export default function Hero() {
 
       <div className="hero__body">
         <div className="hero__copy">
-          <span className="hero__eyebrow">
-            <span className="hero__eyebrow-dot" aria-hidden />
-            {t('heroEyebrowLanding')}
-          </span>
           <h1 className="hero__title">
             <span className="hero__title-accent">{t('heroTitleLine1')}</span><br />
             {t('heroTitleLine2')}
           </h1>
-          <p className="hero__desc">{t('heroDescLanding')}</p>
 
           <Link to={L("/")} className="hero__cta" onClick={handleHeroCta}>
             {t('heroCta')}

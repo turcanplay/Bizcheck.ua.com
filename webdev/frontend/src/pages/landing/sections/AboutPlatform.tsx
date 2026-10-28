@@ -39,7 +39,6 @@ export default function AboutPlatform() {
 
   const title = t('aboutTitle');
   const [titleFirst, titleLast] = splitTitle(title);
-  const eyebrow = lang === 'uk' ? 'ПРО НАС' : 'ABOUT US';
   const totalResources = counts?.total ?? 0;
   const stats = lang === 'uk'
     ? [
@@ -57,10 +56,6 @@ export default function AboutPlatform() {
     <section className="about" data-section="about" id="about-platform">
       <div className="about__inner">
         <div className="about__copy">
-          <span className="about__eyebrow">
-            <span className="about__eyebrow-dot" aria-hidden />
-            {eyebrow}
-          </span>
           <h2 className="about__title">
             {titleFirst} <span className="about__title-accent">{titleLast}</span>
           </h2>

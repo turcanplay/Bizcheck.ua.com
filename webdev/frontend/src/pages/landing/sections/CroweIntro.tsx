@@ -77,7 +77,6 @@ interface PersonProps {
   photo: string;
   name: string;
   role: string;
-  bio: string;
   links: PersonLink[];
   /** Suffix appended to each link's aria-label ("go to the official website"). */
   visitHint: string;
@@ -85,7 +84,7 @@ interface PersonProps {
   revealClass: string;
 }
 
-function PartnerCard({ photo, name, role, bio, links, visitHint, revealClass }: PersonProps) {
+function PartnerCard({ photo, name, role, links, visitHint, revealClass }: PersonProps) {
   return (
     <article className={`crowe__person crowe-reveal ${revealClass}`}>
       <figure className="crowe__visual">
@@ -106,8 +105,6 @@ function PartnerCard({ photo, name, role, bio, links, visitHint, revealClass }: 
           <span className="crowe__caption-role">{role}</span>
         </figcaption>
       </figure>
-
-      <p className="crowe__bio">{bio}</p>
 
       <div className="crowe__links">
         {links.map((link) => (
@@ -170,14 +167,10 @@ function PartnerTile({ slug, name, role, index }: {
 }
 
 /** The 5-per-row partner grid. Names and roles come from src/data/partners.ts. */
-function PartnersGrid({ lang, eyebrow, title }: { lang: Lang; eyebrow: string; title: string }) {
+function PartnersGrid({ lang, title }: { lang: Lang; title: string }) {
   return (
     <div className="crowe-team crowe-reveal crowe-reveal--third">
       <header className="crowe-team__header">
-        <span className="crowe__eyebrow">
-          <span className="crowe__eyebrow-dot" aria-hidden />
-          {eyebrow}
-        </span>
         <h3 className="crowe-team__title">{title}</h3>
       </header>
 
@@ -247,14 +240,7 @@ export default function CroweIntro() {
     >
       <div className="crowe__inner">
         <header className="crowe__header crowe-reveal">
-          <span className="crowe__eyebrow">
-            <span className="crowe__eyebrow-dot" aria-hidden />
-            {t('croweEyebrow')}
-          </span>
           <h2 className="crowe__title">{t('croweTitle')}</h2>
-
-          <p className="crowe__body">{t('croweBody1')}</p>
-          <p className="crowe__body">{t('croweBody2')}</p>
         </header>
 
         <div className="crowe__people">
@@ -263,7 +249,6 @@ export default function CroweIntro() {
             photo="/images/about/dmytro-mykhailenko.png"
             name={t('croweUaName')}
             role={t('croweUaRole')}
-            bio={t('croweUaBio')}
             visitHint={visitHint}
             revealClass="crowe-reveal--first"
             links={[
@@ -292,7 +277,6 @@ export default function CroweIntro() {
             photo="/images/about/ivan-turcan-bust.png"
             name={t('croweName')}
             role={t('croweRole')}
-            bio={t('croweMdBio')}
             visitHint={visitHint}
             revealClass="crowe-reveal--second"
             links={[
@@ -330,7 +314,7 @@ export default function CroweIntro() {
           />
         </div>
 
-        <PartnersGrid lang={lang} eyebrow={t('croweTeamEyebrow')} title={t('croweTeamTitle')} />
+        <PartnersGrid lang={lang} title={t('croweTeamTitle')} />
       </div>
     </section>
   );

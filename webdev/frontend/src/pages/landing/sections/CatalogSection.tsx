@@ -181,10 +181,6 @@ export default function CatalogSection() {
   return (
     <section className="catalog" data-section="catalog" id="resurse">
       <div className="catalog__header">
-        <span className="catalog__eyebrow">
-          <span className="catalog__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'МАРКЕТПЛЕЙС' : 'MARKETPLACE'}
-        </span>
         <h2 className="catalog__title">
           {(() => {
             const title = t('catalogTitle');
@@ -193,15 +189,6 @@ export default function CatalogSection() {
             return (<>{parts.join(' ')} <span className="catalog__title-accent">{last}</span></>);
           })()}
         </h2>
-        <p className="catalog__subtitle-intro">
-          {hasChoice
-            ? (lang === 'uk'
-                ? 'Тести та шаблони в одному місці.'
-                : 'Tests and templates in one place.')
-            : (lang === 'uk'
-                ? 'Один універсальний тест для перевірки вашого бізнесу: юридичні, податкові та управлінські ризики в одному чек-апі.'
-                : 'One universal test to check your business: legal, tax and management risks in a single check-up.')}
-        </p>
         <button type="button" className="catalog__cta" onClick={handleCatalogCta}>
           {t('heroCta')}
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>

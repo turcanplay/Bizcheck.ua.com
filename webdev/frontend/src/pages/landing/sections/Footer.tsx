@@ -73,7 +73,10 @@ export default function Footer() {
       <div className="footer__divider" />
 
       <div className="footer__copyright">
-        © {year} {BRAND}. {t('footerCopyright')}
+        © {year} {BRAND}. {t('footerCopyright')} · {t('footerMadeBy')}{' '}
+        <a className="footer__made-by" href="https://tbs.md" target="_blank" rel="noopener noreferrer">
+          tbs.md
+        </a>
       </div>
     </footer>
   );

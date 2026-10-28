@@ -50,10 +50,6 @@ export default function FAQ() {
         </Helmet>
       )}
       <div className="faq__header">
-        <span className="faq__eyebrow">
-          <span className="faq__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ДОПОМОГА' : 'HELP'}
-        </span>
         <h2 className="faq__title">
           {lang === 'uk' ? (
             <>Часті <span className="faq__title-accent">запитання</span></>
@@ -61,11 +57,6 @@ export default function FAQ() {
             <>Frequently asked <span className="faq__title-accent">questions</span></>
           )}
         </h2>
-        <p className="faq__subtitle">
-          {lang === 'uk'
-            ? 'Відповіді на найпоширеніші запитання про платформу.'
-            : 'Answers to the most common questions about the platform.'}
-        </p>
       </div>
 
       <div className="faq__list">

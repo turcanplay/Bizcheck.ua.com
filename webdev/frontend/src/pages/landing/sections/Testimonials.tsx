@@ -47,10 +47,6 @@ export default function Testimonials() {
   return (
     <section className="testimonials" data-section="testimonials" id="testimonials">
       <div className="testimonials__header">
-        <span className="testimonials__eyebrow">
-          <span className="testimonials__eyebrow-dot" aria-hidden />
-          {lang === 'uk' ? 'ВІДГУКИ' : 'REVIEWS'}
-        </span>
         <h2 className="testimonials__title">
           {lang === 'uk' ? (
             <>Що кажуть наші <span className="testimonials__title-accent">клієнти</span>?</>
@@ -58,11 +54,6 @@ export default function Testimonials() {
             <>What our <span className="testimonials__title-accent">clients</span> say?</>
           )}
         </h2>
-        <p className="testimonials__subtitle">
-          {lang === 'uk'
-            ? 'Реальний досвід компаній, які використовують Bizcheck.'
-            : 'Real experience from companies using Bizcheck.'}
-        </p>
       </div>
 
       {items.length === 0 ? (

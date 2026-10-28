@@ -33,7 +33,6 @@ export default function FinalCta() {
       <div className="final-cta__inner">
         <div className="final-cta__text">
           <h2 className="final-cta__title">{t('finalCtaTitle')}</h2>
-          <p className="final-cta__subtitle">{t('finalCtaSubtitle')}</p>
         </div>
         <Link to={L('/')} className="final-cta__btn" onClick={goToCatalog}>{t('finalCtaButton')}</Link>
       </div>

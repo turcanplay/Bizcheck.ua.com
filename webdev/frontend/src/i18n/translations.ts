@@ -647,13 +647,8 @@ export const translations = {
   heroNavLogin:  { uk: 'Увійти',  en: 'Log in' },
   heroNavSignup: { uk: 'Реєстрація', en: 'Sign up' },
   heroSearchPh:  { uk: 'Пошук тестів і шаблонів', en: 'Search tests and templates' },
-  heroEyebrowLanding: { uk: 'ПЛАТФОРМА #1 В УКРАЇНІ', en: 'THE #1 PLATFORM IN UKRAINE' },
   heroTitleLine1: { uk: 'Bizcheck.com.ua', en: 'Bizcheck.com.ua' },
   heroTitleLine2: { uk: 'Чек-ап бізнесу', en: 'Business check-up' },
-  heroDescLanding: {
-    uk: 'Професійні тести й шаблони для розвитку та відповідності вашого бізнесу.',
-    en: 'Professional tests and templates for the growth and compliance of your business.',
-  },
   heroCta:           { uk: 'Перевірте свою компанію зараз', en: 'Check your company now' },
   heroTrustTitle:    { uk: 'Понад 130+ компаній', en: 'Over 130+ companies' },
   heroTrustSub:      { uk: 'довіряють Crowe Turcan Mikhailenko', en: 'trust Crowe Turcan Mikhailenko' },
@@ -755,8 +750,6 @@ export const translations = {
   // Final CTA band
   finalCtaTitle:    { uk: 'Почніть оптимізувати свій бізнес уже зараз',
                       en: 'Start optimizing your business right now' },
-  finalCtaSubtitle: { uk: 'Інтерактивні тести. Професійні шаблони. Спрощені процеси.',
-                      en: 'Interactive tests. Professional templates. Simplified processes.' },
   finalCtaButton:   { uk: 'Перевірте свою компанію зараз', en: 'Check your company now' },
 
   // Hero search & menu
@@ -784,6 +777,7 @@ export const translations = {
   footerContacts:      { uk: 'Контакти',                    en: 'Contacts' },
   footerHours:         { uk: 'Пн-Пт: 9:00 - 18:00',           en: 'Mon-Fri: 9:00 - 18:00' },
   footerCopyright:     { uk: 'Усі права захищені',  en: 'All rights reserved' },
+  footerMadeBy:        { uk: 'Розроблено',          en: 'Made by' },
   footerOfficial:      { uk: 'Офіційні сайти',           en: 'Official websites' },
   footerLinkTurcan:    { uk: 'ЦУРКАН Іван',                 en: 'TURCAN Ivan' },
   footerLinkCrowe:     { uk: 'Crowe Turcan Mikhailenko',    en: 'Crowe Turcan Mikhailenko' },
@@ -791,32 +785,15 @@ export const translations = {
   // Crowe / partners block (landing, after Hero).
   // Two partner cards side by side: Ukraine first, then Moldova. The intro copy
   // is deliberately short — the substance lives in the two bios below it.
-  croweEyebrow: { uk: 'ХТО СТОЇТЬ ЗА BIZCHECK.COM.UA', en: 'WHO IS BEHIND BIZCHECK.COM.UA' },
   croweTitle:   { uk: 'Crowe Turcan Mikhailenko', en: 'Crowe Turcan Mikhailenko' },
-  croweBody1: {
-    uk: 'Crowe Turcan Mikhailenko — частина міжнародної мережі Crowe Global: аудит, податки та консалтинг для бізнесу в Україні й Молдові.',
-    en: 'Crowe Turcan Mikhailenko is part of the international Crowe Global network — audit, tax and consulting for businesses in Ukraine and Moldova.',
-  },
-  croweBody2: {
-    uk: 'За BIZCHECK стоять два партнери, які щодня працюють із податковими та юридичними ризиками компаній.',
-    en: 'BIZCHECK is backed by two partners who work with companies\' tax and legal risks every single day.',
-  },
 
   // Partner 1 — Ukraine
   croweUaName: { uk: 'ДМИТРО МИХАЙЛЕНКО', en: 'DMYTRO MYKHAILENKO' },
   croweUaRole: { uk: 'Керуючий партнер · Crowe Mikhailenko', en: 'Managing Partner · Crowe Mikhailenko' },
-  croweUaBio: {
-    uk: 'Президент Асоціації податкових консультантів України та член Наглядової ради Палати податкових консультантів. Голова Комітету підприємців з податкових питань при ТПП України, юридичний радник ІТ-комітету Європейської Бізнес Асоціації.',
-    en: 'President of the Association of Tax Advisers of Ukraine and member of the Supervisory Board of the Chamber of Tax Advisers. Chairman of the Entrepreneurs\' Tax Committee at the Ukrainian Chamber of Commerce and Industry, and legal adviser to the IT Committee of the European Business Association.',
-  },
 
   // Partner 2 — Moldova (croweName / croweRole predate the two-partner layout)
   croweName: { uk: 'ЦУРКАН ІВАН', en: 'IVAN TURCAN' },
   croweRole: { uk: 'Керуючий партнер · Crowe Turcan Mikhailenko', en: 'Managing Partner · Crowe Turcan Mikhailenko' },
-  croweMdBio: {
-    uk: 'Розвиває практику Crowe в Республіці Молдова: супроводжує місцеві та міжнародні компанії з питань податків, права й комерційних ризиків. Робить ставку на практичні та зрозумілі рішення.',
-    en: 'Leads the Crowe practice in the Republic of Moldova, supporting local and international companies on tax, legal and commercial risk. Focused on practical, clear-cut solutions.',
-  },
 
   croweBtnTurcan:      { uk: 'Іван Цуркан', en: 'Ivan Turcan' },
   croweBtnCrowe:       { uk: 'Crowe Mikhailenko', en: 'Crowe Mikhailenko' },
@@ -826,7 +803,6 @@ export const translations = {
 
   // Partner grid under the two managing partners. Names/roles themselves live
   // in src/data/partners.ts — only the heading is UI copy.
-  croweTeamEyebrow: { uk: 'ПАРТНЕРИ CROWE MIKHAILENKO', en: 'CROWE MIKHAILENKO PARTNERS' },
   croweTeamTitle: {
     uk: 'Команда партнерів в Україні',
     en: 'The partner team in Ukraine',
