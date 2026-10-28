@@ -121,6 +121,10 @@ export default function CatalogSection() {
   // stale ?tab=templates cannot leave the lone test filtered out of view.
   const hasChoice = activeItems.length > 1;
 
+  // The card listing is shown only once the catalog holds more than two items;
+  // below that the header and its CTA are enough.
+  const showListing = activeItems.length > 2;
+
   const filtered = useMemo(() => {
     if (!hasChoice) return activeItems;
     const q = search.trim().toLowerCase();
@@ -197,6 +201,7 @@ export default function CatalogSection() {
         </button>
       </div>
 
+      {showListing && (
       <div className={`catalog__layout ${hasChoice ? '' : 'catalog__layout--single'}`}>
         {/* --- Sidebar filters --- */}
         {hasChoice && (
@@ -356,6 +361,7 @@ export default function CatalogSection() {
           )}
         </div>
       </div>
+      )}
     </section>
   );
 }

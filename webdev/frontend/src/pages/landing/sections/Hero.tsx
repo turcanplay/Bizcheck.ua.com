@@ -422,7 +422,7 @@ export default function Hero() {
               1811px PNG — CSS caps it at 828px, so 2x covers Retina). */}
           <Picture
             className="hero__laptop"
-            src="/images/hero/laptop.png"
+            src="/images/hero/laptop-uk.png"
             alt="Bizcheck.com.ua marketplace preview"
             width={1656}
             height={1080}
