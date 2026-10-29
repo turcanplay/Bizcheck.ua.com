@@ -21,7 +21,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SERVICES=(backend frontend tgbot groupbot)
+# groupbot is off (compose profile `groupbot`): leads go to the CRM now and
+# SALES_BOT_TOKEN is empty. Naming it here would activate the profile and start
+# it into a crash loop, failing the health wait and rolling the deploy back.
+SERVICES=(backend frontend tgbot)
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-240}"   # secunde de așteptare pentru healthy
 BACKUP_DIR="backups"
 BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
@@ -71,7 +74,6 @@ REQUIRED_VARS=(
   PII_ENCRYPTION_KEY
   TELEGRAM_BOT_TOKEN
   TELEGRAM_BOT_USERNAME
-  SALES_BOT_TOKEN
 )
 
 # Citește lista reală cerută de backend la boot direct din sursă: liniile
@@ -443,9 +445,8 @@ info "Stare servicii:"
 docker compose ps
 
 echo ""
-info "Ultimele log-uri (backend + groupbot):"
+info "Ultimele log-uri (backend):"
 docker compose logs --tail=20 backend || true
-docker compose logs --tail=20 groupbot || true
 
 if [ "$MASK_ON" = "1" ]; then
   echo ""

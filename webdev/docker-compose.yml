@@ -306,7 +306,13 @@ services:
 
   # Internal team bot (private group). Polls SALES_BOT_TOKEN for /excel and /pdf;
   # the backend uses the SAME token only to *send* notifications (no poll conflict).
+  # DISABLED: leads now go to the CRM (routes/crm.py, services/crm_notify.py) and
+  # SALES_BOT_TOKEN is empty on the server, so a plain `docker compose up -d`
+  # would start it into a crash loop. The profile keeps it out of every default
+  # `up`; to bring it back set SALES_BOT_TOKEN and run
+  # `docker compose --profile groupbot up -d groupbot`.
   groupbot:
+    profiles: ["groupbot"]
     build: ./groupbot
     restart: unless-stopped
     depends_on:
