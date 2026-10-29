@@ -1,4 +1,4 @@
-import { lazy, Suspense, Component, type ReactNode } from 'react';
+import { lazy, Suspense, Component, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { LanguageProvider } from '@/context/LanguageContext';
@@ -9,6 +9,7 @@ import LangRedirect, { LegacyRedirect } from '@/components/LangRedirect';
 import LandingPage from '@/pages/landing/LandingPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { isLang } from '@/i18n/routing';
+import { trackMetricaHit } from '@/utils/metrica';
 import './App.css';
 
 // Quiz is essential for the primary flow — keep eagerly loaded.
@@ -126,7 +127,12 @@ class ChunkReloadBoundary extends Component<{ children: ReactNode }, { failed: b
 /** Public-only chrome — banner skipped on admin routes (it would distract
  *  while moderating, and admins consent at hire time, not via cookie banner). */
 function PublicChrome() {
-  const { pathname } = useLocation();
+  const { pathname, search, hash } = useLocation();
+  // SPA navigations are invisible to Yandex Metrica — report each one. No-op
+  // until the visitor accepts analytics (the counter is not loaded before).
+  useEffect(() => {
+    trackMetricaHit(window.location.href);
+  }, [pathname, search, hash]);
   if (pathname.startsWith('/admin_bizcheck_md_crowe')) return null;
   return <CookieBanner />;
 }

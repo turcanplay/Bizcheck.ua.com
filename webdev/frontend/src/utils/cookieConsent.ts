@@ -5,6 +5,8 @@
  * privacy policy materially changes — new vendor, new category, etc.).
  */
 
+import { startMetrica } from './metrica';
+
 declare global {
   interface Window {
     // fbq e injectat de snippet-ul inline Meta Pixel din index.html.
@@ -79,16 +81,17 @@ export function applyMarketingConsent(granted: boolean) {
 let analyticsGranted = false;
 
 /**
- * Aplică consimțământul „Statistici" (analytics).
+ * Aplică consimțământul „Statistici" (analytics) → Yandex Metrica.
  *
- * Yandex Metrica a fost eliminată la lansarea pe piața din Ucraina: `mc.yandex.ru`
- * este blocat acolo, deci scriptul nu s-ar încărca oricum. Categoria „analytics"
- * rămâne în banner pentru că politica de confidențialitate o descrie și pentru că
- * următorul furnizor (Google Analytics 4) se conectează exact aici — momentan nu
- * se mai injectează niciun tag, doar se reține alegerea.
+ * Contorul se încarcă doar la acord (vezi utils/metrica.ts). Retragerea nu-l
+ * poate descărca din pagina curentă — tag.js nu are API de oprire —, dar la
+ * următoarea încărcare nu mai pornește.
+ * Notă: `mc.yandex.ru` e blocat de mulți provideri din Ucraina; acolo scriptul
+ * pur și simplu nu se încarcă, fără erori pentru site.
  */
 export function applyAnalyticsConsent(granted: boolean) {
   analyticsGranted = granted;
+  if (granted) startMetrica();
 }
 
 /** Ultima alegere „Statistici" aplicată în sesiunea curentă. Punctul de verificare
@@ -107,7 +110,7 @@ export function saveConsent(consent: Omit<CookieConsent, 'necessary' | 'version'
   };
   setCookie(CONSENT_COOKIE, JSON.stringify(full), ONE_YEAR_DAYS);
   applyMarketingConsent(full.marketing);   // marketing → Meta Pixel
-  applyAnalyticsConsent(full.analytics);   // statistici → (niciun furnizor conectat)
+  applyAnalyticsConsent(full.analytics);   // statistici → Yandex Metrica
   return full;
 }
 

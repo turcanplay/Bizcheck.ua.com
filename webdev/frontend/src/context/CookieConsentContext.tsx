@@ -30,7 +30,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!stored) return;
     applyMarketingConsent(stored.marketing);  // marketing salvat → Meta Pixel
-    applyAnalyticsConsent(stored.analytics);  // statistici salvat → niciun furnizor conectat
+    applyAnalyticsConsent(stored.analytics);  // statistici salvat → Yandex Metrica
   }, [stored]);
 
   const acceptAll = useCallback(() => {
