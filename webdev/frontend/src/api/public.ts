@@ -15,6 +15,7 @@ export interface PublicTest {
   category: string | null;
   features: string[];
   order_index?: number;
+  report_type?: string;
 }
 
 export interface PublicTemplate {

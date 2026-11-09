@@ -6,8 +6,10 @@ import { publicApi, type PublicTest, type SiteSettings, type CtaKey } from '@/ap
  *
  * Admin configures, per button, which test slug it points to (see the
  * "Setări pagină" admin page). A button with no configured slug — or one
- * pointing at a missing/inactive test — falls back to `{ scroll: true }`,
- * i.e. the old behavior of scrolling to the catalog section.
+ * pointing at a missing/inactive test — goes straight to the default
+ * check-up test (see `pickDefaultTest`). Only when no test is takeable at
+ * all does it fall back to `{ kind: 'scroll' }` (scroll to the catalog,
+ * which is hidden while it holds fewer than three items).
  *
  * Tests + settings are fetched once and shared across all callers via a
  * module-level promise cache (the landing renders 3 CTA buttons).
@@ -38,6 +40,36 @@ function loadCtaData(): Promise<CtaData> {
   return cache;
 }
 
+/** Takeable = active and not a "coming soon" teaser. */
+function isTakeable(t: PublicTest): boolean {
+  return t.is_active && !t.is_coming_soon;
+}
+
+/** Default CTA destination: the BizCheck check-up (report_type `bizcheck`,
+ *  or slug `bizcheck`), else the first takeable test in catalog order. */
+export function pickDefaultTest(tests: PublicTest[]): PublicTest | undefined {
+  const takeable = tests
+    .filter(isTakeable)
+    .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+  return (
+    takeable.find(t => t.report_type === 'bizcheck') ??
+    takeable.find(t => t.slug === 'bizcheck') ??
+    takeable[0]
+  );
+}
+
+/** Pure resolver behind the hook — exported for unit tests. */
+export function resolveCtaTarget(slug: string | undefined, tests: PublicTest[]): CtaTarget {
+  const configured = slug ? tests.find(x => x.slug === slug && isTakeable(x)) : undefined;
+  const test = configured ?? pickDefaultTest(tests);
+  if (!test) return { kind: 'scroll' };
+  // Paid tests route through the checkout placeholder, mirroring TestsShowcase.
+  return {
+    kind: 'route',
+    to: test.is_paid ? `/checkout/test/${test.slug}` : `/test/${test.slug}`,
+  };
+}
+
 export function useCtaTarget(key: CtaKey): CtaTarget {
   const [target, setTarget] = useState<CtaTarget>({ kind: 'scroll' });
 
@@ -45,15 +77,7 @@ export function useCtaTarget(key: CtaKey): CtaTarget {
     let cancelled = false;
     loadCtaData().then(({ settings, tests }) => {
       if (cancelled) return;
-      const slug = settings[key];
-      if (!slug) { setTarget({ kind: 'scroll' }); return; }
-      const test = tests.find(x => x.slug === slug && x.is_active);
-      if (!test) { setTarget({ kind: 'scroll' }); return; }
-      // Paid tests route through the checkout placeholder, mirroring TestsShowcase.
-      setTarget({
-        kind: 'route',
-        to: test.is_paid ? `/checkout/test/${test.slug}` : `/test/${test.slug}`,
-      });
+      setTarget(resolveCtaTarget(settings[key], tests));
     });
     return () => { cancelled = true; };
   }, [key]);
