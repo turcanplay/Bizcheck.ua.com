@@ -197,6 +197,12 @@
   margin: 0 auto 24px;
 }
 
+/* Only Telegram is offered (email delivery switched off) — one centered card. */
+.cta-page__delivery--single {
+  grid-template-columns: 1fr;
+  max-width: 360px;
+}
+
 .cta-page__option {
   display: flex;
   flex-direction: column;

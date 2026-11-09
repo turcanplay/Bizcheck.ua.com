@@ -613,17 +613,16 @@ export default function CtaPage() {
 
         {/* ── Grid de metode — afișat doar cât timp nu a ales nimic ── */}
         {selectedMethod === null && (
-          <div className="cta-page__delivery">
+          <div className={`cta-page__delivery${emailEnabled ? '' : ' cta-page__delivery--single'}`}>
             {/* Email delivery is admin-toggleable (email_delivery_enabled site
-                setting). Off → "coming soon" + disabled; On → active method. */}
+                setting). Off → the card is not rendered at all, Telegram is the
+                only method; On → active method next to Telegram. */}
+            {emailEnabled && (
             <button
               type="button"
-              className={`cta-page__option cta-page__option--download${emailEnabled ? '' : ' cta-page__option--soon'}`}
-              onClick={emailEnabled ? () => handleSelectMethod('download') : undefined}
-              disabled={!emailEnabled}
-              aria-disabled={!emailEnabled}
+              className="cta-page__option cta-page__option--download"
+              onClick={() => handleSelectMethod('download')}
             >
-              {!emailEnabled && <span className="cta-page__option-badge">{t('ctaEmailComingSoon')}</span>}
               <div className="cta-page__option-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 7l9 6 9-6M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
@@ -631,11 +630,12 @@ export default function CtaPage() {
                 </svg>
               </div>
               <div className="cta-page__option-title">{t('ctaEmailTitle')}</div>
-              <div className="cta-page__option-desc">{emailEnabled ? t('ctaEmailDesc') : t('ctaEmailSoonDesc')}</div>
+              <div className="cta-page__option-desc">{t('ctaEmailDesc')}</div>
               <span className="cta-page__option-btn cta-page__option-btn--static">
-                {emailEnabled ? t('ctaEmailBtn') : t('ctaEmailComingSoon')}
+                {t('ctaEmailBtn')}
               </span>
             </button>
+            )}
 
             <button
               type="button"
