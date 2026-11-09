@@ -7,6 +7,7 @@ import Seo from '@/components/seo/Seo';
 import { SITE_URL } from '@/config/siteMeta';
 import {
   alternateLinks,
+  detectBrowserLang,
   isLang,
   isLocalizableRoute,
   langFromPath,
@@ -177,5 +178,26 @@ describe('<Seo> hreflang + canonical', () => {
     expect(headLinks('alternate')).toContainEqual({
       hrefLang: 'uk', href: `${SITE_URL}/uk/test/audit`,
     });
+  });
+});
+
+describe('detectBrowserLang', () => {
+  const nav = (languages: string[], userAgent = 'Mozilla/5.0 Chrome/130') =>
+    ({ languages, language: languages[0] ?? '', userAgent });
+
+  it('picks the first browser language that maps to uk/en', () => {
+    expect(detectBrowserLang(nav(['en-US', 'uk']))).toBe('en');
+    expect(detectBrowserLang(nav(['uk-UA', 'en']))).toBe('uk');
+    expect(detectBrowserLang(nav(['de-DE', 'en-GB']))).toBe('en');
+  });
+
+  it('maps ru/be to uk (not app languages)', () => {
+    expect(detectBrowserLang(nav(['ru-RU', 'en']))).toBe('uk');
+  });
+
+  it('returns null when nothing matches or for crawlers', () => {
+    expect(detectBrowserLang(nav(['de', 'fr']))).toBeNull();
+    expect(detectBrowserLang(nav(['en-US'], 'Mozilla/5.0 (compatible; Googlebot/2.1)'))).toBeNull();
+    expect(detectBrowserLang(nav([]))).toBeNull();
   });
 });

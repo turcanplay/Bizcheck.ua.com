@@ -57,7 +57,9 @@ export default function CtaPage() {
   const [resent, setResent] = useState(false);
   // Email delivery is admin-toggleable (site setting). Off → card shows "coming soon".
   const [emailEnabled, setEmailEnabled] = useState(false);
-  const pdfSavedRef = useRef(false);
+  // Language of the last PDF generation started; a language switch on the CTA
+  // page regenerates it so the bot sends the PDF in the language on screen.
+  const pdfSavedLangRef = useRef<string | null>(null);
   // Synchronous in-flight guards. `disabled` only takes effect on the next
   // render, so a double click (or a click landing in the same tick as a state
   // update) can otherwise fire the same request twice.
@@ -259,8 +261,8 @@ export default function CtaPage() {
   }, [report, submissionId, submissionToken, lang]);
 
   useEffect(() => {
-    if (!report || !submissionId || pdfSavedRef.current) return;
-    pdfSavedRef.current = true;
+    if (!report || !submissionId || pdfSavedLangRef.current === lang) return;
+    pdfSavedLangRef.current = lang;
     // A flat 3s here was a guess at "the report DOM has rendered by now", and
     // every user paid it in full even when the DOM was ready on the first
     // frame. The condition is observable — the same scrollHeight check
@@ -280,7 +282,7 @@ export default function CtaPage() {
     };
     rafId = requestAnimationFrame(poll);
     return () => { cancelled = true; cancelAnimationFrame(rafId); };
-  }, [report, submissionId, generateAndSavePdf]);
+  }, [report, submissionId, generateAndSavePdf, lang]);
 
   function handleSelectMethod(m: DeliveryMethod) {
     setSelectedMethod(m);

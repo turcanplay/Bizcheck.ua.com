@@ -313,6 +313,17 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     }
   }, [saveToBackend]);
 
+  /* Keep submissions.language in sync with the UI language. It is written at
+     creation, but the header switch stays visible during the quiz and on the
+     CTA page — without this the Telegram bot (which reads the stored
+     language) would answer in the language the user started in. */
+  const syncedLangRef = useRef(lang);
+  useEffect(() => {
+    if (syncedLangRef.current === lang) return;
+    syncedLangRef.current = lang;
+    if (submissionIdRef.current) saveToBackend(submissionIdRef.current, { language: lang });
+  }, [lang, saveToBackend]);
+
   /* Auto-save answers on every question transition */
   const prevPhaseRef = useRef(phase);
   useEffect(() => {

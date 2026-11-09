@@ -103,6 +103,22 @@ class TestStartHappyPath:
         assert "82%" in summary
         assert "Фінанси" in summary
 
+    async def test_markdown_chars_in_names_and_titles_cannot_break_delivery(self, http):
+        """REGRESSION: a `_`/`*` in a name or block title made Telegram reject
+        the Markdown summary, and the PDF was never sent."""
+        http.get_result = FakeResponse(200, _report_payload(
+            first_name="Ivan_*Bad", last_name="Smith &amp; Co",
+            block_scores_json=[{"order": 1, "title": "Tax [*draft*]", "score": 50}],
+        ))
+        update, context = FakeUpdate(), FakeContext(args=[TOKEN])
+
+        await handlers.cmd_start(update, context)
+
+        summary = update.effective_chat.texts[1]
+        assert "Ivan Bad Smith & Co" in summary
+        assert "Tax (draft)" in summary
+        assert len(update.effective_chat.documents) == 1
+
     @pytest.mark.parametrize("lang,expected", [("uk", "Блок 2"), ("en", "Block 2")])
     async def test_untitled_block_uses_the_localized_fallback(self, http, lang, expected):
         """REGRESSION: the fallback used to be the Romanian word "Bloc"."""

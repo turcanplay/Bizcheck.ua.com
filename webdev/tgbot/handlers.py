@@ -9,6 +9,7 @@ Groups, in order:
 """
 
 import io
+import html
 import base64
 
 import httpx
@@ -16,12 +17,25 @@ from telegram import (
     Update, InlineKeyboardButton, InlineKeyboardMarkup,
     KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove,
 )
+from telegram.error import BadRequest
 from telegram.ext import ContextTypes
 
 import backend
 from config import logger, EMAIL_RE, PHONE_RE
 from strings import _STRINGS, _t, pick_lang
 from helpers import _zone, display_pct
+
+
+# Legacy-Markdown control characters. A user's name or an admin block title
+# containing one of these made Telegram reject the whole summary ("can't parse
+# entities") AFTER the loading message was deleted — the PDF never went out.
+_MD_UNSAFE = str.maketrans({"*": "", "`": "", "_": " ", "[": "(", "]": ")"})
+
+
+def _md_safe(value) -> str:
+    """User/admin text made safe to embed in a parse_mode="Markdown" message.
+    Names are stored bleach-sanitised, so `&` arrives as `&amp;` — unescape."""
+    return html.unescape(str(value or "")).translate(_MD_UNSAFE).strip()
 
 
 def _client_lang(update: Update) -> str:
@@ -150,8 +164,8 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
 
     data        = resp.json()
     lang        = data.get("language") or ui_lang
-    first_name  = data.get("first_name", "")
-    last_name   = data.get("last_name", "")
+    first_name  = _md_safe(data.get("first_name"))
+    last_name   = _md_safe(data.get("last_name"))
     pdf_b64     = data.get("pdf_b64")
     # Same rounding as the report/email/sales card: round once, then both the
     # zone and the printed number derive from that single integer.
@@ -180,14 +194,20 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     if block_scores:
         lines.append(_t(lang, "blocks_header"))
         for b in block_scores:
-            title = b.get("title") or _t(lang, "block_fallback", order=b.get("order", ""))
+            title = _md_safe(b.get("title")) or _t(lang, "block_fallback", order=b.get("order", ""))
             lines.append(f"└ {title}")
         lines.append("")
 
     lines.append(_t(lang, "pdf_footer"))
 
     await status_msg.delete()
-    await chat.send_message("\n".join(lines), parse_mode="Markdown")
+    summary = "\n".join(lines)
+    try:
+        await chat.send_message(summary, parse_mode="Markdown")
+    except BadRequest as exc:
+        # Last line of defence: never let formatting block the PDF below.
+        logger.warning("Summary Markdown rejected (%s) — sending plain text", exc)
+        await chat.send_message(summary.replace("*", ""))
 
     # 3. Send PDF file
     if pdf_b64:

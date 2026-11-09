@@ -1,18 +1,15 @@
 import { Navigate, useLocation, useParams, type Params } from 'react-router-dom';
-import { DEFAULT_LANG, localizePath, readStoredLang, stripLangPrefix } from '@/i18n/routing';
+import { DEFAULT_LANG, detectBrowserLang, localizePath, readStoredLang, stripLangPrefix } from '@/i18n/routing';
 
 /**
- * `/` → `/uk/` (or `/en/` for a returning visitor who last browsed English).
- *
- * Client-side `<Navigate replace>` is the SPA half of the fix; nginx should
- * also answer `/` with a real 301 so crawlers never see a language-less URL
- * (see the deployment notes). Deliberately NOT sniffing `Accept-Language` /
- * `navigator.language`: the default language must be deterministic, otherwise
- * Googlebot (which crawls as `en`) would index `/en/` as x-default.
+ * `/` → `/uk/` or `/en/`: the language the visitor last chose, else the
+ * browser language, else Ukrainian. Crawlers are excluded from the browser
+ * sniff (see `detectBrowserLang`), so Googlebot — which renders as `en` —
+ * still lands on `/uk/` and the x-default stays deterministic.
  */
 export default function LangRedirect() {
   const { pathname, search, hash } = useLocation();
-  const lang = readStoredLang() ?? DEFAULT_LANG;
+  const lang = readStoredLang() ?? detectBrowserLang() ?? DEFAULT_LANG;
   return <Navigate to={`${localizePath(stripLangPrefix(pathname), lang)}${search}${hash}`} replace />;
 }
 

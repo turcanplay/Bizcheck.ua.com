@@ -122,6 +122,28 @@ export function readStoredLang(): Lang | null {
   }
 }
 
+const BOT_UA = /bot|crawl|spider|slurp|lighthouse|headless|preview/i;
+
+/**
+ * Language from the browser settings (`navigator.languages`), for a first
+ * visit to `/`. The first entry that maps to uk/en wins (`ru`/`be` map to uk —
+ * the audience is Ukrainian; they are NOT app languages). Crawlers get `null`
+ * so the language-less root stays deterministic (`/uk/`, the x-default).
+ */
+export function detectBrowserLang(
+  nav: Pick<Navigator, 'languages' | 'language' | 'userAgent'> | undefined =
+    typeof navigator === 'undefined' ? undefined : navigator,
+): Lang | null {
+  if (!nav || BOT_UA.test(nav.userAgent || '')) return null;
+  const list = nav.languages?.length ? nav.languages : [nav.language];
+  for (const raw of list) {
+    const code = (raw || '').toLowerCase().split('-')[0];
+    if (code === 'uk' || code === 'ru' || code === 'be') return 'uk' as Lang;
+    if (code === 'en') return 'en' as Lang;
+  }
+  return null;
+}
+
 export function writeStoredLang(lang: Lang): void {
   try {
     localStorage.setItem(LANG_STORAGE_KEY, lang);
