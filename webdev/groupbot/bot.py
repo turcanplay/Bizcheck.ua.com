@@ -42,6 +42,7 @@ import time
 import random
 import asyncio
 import logging
+import re
 
 import httpx
 from dotenv import load_dotenv
@@ -54,10 +55,24 @@ from telegram.ext import (
 
 load_dotenv()
 
+class _RedactBotToken(logging.Formatter):
+    """Masks the Telegram bot token in every log line (traceback included).
+    httpx logs each Bot API call as `.../bot<id>:<secret>/getUpdates`, which
+    put the full token in `docker logs`."""
+    _TOKEN_RE = re.compile(r"bot\d+:[A-Za-z0-9_-]{20,}")
+
+    def format(self, record):
+        return self._TOKEN_RE.sub("bot<redacted>", super().format(record))
+
+
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     level=logging.INFO,
 )
+for _h in logging.getLogger().handlers:
+    _h.setFormatter(_RedactBotToken("%(asctime)s [%(levelname)s] %(message)s"))
+# One INFO line per getUpdates poll is noise; keep httpx warnings/errors only.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 BACKEND_URL       = os.getenv("BACKEND_URL", "http://backend:4001")

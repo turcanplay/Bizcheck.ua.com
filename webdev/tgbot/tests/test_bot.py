@@ -534,3 +534,24 @@ class TestFeedback:
         await handlers.on_text(update, FakeContext())
 
         assert update.message.last_reply == "Дякуємо!"
+
+
+# ===========================================================================
+# Logging — the bot token must never reach docker logs
+# ===========================================================================
+
+def test_bot_token_is_redacted_from_log_output():
+    import logging
+    import config
+
+    fake = "123456789:FAKEfakeFAKEfakeFAKEfake_test-token"
+    fmt = config._RedactBotToken("%(message)s")
+    rec = logging.LogRecord(
+        "httpx", logging.INFO, __file__, 1,
+        f'HTTP Request: POST https://api.telegram.org/bot{fake}/getUpdates "200 OK"',
+        None, None,
+    )
+    out = fmt.format(rec)
+    assert "FAKEfake" not in out and "123456789" not in out
+    assert "bot<redacted>/getUpdates" in out
+    assert logging.getLogger("httpx").level == logging.WARNING
