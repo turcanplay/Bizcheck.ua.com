@@ -13,6 +13,7 @@ from services.submission_service import (
 from models.submission import Submission
 from middleware.admin_middleware import admin_required, submission_owner_or_admin
 from utils.validators import clean_text, clean_optional, clean_json_content
+from utils.secret_hygiene import mask_token
 
 submissions_bp = Blueprint("submissions", __name__, url_prefix="/api_crowe_bizcheck/submissions")
 
@@ -636,7 +637,7 @@ def export_job_download(token):
 
     path = export_jobs.artifact_path(token)
     if not path:
-        log.error("[export] job %s is 'ready' but the archive is gone", token)
+        log.error("[export] job %s is 'ready' but the archive is gone", mask_token(token))
         return jsonify({"error": "Export archive is no longer available"}), 410
 
     # Marked BEFORE streaming: an after_this_request hook would not fire if the

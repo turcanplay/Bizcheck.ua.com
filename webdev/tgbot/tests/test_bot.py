@@ -245,6 +245,30 @@ class TestRetryPolicy:
 
         assert len(http.calls) == 3
 
+    async def test_retry_warning_never_logs_the_deep_link_token(
+            self, http, connect_error, caplog):
+        """The retry warning names the path; the token in it must be masked."""
+        real_token = "Zx9_" + "k" * 39          # token_urlsafe(32) shape, 43 chars
+        http.post_result = Scripted(connect_error, FakeResponse(200, {}))
+
+        with caplog.at_level("WARNING"):
+            await backend.save_contact(real_token, {"phone": "+380671234567"})
+
+        assert "retry 1/" in caplog.text, "the retry is still logged"
+        assert "/contact/<token>" in caplog.text
+        assert real_token not in caplog.text
+
+    @pytest.mark.parametrize("path, expected", [
+        ("/report/abc123", "/report/<token>"),
+        ("/report/abc123/failed", "/report/<token>/failed"),
+        ("/contact/abc123", "/contact/<token>"),
+        ("/email/abc123", "/email/<token>"),
+        ("/lead/abc123", "/lead/<token>"),
+        ("/feedback/open", "/feedback/open"),
+    ])
+    def test_log_path_masks_only_the_token_segment(self, path, expected):
+        assert backend._log_path(path) == expected
+
     @pytest.mark.parametrize("code", [400, 403, 404, 409, 413, 429])
     async def test_4xx_is_never_retried(self, http, code):
         """403/404 are legitimate answers (wrong token, expired link) — a retry

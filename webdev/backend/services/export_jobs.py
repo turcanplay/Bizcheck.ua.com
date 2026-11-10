@@ -74,6 +74,8 @@ import tempfile
 import threading
 import time
 
+from utils.secret_hygiene import mask_token
+
 log = logging.getLogger(__name__)
 
 
@@ -193,8 +195,11 @@ def _write_state(token, state: dict) -> bool:
             json.dump(state, fh)
         os.replace(tmp, os.path.join(d, _STATE_FILE))
         return True
-    except OSError:
-        log.warning("[export-jobs] could not persist state for %s", token, exc_info=True)
+    except OSError as exc:
+        # No traceback: the job token IS the directory name, so the OSError's
+        # path would put the full token in the log.
+        log.warning("[export-jobs] could not persist state for %s: [errno %s] %s",
+                    mask_token(token), exc.errno, exc.strerror)
         try:
             os.remove(tmp)
         except OSError:
@@ -432,7 +437,7 @@ def run_job(token) -> dict | None:
         state["state"] = STATE_READY
         state["size_bytes"] = os.path.getsize(final)
     except Exception as exc:
-        log.exception("[export-jobs] %s job %s failed", state.get("kind"), token)
+        log.exception("[export-jobs] %s job %s failed", state.get("kind"), mask_token(token))
         state["state"] = STATE_FAILED
         state["error"] = _safe_error(exc)
     state["updated_at"] = _now()
@@ -446,7 +451,7 @@ def _worker_loop() -> None:
         try:
             run_job(token)
         except Exception:                              # pragma: no cover
-            log.exception("[export-jobs] worker crashed on %s", token)
+            log.exception("[export-jobs] worker crashed on %s", mask_token(token))
         finally:
             # Sweep BEFORE task_done() so that _QUEUE.join() is a complete
             # barrier: "the job is built AND the spool has been reclaimed".

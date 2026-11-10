@@ -13,6 +13,10 @@ import logging
 # Make application logs (email/sales/etc.) visible in `docker compose logs`.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logging.getLogger().setLevel(logging.INFO)
+# Mask bot tokens, credential query values (?t=, key=, …) and token_urlsafe(32)
+# capability tokens in every log line (utils/secret_hygiene.py).
+from utils.secret_hygiene import install_redaction, placeholder_secret_vars  # noqa: E402
+install_redaction()
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -279,6 +283,13 @@ if os.getenv("NODE_ENV") == "production":
 for _var in _required_env:
     if not os.getenv(_var):
         print(f"FATAL: {_var} environment variable is not set", file=sys.stderr)
+        sys.exit(1)
+if os.getenv("NODE_ENV") == "production":
+    # A placeholder from .env.example / docker-compose `${VAR:-…}` is public (it is
+    # in git): a JWT secret left on one lets anyone forge an admin session.
+    for _var in placeholder_secret_vars(os.environ):
+        print(f"FATAL: {_var} is still a placeholder value — set a real secret in .env",
+              file=sys.stderr)
         sys.exit(1)
 
 # Warn loudly in dev if PII key is missing; encryption calls will raise on first use.

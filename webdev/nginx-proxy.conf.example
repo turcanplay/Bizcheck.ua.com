@@ -52,12 +52,31 @@ upstream bizcheck_app {
     keepalive 32;
 }
 
+# ─── Access log fără secrete ────────────────────────────────────────────────
+# Linkul din emailul cu raportul poartă ?t=<submission_token> (tokenul de
+# scriere al submisiei); `combined` l-ar scrie în clar în access.log. Valoarea
+# parametrilor t / token / key / api_key / secret devine REDACTED. Numele au
+# sufixul `_ua` ca să nu se bată cu alte site-uri de pe același nginx
+# (bizcheck.md) — un `map`/`log_format` duplicat pică `nginx -t`.
+map $request $bizcheck_ua_log_request {
+    default $request;
+    "~*^(?<bzua_req_pre>.*?[?&](?:t|token|key|api_key|apikey|secret)=)[^& ]*(?<bzua_req_post>.*)$" "${bzua_req_pre}REDACTED${bzua_req_post}";
+}
+map $http_referer $bizcheck_ua_log_referer {
+    default $http_referer;
+    "~*^(?<bzua_ref_pre>.*?[?&](?:t|token|key|api_key|apikey|secret)=)[^& ]*(?<bzua_ref_post>.*)$" "${bzua_ref_pre}REDACTED${bzua_ref_post}";
+}
+log_format bizcheck_ua_redacted '$remote_addr - $remote_user [$time_local] '
+                                '"$bizcheck_ua_log_request" $status $body_bytes_sent '
+                                '"$bizcheck_ua_log_referer" "$http_user_agent"';
+
 # ─── 1. HTTP :80 — doar ACME + redirect spre HTTPS ──────────────────────────
 server {
     listen 80;
     listen [::]:80;
     server_name bizcheck.com.ua www.bizcheck.com.ua;
     server_tokens off;
+    access_log /var/log/nginx/access.log bizcheck_ua_redacted;
 
     # Let's Encrypt http-01. TREBUIE să rămână peste redirect (prefixul `^~`
     # bate orice regex, iar aici e înaintea `return 301`).
@@ -79,6 +98,7 @@ server {
     http2 on;                 # nginx >= 1.25.1; pe versiuni vechi: `listen 443 ssl http2;`
     server_name www.bizcheck.com.ua;
     server_tokens off;
+    access_log /var/log/nginx/access.log bizcheck_ua_redacted;
 
     # Același certificat (acoperă ambele nume, dacă l-ai cerut cu -d www…).
     ssl_certificate     /etc/letsencrypt/live/bizcheck.com.ua/fullchain.pem;
@@ -98,6 +118,7 @@ server {
     http2 on;
     server_name bizcheck.com.ua;
     server_tokens off;
+    access_log /var/log/nginx/access.log bizcheck_ua_redacted;
 
     ssl_certificate     /etc/letsencrypt/live/bizcheck.com.ua/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/bizcheck.com.ua/privkey.pem;

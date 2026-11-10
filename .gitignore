@@ -31,3 +31,10 @@ dist/
 # OS / editor
 .DS_Store
 *.swp
+
+# Confidential documents (CRM credentials, contracts, client data) — never in git.
+# `/*.pdf` is anchored to the repo root: the public PDFs that ship with the SPA
+# (webdev/frontend/public/pdf/*.pdf) stay tracked.
+*CONFIDENTIAL*
+*confidential*
+/*.pdf

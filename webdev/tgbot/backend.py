@@ -24,6 +24,7 @@ endpoints get gated.
 
 import asyncio
 import random
+import re
 
 import httpx
 
@@ -35,6 +36,16 @@ from config import (
 
 def _url(path: str) -> str:
     return f"{BACKEND_URL}{API_PREFIX}{path}"
+
+
+# The segment after these prefixes is the deep-link token: it grants the report
+# PDF and the client's contact data for 24h. `_request` logs the path on every
+# retry, so the token is masked there.
+_TOKEN_PATH_RE = re.compile(r"^(/(?:report|contact|email|lead)/)[^/?#]+")
+
+
+def _log_path(path: str) -> str:
+    return _TOKEN_PATH_RE.sub(r"\1<token>", path)
 
 
 def _backoff(attempt: int) -> float:
@@ -71,7 +82,7 @@ async def _request(method: str, path: str, *, timeout: float, **kwargs) -> httpx
         delay = _backoff(attempt)
         logger.warning(
             "backend %s %s failed (%s), retry %d/%d in %.1fs",
-            method.upper(), path,
+            method.upper(), _log_path(path),
             last_exc if last_exc is not None else f"HTTP {resp.status_code}",
             attempt + 1, RETRY_ATTEMPTS - 1, delay,
         )
