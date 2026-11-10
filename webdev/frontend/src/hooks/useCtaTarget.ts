@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { publicApi, type PublicTest, type SiteSettings, type CtaKey } from '@/api/public';
+import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 
 /**
  * Resolves a landing-page CTA button to its navigation target.
@@ -12,7 +14,9 @@ import { publicApi, type PublicTest, type SiteSettings, type CtaKey } from '@/ap
  * which is hidden while it holds fewer than three items).
  *
  * Tests + settings are fetched once and shared across all callers via a
- * module-level promise cache (the landing renders 3 CTA buttons).
+ * module-level promise cache (the landing renders several test buttons).
+ * Buttons should use `useTestCta` (bottom of this file), which wraps this
+ * hook with a localized href and a click handler.
  */
 
 /** `to` is the language-NEUTRAL path — callers must run it through
@@ -38,6 +42,11 @@ function loadCtaData(): Promise<CtaData> {
       }));
   }
   return cache;
+}
+
+/** Drop the shared cache — unit tests only, so each case sees fresh mocks. */
+export function resetCtaCacheForTests(): void {
+  cache = null;
 }
 
 /** Takeable = active and not a "coming soon" teaser. */
@@ -83,4 +92,57 @@ export function useCtaTarget(key: CtaKey): CtaTarget {
   }, [key]);
 
   return target;
+}
+
+export interface TestCta {
+  /** Localized href for a `<Link to>`: the resolved test once the data is in,
+   *  the landing until then. Gives middle-click / "open in new tab" a real URL. */
+  href: string;
+  /** Click handler: goes to the test. */
+  go: (e?: MouseEvent<HTMLElement>) => void;
+}
+
+/**
+ * Everything a "take the test" button needs, in one call: `href` + `go`.
+ *
+ * `go` does not trust the `useCtaTarget` state, which reads `{ kind: 'scroll' }`
+ * until the first fetch settles — a click in that window used to scroll to the
+ * (hidden) catalog instead of opening the test. It waits on the shared,
+ * already-cached data and resolves the target itself, so an early click still
+ * lands on the test. Only when no test is takeable at all does it fall back to
+ * scrolling to the catalog section.
+ */
+export function useTestCta(key: CtaKey): TestCta {
+  const target = useCtaTarget(key);
+  const L = useLocalizedPath();
+  const navigate = useNavigate();
+  const href = target.kind === 'route' ? L(target.to) : L('/');
+
+  const go = useCallback((e?: MouseEvent<HTMLElement>) => {
+    // Cmd/Ctrl/Shift/middle-click on a link whose href is already the test:
+    // let the browser open it in a new tab/window as usual.
+    if (
+      e && e.currentTarget instanceof HTMLAnchorElement && target.kind === 'route' &&
+      (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)
+    ) return;
+    e?.preventDefault();
+    void loadCtaData().then(({ settings, tests }) => {
+      const resolved = resolveCtaTarget(settings[key], tests);
+      if (resolved.kind === 'route') {
+        navigate(L(resolved.to));
+        return;
+      }
+      const el = document.getElementById('resurse');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        navigate(L('/'));
+        requestAnimationFrame(() => {
+          document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    });
+  }, [key, L, navigate, target.kind]);
+
+  return { href, go };
 }

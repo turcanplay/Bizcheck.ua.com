@@ -1,32 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
-import { useLocalizedPath } from '@/i18n/useLocalizedPath';
-import { useCtaTarget } from '@/hooks/useCtaTarget';
+import { useTestCta } from '@/hooks/useCtaTarget';
 import './FinalCta.css';
 
 export default function FinalCta() {
   const { t } = useLang();
-  const L = useLocalizedPath();
-  const navigate = useNavigate();
-  const ctaTarget = useCtaTarget('cta_final_test');
-
-  function goToCatalog(e: React.MouseEvent) {
-    e.preventDefault();
-    // Admin-configured test target wins; otherwise scroll to the catalog.
-    if (ctaTarget.kind === 'route') {
-      navigate(L(ctaTarget.to));
-      return;
-    }
-    const el = document.getElementById('resurse');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      navigate(L('/'));
-      requestAnimationFrame(() => {
-        document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
-  }
+  // Admin-configured test (cta_final_test) wins; otherwise the default check-up.
+  const testCta = useTestCta('cta_final_test');
 
   return (
     <section className="final-cta" data-section="final-cta">
@@ -34,7 +14,7 @@ export default function FinalCta() {
         <div className="final-cta__text">
           <h2 className="final-cta__title">{t('finalCtaTitle')}</h2>
         </div>
-        <Link to={L('/')} className="final-cta__btn" onClick={goToCatalog}>{t('finalCtaButton')}</Link>
+        <Link to={testCta.href} className="final-cta__btn" onClick={testCta.go}>{t('finalCtaButton')}</Link>
       </div>
     </section>
   );

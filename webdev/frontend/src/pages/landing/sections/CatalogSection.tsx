@@ -4,7 +4,7 @@ import { useLang } from '@/context/LanguageContext';
 import { pickLang, pickLangValue } from '@/i18n/pickLang';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, type PublicTest, type PublicTemplate } from '@/api/public';
-import { useCtaTarget } from '@/hooks/useCtaTarget';
+import { useTestCta } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
 import './CatalogSection.css';
 
@@ -68,7 +68,7 @@ export default function CatalogSection() {
   const L = useLocalizedPath();
   const nav = useNavigate();
   const location = useLocation();
-  const catalogCta = useCtaTarget('cta_catalog_test');
+  const catalogCta = useTestCta('cta_catalog_test');
 
   const [tests, setTests] = useState<PublicTest[]>([]);
   const [templates, setTemplates] = useState<PublicTemplate[]>([]);
@@ -164,17 +164,6 @@ export default function CatalogSection() {
     }
   }
 
-  // Admin-configurable CTA in the catalog header. Routes to the chosen test;
-  // if none is set, falls back to showing the tests tab.
-  function handleCatalogCta() {
-    if (catalogCta.kind === 'route') {
-      nav(L(catalogCta.to));
-    } else {
-      setTab('tests');
-      document.getElementById('resurse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
   function toggleSetItem<T>(set: Set<T>, item: T, setter: (s: Set<T>) => void) {
     const next = new Set(set);
     if (next.has(item)) next.delete(item);
@@ -193,7 +182,8 @@ export default function CatalogSection() {
             return (<>{parts.join(' ')} <span className="catalog__title-accent">{last}</span></>);
           })()}
         </h2>
-        <button type="button" className="catalog__cta" onClick={handleCatalogCta}>
+        {/* Admin-configurable CTA (cta_catalog_test); unset → the default check-up. */}
+        <button type="button" className="catalog__cta" onClick={catalogCta.go}>
           {t('heroCta')}
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />

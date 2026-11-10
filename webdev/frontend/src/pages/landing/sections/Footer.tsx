@@ -4,6 +4,7 @@ import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { useCookieConsent } from '@/context/CookieConsentContext';
 import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_PHONE, CONTACT_PHONE_TEL, CROWE_GLOBAL_URL } from '@/config/contact';
 import { BRAND } from '@/config/siteMeta';
+import { useTestCta } from '@/hooks/useCtaTarget';
 import './Footer.css';
 
 export default function Footer() {
@@ -12,6 +13,10 @@ export default function Footer() {
   const navigate = useNavigate();
   const { reopen } = useCookieConsent();
   const year = new Date().getFullYear();
+  // "Tests" used to scroll to the catalog's tests tab, which is hidden while the
+  // catalog is small. It now opens the test — the catalog CTA's target
+  // (cta_catalog_test) when set, otherwise the default check-up.
+  const testsCta = useTestCta('cta_catalog_test');
 
   function goToCatalog(e: React.MouseEvent, tab?: string) {
     e.preventDefault();
@@ -36,7 +41,7 @@ export default function Footer() {
 
         <div className="footer__col">
           <div className="footer__col-title">{t('footerResources')}</div>
-          <Link to={L('/')} className="footer__link" onClick={(e) => goToCatalog(e, 'tests')}>{t('footerLinkTests')}</Link>
+          <Link to={testsCta.href} className="footer__link" onClick={testsCta.go}>{t('footerLinkTests')}</Link>
           <Link to={L('/')} className="footer__link" onClick={(e) => goToCatalog(e, 'templates')}>{t('footerLinkTemplates')}</Link>
         </div>
 

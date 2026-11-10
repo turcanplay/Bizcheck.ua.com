@@ -4,7 +4,7 @@ import { useLang } from '@/context/LanguageContext';
 import { pickLang } from '@/i18n/pickLang';
 import { useLocalizedPath } from '@/i18n/useLocalizedPath';
 import { publicApi, TESTIMONIAL_ADDED_EVENT, type PublicTest, type PublicTemplate, type PublicTestimonial } from '@/api/public';
-import { useCtaTarget } from '@/hooks/useCtaTarget';
+import { useTestCta } from '@/hooks/useCtaTarget';
 import { sanitizeOneLine } from '@/utils/inputGuard';
 import { readJson, writeJson } from '@/utils/safeStorage';
 import Picture from '@/components/ui/Picture';
@@ -44,7 +44,12 @@ export default function Hero() {
   const { t, lang, setLang } = useLang();
   const L = useLocalizedPath();
   const navigate = useNavigate();
-  const heroCtaTarget = useCtaTarget('cta_hero_test');
+  // The big hero button keeps its own admin key; the "Tests" shortcuts (nav
+  // button, quick menu) used to jump to the catalog's tests tab, which is hidden
+  // while the catalog is small — they now follow the catalog CTA's target.
+  // Both fall back to the default check-up when unset.
+  const heroCta = useTestCta('cta_hero_test');
+  const testsCta = useTestCta('cta_catalog_test');
 
   // Search state
   const inputRef = useRef<HTMLInputElement>(null);
@@ -125,13 +130,17 @@ export default function Hero() {
     }
 
     const all: Array<UnifiedHit & { _score: number }> = [];
+    // "Coming soon" teasers are not takeable (their catalog card is disabled),
+    // so they must not surface as a search hit that opens the quiz.
     tests.forEach(t => {
+      if (t.is_coming_soon) return;
       const haystack = [t.name_uk, t.name_en, t.description_uk, t.description_en,
                         t.category ?? '', (t.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
       if (sc > 0) all.push({ kind: 'test', slug: t.slug, title: pickLang(t, 'name', lang), is_paid: t.is_paid, _score: sc });
     });
     templates.forEach(tp => {
+      if (tp.is_coming_soon) return;
       const haystack = [tp.title_uk, tp.title_en, tp.description_uk, tp.description_en,
                         tp.category ?? '', (tp.features ?? []).join(' ')].join(' ');
       const sc = score(haystack);
@@ -180,14 +189,9 @@ export default function Hero() {
     });
   }
 
-  // Hero CTA: go to the admin-configured test, or fall back to the catalog.
-  function handleHeroCta(e: React.MouseEvent) {
-    e.preventDefault();
-    if (heroCtaTarget.kind === 'route') {
-      navigate(L(heroCtaTarget.to));
-    } else {
-      jumpToSection('resurse', 'tab=tests');
-    }
+  function goToTests(e?: React.MouseEvent<HTMLElement>) {
+    setMenuOpen(false);
+    testsCta.go(e);
   }
 
   return (
@@ -252,7 +256,7 @@ export default function Hero() {
               <MenuItem accent="blue"    icon="book"    label={t('menuJumpAbout')}       onClick={() => jumpToSection('about-platform')} />
               <MenuItem accent="amber"   icon="star"    label={t('menuJumpWhy')}         onClick={() => jumpToSection('why-bizcheck')} />
               <MenuItem accent="violet"  icon="grid"    label={t('menuJumpCatalog')}     onClick={() => jumpToSection('resurse')} />
-              <MenuItem accent="emerald" icon="beaker"  label={t('menuJumpTests')}       onClick={() => jumpToSection('resurse', 'tab=tests')} />
+              <MenuItem accent="emerald" icon="beaker"  label={t('menuJumpTests')}       onClick={() => goToTests()} />
               <MenuItem accent="indigo"  icon="doc"     label={t('menuJumpTemplates')}   onClick={() => jumpToSection('resurse', 'tab=templates')} />
               <MenuItem accent="rose"    icon="chat"    label={t('menuJumpTestimonials')} onClick={() => jumpToSection('testimonials')} />
               <MenuItem accent="pink"    icon="help"    label={t('menuJumpFaq')}         onClick={() => jumpToSection('faq')} />
@@ -317,7 +321,7 @@ export default function Hero() {
           <button
             type="button"
             className="hero__nav-tests"
-            onClick={() => jumpToSection('resurse', 'tab=tests')}
+            onClick={goToTests}
           >
             {t('navTests')}
             <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden>
@@ -338,7 +342,7 @@ export default function Hero() {
             {t('heroTitleLine2')}
           </h1>
 
-          <Link to={L("/")} className="hero__cta" onClick={handleHeroCta}>
+          <Link to={heroCta.href} className="hero__cta" onClick={heroCta.go}>
             {t('heroCta')}
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
