@@ -38,3 +38,6 @@ dist/
 *CONFIDENTIAL*
 *confidential*
 /*.pdf
+
+# Generated report previews / screenshots (local only)
+/output/
