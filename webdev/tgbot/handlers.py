@@ -11,6 +11,7 @@ Groups, in order:
 import io
 import html
 import base64
+import re
 
 import httpx
 from telegram import (
@@ -29,7 +30,8 @@ from helpers import _zone, display_pct
 # Legacy-Markdown control characters. A user's name or an admin block title
 # containing one of these made Telegram reject the whole summary ("can't parse
 # entities") AFTER the loading message was deleted — the PDF never went out.
-_MD_UNSAFE = str.maketrans({"*": "", "`": "", "_": " ", "[": "(", "]": ")"})
+_MD_UNSAFE = str.maketrans({"*": "", "`": "", "_": " ", "[": "(", "]": ")", "\\": ""})
+_TOKEN_RE = re.compile(r"[A-Za-z0-9_-]{1,64}\Z")
 
 
 def _md_safe(value) -> str:
@@ -39,10 +41,19 @@ def _md_safe(value) -> str:
 
 
 def _client_lang(update: Update) -> str:
-    """Best guess at the user's language before the backend tells us the
-    submission language: Telegram's own `language_code`, else the default."""
-    tg_user = update.effective_user
-    return pick_lang(getattr(tg_user, "language_code", None) if tg_user else None)
+    """UA bot copy is Ukrainian, independently of client/report language."""
+    return pick_lang()
+
+
+def _private_user(update: Update) -> bool:
+    """Never deliver reports or capture contacts/feedback in shared chats."""
+    chat, user = update.effective_chat, update.effective_user
+    return bool(chat and user and chat.type == "private"
+                and type(user.id) is int and user.id > 0 and chat.id == user.id)
+
+
+def _valid_token(token) -> bool:
+    return isinstance(token, str) and bool(_TOKEN_RE.fullmatch(token))
 
 
 # ---------------------------------------------------------------------------
@@ -55,8 +66,15 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     If a token is present (came from the website deep-link), deliver the report.
     Otherwise show a welcome message with instructions.
     """
+    if not _private_user(update):
+        return
     if context.args:
         arg = context.args[0].strip()
+        token = arg[3:] if arg.startswith("fb_") else arg
+        if not _valid_token(token):
+            await update.message.reply_text(_t("uk", "expired"), parse_mode="Markdown")
+            return
+        context.user_data.clear()
         # Feedback outreach deep-link: t.me/BizCheckBot?start=fb_<token>
         if arg.startswith("fb_"):
             await _feedback_open(update, token=arg[3:])
@@ -64,8 +82,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         # Otherwise a report delivery token.
         await _send_report(update, context, token=arg)
     else:
-        # User opened the bot directly without a token — the backend has not
-        # told us a submission language yet, so follow their Telegram client.
+        # Direct entry uses the same Ukrainian copy as the report flow.
         await update.message.reply_text(
             _t(_client_lang(update), "welcome"),
             parse_mode="Markdown",
@@ -74,6 +91,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """/help — what this bot does and how to reach a human."""
+    if not _private_user(update):
+        return
     await update.message.reply_text(
         _t(_client_lang(update), "help"),
         parse_mode="Markdown",
@@ -95,14 +114,13 @@ async def _feedback_open(update: Update, token: str) -> None:
         "token": token,
         "chat_id": tg_user.id,
         "username": tg_user.username or "",
-        # The backend renders the outreach question in this language — send the
-        # user's actual Telegram language, not a hardcoded one.
+        # Feedback questions use the same Ukrainian bot language.
         "lang": lang,
     }
     try:
         resp = await backend.feedback_open(payload)
     except httpx.RequestError as exc:
-        logger.warning("feedback/open backend unreachable: %s", exc)
+        logger.warning("feedback/open backend unreachable: %s", type(exc).__name__)
         await update.message.reply_text(_t(lang, "feedback_error"))
         return
 
@@ -127,9 +145,9 @@ async def _alert_delivery_failed(update: Update, token: str, reason: str) -> Non
         await backend.report_failed(token, reason, {
             "tg_username": (tg_user.username if tg_user else "") or "",
             "tg_chat_id":  tg_user.id if tg_user else None,
-        })
+        }, chat_id=tg_user.id)
     except Exception as exc:
-        logger.warning("Could not report delivery failure to backend: %s", exc)
+        logger.warning("Could not report delivery failure to backend: %s", type(exc).__name__)
 
 
 async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token: str) -> None:
@@ -137,20 +155,19 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     chat    = update.effective_chat
     tg_user = update.effective_user
 
-    # The backend has not told us the submission language yet, so the first
-    # messages follow the user's Telegram client language.
+    # Report language does not change the bot's Ukrainian interface.
     ui_lang = _client_lang(update)
     status_msg = await chat.send_message(_t(ui_lang, "loading"))
 
     # 1. Fetch report data from backend
     try:
-        resp = await backend.get_report(token)
+        resp = await backend.get_report(token, chat_id=tg_user.id)
     except httpx.RequestError as exc:
-        logger.error("Backend unreachable: %s", exc)
+        logger.error("Backend unreachable: %s", type(exc).__name__)
         await status_msg.edit_text(_t(ui_lang, "server_error"))
         return
 
-    if resp.status_code == 404:
+    if resp.status_code in (403, 404):
         await status_msg.edit_text(_t(ui_lang, "expired"), parse_mode="Markdown")
         # Expired/invalid link → the lead can't self-serve; flag it to the team.
         await _alert_delivery_failed(update, token, "expired")
@@ -163,7 +180,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
         return
 
     data        = resp.json()
-    lang        = data.get("language") or ui_lang
+    lang        = ui_lang
     first_name  = _md_safe(data.get("first_name"))
     last_name   = _md_safe(data.get("last_name"))
     pdf_b64     = data.get("pdf_b64")
@@ -171,7 +188,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     # zone and the printed number derive from that single integer.
     try:
         total_score = int(round(float(data.get("total_score") or 0)))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         total_score = 0
     # Admin-configurable bands (tests.scoring_zones). Absent when the backend is
     # older than this bot → helpers falls back to the documented defaults.
@@ -194,7 +211,8 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
     if block_scores:
         lines.append(_t(lang, "blocks_header"))
         for b in block_scores:
-            title = _md_safe(b.get("title")) or _t(lang, "block_fallback", order=b.get("order", ""))
+            title = (_md_safe(b.get("title_uk") or b.get("title"))
+                     or _t(lang, "block_fallback", order=b.get("order", "")))
             lines.append(f"└ {title}")
         lines.append("")
 
@@ -206,7 +224,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
         await chat.send_message(summary, parse_mode="Markdown")
     except BadRequest as exc:
         # Last line of defence: never let formatting block the PDF below.
-        logger.warning("Summary Markdown rejected (%s) — sending plain text", exc)
+        logger.warning("Summary Markdown rejected (%s) — sending plain text", type(exc).__name__)
         await chat.send_message(summary.replace("*", ""))
 
     # 3. Send PDF file
@@ -233,9 +251,9 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
                 "tg_username":   tg_user.username   or "",
                 "tg_first_name": tg_user.first_name or "",
                 "tg_last_name":  tg_user.last_name  or "",
-            })
+            }, chat_id=tg_user.id)
         except Exception as exc:
-            logger.warning("Could not save Telegram contact: %s", exc)
+            logger.warning("Could not save Telegram contact: %s", type(exc).__name__)
 
     # 5. One-tap "share my phone number" prompt. This is the convenient channel:
     #    the user taps once and Telegram sends their real phone — works even when
@@ -255,7 +273,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
         )
         await chat.send_message(_t(lang, "phone_intro"), reply_markup=contact_kb)
     except Exception as exc:
-        logger.warning("Could not send phone-share button: %s", exc)
+        logger.warning("Could not send phone-share button: %s", type(exc).__name__)
 
     # 6. Two inline actions after the last message:
     #    (a) receive the report by email, (b) leave email + phone for sales.
@@ -267,7 +285,7 @@ async def _send_report(update: Update, context: ContextTypes.DEFAULT_TYPE, token
         ])
         await chat.send_message(_t(lang, "actions_msg"), reply_markup=kb)
     except Exception as exc:
-        logger.warning("Could not send action buttons: %s", exc)
+        logger.warning("Could not send action buttons: %s", type(exc).__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -282,7 +300,7 @@ def _start_flow(context, flow: str, lang: str, token: str) -> str:
     Preserves the phone-share context (ctok/clng) so the request_contact reply
     keyboard offered after the report keeps working even mid-flow.
     """
-    lng = lang if lang in ("uk", "en") else "uk"
+    lng = "uk"
     ctok = context.user_data.get("ctok")
     clng = context.user_data.get("clng")
     context.user_data.clear()
@@ -296,10 +314,12 @@ def _start_flow(context, flow: str, lang: str, token: str) -> str:
 
 async def on_email_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """User tapped 'receive the report by email'."""
+    if not _private_user(update):
+        return
     query = update.callback_query
     await query.answer()
     parts = (query.data or "").split(":", 2)   # ["eml", lang, token]
-    if len(parts) != 3:
+    if len(parts) != 3 or parts[0] != "eml" or not _valid_token(parts[2]):
         return
     lng = _start_flow(context, "email", parts[1], parts[2])
     await query.message.reply_text(_t(lng, "email_prompt"))
@@ -307,10 +327,12 @@ async def on_email_button(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def on_lead_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """User tapped 'leave your contacts' (email + phone, for sales)."""
+    if not _private_user(update):
+        return
     query = update.callback_query
     await query.answer()
     parts = (query.data or "").split(":", 2)   # ["lead", lang, token]
-    if len(parts) != 3:
+    if len(parts) != 3 or parts[0] != "lead" or not _valid_token(parts[2]):
         return
     lng = _start_flow(context, "lead", parts[1], parts[2])
     await query.message.reply_text(_t(lng, "lead_ask_email"))
@@ -322,26 +344,31 @@ async def on_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     Telegram delivers their phone via a Contact object — save it (phone-only)
     through the same /tg/lead endpoint and remove the reply keyboard.
     """
+    if not _private_user(update):
+        return
     contact = update.message.contact if update.message else None
     token = context.user_data.get("ctok")
     lang = context.user_data.get("clng", "uk")
     if not contact or not token:
+        return
+    if getattr(contact, "user_id", None) != update.effective_user.id:
+        await update.message.reply_text(_t("uk", "phone_not_yours"))
         return
     phone = (contact.phone_number or "").strip()
     if not phone:
         return
 
     try:
-        resp = await backend.save_lead(token, {"phone": phone})
+        resp = await backend.save_lead(token, {"phone": phone}, chat_id=update.effective_user.id)
     except httpx.RequestError as exc:
-        logger.warning("tg/lead (contact) backend unreachable: %s", exc)
+        logger.warning("tg/lead (contact) backend unreachable: %s", type(exc).__name__)
         await update.message.reply_text(_t(lang, "phone_error"), reply_markup=ReplyKeyboardRemove())
         return
 
     if resp.status_code == 200:
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lang, "phone_saved"), reply_markup=ReplyKeyboardRemove())
-    elif resp.status_code == 404:
+    elif resp.status_code in (403, 404):
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lang, "lead_expired"), reply_markup=ReplyKeyboardRemove())
     else:
@@ -350,10 +377,12 @@ async def on_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Plain-text handler. Acts only while an inline flow is armed."""
+    if not _private_user(update):
+        return
     text = (update.message.text or "").strip()
 
     # Dismiss the phone-share reply keyboard if the user chose "later".
-    if text in (_STRINGS["uk"]["phone_later_btn"], _STRINGS["en"]["phone_later_btn"]):
+    if text == _STRINGS["uk"]["phone_later_btn"]:
         lng = context.user_data.get("clng", context.user_data.get("lng", "uk"))
         context.user_data.pop("ctok", None)
         await update.message.reply_text(_t(lng, "phone_later_ack"), reply_markup=ReplyKeyboardRemove())
@@ -373,9 +402,9 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text(_t(lang, "email_invalid"))
             return
         try:
-            resp = await backend.send_email(token, text)
+            resp = await backend.send_email(token, text, chat_id=update.effective_user.id)
         except httpx.RequestError as exc:
-            logger.warning("tg/email backend unreachable: %s", exc)
+            logger.warning("tg/email backend unreachable: %s", type(exc).__name__)
             await update.message.reply_text(_t(lang, "email_error"))
             return
         if resp.status_code == 200:
@@ -383,7 +412,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text(_t(lang, "email_sent", email=text))
         elif resp.status_code == 409:
             await update.message.reply_text(_t(lang, "email_pending"))
-        elif resp.status_code == 404:
+        elif resp.status_code in (403, 404):
             context.user_data.clear()
             await update.message.reply_text(_t(lang, "email_expired"))
         else:
@@ -406,15 +435,16 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     email = context.user_data.get("eml", "")
     try:
-        resp = await backend.save_lead(token, {"email": email, "phone": text})
+        resp = await backend.save_lead(token, {"email": email, "phone": text},
+                                       chat_id=update.effective_user.id)
     except httpx.RequestError as exc:
-        logger.warning("tg/lead backend unreachable: %s", exc)
+        logger.warning("tg/lead backend unreachable: %s", type(exc).__name__)
         await update.message.reply_text(_t(lang, "lead_error"))
         return
     if resp.status_code == 200:
         context.user_data.clear()
         await update.message.reply_text(_t(lang, "lead_saved"))
-    elif resp.status_code == 404:
+    elif resp.status_code in (403, 404):
         context.user_data.clear()
         await update.message.reply_text(_t(lang, "lead_expired"))
     else:
@@ -440,10 +470,10 @@ async def _maybe_capture_feedback(update: Update, text: str) -> None:
         })
         data = resp.json() if resp.status_code == 200 else {}
     except httpx.RequestError as exc:
-        logger.warning("feedback/reply backend unreachable: %s", exc)
+        logger.warning("feedback/reply backend unreachable: %s", type(exc).__name__)
         return
     except Exception:
         return
 
-    if data.get("matched") and data.get("ack"):
-        await update.message.reply_text(data["ack"])
+    if data.get("matched"):
+        await update.message.reply_text(_t("uk", "feedback_ack"))

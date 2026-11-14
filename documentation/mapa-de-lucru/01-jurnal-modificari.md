@@ -5,6 +5,150 @@ Cronologic, cel mai recent sus. Fiecare intrare spune ce s-a schimbat, **de ce e
 
 ---
 
+## 2026-11-13 — Raportul PDF actualizat și exemplu UA verificat
+
+Raportul final folosește acum contactul și limba curente, inclusiv după editarea
+numelui sau schimbarea limbii pe pagina de livrare. Data are locale explicit
+`uk-UA` / `en-GB`. Un singur worker serializează generarea și uploadul PDF;
+rezultatele unei versiuni depășite nu mai marchează raportul actual drept gata,
+iar livrarea așteaptă versiunea actuală. Formula de calcul a scorurilor nu s-a schimbat.
+
+Graficele din raport afișează direct valorile finale, fără animație în timpul
+capturii. Etichetele lungi de risc se încadrează pe mai multe rânduri, fără
+suprapunere peste explicații. **307 teste frontend**, TypeScript și verificarea
+independentă a celor 14 fișiere au trecut.
+
+A fost generat prin componentele și generatorul PDF reale un exemplu cu date
+publice ale chestionarului și răspunsuri simulate: **16 pagini A4, ucraineană,
+scor 71%**, contact `office@crowe-tm.md`. Toate paginile au trecut verificarea
+vizuală. Fișier: `output/pdf/Bizcheck-UA-exemplu-raport.pdf`, SHA256
+`9e5281e0063081a3cdc667f82fb202f774a62db2d4ab8246c783f6608e318a63`.
+Nu s-au creat submisii reale și nu s-au trimis emailuri sau mesaje.
+Paginile dense păstrează mecanismul existent de încadrare pe o pagină A4 și
+pot necesita zoom pentru citire confortabilă.
+
+Deployul **doar pentru frontend** s-a încheiat cu succes la **08:56:45 EET /
+06:56:45 UTC**. Cele cinci verificări HTTP locale/publice au răspuns 200,
+frontendul este healthy fără restarturi; backendul, botul și baza de date au
+păstrat aceleași containere și imagini healthy. Nu a fost necesar rollback.
+Backup: `/root/BIZCHECK_COM_UA/webdev/backups/report-20261113T065445Z`.
+Receipt: `/home/secadmin/bizcheck-ua-report-fix-20261113/production-result.json`.
+
+---
+
+## 2026-11-13 — Adresa publică de contact corectată în producție
+
+Proprietarul a confirmat `office@crowe-tm.md`. Adresa a fost actualizată în
+profilul și mesajele botului, contactul site-ului, subsolurile/PDF-urile generate
+ulterior, șabloanele email și antetul Reply-To. În mediul de producție au fost
+schimbate numai `EMAIL_REPLY_TO` și `SMTP_REPLY_TO`; contul, parola și identitatea
+de expediere SMTP au fost păstrate.
+
+Deploy-ul stackului `bizcheckua` s-a încheiat cu exit 0 la **08:24:33 EET /
+06:24:33 UTC**. Verificările live au confirmat noua adresă în descrierile botului,
+welcome/help, bundle-ul frontend și mesajele email construite în memorie
+(HTML, text și Reply-To). Vechea adresă nu mai apare în bundle-ul frontend.
+Nu s-au trimis emailuri sau mesaje de test și nu s-au regenerat PDF-uri istorice.
+Toate cele patru servicii sunt healthy, fără restarturi în intervalul observat.
+
+Verificări locale: **1018 teste backend**, **173 teste bot**, **26 teste frontend**
+pentru CallToAction, TypeScript și **168 verificări de configurare** trecute.
+Backupul surselor și al configurației este în
+`/root/BIZCHECK_COM_UA/webdev/backups/contact-20261113-56b2864f`;
+confirmarea verificărilor este în
+`/home/secadmin/bizcheck-ua-contact-20261113/production-result.json`.
+
+---
+
+## 2026-11-12 — Deploy Telegram UA verificat în producție
+
+Deploy-ul autorizat s-a încheiat cu **exit 0**, la **23:22:50 EET / 21:22:50 UTC**,
+în `/root/BIZCHECK_COM_UA`, proiect Compose `bizcheckua`, frontend pe loopback `5175`.
+Botul UA verificat este **`@Bizcheck_CROWE_bot`**, ID public `8847966580`;
+botul moldovenesc de referință nu a fost ținta actualizării.
+
+Au fost livrate cele **40 de fișiere** ale manifestului
+`/private/tmp/bizcheck-ua-release-20261112/manifest.json`, pornind de la commitul
+`57ac44a658123fe73fcfcbdd01e02421fe99f003`. Hashurile fișierelor au corespuns
+manifestului înainte de upload. SHA256 pentru `release-files.tar.gz`:
+`6301003d657187bb7e042a10952044759f2f8e727edca9be5c08b06b1e4d4bd0`.
+Manifestul este snapshotul pachetului pregătit; această intrare de verificare
+a fost adăugată ulterior deploy-ului.
+
+Verificări în producție: **5/5 bridge**, coloana `tg_token_chat_id` prezentă,
+plus un apel autentificat cu nonce inexistent care a parcurs SQL-ul și a întors
+**404 + no-store**, fără rânduri client modificate. **32 verificări ale profilului
+live** au trecut; sweep-ul complet al guardului pentru **185 de limbi** s-a
+încheiat fără eșecuri de profil, conflicte de polling sau erori netratate.
+Toate cele patru servicii erau healthy, cu zero restarturi în intervalul observat.
+Avatarul live descărcat a fost verificat vizual: același logo auriu MD,
+re-encodat de Telegram ca imagine pătrată de 640px.
+
+Configurația proxy-ului extern UA a trecut testul și reload-ul. **9/9 verificări
+publice** au trecut: `/`, `/uk/`, `/healthz`, `/api_crowe_bizcheck/health` cu DB up,
+`/robots.txt`, `/sitemap.xml`, refuzul **403 + no-store** fără secret și mascarea
+nonce-ului în ambele access-loguri nginx (proxy extern și frontend).
+Nu au fost create sau modificate rapoarte/contacte/emailuri de client și nu s-au
+trimis mesaje către clienți pentru verificare. Livrarea efectivă a unui PDF de
+client și concurența între revendicări reale rămân netestate.
+
+Materialul de rollback este în
+`/root/BIZCHECK_COM_UA/webdev/backups/telegram-ua-20261112T211738Z`, iar dumpul DB
+pre-deploy în
+`/root/BIZCHECK_COM_UA/webdev/backups/predeploy-bizzcheck-20261112-211847.sql.gz`.
+Verificarea integrității gzip a dumpului a trecut; receipt-ul local este
+`/private/tmp/bizcheck-ua-release-20261112/production-result.json`.
+Migrarea adaugă o coloană nullable, compatibilă cu imaginile anterioare.
+Rollbackul imaginilor nu restabilește automat profilul/webhook-ul Telegram;
+nu a fost necesar rollback sau restore DB.
+
+Au fost confirmate și două riscuri moștenite, **neremediate de această livrare**:
+backendul rulează încă drept superuser `postgres`, iar lockfile-ul frontendului
+neschimbat are **27 findings npm: 1 critical, 13 high, 12 moderate, 1 low**.
+Critical-ul este `jspdf@4.2.0`; apelurile vulnerabile new-window/FreeText nu apar
+în fluxul PDF observat (`output('arraybuffer')`). Patch-ul oficial
+[jsPDF 4.2.1](https://github.com/parallax/jsPDF/releases/tag/v4.2.1) trebuie aplicat
+și verificat separat; nu s-a rulat upgrade/npm audit fix. Trei high sunt pachete
+runtime (DOMPurify și React Router/DOM), cu precondițiile vulnerabile neobservate
+în utilizarea curentă; zece sunt dev/build. Detalii și limite în
+[`SECURITY_AUDIT_REPORT.md`](../../webdev/SECURITY_AUDIT_REPORT.md).
+
+---
+
+## 2026-11-12 — Profil Telegram UA din cod și protecția rapoartelor (etapa locală)
+
+Botul client folosește exclusiv interfața ucraineană. Profilul preia structura
+descrierii Bizcheck.md, numele `BIZCHECK` și avatarul public MD copiat fără modificări
+în `tgbot/assets/profile.jpg`. Domeniul afișat este `bizcheck.com.ua`; contactul
+existent `office@bizcheck.md` rămâne până la confirmarea unei cutii UA reale.
+
+Profilul/contactul sunt definite în `bot_profile.py`, textele în `strings.py`,
+logo-ul în asset; `SITE_NAME` și `CONTACT_EMAIL` nu mai sunt configurabile din
+mediu. Guardul restabilește valorile din cod și elimină localizările vechi.
+Telegram nu oferă blocare absolută față de proprietarul BotFather/deținătorul tokenului.
+
+Raportul este solicitat prin `POST /tg/report/<token>` cu secretul botului și
+chatul privat verificat; o operație SQL atomică leagă tokenul de primul chat.
+Contact/email/lead cer același chat și expirare validă. Eliminat modul fail-open;
+`BOT_SHARED_SECRET` este obligatoriu la pornire/deploy. Datele nu se livrează în
+grupuri, contactele altor persoane sunt respinse, iar tokenurile sunt mascate în
+logurile botului/backendului/nginx. Răspunsurile bridge au `Cache-Control: no-store`.
+
+Actualizarea cere rebuild/redeploy **backend + tgbot împreună** și migrarea
+idempotentă `tg_token_chat_id` la boot. La încheierea etapei locale nu se făcuse
+încă deploy și nu se modificaseră profiluri live; deploy-ul ulterior este
+consemnat în intrarea de mai sus.
+PDF-ul păstrează limba selectată pe site; conținutul quiz/feedback rămâne editabil
+în admin, separat de profilul botului. Testarea locală nu verifică concurența pe
+Postgres real sau livrarea live către Telegram.
+
+Verificare finală: **1018 teste backend**, **173 teste bot**, **168 verificări
+configurare deploy** și **82 verificări nginx** trecute; `bash -n deploy.sh` și
+`git diff --check` trecute. Pornirea verifică identitatea reală a tokenului față de
+`TELEGRAM_BOT_USERNAME` și refuză explicit botul MD de referință înainte să schimbe profilul.
+
+---
+
 ## 2026-08-18 — Val de reparații: quiz, raport, vizual, configurare
 
 Patru zone disjuncte, lucrate în paralel. Detaliul fiecărui defect e în

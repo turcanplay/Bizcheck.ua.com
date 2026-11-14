@@ -5,15 +5,12 @@
  * report footer, PDF promo block, privacy page, CTA screens) must import from
  * here instead of hardcoding the value, so a market change is a one-file edit.
  *
- * TODO (restanță deschisă): datele de contact pentru piața UA nu sunt încă
- * stabilite. Emailul, telefonul și site-ul de firmă de mai jos sunt cele
- * moldovenești — reale, funcționale, folosite în producție. Nu le schimba
- * până nu primești valorile ucrainene confirmate; o adresă inventată ar face
- * contactul afișat să fie mort.
+ * The public email below was confirmed by the owner. Phone details still
+ * use the existing working numbers until replacements are confirmed.
  */
 
-/** Public support / sales inbox. TODO: confirmă datele de contact pentru piața UA. */
-export const CONTACT_EMAIL = 'office@bizcheck.md';
+/** Confirmed public support / sales inbox. */
+export const CONTACT_EMAIL = 'office@crowe-tm.md';
 
 /** Phone in E.164 form — used for the `tel:` href. TODO: confirmă datele de contact pentru piața UA. */
 export const CONTACT_PHONE_HREF = '+37379027317';

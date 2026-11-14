@@ -47,8 +47,7 @@ export default function OverallScore({ report }: OverallScoreProps) {
               color={color}
               size={180}
               strokeWidth={18}
-              animated={true}
-              delay={400}
+              animated={false}
               labelSize={48}
             />
           </div>

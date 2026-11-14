@@ -74,6 +74,7 @@ REQUIRED_VARS=(
   PII_ENCRYPTION_KEY
   TELEGRAM_BOT_TOKEN
   TELEGRAM_BOT_USERNAME
+  BOT_SHARED_SECRET
 )
 
 # Citește lista reală cerută de backend la boot direct din sursă: liniile
@@ -109,7 +110,7 @@ done
 
 # ── Variabile OPȚIONALE — doar avertisment ──────────────────
 # Aplicația pornește și fără ele; lipsa lor dezactivează o funcție, nu serviciul.
-for v in SALES_CHAT_ID BOT_SHARED_SECRET ALLOWED_HOSTS PUBLIC_BASE_URL SMTP_REPLY_TO; do
+for v in SALES_CHAT_ID ALLOWED_HOSTS PUBLIC_BASE_URL SMTP_REPLY_TO; do
   grep -q "^${v}=" .env || warn "$v lipsește din .env"
 done
 # ── Placeholderele de adresă: avertisment SAU blocant, după context ─────────
@@ -145,7 +146,7 @@ done
 # client. Nu blocăm — nu există încă un contact UA cu care să le înlocuiești —
 # dar nu mai lăsăm situația să treacă tăcut.
 md_defaults=""
-for v in CONTACT_EMAIL EMAIL_REPLY_TO EMAIL_SITE_URL EMAIL_TELEGRAM_URL EMAIL_TELEGRAM_HANDLE; do
+for v in EMAIL_REPLY_TO EMAIL_SITE_URL EMAIL_TELEGRAM_URL EMAIL_TELEGRAM_HANDLE; do
   grep -qE "^${v}=.+" .env || md_defaults="$md_defaults $v"
 done
 if [ -n "$md_defaults" ]; then

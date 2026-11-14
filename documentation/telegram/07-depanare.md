@@ -6,10 +6,11 @@ actual (acel fișier fusese scris înainte de `/register` și înainte ca auth-u
 
 Context necesar înainte de a depana:
 
-- **`BOT_SHARED_SECRET` este obligatoriu.** Toate rutele `/tg/exports/*`, `/tg/group/*`
-  și `/tg/feedback/*` sunt gated **strict**: dacă variabila nu e setată pe backend,
+- **`BOT_SHARED_SECRET` este obligatoriu.** Rutele raportului `/tg/report/*`, `/tg/contact/*`,
+  `/tg/email/*`, `/tg/lead/*`, precum și `/tg/exports/*`, `/tg/group/*` și `/tg/feedback/*` sunt gated **strict**: dacă variabila nu e setată pe backend,
   endpoint-urile sunt **dezactivate (403)**, nu deschise
-  (`backend/routes/tg_admin.py:34`, `tg_group.py:32`, `tg_feedback.py:91`).
+  (gate în `backend/routes/telegram.py`, `tg_admin.py`, `tg_group.py`, `tg_feedback.py`).
+  `tgbot` refuză pornirea fără secret; rutele raportului cer și `X-Telegram-Chat-ID` pozitiv.
 - **Destinația notificărilor** se rezolvă în ordinea: env `SALES_CHAT_ID` (câștigă
   oricând e setat) → grupul înregistrat prin `/register`
   (`backend/services/sales_notify.py:57`). Dacă niciuna nu e disponibilă,
@@ -21,6 +22,18 @@ Context necesar înainte de a depana:
 
 | Simptom | Cauză cea mai probabilă | Fix |
 |---|---|---|
+| Botul UA nu pornește | Token, username UA sau secret lipsă, ori tokenul indică alt username / botul MD | Configurează acreditările UA corecte și distincte de MD; nu dezactiva verificarea de identitate |
+| Raportul dă 405 după upgrade | Bot vechi care cheamă GET, backend nou care cere POST | Actualizează backend + tgbot împreună |
+| Raport/contact/email/lead dă 403 | Secret absent/greșit între backend și tgbot | Aceeași valoare nevidă în servicii, apoi redeploy; nu elimina gate-ul |
+| Ruta raportului dă 400 | Antetul privat `X-Telegram-Chat-ID` lipsește/este invalid, ori JSON contact declară alt ID | Folosește clientul bot nou și identitatea verificată din update-ul privat |
+| Linkul merge în primul chat, dar este expirat/indisponibil în altul | Tokenul e legat atomic de primul chat | Comportament de securitate așteptat; alt chat nu primește raportul |
+| Botul nu răspunde în grup/canal | Handlers acceptă exclusiv chat privat cu `chat.id == user.id` | Deschide botul în conversație privată |
+| Contactul partajat este refuzat | `Contact.user_id` aparține altei persoane sau lipsește | Folosește butonul pentru propriul număr |
+| Descrierea/logo-ul se schimbă înapoi | Gardul restabilește sursele aplicației | Editează `bot_profile.py` / `assets/profile.jpg` / `strings.py`, apoi redeploy; `.env` sau admin nu editează profilul |
+| Botul are încă o localizare veche | Verificarea completă rulează la startup/la 6h; API-ul poate eșua parțial | Verifică logurile gardului și accesul Telegram; verificarea de bază are pauză 120 s între cicluri |
+| Profil modificat prin BotFather nu e reparat imediat | Telegram nu are profil imuabil, iar botul e oprit, în verificare sau API-ul nu răspunde | Pornește serviciul și verifică rețeaua; gardul este best-effort, fără garanție de restaurare instantanee |
+| UI e ucraineană, dar PDF-ul e englez | PDF-ul păstrează limba în care a fost generat pe site | Pentru PDF ucrainean, generează raportul în versiunea `uk` a site-ului |
+| O întrebare de feedback poate fi editată din admin | Conținutul de business este separat de profilul fix | Comportament intenționat; editarea întrebării nu schimbă numele, descrierile sau logo-ul |
 | Nu vin notificări în grup | Nici `SALES_CHAT_ID`, nici `/register` — backendul nu are unde trimite | Rulează `/register` în grup (doar owner-ul grupului) **sau** setează `SALES_CHAT_ID` |
 | `/register` răspunde cu eroare / nu se salvează | `BOT_SHARED_SECRET` lipsă sau diferit între backend și `groupbot` → backend dă **403** | Aceeași valoare în ambele servicii, apoi redeploy |
 | Nu vin notificări în grup | `SALES_CHAT_ID` setat, dar greșit — grupul a devenit forum și a primit alt id (vechi `-52…` → nou `-100…`); env-ul câștigă și blochează `/register` | `getChat` pentru id-ul nou (`"is_forum":true`); sau golește `SALES_CHAT_ID` și folosește `/register` |

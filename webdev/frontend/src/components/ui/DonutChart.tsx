@@ -29,7 +29,9 @@ export default function DonutChart({
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - strokeOffset);
+  // Printable charts must use the current value immediately, including after
+  // a contact/language change rebuilds the report before effects have run.
+  const offset = circumference * (1 - (animated ? strokeOffset : percentage / 100));
 
   useEffect(() => {
     if (!animated || hasAnimated.current) {
@@ -65,7 +67,7 @@ export default function DonutChart({
   return (
     <svg
       ref={ref}
-      className="donut-chart"
+      className={`donut-chart${animated ? '' : ' donut-chart--static'}`}
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
@@ -103,7 +105,7 @@ export default function DonutChart({
           className="donut-chart__label"
           style={{ fontSize: `${fontSize}px`, fill: color }}
         >
-          {displayPct}%
+          {animated ? displayPct : percentage}%
         </text>
       )}
     </svg>

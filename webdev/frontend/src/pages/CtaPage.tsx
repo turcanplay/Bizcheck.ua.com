@@ -49,7 +49,7 @@ export default function CtaPage() {
   const { t, lang } = useLang();
   const L = useLocalizedPath();
   const reportRef = useRef<HTMLDivElement>(null);
-  const [pdfDone, setPdfDone] = useState(false);
+  const [savedPdfRevision, setSavedPdfRevision] = useState<number | null>(null);
   const { tgLoading, tgError, tgPending, openTelegram, resetTelegram } = useTelegramLink(submissionId, submissionToken);
   const [pdfError, setPdfError] = useState('');
   const [downloading, setDownloading] = useState(false);
@@ -57,15 +57,20 @@ export default function CtaPage() {
   const [resent, setResent] = useState(false);
   // Email delivery is admin-toggleable (site setting). Off → card shows "coming soon".
   const [emailEnabled, setEmailEnabled] = useState(false);
-  // Language of the last PDF generation started; a language switch on the CTA
-  // page regenerates it so the bot sends the PDF in the language on screen.
-  const pdfSavedLangRef = useRef<string | null>(null);
+  const savedPdfRevisionRef = useRef<number | null>(null);
+  const pdfRunRef = useRef<Promise<boolean> | null>(null);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   // Synchronous in-flight guards. `disabled` only takes effect on the next
   // render, so a double click (or a click landing in the same tick as a state
   // update) can otherwise fire the same request twice.
-  const pdfRunningRef = useRef(false);
   const downloadingRef = useRef(false);
   const resendingRef = useRef(false);
+  const telegramPreparingRef = useRef(false);
+  const [telegramPreparing, setTelegramPreparing] = useState(false);
   // The auto-dismiss timer for the form warning. Without holding the id, a
   // second warning inherits the first one's countdown and can vanish instantly.
   const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -194,95 +199,100 @@ export default function CtaPage() {
     [currentTest?.report_type],
   );
 
-  const generateAndSavePdf = useCallback(async (attempt = 1): Promise<void> => {
-    const MAX_ATTEMPTS = 3;
-    if (!reportRef.current || !report || !submissionId) {
-      return;
-    }
-    // Only the outermost call takes the lock; the retry recursion below is the
-    // same logical run and must be allowed through.
-    if (attempt === 1) {
-      if (pdfRunningRef.current) return;
-      pdfRunningRef.current = true;
-    }
+  // The ready flag belongs to the exact report on screen, not merely its
+  // language. Contact edits, translated titles and layout changes invalidate it
+  // synchronously, before effects can begin the next capture.
+  const pdfKey = useMemo(() => report && submissionId
+    ? JSON.stringify([submissionId, submissionToken, lang, reportType, report, blocks, answers, selectedKeys])
+    : null,
+  [report, submissionId, submissionToken, lang, reportType, blocks, answers, selectedKeys]);
+  const pdfRequestRef = useRef({ key: pdfKey, revision: 0 });
+  if (pdfRequestRef.current.key !== pdfKey) {
+    pdfRequestRef.current = { key: pdfKey, revision: pdfRequestRef.current.revision + 1 };
+  }
+  const pdfRevision = pdfRequestRef.current.revision;
+  const pdfDone = pdfKey !== null && savedPdfRevision === pdfRevision;
+  const latestPdfJobRef = useRef<{
+    revision: number; lang: typeof lang; submissionId: number; token: string | null;
+  } | null>(null);
+  latestPdfJobRef.current = pdfKey && submissionId
+    ? { revision: pdfRevision, lang, submissionId, token: submissionToken }
+    : null;
 
-    try {
-      const el = reportRef.current;
+  const generateAndSavePdf = useCallback((): Promise<boolean> => {
+    // One worker owns the live report DOM. If it changes during capture/upload,
+    // finish that operation, discard its ready state and process the latest job.
+    if (pdfRunRef.current) return pdfRunRef.current;
+    const run = async (): Promise<boolean> => {
+      while (mountedRef.current) {
+        const job = latestPdfJobRef.current;
+        if (!job) return false;
+        if (savedPdfRevisionRef.current === job.revision) return true;
+        let saved = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          if (!mountedRef.current || latestPdfJobRef.current?.revision !== job.revision) break;
+          try {
+            // Let contact/language state commit to the DOM before reading it.
+            await new Promise<void>(resolve =>
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+            if (!mountedRef.current || latestPdfJobRef.current?.revision !== job.revision) break;
+            const el = reportRef.current;
+            if (!el || el.scrollHeight < 100) throw new Error('Report layout is not ready');
 
-      if (el.scrollHeight < 100) {
-        if (attempt < MAX_ATTEMPTS) {
-          await new Promise(r => setTimeout(r, 3000));
-          return await generateAndSavePdf(attempt + 1);
+            const { generateFullPdf } = await import('@/utils/pdfGenerator');
+            const pdf = await generateFullPdf({
+              rootEl: el, lang: job.lang, renderWidth: 780,
+              scale: 2, jpegQuality: 0.85, unhideWrapper: true,
+            });
+            if (!mountedRef.current || latestPdfJobRef.current?.revision !== job.revision) break;
+            const pdfBase64 = pdf.output('datauristring').split(',')[1];
+            if (!pdfBase64 || pdfBase64.length < 100) throw new Error('Generated PDF is empty');
+            const res = await fetch(`${API_BASE}/submissions/${job.submissionId}/pdf`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(job.token ? { 'X-Submission-Token': job.token } : {}),
+              },
+              body: JSON.stringify({ pdf: pdfBase64 }),
+            });
+            if (!res.ok) throw new Error(`PDF upload failed: ${res.status}`);
+            if (!mountedRef.current || latestPdfJobRef.current?.revision !== job.revision) break;
+            savedPdfRevisionRef.current = job.revision;
+            setSavedPdfRevision(job.revision);
+            setPdfError('');
+            saved = true;
+            break;
+          } catch (err) {
+            if (!mountedRef.current || latestPdfJobRef.current?.revision !== job.revision) break;
+            if (attempt === 3) {
+              setPdfError(err instanceof Error ? err.message : String(err));
+              return false;
+            }
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
         }
+        if (saved && latestPdfJobRef.current?.revision === job.revision) return true;
       }
-
-      // Loaded on demand: pulls in the ~1.1 MB pdf-vendor chunk (jspdf +
-      // html2canvas-pro + pdf-lib). Keep this a dynamic import so the chunk
-      // can never be hoisted into any statically reachable graph.
-      const { generateFullPdf } = await import('@/utils/pdfGenerator');
-      const pdf = await generateFullPdf({
-        rootEl: el,
-        lang,
-        renderWidth: 780,
-        scale: 2,
-        jpegQuality: 0.85,
-        unhideWrapper: true,
-      });
-
-      const pdfBase64 = pdf.output('datauristring').split(',')[1];
-      if (!pdfBase64 || pdfBase64.length < 100) {
-        throw new Error(`PDF base64 too small: ${pdfBase64?.length ?? 0} chars`);
-      }
-
-      const res = await fetch(`${API_BASE}/submissions/${submissionId}/pdf`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(submissionToken ? { 'X-Submission-Token': submissionToken } : {}),
-        },
-        body: JSON.stringify({ pdf: pdfBase64 }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`Upload failed: ${res.status} ${JSON.stringify(errData)}`);
-      }
-
-      setPdfDone(true);
-    } catch (err) {
-      if (attempt < MAX_ATTEMPTS) {
-        await new Promise(r => setTimeout(r, 3000));
-        return await generateAndSavePdf(attempt + 1);
-      }
-      setPdfError(err instanceof Error ? err.message : String(err));
-    } finally {
-      if (attempt === 1) pdfRunningRef.current = false;
-    }
-  }, [report, submissionId, submissionToken, lang]);
+      return false;
+    };
+    const promise = run().finally(() => { pdfRunRef.current = null; });
+    pdfRunRef.current = promise;
+    return promise;
+  }, []);
 
   useEffect(() => {
-    if (!report || !submissionId || pdfSavedLangRef.current === lang) return;
-    pdfSavedLangRef.current = lang;
-    // A flat 3s here was a guess at "the report DOM has rendered by now", and
-    // every user paid it in full even when the DOM was ready on the first
-    // frame. The condition is observable — the same scrollHeight check
-    // generateAndSavePdf already uses — so poll for it instead and keep the
-    // old 3s only as the ceiling, which makes this strictly faster.
-    let cancelled = false;
-    let rafId = 0;
-    const deadline = Date.now() + 3000;
-    const poll = () => {
-      if (cancelled) return;
-      const el = reportRef.current;
-      if ((el && el.scrollHeight >= 100) || Date.now() >= deadline) {
-        generateAndSavePdf();
-        return;
-      }
-      rafId = requestAnimationFrame(poll);
-    };
-    rafId = requestAnimationFrame(poll);
-    return () => { cancelled = true; cancelAnimationFrame(rafId); };
-  }, [report, submissionId, generateAndSavePdf, lang]);
+    if (!pdfKey || savedPdfRevisionRef.current === pdfRevision) return;
+    setPdfError('');
+    void generateAndSavePdf();
+  }, [pdfKey, pdfRevision, generateAndSavePdf]);
+
+  async function ensureCurrentPdf(): Promise<boolean> {
+    // A delivery click first commits the contact into QuizContext. Waiting one
+    // render lets that new identity replace the queued PDF job before awaiting it.
+    await new Promise<void>(resolve =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    return generateAndSavePdf();
+  }
 
   function handleSelectMethod(m: DeliveryMethod) {
     setSelectedMethod(m);
@@ -355,6 +365,10 @@ export default function CtaPage() {
           body: JSON.stringify({ first_name: first, last_name: last, phone, email: em, consent: true }),
         }).catch(() => {});
 
+        // The name/contact were entered after the first background PDF. Never
+        // email that earlier snapshot while its personalized replacement runs.
+        if (!await ensureCurrentPdf()) return;
+
         // 2) Now ask the server to email the report. Retry while the PDF finishes saving.
         for (let attempt = 0; attempt < 6; attempt++) {
           const res = await fetch(`${API_BASE}/submissions/${submissionId}/send-email`, {
@@ -389,6 +403,7 @@ export default function CtaPage() {
     setResending(true);
     setResent(false);
     try {
+      if (!await ensureCurrentPdf()) return;
       const headers = {
         'Content-Type': 'application/json',
         ...(submissionToken ? { 'X-Submission-Token': submissionToken } : {}),
@@ -411,11 +426,24 @@ export default function CtaPage() {
   }
 
   async function handleSubmitTelegram() {
+    if (telegramPreparingRef.current) return;
     const { first } = splitFullName(formFullName);
     if (!first) { warn('formWarnFullName'); return; }
     if (!formConsent) { warn('formWarnConsent'); return; }
-    commitContact();
-    await openTelegram();
+    telegramPreparingRef.current = true;
+    setTelegramPreparing(true);
+    try {
+      commitContact();
+      if (submissionId && !await flushAndConfirm(submissionId)) {
+        setSaveGate('failed');
+        return;
+      }
+      if (!await ensureCurrentPdf()) return;
+      await openTelegram();
+    } finally {
+      telegramPreparingRef.current = false;
+      setTelegramPreparing(false);
+    }
   }
 
   if (!report) return null;
@@ -787,11 +815,11 @@ export default function CtaPage() {
                 }}
                 disabled={
                   (selectedMethod === 'download' && (downloading || !pdfDone)) ||
-                  (selectedMethod === 'telegram' && (tgLoading || !pdfDone))
+                  (selectedMethod === 'telegram' && (telegramPreparing || tgLoading || !pdfDone))
                 }
               >
                 {((selectedMethod === 'download' && downloading) ||
-                  (selectedMethod === 'telegram' && tgLoading))
+                  (selectedMethod === 'telegram' && (telegramPreparing || tgLoading)))
                   ? <span className="cta-page__spinner cta-page__spinner--light" />
                   : !pdfDone
                     // A failed PDF leaves this button disabled; saying

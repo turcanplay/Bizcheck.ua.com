@@ -38,8 +38,9 @@ class FakeUser:
 
 
 class FakeContact:
-    def __init__(self, phone_number="+380671234567"):
+    def __init__(self, phone_number="+380671234567", user_id=42):
         self.phone_number = phone_number
+        self.user_id = user_id
 
 
 class FakeMessage:
@@ -155,7 +156,7 @@ class FakeResponse:
 class FakeHttp:
     """Stand-in for httpx.AsyncClient. Records calls, replays scripted results.
 
-    Script with `http.get_result = ...` / `http.post_result = ...`:
+    Script with `http.report_result = ...` / `http.post_result = ...`:
       * a FakeResponse is returned,
       * an Exception instance is raised,
       * a callable is invoked with (url, kwargs) and its return value used, so a
@@ -165,6 +166,7 @@ class FakeHttp:
     def __init__(self):
         self.calls = []
         self.get_result = FakeResponse(200, {})
+        self.report_result = FakeResponse(200, {})
         self.post_result = FakeResponse(200, {})
 
     def _record(self, method, url, kwargs):
@@ -203,7 +205,8 @@ class FakeHttp:
 
     async def post(self, url, **kwargs):
         self._record("POST", url, kwargs)
-        return self._resolve(self.post_result, url, kwargs)
+        result = self.report_result if "/report/" in url and not url.endswith("/failed") else self.post_result
+        return self._resolve(result, url, kwargs)
 
 
 class Scripted:

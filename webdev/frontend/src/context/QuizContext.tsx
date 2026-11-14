@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import type { Phase, Answers, UserInfo, ReportData, Block, Question, TestOption } from '@/types';
 import { buildReport, calculateBlockScore } from '@/utils/scoring';
 import { useLang } from '@/context/LanguageContext';
@@ -120,7 +120,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [answers, setAnswers] = useState<Answers>(saved.current?.answers ?? {});
   const [selectedKeys, setSelectedKeys] = useState<Record<string, string>>(saved.current?.selectedKeys ?? {});
   const [userInfo, setUserInfo] = useState<UserInfo>(saved.current?.userInfo ?? defaultUserInfo);
-  const [report, setReport] = useState<ReportData | null>(null);
+  const [reportSnapshot, setReport] = useState<ReportData | null>(null);
   const [animating, setAnimating] = useState(false);
   const [submissionId, setSubmissionId] = useState<number | null>(saved.current?.submissionId ?? null);
   const [submissionToken, setSubmissionToken] = useState<string | null>(saved.current?.submissionToken ?? null);
@@ -238,6 +238,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const currentTestZones = tests.find(t => t.slug === selectedTestSlug)?.scoring_zones;
   const zonesRef = useRef(currentTestZones);
   zonesRef.current = currentTestZones;
+
+  // A completed report is a view of the current answers, contact and language.
+  // The CTA collects the name AFTER completion; keeping only the original
+  // snapshot would leave that name blank and preserve old-language block titles.
+  const report = useMemo(() => reportSnapshot && phase === 'cta'
+    ? buildReport(blocks, answers, userInfo, currentTestZones, lang)
+    : reportSnapshot,
+  [reportSnapshot, phase, blocks, answers, userInfo, currentTestZones, lang]);
 
   const sectors = tList('sectors');
   const sizes = tList('sizes');
@@ -433,7 +441,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     } else {
       // Last question of last block — generate report
       setAnswers(latestAnswers => {
-        const reportData = buildReport(blocksRef.current, latestAnswers, userInfo, zonesRef.current);
+        const reportData = buildReport(blocksRef.current, latestAnswers, userInfo, zonesRef.current, lang);
         setReport(reportData);
         setPhase('cta');
 
@@ -449,7 +457,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         return latestAnswers;
       });
     }
-  }, [currentBlock, currentQuestion, topLevelIndex, userInfo, saveToBackend]);
+  }, [currentBlock, currentQuestion, topLevelIndex, userInfo, saveToBackend, lang]);
 
   const prevQuestion = useCallback(() => {
     // If we have navigation stack (came from a branch), pop back
@@ -521,13 +529,13 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   // If phase is 'cta' but report is null (page refresh), regenerate from saved data
   useEffect(() => {
     if (phase === 'cta' && !report && blocks.length > 0 && Object.keys(answers).length > 0) {
-      const reportData = buildReport(blocks, answers, userInfo, currentTestZones);
+      const reportData = buildReport(blocks, answers, userInfo, currentTestZones, lang);
       setReport(reportData);
     }
-  }, [phase, report, blocks, answers, userInfo, currentTestZones]);
+  }, [phase, report, blocks, answers, userInfo, currentTestZones, lang]);
 
   const generateReport = useCallback(() => {
-    const reportData = buildReport(blocks, answers, userInfo, zonesRef.current);
+    const reportData = buildReport(blocks, answers, userInfo, zonesRef.current, lang);
     setReport(reportData);
     setPhase('cta');
 
@@ -539,7 +547,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         status: 'completed',
       });
     }
-  }, [blocks, answers, userInfo, saveToBackend]);
+  }, [blocks, answers, userInfo, saveToBackend, lang]);
 
   const restartQuiz = useCallback(() => {
     clearSavedState();

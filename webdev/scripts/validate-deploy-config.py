@@ -121,6 +121,11 @@ for var in sorted(backend_required):
 # 3. Boți: `raise RuntimeError("<VAR> is not set")` = moarte la pornire → restart-loop
 bot_required: dict[str, str] = {}
 for rel in ("tgbot/bot.py", "groupbot/bot.py"):
+    # Optional profile services are not started by deploy.sh. Their credentials
+    # must not block the default deployment (groupbot is intentionally disabled).
+    service = rel.split("/", 1)[0]
+    if services.get(service, {}).get("profiles"):
+        continue
     for var in re.findall(r'RuntimeError\(\s*["\']([A-Z][A-Z0-9_]+) is not set', read(rel)):
         bot_required[var] = rel
 check(bool(bot_required), "Nu am găsit niciun `RuntimeError(\"X is not set\")` în boți")

@@ -80,24 +80,21 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Crowe Turcan Mikhailenko}
-      # TODO(UA): pune adresa reală de contact pentru piața Ucraina în .env.
-      # Defaultul de mai jos e un PLACEHOLDER — nu există încă o cutie poștală pe
-      # bizcheck.com.ua, iar o adresă .ua inventată ar trimite răspunsurile
-      # clienților în gol. Nu porni în producție fără SMTP_REPLY_TO setat în .env.
-      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@example.ua}
+      # Confirmed public support/reply address; SMTP_USER and its credentials
+      # separately control the sending identity and authentication.
+      SMTP_REPLY_TO: ${SMTP_REPLY_TO:-office@crowe-tm.md}
       EMAIL_LOGO_URL: ${EMAIL_LOGO_URL:-https://bizcheck.com.ua/logo_email.png}
       # ── Identitatea din subsolul emailului (services/email_templates.py) ──
-      # ⚠ Defaulturile DIN SURSĂ sunt încă MOLDOVENEȘTI: office@bizcheck.md,
-      #   https://crowe-tm.md, https://t.me/CROWE_TM, @CROWE_TM. Nu erau pasate
+      # Contactul public confirmat: office@crowe-tm.md. Site-ul și Telegramul
+      #   firmei: https://crowe-tm.md, https://t.me/CROWE_TM, @CROWE_TM. Nu erau pasate
       #   deloc prin compose, deci `EMAIL_REPLY_TO=…` scris în .env era un no-op
       #   silențios (niciun serviciu nu are `env_file:`) și fiecare email de
-      #   raport pleca cu identitatea .md. Acum .env câștigă — completează-le
-      #   imediat ce există contactele UA.
+      #   raport pleca cu identitatea .md. Acum .env câștigă.
       # ⚠ Forma `${VAR:-<defaultul din cod>}` e obligatorie aici: valorile sunt
       #   argumente IMPLICITE de funcție, citite o singură dată la import. Un
       #   `${VAR:-}` gol le-ar suprascrie cu "" → mailto:/href goale în email.
       #   Cu `:-`, o linie goală în .env (`EMAIL_REPLY_TO=`) revine la default.
-      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-office@bizcheck.md}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-office@crowe-tm.md}
       EMAIL_SITE_URL: ${EMAIL_SITE_URL:-https://crowe-tm.md}
       EMAIL_TELEGRAM_URL: ${EMAIL_TELEGRAM_URL:-https://t.me/CROWE_TM}
       EMAIL_TELEGRAM_HANDLE: "${EMAIL_TELEGRAM_HANDLE:-@CROWE_TM}"
@@ -126,20 +123,9 @@ services:
       # BizCheck bot token — backend uses it to send the feedback question
       # directly (services/telegram_send.py). SAME token as the tgbot service.
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
-      # Shared secret guarding the bot-only feedback endpoints (/tg/feedback/*).
-      # Must match the value on the tgbot service. Leave empty to run ungated.
-      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
-      # ── Rollout etapizat al lui X-Bot-Secret pe /tg/contact, /tg/email,
-      #    /tg/lead (routes/telegram.py) — endpointuri care SCRIU date personale.
-      # "0" (implicit) = comportamentul de AZI: un apelant fără header e ACCEPTAT
-      #                  și se loghează doar un warning (fail-open).
-      # "1"            = header obligatoriu; lipsa lui → 403. (Un header PREZENT
-      #                  dar greșit dă 403 în ambele moduri.)
-      # Până acum variabila nu era pasată, deci flagul NU putea fi activat din
-      # .env sub nicio formă → cele trei rute rămâneau permanent fail-open.
-      # CUTOVER: pune-l pe "1" DUPĂ ce backend + tgbot rulează cu ACELAȘI
-      # BOT_SHARED_SECRET nevid, altfel botul primește 403 la livrarea rapoartelor.
-      TG_REQUIRE_BOT_SECRET: ${TG_REQUIRE_BOT_SECRET:-0}
+      # Required for every bot-only report/contact/email/lead/feedback route.
+      # There is no runtime switch to disable authentication.
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:?BOT_SHARED_SECRET must be set}
       # ── Stocarea contoarelor de rate-limit (server.py) ──
       # GOL (implicit) = `memory://`: contor SEPARAT în fiecare din cele 4 procese
       # gunicorn, deci plafonul efectiv e ~4× cel nominal (200/min per IP devine
@@ -285,24 +271,12 @@ services:
       start_period: 30s
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      # TELEGRAM_BOT_USERNAME nu apare aici: botul nu-l citește (deep-linkurile se
-      # construiesc în backend/services/telegram_send.py). Garda `:?` de pe serviciul
-      # `backend` oprește oricum tot stackul dacă lipsește — compose evaluează
-      # interpolările pe întregul fișier, nu per serviciu.
+      # Confirm getMe matches the deep-link target before updating the profile.
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?TELEGRAM_BOT_USERNAME must be set}
       BACKEND_URL: http://backend:4001
       # Must match BOT_SHARED_SECRET on the backend service.
-      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:-}
-      # ── Brand + adresa de suport din MESAJELE botului ──
-      # tgbot/config.py le citește și strings.py le interpolează ca {site} /
-      # {contact} în fiecare text trimis clientului.
-      # ⚠ Defaultul din sursă pentru CONTACT_EMAIL e încă office@bizcheck.md
-      #   (moldovenesc), iar variabila nu era pasată deloc → botul ucrainean
-      #   dădea clienților adresa .md orice ai fi scris în .env. Setează
-      #   CONTACT_EMAIL în .env imediat ce există o cutie poștală .ua.
-      # ⚠ `:-`, nu `-`: un `CONTACT_EMAIL=` gol în .env ar lăsa mesajele fără
-      #   nicio adresă de contact în loc să revină la default.
-      SITE_NAME: ${SITE_NAME:-Bizcheck.com.ua}
-      CONTACT_EMAIL: ${CONTACT_EMAIL:-office@bizcheck.md}
+      BOT_SHARED_SECRET: ${BOT_SHARED_SECRET:?BOT_SHARED_SECRET must be set}
+      # Profile, logo and copy live only in tgbot source files.
 
   # Internal team bot (private group). Polls SALES_BOT_TOKEN for /excel and /pdf;
   # the backend uses the SAME token only to *send* notifications (no poll conflict).

@@ -172,7 +172,7 @@ class TestZoneLabels:
 # ---------------------------------------------------------------------------
 
 async def _summary(http, payload):
-    http.get_result = FakeResponse(200, payload)
+    http.report_result = FakeResponse(200, payload)
     update, context = FakeUpdate(), FakeContext(args=[TOKEN])
     await handlers.cmd_start(update, context)
     return update.effective_chat.texts[1]

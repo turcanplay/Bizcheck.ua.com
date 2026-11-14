@@ -10,7 +10,8 @@ Flow:
 
 Package layout:
   config.py    env, logging, bot-secret headers, input regexes
-  strings.py   bilingual copy (_STRINGS) + _t()
+  strings.py   Ukrainian copy (_STRINGS) + _t()
+  bot_profile.py / profile_guard.py  source-owned identity and drift repair
   backend.py   async httpx calls to the backend /tg/* endpoints
   helpers.py   score-zone / progress-bar formatters
   handlers.py  Telegram update handlers
@@ -19,15 +20,16 @@ Package layout:
 
 import asyncio
 
-from telegram import BotCommand, Update
+from telegram import Update
 from telegram.error import Conflict, NetworkError, TimedOut
 from telegram.ext import (
     Application, AIORateLimiter, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters,
 )
 
-from config import logger, BOT_TOKEN, DEFAULT_LANG
-from strings import _t
+from config import logger, BOT_TOKEN, BOT_USERNAME, BOT_SHARED_SECRET
+from bot_profile import REFERENCE_BOT_USERNAME
+from profile_guard import ProfileGuard, command_list, stop_guard
 from handlers import (
     cmd_start, cmd_help, on_email_button, on_lead_button, on_contact, on_text,
 )
@@ -39,28 +41,23 @@ from handlers import (
 
 # Only commands that actually have a handler below. Do not advertise anything
 # else — a menu entry that does nothing is worse than no menu.
-_COMMANDS = (
-    ("start", "cmd_start_desc"),
-    ("help",  "cmd_help_desc"),
-)
-
-
-def _command_list(lang: str) -> list:
-    return [BotCommand(name, _t(lang, desc_key)) for name, desc_key in _COMMANDS]
+def _command_list(lang: str = "uk") -> list:
+    return command_list()
 
 
 async def _post_init(app: Application) -> None:
-    """Publish the command menu. Telegram picks the list matching the user's
-    client language; the entry without a language_code is the fallback."""
+    """Publish Ukrainian commands and start code-owned profile restoration."""
+    actual = app.bot.username.casefold()
+    if (not BOT_USERNAME or actual != BOT_USERNAME.casefold()
+            or actual == REFERENCE_BOT_USERNAME.casefold()):
+        raise RuntimeError("Telegram bot identity mismatch; profile was not changed")
     try:
-        # Fallback list = the default language (uk), then one list per language.
-        await app.bot.set_my_commands(_command_list(DEFAULT_LANG))
-        for lang in ("uk", "en"):
-            await app.bot.set_my_commands(_command_list(lang), language_code=lang)
-        logger.info("Bot command menu published (uk, en)")
+        await app.bot.set_my_commands(command_list())
+        logger.info("Bot command menu published (uk)")
     except Exception as exc:
         # Never let a menu hiccup stop the bot from polling.
-        logger.warning("Could not publish the command menu: %s", exc)
+        logger.warning("Could not publish the command menu (%s)", type(exc).__name__)
+    app.bot_data["profile_guard_task"] = asyncio.create_task(ProfileGuard(app.bot).run())
 
 
 # ---------------------------------------------------------------------------
@@ -80,10 +77,10 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     if isinstance(err, (NetworkError, TimedOut)):
-        logger.warning("Transient network issue: %s", err)
+        logger.warning("Transient network issue (%s)", type(err).__name__)
         return
 
-    logger.exception("Unhandled error in bot: %s", err)
+    logger.error("Unhandled error in bot (%s)", type(err).__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +90,10 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 def main() -> None:
     if not BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN is not set")
+    if not BOT_SHARED_SECRET:
+        raise RuntimeError("BOT_SHARED_SECRET is not set")
+    if not BOT_USERNAME:
+        raise RuntimeError("TELEGRAM_BOT_USERNAME is not set")
 
     # AIORateLimiter transparently obeys Telegram's flood limits (429 /
     # retry_after): under a burst of START deliveries the bot queues and
@@ -102,6 +103,7 @@ def main() -> None:
         .token(BOT_TOKEN)
         .rate_limiter(AIORateLimiter(max_retries=3))
         .post_init(_post_init)
+        .post_stop(stop_guard)
         .build()
     )
     app.add_handler(CommandHandler("start", cmd_start))
@@ -114,8 +116,8 @@ def main() -> None:
 
     logger.info("BizCheck Bot started (polling)")
     app.run_polling(
-        drop_pending_updates=True,
-        allowed_updates=Update.ALL_TYPES,
+        drop_pending_updates=False,
+        allowed_updates=[Update.MESSAGE, Update.CALLBACK_QUERY],
         poll_interval=1.5,
         timeout=30,
     )

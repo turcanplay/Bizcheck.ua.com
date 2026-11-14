@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   DEFAULT_ZONES,
   resolveZones,
@@ -166,6 +166,19 @@ describe('displayPct', () => {
 });
 
 describe('buildReport', () => {
+  it('formats dates in the report language rather than the browser default', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-13T12:00:00Z'));
+    try {
+      expect(buildReport([block(1)], answersFor(1, 100), USER).date)
+        .toBe('13 листопада 2026 р.');
+      expect(buildReport([block(1)], answersFor(1, 100), USER, undefined, 'en').date)
+        .toBe('13 November 2026');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('carries the resolved zones on the report', () => {
     const r = buildReport([block(1)], answersFor(1, 100), USER, { safe: 50, developing: 40, warn: 30, risk: 0 });
     expect(r.zones).toEqual({ safe: 50, developing: 40, warn: 30, risk: 0 });

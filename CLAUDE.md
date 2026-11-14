@@ -12,6 +12,15 @@ Docs live in `documentation/` (single source of truth, indexed by `documentation
 
 The app is bilingual **Ukrainian (`uk`, default) + English (`en`)**. Romanian and Russian were removed in two migrations (`_ro`→`_uk`, `_ru`→`_en`) — see `documentation/ukrainian-language-migration.md`. Bilingual DB columns carry `_uk` / `_en` suffixes. Do not reintroduce `ro` / `ru` anywhere (columns, `hreflang`, validators' language whitelist, bot strings).
 
+The **client Telegram bot UI is Ukrainian only**, including for English Telegram
+clients and English website reports. The attached PDF retains its website language.
+Its profile/name/contact/commands live in `tgbot/bot_profile.py`, messages in
+`tgbot/strings.py`, and the exact public MD avatar in `tgbot/assets/profile.jpg`.
+No environment, DB, admin form or bot command may override this bot identity.
+`profile_guard.py` restores the source profile periodically; Telegram/BotFather
+and bot-token holders can still edit Telegram's copy, so never promise an absolute lock.
+The guard's ISO language list is for clearing localized overrides, not app languages.
+
 Public routes are language-prefixed: `/uk/…` and `/en/…`. The pre-migration paths (`/test/:slug`, `/sablon/:slug`, `/confidentialitate`, `/termeni`, `/plata/:kind/:slug`) are 301-redirected in `webdev/nginx.conf`, with a client-side fallback in the SPA router. Keep both sides in sync when you touch routing.
 
 ## Auth model (webdev)
@@ -68,11 +77,11 @@ These are intentional. `robots.txt` does NOT list them anymore (security through
 
 ## Three Telegram surfaces
 
-- `webdev/tgbot/` — client bot for the web flow. Calls backend via `BACKEND_URL/api_crowe_bizcheck/tg/*`. `/tg/link/{sub_id}` is owner-gated; `/tg/report/<token>` and `/tg/contact/<token>` are token-gated (32-byte URL-safe, 24h TTL).
+- `webdev/tgbot/` — client bot for the web flow. Calls backend via `BACKEND_URL/api_crowe_bizcheck/tg/*`. `/tg/link/{sub_id}` is owner-gated. `POST /tg/report/<token>` atomically binds a valid 24h token to the first private chat; report/contact/email/lead/failed require `X-Bot-Secret` and `X-Telegram-Chat-ID`. Subsequent actions require the same bound chat. No `GET` endpoint serves the report. Update backend + tgbot together.
 - `webdev/groupbot/` — internal bot living in the sales group: `/register`, `/unregister`, `/excel`, `/client`, `/pdf`. Authorization fails closed — `SALES_CHAT_ID` wins when set, otherwise the chat bound via `/register`; nothing set and nothing registered → deny.
 - `services/sales_notify.py` — the backend posting lead notifications into that group (same token as `groupbot`, send-only, so no `getUpdates` conflict).
 
-Every `/tg/exports/*`, `/tg/group/*` and `/tg/feedback/*` endpoint is gated **strictly** on `X-Bot-Secret`: an unset `BOT_SHARED_SECRET` disables the feature (403), it never opens it. Do not "relax for local dev".
+Every bot-only `/tg/*` endpoint is gated **strictly** on `X-Bot-Secret`; `/tg/link/{sub_id}` uses owner/admin auth instead. An unset `BOT_SHARED_SECRET` disables bot access (403) and prevents the client bot/deploy from starting. There is no `TG_REQUIRE_BOT_SECRET` opt-out. Do not "relax for local dev".
 
 ## Don'ts
 

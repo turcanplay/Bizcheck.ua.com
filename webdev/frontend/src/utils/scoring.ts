@@ -1,4 +1,5 @@
 import type { Block, Answers, Zone, ScoringZones, BlockResult, ReportData, UserInfo } from '@/types';
+import type { Lang } from '@/i18n/translations';
 
 export function calculateBlockScore(block: Block, answers: Answers): number {
   let earned = 0;
@@ -101,6 +102,7 @@ export function buildReport(
   answers: Answers,
   userInfo: UserInfo,
   zones?: Partial<ScoringZones> | null,
+  lang: Lang = 'uk',
 ): ReportData {
   // Resolved ONCE and carried on the report, so every component down the tree
   // splits zones by the same thresholds without re-reading the test.
@@ -126,7 +128,7 @@ export function buildReport(
     zones: resolved,
     distanceFromPerfect: 100 - totalScore,
     userInfo,
-    date: new Date().toLocaleDateString(undefined, {
+    date: new Date().toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

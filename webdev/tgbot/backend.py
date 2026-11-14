@@ -16,10 +16,10 @@ only:
 answers ("wrong token", "link expired", "PDF not ready yet") and retrying them
 would only make the user wait for the same error.
 
-The shared secret (``X-Bot-Secret``) is sent on every call. The backend gates
-the bot-only endpoints with it; the token-scoped ones ignore an extra header,
-so sending it unconditionally is safe and keeps the bot working if/when more
-endpoints get gated.
+The shared secret (``X-Bot-Secret``) is required on every call. Report access
+also carries ``X-Telegram-Chat-ID`` from a verified private update: the backend
+atomically claims the delivery token for that recipient on POST /report and
+requires the same recipient for contact, email, lead and failure requests.
 """
 
 import asyncio
@@ -83,7 +83,7 @@ async def _request(method: str, path: str, *, timeout: float, **kwargs) -> httpx
         logger.warning(
             "backend %s %s failed (%s), retry %d/%d in %.1fs",
             method.upper(), _log_path(path),
-            last_exc if last_exc is not None else f"HTTP {resp.status_code}",
+            type(last_exc).__name__ if last_exc is not None else f"HTTP {resp.status_code}",
             attempt + 1, RETRY_ATTEMPTS - 1, delay,
         )
         await asyncio.sleep(delay)
@@ -93,32 +93,43 @@ async def _request(method: str, path: str, *, timeout: float, **kwargs) -> httpx
     raise last_exc                                # exhausted retries on network errors
 
 
-async def get_report(token: str) -> httpx.Response:
+def _chat_headers(chat_id: int) -> dict:
+    """Only the private Telegram user verified by our update handlers."""
+    if type(chat_id) is not int or chat_id <= 0:
+        raise ValueError("A positive private Telegram chat ID is required")
+    return {"X-Telegram-Chat-ID": str(chat_id)}
+
+
+async def get_report(token: str, *, chat_id: int) -> httpx.Response:
     """Fetch report data + base64 PDF for a delivery token."""
-    return await _request("get", f"/report/{token}", timeout=30.0)
+    return await _request("post", f"/report/{token}", timeout=30.0,
+                          headers=_chat_headers(chat_id))
 
 
-async def report_failed(token: str, reason: str, payload: dict) -> httpx.Response:
+async def report_failed(token: str, reason: str, payload: dict, *, chat_id: int) -> httpx.Response:
     """Tell the backend the report could NOT be delivered so it can alert the
     sales team. Best-effort — the caller swallows any error (the user already
     sees the failure message)."""
     return await _request("post", f"/report/{token}/failed", timeout=10.0,
-                          json={"reason": reason, **payload})
+                          json={"reason": reason, **payload}, headers=_chat_headers(chat_id))
 
 
-async def save_contact(token: str, payload: dict) -> httpx.Response:
+async def save_contact(token: str, payload: dict, *, chat_id: int) -> httpx.Response:
     """Persist the user's Telegram identity for follow-up."""
-    return await _request("post", f"/contact/{token}", timeout=10.0, json=payload)
+    return await _request("post", f"/contact/{token}", timeout=10.0, json=payload,
+                          headers=_chat_headers(chat_id))
 
 
-async def send_email(token: str, email: str) -> httpx.Response:
+async def send_email(token: str, email: str, *, chat_id: int) -> httpx.Response:
     """Ask the backend to email the report (200 sent / 409 pending / 404 expired)."""
-    return await _request("post", f"/email/{token}", timeout=20.0, json={"email": email})
+    return await _request("post", f"/email/{token}", timeout=20.0, json={"email": email},
+                          headers=_chat_headers(chat_id))
 
 
-async def save_lead(token: str, payload: dict) -> httpx.Response:
+async def save_lead(token: str, payload: dict, *, chat_id: int) -> httpx.Response:
     """Save a sales lead — ``{"email", "phone"}`` or phone-only ``{"phone"}``."""
-    return await _request("post", f"/lead/{token}", timeout=20.0, json=payload)
+    return await _request("post", f"/lead/{token}", timeout=20.0, json=payload,
+                          headers=_chat_headers(chat_id))
 
 
 async def feedback_open(payload: dict) -> httpx.Response:

@@ -4,14 +4,17 @@
 
 Nimic din secțiunea asta nu se poate rezolva în cod. Sunt valori reale care nu există încă.
 
+**A1 rezolvat la 2026-11-13:** proprietarul a confirmat `office@crowe-tm.md` drept
+contact public. Este activ în bot, site, rapoartele noi și Reply-To al emailurilor.
+Autentificarea și identitatea de expediere SMTP sunt configurate separat.
+
 | # | Ce lipsește | Unde doare |
 |---|---|---|
-| A1 | **Adresa de email UA.** Documentul clientului scrie el însuși `office@bizcheck.com.ua [уточнити фактичну адресу]`. | `src/config/contact.ts:16`, `tgbot/config.py` (`CONTACT_EMAIL`), `backend/services/email_templates.py`, `SMTP_USER` / `SMTP_REPLY_TO` |
 | A2 | **Handle-ul Telegram UA.** Documentul: `[уточнити @handle Crowe Mikhailenko]`. | `EMAIL_TELEGRAM_HANDLE` / `EMAIL_TELEGRAM_URL`, `src/config/contact.ts` (`@CROWE_TM`) |
 | A3 | **Numărul de telefon UA.** Azi e literal `+380 XX XXX XX XX` în `translations.ts:108-109` — **vizibil pe site** — iar `contact.ts` afișează numărul moldovenesc `+373 79 027 317`. | landing, subsolul raportului, PDF |
 | A4 | **Numele firmei în CTA-ul raportului.** Documentul cere „Crowe Mikhailenko"; restul aplicației zice „Crowe Turcan Mikhailenko". Ambele coexistă în `translations.ts` (`:450` vs `:659`, `:789`, `:795`) și în `config/contact.ts:57`. | textul livrat clientului final |
 | A5 | **Baza normativă a blocului 7** (relații de muncă) a fost mutată pe Codul Muncii, deși blocul e despre secret comercial, pe care Codul Muncii nu-l reglementează. | `src/data/blockExplanations.ts` |
-| A6 | **Cutia poștală SMTP.** Expeditorul real rămâne `office@bizcheck.md` — singura cu SPF/DKIM/DMARC configurate. Un expeditor de pe un domeniu fără DNS de email ajunge în spam. | livrarea rapoartelor pe email |
+| A6 | **Identitatea SMTP pentru o eventuală cutie UA dedicată.** Expeditorul și autentificarea rămân cele configurate prin `SMTP_USER`; modificarea lor cere o cutie și permisiuni de expediere valide. Contactul public și Reply-To sunt deja `office@crowe-tm.md`. | livrarea rapoartelor pe email |
 
 **Notă:** corecturile juridice din `260731_..._правки_блоки_4_6.docx` (blocurile 4-6, plus
 retușuri în 1, 2, 3, 7, 8) sunt **deja implementate** — commit `f4c4be1`, cu track changes

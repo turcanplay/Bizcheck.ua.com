@@ -6,6 +6,7 @@
 - [Cine cheamă pe cine](#cine-cheamă-pe-cine)
 - [Diagrama fluxului](#diagrama-fluxului)
 - [De ce doi boți, două token-uri](#de-ce-doi-boți-două-token-uri)
+- [Interfața și profilul botului user](#interfața-și-profilul-botului-user)
 
 ---
 
@@ -27,7 +28,9 @@
 ## Cine cheamă pe cine
 
 - **Botul user** vorbește doar cu backend-ul, prin endpoint-urile `/api_crowe_bizcheck/tg/*`
-  (client `httpx` în `webdev/tgbot/backend.py`). Nu atinge DB-ul direct.
+  (client `httpx` în `webdev/tgbot/backend.py`). Nu atinge DB-ul direct. Raportul se cere prin
+  **POST**, cu `X-Bot-Secret` și `X-Telegram-Chat-ID`; primul acces leagă atomic tokenul
+  de chatul privat. Contactul, emailul și leadul cer același chat. Fără secret → 403.
 - **Notificarea de vânzări** e o funcție de serviciu în backend, chemată din 3 căi de scriere
   (PATCH web, `/tg/contact`, `/tg/lead`) — vezi [`02-notificare-vanzari.md`](02-notificare-vanzari.md).
 - **Botul de grup** vorbește cu backend-ul prin `/api_crowe_bizcheck/tg/group/*` și
@@ -43,7 +46,7 @@
                           │ BACKEND  │  (Flask, :4001 intern)
                           └──────────┘
                           ▲    │    ▲
-     GET /tg/report/{tok} │    │    │ maybe_notify_sales()  ┌───────────────┐
+    POST /tg/report/{tok} │    │    │ maybe_notify_sales()  ┌───────────────┐
      POST /tg/contact     │    │    └──────────────────────►│ sales_notify  │──┐
      POST /tg/email       │    │                            │ (worker cozat)│  │ sendMessage
      POST /tg/lead        │    │ POST /tg/group/*           └───────────────┘  │
@@ -68,3 +71,19 @@
   PII (exporturi Excel, PDF-uri). Token separat, endpoint-uri fail-closed cu secret partajat.
 
 Amestecarea lor ar expune exporturile PII pe același bot public — de aceea sunt strict separate.
+
+## Interfața și profilul botului user
+
+Botul user folosește exclusiv ucraineana (`uk` / UA). Site-ul rămâne `uk`/`en`, iar PDF-ul
+păstrează limba generării. Numele, descrierile, comenzile și marca/contactul sunt în
+`webdev/tgbot/bot_profile.py`, mesajele în `strings.py`, avatarul în `assets/profile.jpg`.
+Nu există editor admin, comandă de bot sau override env pentru acest profil.
+
+`ProfileGuard` restabilește profilul la startup, apoi cu pauze de 120 s între cicluri;
+verificarea completă a localizărilor se repetă la 6 ore. Telegram/BotFather nu permite
+un profil absolut imuabil: proprietarul sau deținătorul tokenului poate modifica starea
+externă; gardul o repară când rulează și API-ul răspunde. Întrebările de feedback/quiz
+rămân conținut editabil separat, intenționat. Detalii: [botul user](01-bot-user.md).
+
+Backend-ul și `tgbot` trebuie livrate împreună pentru protocolul POST + secret + chat.
+Modificările din 2026-11-12 au fost verificate local; deploy-ul nu a fost executat.

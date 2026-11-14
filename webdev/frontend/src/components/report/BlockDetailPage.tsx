@@ -41,8 +41,7 @@ export default function BlockDetailPage({ block }: BlockDetailPageProps) {
             color={color}
             size={130}
             strokeWidth={11}
-            animated={true}
-            delay={120}
+            animated={false}
             labelSize={30}
           />
           <div className="block-detail__zone" style={{ background: color }}>

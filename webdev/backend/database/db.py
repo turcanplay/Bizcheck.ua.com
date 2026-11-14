@@ -442,6 +442,9 @@ def migrate():
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS payment_ref      VARCHAR(255) DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_token         VARCHAR(64)  DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_token_expires TIMESTAMPTZ  DEFAULT NULL;
+                -- A report link is bound atomically to its first private bot chat.
+                -- Separate from tg_chat_id, which is the saved lead contact.
+                ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_token_chat_id BIGINT DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_chat_id       BIGINT       DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_username      VARCHAR(100) DEFAULT NULL;
                 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS tg_first_name    VARCHAR(100) DEFAULT NULL;

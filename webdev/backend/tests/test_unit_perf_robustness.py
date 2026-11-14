@@ -535,6 +535,8 @@ def tg_app(monkeypatch):
 
 
 PII_WRITE_ROUTES = [
+    "/api_crowe_bizcheck/tg/report/tok",
+    "/api_crowe_bizcheck/tg/report/tok/failed",
     "/api_crowe_bizcheck/tg/contact/tok",
     "/api_crowe_bizcheck/tg/email/tok",
     "/api_crowe_bizcheck/tg/lead/tok",
@@ -562,13 +564,13 @@ class TestBotSecretGate:
         assert r.status_code == 403
 
     @pytest.mark.parametrize("url", PII_WRITE_ROUTES)
-    def test_missing_header_is_allowed_during_the_staged_rollout(
+    def test_missing_header_is_always_rejected(
         self, tg_app, monkeypatch, url,
     ):
-        """webdev/tgbot does not send the header yet — must not break today."""
+        """A leaked deep link alone may neither read reports nor write PII."""
         monkeypatch.setenv("BOT_SHARED_SECRET", "correct-secret")
         r = tg_app.test_client().post(url, json={"tg_chat_id": 1, "email": "a@b.co"})
-        assert r.status_code != 403
+        assert r.status_code == 403
 
     @pytest.mark.parametrize("url", PII_WRITE_ROUTES)
     def test_missing_header_is_rejected_once_enforcement_is_on(
@@ -585,25 +587,21 @@ class TestBotSecretGate:
         monkeypatch.setenv("TG_REQUIRE_BOT_SECRET", "1")
         r = tg_app.test_client().post(
             url, json={"tg_chat_id": 1, "email": "a@b.co"},
-            headers={"X-Bot-Secret": "correct-secret"},
+            headers={"X-Bot-Secret": "correct-secret", "X-Telegram-Chat-ID": "1"},
         )
         assert r.status_code != 403
 
-    def test_read_only_report_endpoint_is_not_gated(self, tg_app, monkeypatch):
-        """GET /tg/report writes nothing; gating it would break delivery today."""
+    def test_get_report_does_not_disclose_a_report(self, tg_app, monkeypatch):
+        """Recipient claims use POST, so a link preview cannot claim a report."""
         monkeypatch.setenv("BOT_SHARED_SECRET", "correct-secret")
         monkeypatch.setenv("TG_REQUIRE_BOT_SECRET", "1")
         r = tg_app.test_client().get("/api_crowe_bizcheck/tg/report/tok")
-        assert r.status_code == 404      # token not found, NOT 403
+        assert r.status_code == 405
 
-    def test_enforcement_flag_accepts_common_truthy_spellings(self, monkeypatch):
-        import routes.telegram as tg
-        for val in ("1", "true", "TRUE", "yes", "on"):
-            monkeypatch.setenv("TG_REQUIRE_BOT_SECRET", val)
-            assert tg._bot_secret_required() is True
-        for val in ("0", "false", "", "no"):
-            monkeypatch.setenv("TG_REQUIRE_BOT_SECRET", val)
-            assert tg._bot_secret_required() is False
+    @pytest.mark.parametrize("url", PII_WRITE_ROUTES)
+    def test_unset_secret_disables_the_feature(self, tg_app, url):
+        r = tg_app.test_client().post(url, json={"email": "a@b.co"})
+        assert r.status_code == 403
 
 
 # ---------------------------------------------------------------------------

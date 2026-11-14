@@ -40,7 +40,9 @@ def client(monkeypatch):
     monkeypatch.setattr(mod, "query", lambda *a, **k: {
         "id": 7, "tg_token": None, "tg_token_expires": None, "has_pdf": False,
     })
-    monkeypatch.setattr(mod, "execute", lambda *a, **k: {"id": 7})
+    def issue_link(sql, params):
+        return {"tg_token": params[0], "has_pdf": False}
+    monkeypatch.setattr(mod, "execute", issue_link)
     # The endpoint is owner-gated. Auth itself is covered in test_unit_security;
     # here we just hand it a submission token it will accept.
     monkeypatch.setattr(

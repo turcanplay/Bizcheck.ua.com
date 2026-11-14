@@ -1,5 +1,140 @@
 # Security Audit Report
 
+## 2026-11-12 — Telegram report bot review and fixes
+
+**Initial review scope:** local analysis of the UA client bot, report bridge,
+profile management, logging and deployment configuration. That initial phase
+used local doubles without production access. The subsequently authorized
+production deployment and limited checks are recorded separately below. This
+is a scoped review, not a full application penetration test. The older audit
+below remains a historical record.
+
+| ID | Severity | Confirmed previous behavior and impact | Applied fix / current code reference |
+| --- | --- | --- | --- |
+| TG-01 | High | `/tg/report/<token>` disclosed the report with the bearer link alone; `/contact`, `/email` and `/lead` allowed requests without the bot secret while the rollout flag was off. A leaked link could disclose a PDF or alter lead contacts. | Every client-bot route now requires a configured, matching `X-Bot-Secret`, with constant-time comparison and no optional enforcement bypass. Link issuance retains owner/admin authorization. `backend/routes/telegram.py:57`, `:100`, `:146`, `:226`, `:282`. |
+| TG-02 | High | The same report link could be opened in multiple Telegram chats; contact/email actions were not tied to the recipient that opened it. | `POST /tg/report/<token>` atomically binds the token to the first private chat; repeat reads and follow-up actions require that same recipient. Contact payload identity must match the trusted `X-Telegram-Chat-ID` header. `backend/routes/telegram.py:67`, `:84`, `:163`, `:296`; idempotent `tg_token_chat_id` migration in `backend/database/db.py`. |
+| TG-03 | Medium | NULL token expiry was accepted. Separate SELECT and UPDATE calls during issuance could invalidate a just-returned link under concurrent requests. | SQL requires a non-expired timestamp; issuance uses 32 random bytes and one atomic UPDATE that preserves an existing valid token and its recipient binding. `backend/routes/telegram.py:109`, `:120`, `:166`, `:307`. |
+| TG-04 | Medium | The bridge lacked explicit `no-store` responses. nginx redacted query credentials but retained report-token path segments; legacy UUID tokens also escaped generic backend token redaction. | `Cache-Control: no-store` on bridge responses, including links and errors; explicit Telegram token-path redaction in backend logging and both nginx access-log configurations. `backend/routes/telegram.py:46`, `backend/utils/secret_hygiene.py:32`, `nginx.conf`, `nginx-proxy.conf.example`. |
+
+The failure-alert endpoint also authenticates the bot and recipient: tokens
+already claimed by another chat do not notify sales, and known/unknown/foreign
+tokens retain the same success response. Malformed JSON objects and invalid
+private-chat identifiers are rejected. The client bot restricts report handling
+to private chats and sends Ukrainian system messages; profile synchronization
+reads its name, descriptions, commands and image from tracked source/assets.
+
+**Final validation:** the full backend suite passed **1018 tests** and the client
+bot suite passed **173 tests**, including profile restoration, exact avatar,
+identity mismatch rejection and authorized report/contact/email/lead flows.
+The backend suite includes 51 secret-hygiene cases for both nginx configurations,
+legacy/current tokens, `/failed`, and request/Referer redaction. The nginx validator
+passed **82 checks** with both maintenance-mask states; deploy configuration passed
+**168 checks**. `bash -n deploy.sh` and `git diff --check` passed. Tests use local
+clients and database/Telegram doubles; none send emails or Telegram messages.
+
+### Production deployment verified — 2026-11-12
+
+Deployment completed with exit code **0** at **21:22:50 UTC / 23:22:50 EET**.
+The target was the Ukrainian installation `/root/BIZCHECK_COM_UA`, Compose project
+`bizcheckua`, frontend loopback port `5175`. The verified client bot is
+`@Bizcheck_CROWE_bot` (public bot ID `8847966580`); the Moldovan reference bot was
+not the deployment target.
+
+The deployed input was the 40-file release described by
+`/private/tmp/bizcheck-ua-release-20261112/manifest.json`, based on commit
+`57ac44a658123fe73fcfcbdd01e02421fe99f003`. Each archived file matched its manifest
+hash before upload. SHA256 of `release-files.tar.gz`:
+`6301003d657187bb7e042a10952044759f2f8e727edca9be5c08b06b1e4d4bd0`.
+That manifest is a pre-deployment artifact snapshot; this verification entry was
+written after deployment and is not part of its original hashes.
+
+Verified in production:
+
+- The `submissions.tg_token_chat_id` column exists. **5/5 bridge checks** passed:
+  internal health, missing/wrong secret rejection, valid secret without recipient
+  rejection, and schema metadata. A further authenticated request with a random,
+  nonexistent token exercised the SQL claim path and returned **404 + no-store**;
+  no customer row matched or changed.
+- **32 live profile checks** passed for the source-managed Ukrainian profile.
+  The guard's full **185-language sweep** completed without profile failures,
+  polling conflicts or unhandled errors. All four services were healthy, with
+  zero restarts in the observed interval. The downloaded live avatar was visually
+  checked against the MD gold-logo reference; Telegram re-encoded it as a 640px
+  square image.
+- The Ukrainian external proxy configuration passed its configuration test and
+  reload. **9/9 public checks** passed: `/`, `/uk/`, `/healthz`,
+  `/api_crowe_bizcheck/health` (database up), `/robots.txt`, `/sitemap.xml`, the
+  public missing-secret rejection (**403 + no-store**), and token redaction in
+  both external-proxy and frontend access logs.
+
+Rollback material is preserved at
+`/root/BIZCHECK_COM_UA/webdev/backups/telegram-ua-20261112T211738Z`.
+The pre-deploy database dump is
+`/root/BIZCHECK_COM_UA/webdev/backups/predeploy-bizzcheck-20261112-211847.sql.gz`.
+Its gzip integrity check passed. The local deployment receipt is
+`/private/tmp/bizcheck-ua-release-20261112/production-result.json`.
+The added nullable column is compatible with the prior images; reverting images
+does not itself restore Telegram profile/webhook metadata. No rollback or database
+restore was required. No customer report, contact or email was created or modified
+for these checks, and no customer message was sent.
+
+### Confirmed inherited risks still open
+
+- **Database privilege scope:** the backend is still connected as the PostgreSQL
+  superuser `postgres`, confirmed during deployment. This release did not change
+  database roles or privileges. A backend/DSN compromise therefore retains a
+  broader database impact; the dedicated-role procedure remains separate work.
+- **Frontend dependency audit:** the unchanged lockfile reports **27 findings**
+  (**1 critical, 13 high, 12 moderate, 1 low**). Raw output is saved locally in
+  `/private/tmp/bizcheck-ua-release-20261112/npm-audit.json`. The critical package
+  is runtime `jspdf@4.2.0`: its vulnerable new-window output options are absent
+  from the observed application path, which uses `output('arraybuffer')` at
+  `frontend/src/utils/pdfGenerator.ts:200`. FreeText annotation calls are also
+  absent. This is a reachability assessment, not a claim that the dependency is
+  patched. The maintainer's [jsPDF 4.2.1 release](https://github.com/parallax/jsPDF/releases/tag/v4.2.1)
+  fixes both issues; apply and validate that patch separately. No npm upgrade or
+  `npm audit fix` was performed.
+- Of the 13 high package findings, three are runtime packages: DOMPurify 3.3.3
+  (an optional jsPDF dependency; no direct sanitization/hooks observed) and React
+  Router/DOM 7.14.1 (the high issues examined require Framework/RSC functionality;
+  this app uses `BrowserRouter` and a static nginx runtime). Ten are dev/build
+  packages, not production Node services. The [React Router RCE advisory](https://github.com/remix-run/react-router/security/advisories/GHSA-49rj-9fvp-4h2h)
+  explicitly excludes Declarative Mode. These findings remain tracked rather
+  than being presented as a clean dependency audit.
+
+**Deployment and remaining limits:**
+
+- The bot and backend were deployed together: report retrieval uses **POST** with
+  `X-Bot-Secret` and `X-Telegram-Chat-ID`. Set the same nonempty
+  `BOT_SHARED_SECRET` in both services. The migration adds a nullable binding
+  column; an expired token gets a fresh binding when an authorized owner requests
+  a new link.
+- The production migration and an unmatched-token SQL path were verified; real
+  competing claims still require a staging check. Local tests check HTTP
+  authorization and the atomic SQL contract; they do not simulate the PostgreSQL
+  lock manager. The claim's concurrency protection is
+  inferred from the documented re-evaluation of an UPDATE's condition after a
+  competing update commits under Read Committed.
+  [PostgreSQL 16 transaction isolation](https://www.postgresql.org/docs/16/transaction-iso.html).
+- Before its first opening, a report link remains a bearer credential: the first
+  private chat to open it claims it. Binding prevents forwarding after that
+  opening; it does not prove the original website visitor's Telegram identity.
+- Application source and read-only packaged assets govern profile updates made
+  by this bot. An owner with BotFather access or a valid bot API token can still
+  change Telegram metadata outside the application. Those external privileges
+  cannot be made code-only by application code. Periodic reconciliation restores
+  source-managed metadata while the service is running; it is not an absolute
+  Telegram account lock.
+- The live profile and technical guards were verified as recorded above; actual
+  customer PDF/email delivery, legitimate customer-token redemption and PDF/quiz
+  database content were not tested. The separate admin feedback-question editor
+  remains functional content rather than profile metadata.
+- nginx redaction covers `access_log`; standard upstream `error_log` entries can
+  still include request URIs. Restrict operational access to logs and apply the
+  external proxy configuration together with the container configuration.
+
+---
+
 **Date:** 2026-03-12 · **Last update:** 2026-04-14 (multi-test + PII-at-rest)
 **Application:** BizCheck — Business Assessment Web Application
 **Stack:** React + TypeScript (Vite) / Flask (Python) / PostgreSQL / Docker

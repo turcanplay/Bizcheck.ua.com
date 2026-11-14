@@ -8,18 +8,16 @@ thread so the HTTP request returns immediately with 202 Accepted.
 Configuration (read from env vars — see .env.example):
     SMTP_HOST          smtp.office365.com
     SMTP_PORT          587
-    SMTP_USER          office@bizcheck.md          (this is the From address)
+    SMTP_USER          <configured sending mailbox> (also the From address)
     SMTP_PASSWORD      <Office 365 app password — 16 chars>
     SMTP_FROM_NAME     Crowe Turcan Mikhailenko
-    SMTP_REPLY_TO      office@bizcheck.md           (user replies go here)
+    SMTP_REPLY_TO      office@crowe-tm.md           (public support / replies)
     EMAIL_LOGO_URL     https://bizcheck.com.ua/logo_email.png
 
-The site now lives on bizcheck.com.ua, but the sending mailbox has deliberately
-NOT moved: office@bizcheck.md is the only box that exists, and it is the one
-SPF/DKIM/DMARC are aligned for. Changing the From/Reply-To address before a UA
-mailbox exists breaks SMTP auth and stops report delivery outright.
-TODO: switch SMTP_USER / SMTP_REPLY_TO to the @bizcheck.com.ua mailbox once it
-is provisioned and its DNS records pass — env vars only, no code change needed.
+The public support mailbox is office@crowe-tm.md. Reply-To and the contact in
+the email body use SMTP_REPLY_TO, then EMAIL_REPLY_TO, then this confirmed
+address. SMTP_USER and SMTP_PASSWORD separately control authentication;
+SMTP_USER remains the From address and determines Message-ID alignment.
 
 Not configured? Sending is skipped and the queued task logs a warning.
 """
@@ -39,8 +37,8 @@ log = logging.getLogger(__name__)
 # Content-ID used for the inline (embedded) logo. Embedding the logo as a
 # `cid:` part instead of a remote <img src="https://..."> removes two spam
 # signals: an external image fetch, and a cross-domain image. Fetched once,
-# then cached. (Logo and every link point at bizcheck.com.ua; the From/Reply-To
-# mailbox is still office@bizcheck.md — see the module docstring.)
+# then cached. The public contact and the SMTP sending identity are configured
+# separately; changing support details does not change SMTP authentication.
 _LOGO_CID = "reportlogo"
 _logo_cache: dict[str, bytes | None] = {}
 
@@ -91,9 +89,9 @@ def _build_message(
     msg = EmailMessage()
     from_name = _env("SMTP_FROM_NAME", "Crowe Turcan Mikhailenko")
     from_addr = _env("SMTP_USER")
-    reply_to = _env("SMTP_REPLY_TO") or from_addr
-    # Normally the domain comes straight from the From address (today:
-    # bizcheck.md, the only mailbox that exists). The literal below is only a
+    reply_to = _env("SMTP_REPLY_TO") or _env("EMAIL_REPLY_TO", "office@crowe-tm.md")
+    # Normally the domain comes straight from the configured From address.
+    # The literal below is only a
     # last-ditch fallback for a misconfigured SMTP_USER with no "@" — in that
     # case there is no From domain to align with, so use the site domain.
     from_domain = from_addr.split("@")[-1] if "@" in from_addr else "bizcheck.com.ua"
@@ -218,7 +216,7 @@ def send_report_email_sync(
         return False
 
     effective_logo = logo_url or _env("EMAIL_LOGO_URL", "https://bizcheck.com.ua/logo_email.png")
-    reply_to = _env("SMTP_REPLY_TO") or _env("SMTP_USER") or "office@bizcheck.md"
+    reply_to = _env("SMTP_REPLY_TO") or _env("EMAIL_REPLY_TO", "office@crowe-tm.md")
 
     # Inline the logo when we can fetch it; otherwise reference it remotely.
     logo_bytes = _load_logo_bytes(effective_logo)

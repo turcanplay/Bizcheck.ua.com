@@ -2,14 +2,14 @@
 Telegram bot bridge endpoints.
 
 POST /api/tg/link/<sub_id>     — generate a one-time deep-link token
-GET  /api/tg/report/<token>    — return submission data + PDF (called by the bot)
+POST /api/tg/report/<token>    — bind the recipient and return the report (bot only)
 POST /api/tg/contact/<token>   — save Telegram chat_id + username after delivery
 """
 
 import os
 import re
 import hmac
-import uuid
+import secrets
 import base64
 import logging
 from datetime import datetime, timedelta, timezone
@@ -32,79 +32,64 @@ _EMAIL_RE = re.compile(r'^[^@\s]{1,64}@[^@\s]{1,253}\.[^@\s]{1,63}$')
 _PHONE_RE = re.compile(r'^\+?[\d\s\-()]{7,20}$')
 
 
+@tg_bp.before_request
+def _validate_bot_request():
+    """Bound inputs before they can reach SQL or identity-field parsers."""
+    token = (request.view_args or {}).get("token")
+    if token is not None and not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", token):
+        return jsonify({"error": "Token not found or expired"}), 404
+    body = request.get_json(silent=True)
+    if body is not None and not isinstance(body, dict):
+        return jsonify({"error": "Expected a JSON object"}), 400
+
+
+@tg_bp.after_request
+def _private_response(response):
+    # Reports, contact details and bearer links must never enter a proxy cache.
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+
 # ---------------------------------------------------------------------------
-# Shared-secret gate for the PII-writing /tg/* endpoints
+# Bot identity and private recipient gates
 # ---------------------------------------------------------------------------
-# /contact, /email and /lead all WRITE personal data (email, phone, Telegram
-# identity) onto a submission. Until now the deep-link token was the only thing
-# guarding them — a leaked token was enough to plant PII. routes/tg_group.py and
-# routes/tg_admin.py already require `X-Bot-Secret`; these are the stragglers.
-#
-# STAGED ROLLOUT — the enforcement is behind a flag, not on by default:
-#
-#   * header PRESENT  → it MUST match BOT_SHARED_SECRET, else 403.
-#                       (No secret configured + a header sent → 403 too: a
-#                       caller claiming bot identity we cannot verify is
-#                       rejected, never trusted.)
-#   * header ABSENT   → allowed, with a warning, UNLESS TG_REQUIRE_BOT_SECRET
-#                       is enabled — then 403.
-#
-# webdev/tgbot/backend.py now injects `bot_headers()` on EVERY backend call, so
-# the bot already satisfies the strict path. The flag exists so the backend can
-# be deployed before/independently of the bot without a window in which report
-# delivery 403s. Cutover = set TG_REQUIRE_BOT_SECRET=1 once both services are
-# running with the SAME BOT_SHARED_SECRET; nothing else changes.
-_TRUTHY = {"1", "true", "yes", "on"}
-
-
-def _bot_secret_required() -> bool:
-    return (os.getenv("TG_REQUIRE_BOT_SECRET") or "").strip().lower() in _TRUTHY
-
-
 def _bot_secret_ok(req, endpoint: str) -> bool:
-    """See the module comment above for the staged-rollout policy."""
+    """Fail closed: a report link never grants direct bot API access."""
     secret = (os.getenv("BOT_SHARED_SECRET") or "").strip()
     provided = req.headers.get("X-Bot-Secret", "")
+    if secret and provided and hmac.compare_digest(provided.encode(), secret.encode()):
+        return True
+    log.warning("[tg] %s: missing or invalid bot credentials — rejected", endpoint)
+    return False
 
-    if provided:
-        # hmac.compare_digest → no early-exit timing leak on the secret.
-        if secret and hmac.compare_digest(provided, secret):
-            return True
-        log.warning("[tg] %s: X-Bot-Secret present but invalid — rejected", endpoint)
-        return False
 
-    if _bot_secret_required():
-        log.warning("[tg] %s: X-Bot-Secret missing and TG_REQUIRE_BOT_SECRET is on "
-                    "— rejected", endpoint)
-        return False
-
-    log.warning("[tg] %s called WITHOUT X-Bot-Secret (allowed: TG_REQUIRE_BOT_SECRET "
-                "is off). Update webdev/tgbot to send the header, then enable it.",
-                endpoint)
-    return True
+def _private_chat_id():
+    """The trusted bot supplies the actual private Telegram recipient."""
+    raw = request.headers.get("X-Telegram-Chat-ID", "")
+    if not re.fullmatch(r"[1-9][0-9]{0,15}", raw):
+        return None
+    return int(raw)
 
 
 def _reject_unauthorized_bot(endpoint: str):
     """Return a 403 response when the bot gate fails, else None."""
     if _bot_secret_ok(request, endpoint):
-        return None
+        if _private_chat_id() is not None:
+            return None
+        return jsonify({"error": "Invalid private Telegram recipient"}), 400
     return jsonify({"error": "forbidden"}), 403
 
 
 def _submission_id_for_valid_token(token):
-    """Return the submission id for a non-expired tg_token, else None."""
+    """Only the private chat which claimed the token can use its actions."""
     row = query(
-        "SELECT id, tg_token_expires FROM submissions WHERE tg_token = %s",
-        (token,), fetch_one=True,
+        """SELECT id FROM submissions WHERE tg_token = %s
+           AND tg_token_expires > NOW() AND tg_token_chat_id = %s""",
+        (token, _private_chat_id()), fetch_one=True,
     )
     if not row:
         return None
-    exp = row.get("tg_token_expires")
-    if exp:
-        if exp.tzinfo is None:
-            exp = exp.replace(tzinfo=timezone.utc)
-        if datetime.now(timezone.utc) > exp:
-            return None
     return row["id"]
 
 
@@ -116,12 +101,12 @@ def _submission_id_for_valid_token(token):
 @submission_owner_or_admin
 def generate_tg_link(sub_id):
     """
-    Create a one-time Telegram deep-link token for a submission.
+    Create a recipient-bound Telegram deep-link token for a submission.
     Returns { token, url, pdf_ready } where pdf_ready=true iff the submission
     already has its PDF persisted (user can safely click the bot link).
     Token expires after TOKEN_TTL_HOURS hours.
     """
-    token = uuid.uuid4().hex
+    token = secrets.token_urlsafe(32)
     expires = datetime.now(timezone.utc) + timedelta(hours=_TOKEN_TTL_HOURS)
 
     # No handle configured → no link. Handing back a link built from a default
@@ -130,36 +115,27 @@ def generate_tg_link(sub_id):
     if not bot_username():
         return jsonify({"error": "Telegram delivery is not configured"}), 503
 
-    existing = query(
-        "SELECT tg_token, tg_token_expires, pdf_data IS NOT NULL AS has_pdf FROM submissions WHERE id = %s",
-        (sub_id,), fetch_one=True,
-    )
-    if not existing:
-        return jsonify({"error": "Submission not found"}), 404
-
-    pdf_ready = bool(existing.get("has_pdf"))
-
-    # Don't overwrite an existing valid token
-    ex_exp = existing.get("tg_token_expires")
-    if ex_exp and existing.get("tg_token"):
-        if ex_exp.tzinfo is None:
-            ex_exp = ex_exp.replace(tzinfo=timezone.utc)
-        if datetime.now(timezone.utc) < ex_exp:
-            return jsonify({
-                "token": existing["tg_token"],
-                "url": deep_link(existing["tg_token"]),
-                "pdf_ready": pdf_ready,
-            })
-
-    execute(
-        "UPDATE submissions SET tg_token = %s, tg_token_expires = %s WHERE id = %s RETURNING id",
+    # One UPDATE serializes competing requests: neither can invalidate the link
+    # another request just returned. A rotated token gets a fresh recipient bind.
+    row = execute(
+        """UPDATE submissions SET
+           tg_token_chat_id = CASE WHEN tg_token IS NOT NULL AND tg_token_expires > NOW()
+                                  THEN tg_token_chat_id ELSE NULL END,
+           tg_token = CASE WHEN tg_token IS NOT NULL AND tg_token_expires > NOW()
+                           THEN tg_token ELSE %s END,
+           tg_token_expires = CASE WHEN tg_token IS NOT NULL AND tg_token_expires > NOW()
+                                   THEN tg_token_expires ELSE %s END
+           WHERE id = %s
+           RETURNING tg_token, pdf_data IS NOT NULL AS has_pdf""",
         (token, expires, sub_id),
     )
+    if not row:
+        return jsonify({"error": "Submission not found"}), 404
 
     return jsonify({
-        "token": token,
-        "url": deep_link(token),
-        "pdf_ready": pdf_ready,
+        "token": row["tg_token"],
+        "url": deep_link(row["tg_token"]),
+        "pdf_ready": bool(row.get("has_pdf")),
     })
 
 
@@ -167,38 +143,39 @@ def generate_tg_link(sub_id):
 # Fetch report by token (used internally by the bot)
 # ---------------------------------------------------------------------------
 
-@tg_bp.route("/report/<token>", methods=["GET"])
+@tg_bp.route("/report/<token>", methods=["POST"])
 def get_report_by_token(token):
     """
     Return submission data + base64-encoded PDF for a valid token.
     Called exclusively by the Telegram bot service.
     """
+    denied = _reject_unauthorized_bot("/tg/report")
+    if denied:
+        return denied
+    chat_id = _private_chat_id()
     # scoring_zones comes along on the SAME row (LEFT JOIN, no extra round-trip):
     # the bot prints the score's zone and must use the test's admin-configured
     # bands, not a ladder of its own. LEFT JOIN because submissions.test_id is
     # nullable — a submission without a test still delivers its PDF, it just
     # falls back to the default zones.
-    row = query(
-        """SELECT s.id, s.first_name, s.last_name, s.total_score,
-                  s.block_scores_json, s.tg_token_expires, s.pdf_data,
-                  s.language, t.scoring_zones
-           FROM submissions s
+    # Claim and read in one statement: simultaneous opens in different chats
+    # cannot both receive the PDF. Reopening in the same chat remains retryable.
+    row = execute(
+        """WITH claimed AS (
+             UPDATE submissions SET tg_token_chat_id = %s
+             WHERE tg_token = %s AND tg_token_expires > NOW()
+               AND (tg_token_chat_id IS NULL OR tg_token_chat_id = %s)
+             RETURNING id, first_name, last_name, total_score,
+                       block_scores_json, pdf_data, language, test_id
+           )
+           SELECT s.*, t.scoring_zones FROM claimed s
            LEFT JOIN tests t ON t.id = s.test_id
-           WHERE s.tg_token = %s""",
-        (token,),
-        fetch_one=True,
+        """,
+        (chat_id, token, chat_id),
     )
 
     if not row:
-        return jsonify({"error": "Token not found"}), 404
-
-    expires = row.get("tg_token_expires")
-    if expires:
-        # psycopg2 returns aware datetime; compare safely
-        if expires.tzinfo is None:
-            expires = expires.replace(tzinfo=timezone.utc)
-        if datetime.now(timezone.utc) > expires:
-            return jsonify({"error": "Token expired"}), 404
+        return jsonify({"error": "Token not found or expired"}), 404
 
     # Convert BYTEA pdf_data → base64
     pdf_b64 = None
@@ -246,20 +223,24 @@ def report_delivery_failed(token):
     maps to a real submission, so a forged/guessed token can neither spam the
     sales group nor probe which tokens exist (identical 200 either way).
     """
+    denied = _reject_unauthorized_bot("/tg/report/failed")
+    if denied:
+        return denied
     data = request.get_json(silent=True) or {}
     reason_label = _FAIL_REASONS.get(
-        (data.get("reason") or "").strip(), "Невідома помилка доставки звіту"
+        clean_text(data.get("reason"), max_len=50), "Невідома помилка доставки звіту"
     )
     tg_username = clean_optional(data.get("tg_username"), max_len=MAX_NAME) or ""
-    try:
-        tg_chat_id = int(data.get("tg_chat_id"))
-    except (TypeError, ValueError):
-        tg_chat_id = None
+    tg_chat_id = _private_chat_id()
 
     # Look up by token even when expired — rescuing expired-link leads is the point.
     sub = None
     try:
-        row = query("SELECT id FROM submissions WHERE tg_token = %s", (token,), fetch_one=True)
+        row = query(
+            """SELECT id FROM submissions WHERE tg_token = %s
+               AND (tg_token_chat_id IS NULL OR tg_token_chat_id = %s)""",
+            (token, tg_chat_id), fetch_one=True,
+        )
         if row:
             from models.submission import Submission
             sub = Submission.find_by_id(row["id"])
@@ -304,7 +285,7 @@ def save_tg_contact(token):
 
     data = request.get_json(silent=True) or {}
 
-    tg_chat_id = data.get("tg_chat_id")
+    tg_chat_id = _private_chat_id()
     # Sanitize free-text Telegram identity fields (defense-in-depth: even though
     # the bot is the only normal caller, a stolen token could carry an XSS
     # payload that lands in the admin "Submissions" panel).
@@ -312,25 +293,10 @@ def save_tg_contact(token):
     tg_first_name = clean_optional(data.get("tg_first_name"), max_len=MAX_NAME) or ""
     tg_last_name = clean_optional(data.get("tg_last_name"), max_len=MAX_NAME) or ""
 
-    # tg_chat_id must be a positive integer (Telegram chat IDs are int64).
-    try:
-        tg_chat_id = int(tg_chat_id)
-    except (TypeError, ValueError):
-        return jsonify({"error": "tg_chat_id must be an integer"}), 400
-
-    # Validate token has not expired
-    tok_row = query(
-        "SELECT tg_token_expires FROM submissions WHERE tg_token = %s",
-        (token,), fetch_one=True,
-    )
-    if not tok_row:
-        return jsonify({"error": "Token not found"}), 404
-    tok_exp = tok_row.get("tg_token_expires")
-    if tok_exp:
-        if tok_exp.tzinfo is None:
-            tok_exp = tok_exp.replace(tzinfo=timezone.utc)
-        if datetime.now(timezone.utc) > tok_exp:
-            return jsonify({"error": "Token expired"}), 404
+    # The asserted JSON identity may not differ from the trusted recipient.
+    raw_chat_id = data.get("tg_chat_id")
+    if isinstance(raw_chat_id, bool) or str(raw_chat_id) != str(tg_chat_id):
+        return jsonify({"error": "Telegram recipient mismatch"}), 400
 
     row = execute(
         """UPDATE submissions
@@ -338,9 +304,10 @@ def save_tg_contact(token):
                tg_username   = %s,
                tg_first_name = %s,
                tg_last_name  = %s
-           WHERE tg_token = %s
+           WHERE tg_token = %s AND tg_token_expires > NOW()
+             AND tg_token_chat_id = %s
            RETURNING id""",
-        (tg_chat_id, tg_username, tg_first_name, tg_last_name, token),
+        (tg_chat_id, tg_username, tg_first_name, tg_last_name, token, tg_chat_id),
     )
 
     if not row:
@@ -365,8 +332,7 @@ def save_tg_contact(token):
     # Fires `feedback_auto_delay_min` minutes after delivery; once per chat.
     try:
         from services.feedback import maybe_schedule_auto
-        lang_row = query("SELECT language FROM submissions WHERE id = %s", (row["id"],), fetch_one=True)
-        maybe_schedule_auto(tg_chat_id, (lang_row or {}).get("language") or "en")
+        maybe_schedule_auto(tg_chat_id, "uk")
     except Exception:
         # Swallowed: an unscheduled feedback question is a nice-to-have, the
         # saved contact is the thing that matters.

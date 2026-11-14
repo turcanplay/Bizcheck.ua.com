@@ -58,12 +58,20 @@ upstream bizcheck_app {
 # parametrilor t / token / key / api_key / secret devine REDACTED. Numele au
 # sufixul `_ua` ca să nu se bată cu alte site-uri de pe același nginx
 # (bizcheck.md) — un `map`/`log_format` duplicat pică `nginx -t`.
-map $request $bizcheck_ua_log_request {
+map $request $bizcheck_ua_log_request_path {
     default $request;
+    "~*^(?<bzua_tg_req_pre>.*?/tg/(?:report|contact|email|lead)/)[A-Za-z0-9_-]{1,64}(?<bzua_tg_req_post>(?:[/? ].*)?)$" "${bzua_tg_req_pre}REDACTED${bzua_tg_req_post}";
+}
+map $bizcheck_ua_log_request_path $bizcheck_ua_log_request {
+    default $bizcheck_ua_log_request_path;
     "~*^(?<bzua_req_pre>.*?[?&](?:t|token|key|api_key|apikey|secret)=)[^& ]*(?<bzua_req_post>.*)$" "${bzua_req_pre}REDACTED${bzua_req_post}";
 }
-map $http_referer $bizcheck_ua_log_referer {
+map $http_referer $bizcheck_ua_log_referer_path {
     default $http_referer;
+    "~*^(?<bzua_tg_ref_pre>.*?/tg/(?:report|contact|email|lead)/)[A-Za-z0-9_-]{1,64}(?<bzua_tg_ref_post>(?:[/? ].*)?)$" "${bzua_tg_ref_pre}REDACTED${bzua_tg_ref_post}";
+}
+map $bizcheck_ua_log_referer_path $bizcheck_ua_log_referer {
+    default $bizcheck_ua_log_referer_path;
     "~*^(?<bzua_ref_pre>.*?[?&](?:t|token|key|api_key|apikey|secret)=)[^& ]*(?<bzua_ref_post>.*)$" "${bzua_ref_pre}REDACTED${bzua_ref_post}";
 }
 log_format bizcheck_ua_redacted '$remote_addr - $remote_user [$time_local] '

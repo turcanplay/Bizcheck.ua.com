@@ -22,11 +22,9 @@ from services.scoring import display_pct, zone_of
 BRAND_NAME = "Bizcheck.com.ua"
 BRAND_EYEBROW = "BIZCHECK.COM.UA"
 
-# TODO: adresa reală UA — no Ukrainian mailbox exists yet, so the .md address is
-# kept as the fallback. Override with EMAIL_REPLY_TO (and EMAIL_TELEGRAM_URL /
-# EMAIL_TELEGRAM_HANDLE) in the environment the moment the UA contacts are live;
-# do NOT invent an address here.
-DEFAULT_REPLY_TO = os.getenv("EMAIL_REPLY_TO", "office@bizcheck.md")
+# Public contact confirmed by the owner. SMTP authentication and the From
+# mailbox are configured separately in email_service.py.
+DEFAULT_REPLY_TO = os.getenv("EMAIL_REPLY_TO", "office@crowe-tm.md")
 DEFAULT_SITE_URL = os.getenv("EMAIL_SITE_URL", "https://crowe-tm.md")
 DEFAULT_BIZCHECK_URL = os.getenv("PUBLIC_BASE_URL", "https://bizcheck.com.ua").rstrip("/")
 DEFAULT_PRIVACY_URL = os.getenv(

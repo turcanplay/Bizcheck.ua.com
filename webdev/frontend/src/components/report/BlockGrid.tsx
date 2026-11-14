@@ -29,7 +29,7 @@ export default function BlockGrid({ blocks }: BlockGridProps) {
             <h2 className="block-grid__section-title">{t('resultsByCategory')}</h2>
           </div>
           <div className="block-grid__grid">
-            {group.map((b, i) => {
+            {group.map(b => {
               const color = getZoneColor(b.zone);
               return (
                 <div className="block-grid__card" key={b.id}>
@@ -39,8 +39,7 @@ export default function BlockGrid({ blocks }: BlockGridProps) {
                       color={color}
                       size={200}
                       strokeWidth={16}
-                      animated={true}
-                      delay={200 + (ci * 4 + i) * 150}
+                      animated={false}
                     />
                   </div>
                   <div className="block-grid__card-info">

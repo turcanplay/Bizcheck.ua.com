@@ -110,6 +110,16 @@ class TestRedact:
         assert stream.getvalue().strip() == f"FMT|test.secret_hygiene.install|link ?t={REDACTED}"
 
 
+@pytest.mark.parametrize("action", ["report", "contact", "email", "lead"])
+@pytest.mark.parametrize("token", ["abcdef0123456789" * 2, "T" * 43])
+def test_telegram_bridge_paths_hide_legacy_and_current_tokens(action, token):
+    for suffix in ("", "/failed", "?retry=1"):
+        line = f"POST http://backend:4001/api_crowe_bizcheck/tg/{action}/{token}{suffix} failed"
+        out = redact(line)
+        assert token not in out
+        assert f"/tg/{action}/{REDACTED}{suffix}" in out
+
+
 def test_mask_token_keeps_a_short_prefix_only():
     assert mask_token(FAKE_SUB_TOKEN) == "QQQQQQ…"
     assert mask_token("abc") == REDACTED
@@ -193,7 +203,7 @@ def test_export_job_state_failure_logs_a_masked_token(monkeypatch, tmp_path, cap
 def _nginx_maps(conf_text):
     """(pcre, replacement) per `map` that rewrites a value for the log."""
     out = re.findall(r'^\s*"~\*([^"]+)"\s+"([^"]+)";', conf_text, re.M)
-    assert len(out) == 2, "expected the $request and $http_referer maps"
+    assert len(out) == 4, "expected path-then-query redaction for request and Referer"
     return out
 
 
@@ -205,20 +215,45 @@ def _apply_nginx_map(pattern, replacement, value):
     return re.sub(r"\$\{(\w+)\}", lambda g: m.group(g.group(1)), replacement)
 
 
+def _nginx_log_rewriters(text):
+    maps = _nginx_maps(text)
+    return (maps[:2], maps[2:])
+
+
+def _apply_nginx_chain(maps, value):
+    for pattern, replacement in maps:
+        value = _apply_nginx_map(pattern, replacement, value)
+    return value
+
+
 @pytest.mark.parametrize("conf", ["nginx.conf", "nginx-proxy.conf.example"])
 def test_nginx_log_maps_redact_the_report_token(conf):
     text = _read(_WEBDEV, conf)
     req = f"GET /api_crowe_bizcheck/submissions/7/report.pdf?t={FAKE_SUB_TOKEN} HTTP/1.1"
-    for pattern, replacement in _nginx_maps(text):
-        out = _apply_nginx_map(pattern, replacement, req)
+    for maps in _nginx_log_rewriters(text):
+        out = _apply_nginx_chain(maps, req)
         assert FAKE_SUB_TOKEN not in out
         assert out == "GET /api_crowe_bizcheck/submissions/7/report.pdf?t=REDACTED HTTP/1.1"
         # Unrelated query strings are logged verbatim.
         plain = "GET /api_crowe_bizcheck/crm/leads?since_id=5&limit=10 HTTP/1.1"
-        assert _apply_nginx_map(pattern, replacement, plain) == plain
+        assert _apply_nginx_chain(maps, plain) == plain
         # A param that merely ENDS in "t" is not a credential.
-        assert _apply_nginx_map(pattern, replacement, "GET /x?sort=asc HTTP/1.1") \
+        assert _apply_nginx_chain(maps, "GET /x?sort=asc HTTP/1.1") \
             == "GET /x?sort=asc HTTP/1.1"
+
+
+@pytest.mark.parametrize("conf", ["nginx.conf", "nginx-proxy.conf.example"])
+@pytest.mark.parametrize("action", ["report", "contact", "email", "lead"])
+@pytest.mark.parametrize("token", ["abcdef0123456789" * 2, "T" * 43])
+def test_nginx_redacts_telegram_paths_and_an_additional_query_secret(conf, action, token):
+    text = _read(_WEBDEV, conf)
+    path = f"/api_crowe_bizcheck/tg/{action}/{token}"
+    for maps in _nginx_log_rewriters(text):
+        for value in (f"POST {path}/failed HTTP/1.1", f"https://bizcheck.com.ua{path}",
+                      f"POST {path}?token={FAKE_SUB_TOKEN} HTTP/1.1"):
+            out = _apply_nginx_chain(maps, value)
+            assert token not in out and FAKE_SUB_TOKEN not in out
+            assert f"/tg/{action}/REDACTED" in out
 
 
 @pytest.mark.parametrize("conf, fmt", [

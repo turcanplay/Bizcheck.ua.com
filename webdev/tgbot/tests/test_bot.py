@@ -30,8 +30,8 @@ PDF_BYTES = b"%PDF-1.4 fake report"
 #
 #   * the displayed brand / a link to the retired domain — a regression, the
 #     Telegram user reads it verbatim;
-#   * the support mailbox (office@bizcheck.md, injected as {contact}) — still
-#     live and tracked as a separate decision. It must never fail this guard.
+#   * the support mailbox (injected as {contact}) — configured separately from
+#     the product's public domain. It must never fail this branding guard.
 #
 # Blank out email addresses first, then match the brand case-insensitively so
 # Bizcheck.md / bizcheck.md / BIZCHECK.MD / Bizcheck.MD are all caught.
@@ -69,20 +69,20 @@ class TestStartHappyPath:
 
     async def test_report_and_pdf_are_delivered(self, http):
         """The summary message and the PDF both reach the chat."""
-        http.get_result = FakeResponse(200, _report_payload())
+        http.report_result = FakeResponse(200, _report_payload())
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
 
         chat = update.effective_chat
-        assert len(http.calls_to(f"/tg/report/{TOKEN}", method="GET")) == 1
+        assert len(http.calls_to(f"/tg/report/{TOKEN}", method="POST")) == 1
         assert len(chat.documents) == 1, "the PDF must be sent as a document"
         assert chat.documents[0]["bytes"] == PDF_BYTES
         assert chat.documents[0]["filename"] == "BizCheck_Olga_Kovalenko.pdf"
 
     async def test_loading_message_has_real_text_then_becomes_preparing(self, http):
         """REGRESSION: the first message used to be a bare "⏳ ..." placeholder."""
-        http.get_result = FakeResponse(200, _report_payload())
+        http.report_result = FakeResponse(200, _report_payload())
         update, context = FakeUpdate(user=FakeUser(language_code="en")), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -94,7 +94,7 @@ class TestStartHappyPath:
         assert loading["msg"].edits[0]["text"] == _t("uk", "preparing")
 
     async def test_summary_contains_score_and_block_titles(self, http):
-        http.get_result = FakeResponse(200, _report_payload())
+        http.report_result = FakeResponse(200, _report_payload())
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -103,12 +103,21 @@ class TestStartHappyPath:
         assert "82%" in summary
         assert "Фінанси" in summary
 
+    async def test_ukrainian_block_title_is_preferred_when_available(self, http):
+        http.report_result = FakeResponse(200, _report_payload(
+            language="en", block_scores_json=[{"title": "Finance", "title_uk": "Фінанси"}],
+        ))
+        update = FakeUpdate()
+        await handlers.cmd_start(update, FakeContext(args=[TOKEN]))
+        assert "Фінанси" in update.effective_chat.texts[1]
+        assert "Finance" not in update.effective_chat.texts[1]
+
     async def test_markdown_chars_in_names_and_titles_cannot_break_delivery(self, http):
         """REGRESSION: a `_`/`*` in a name or block title made Telegram reject
         the Markdown summary, and the PDF was never sent."""
-        http.get_result = FakeResponse(200, _report_payload(
-            first_name="Ivan_*Bad", last_name="Smith &amp; Co",
-            block_scores_json=[{"order": 1, "title": "Tax [*draft*]", "score": 50}],
+        http.report_result = FakeResponse(200, _report_payload(
+            first_name="Ivan_*Bad", last_name="Smith &amp; Co\\",
+            block_scores_json=[{"order": 1, "title": "Tax [*draft*]\\", "score": 50}],
         ))
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
@@ -117,12 +126,13 @@ class TestStartHappyPath:
         summary = update.effective_chat.texts[1]
         assert "Ivan Bad Smith & Co" in summary
         assert "Tax (draft)" in summary
+        assert "\\" not in summary
         assert len(update.effective_chat.documents) == 1
 
-    @pytest.mark.parametrize("lang,expected", [("uk", "Блок 2"), ("en", "Block 2")])
+    @pytest.mark.parametrize("lang,expected", [("uk", "Блок 2"), ("en", "Блок 2")])
     async def test_untitled_block_uses_the_localized_fallback(self, http, lang, expected):
         """REGRESSION: the fallback used to be the Romanian word "Bloc"."""
-        http.get_result = FakeResponse(200, _report_payload(language=lang))
+        http.report_result = FakeResponse(200, _report_payload(language=lang))
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -132,7 +142,7 @@ class TestStartHappyPath:
         assert "Bloc " not in summary, "no Romanian copy may reach a uk/en bot"
 
     async def test_telegram_contact_is_saved(self, http):
-        http.get_result = FakeResponse(200, _report_payload())
+        http.report_result = FakeResponse(200, _report_payload())
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -143,7 +153,7 @@ class TestStartHappyPath:
         assert posts[0]["json"]["tg_username"] == "olga"
 
     async def test_missing_pdf_shows_the_pending_message(self, http):
-        http.get_result = FakeResponse(200, _report_payload(pdf_b64=None))
+        http.report_result = FakeResponse(200, _report_payload(pdf_b64=None))
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -160,7 +170,7 @@ class TestStartFailures:
 
     async def test_invalid_token_tells_the_user_and_alerts_the_team(self, http):
         """404 → "expired" copy, no PDF, and the sales team is notified."""
-        http.get_result = FakeResponse(404, {})
+        http.report_result = FakeResponse(404, {})
         update, context = FakeUpdate(), FakeContext(args=["nope"])
 
         await handlers.cmd_start(update, context)
@@ -174,14 +184,16 @@ class TestStartFailures:
 
     async def test_invalid_token_is_not_retried(self, http):
         """A 404 is a real answer — retrying it only delays the message."""
-        http.get_result = FakeResponse(404, {})
+        http.report_result = FakeResponse(404, {})
 
         await handlers.cmd_start(FakeUpdate(), FakeContext(args=["nope"]))
 
-        assert len(http.calls_to("/tg/report/nope", method="GET")) == 1
+        fetches = [call for call in http.calls_to("/tg/report/nope", method="POST")
+                   if not call["url"].endswith("/failed")]
+        assert len(fetches) == 1
 
     async def test_backend_unreachable_shows_the_server_error(self, http, connect_error):
-        http.get_result = connect_error
+        http.report_result = connect_error
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -190,7 +202,7 @@ class TestStartFailures:
         assert status_msg.last_edit == _t("uk", "server_error")
 
     async def test_persistent_5xx_reports_server_fail(self, http):
-        http.get_result = FakeResponse(503, {})
+        http.report_result = FakeResponse(503, {})
         update, context = FakeUpdate(), FakeContext(args=[TOKEN])
 
         await handlers.cmd_start(update, context)
@@ -214,17 +226,17 @@ class TestStartFailures:
 class TestRetryPolicy:
 
     async def test_5xx_is_retried_then_succeeds(self, http):
-        http.get_result = Scripted(FakeResponse(500, {}), FakeResponse(200, {"ok": True}))
+        http.report_result = Scripted(FakeResponse(500, {}), FakeResponse(200, {"ok": True}))
 
-        resp = await backend.get_report(TOKEN)
+        resp = await backend.get_report(TOKEN, chat_id=42)
 
         assert resp.status_code == 200
         assert len(http.calls) == 2, "one retry after the 5xx"
 
     async def test_5xx_gives_up_after_the_attempt_budget(self, http):
-        http.get_result = FakeResponse(500, {})
+        http.report_result = FakeResponse(500, {})
 
-        resp = await backend.get_report(TOKEN)
+        resp = await backend.get_report(TOKEN, chat_id=42)
 
         assert resp.status_code == 500, "the last response is returned, not an exception"
         assert len(http.calls) == backend.RETRY_ATTEMPTS == 3
@@ -232,16 +244,16 @@ class TestRetryPolicy:
     async def test_connect_error_is_retried_then_succeeds(self, http, connect_error):
         http.post_result = Scripted(connect_error, FakeResponse(200, {}))
 
-        resp = await backend.save_lead(TOKEN, {"phone": "+380671234567"})
+        resp = await backend.save_lead(TOKEN, {"phone": "+380671234567"}, chat_id=42)
 
         assert resp.status_code == 200
         assert len(http.calls) == 2
 
     async def test_connect_error_is_re_raised_after_the_last_attempt(self, http, connect_error):
-        http.get_result = connect_error
+        http.report_result = connect_error
 
         with pytest.raises(httpx.RequestError):
-            await backend.get_report(TOKEN)
+            await backend.get_report(TOKEN, chat_id=42)
 
         assert len(http.calls) == 3
 
@@ -252,7 +264,7 @@ class TestRetryPolicy:
         http.post_result = Scripted(connect_error, FakeResponse(200, {}))
 
         with caplog.at_level("WARNING"):
-            await backend.save_contact(real_token, {"phone": "+380671234567"})
+            await backend.save_contact(real_token, {"phone": "+380671234567"}, chat_id=42)
 
         assert "retry 1/" in caplog.text, "the retry is still logged"
         assert "/contact/<token>" in caplog.text
@@ -275,7 +287,7 @@ class TestRetryPolicy:
         would only make the user wait for the same error."""
         http.post_result = FakeResponse(code, {})
 
-        resp = await backend.save_lead(TOKEN, {"phone": "+380671234567"})
+        resp = await backend.save_lead(TOKEN, {"phone": "+380671234567"}, chat_id=42)
 
         assert resp.status_code == code
         assert len(http.calls) == 1, f"HTTP {code} must not be retried"
@@ -292,8 +304,8 @@ class TestRetryPolicy:
 
     async def test_every_call_carries_the_bot_secret(self, http):
         """The backend gates the bot-only endpoints on X-Bot-Secret."""
-        await backend.get_report(TOKEN)
-        await backend.save_lead(TOKEN, {"phone": "+380671234567"})
+        await backend.get_report(TOKEN, chat_id=42)
+        await backend.save_lead(TOKEN, {"phone": "+380671234567"}, chat_id=42)
         await backend.feedback_reply({"chat_id": 1, "text": "hi"})
 
         assert http.calls, "sanity: calls were recorded"
@@ -308,7 +320,7 @@ class TestRetryPolicy:
 class TestLanguage:
 
     @pytest.mark.parametrize("code,expected", [
-        ("en", "en"), ("en-US", "en"), ("EN_gb", "en"),
+        ("en", "uk"), ("en-US", "uk"), ("EN_gb", "uk"),
         ("uk", "uk"), ("uk-UA", "uk"),
         ("ru", "uk"), ("ro", "uk"), ("", "uk"), (None, "uk"),
     ])
@@ -321,8 +333,8 @@ class TestLanguage:
     def test_unknown_key_returns_the_key(self):
         assert _t("uk", "no_such_key") == "no_such_key"
 
-    def test_uk_and_en_have_the_same_keys(self):
-        assert set(_STRINGS["uk"]) == set(_STRINGS["en"])
+    def test_only_ukrainian_copy_is_shipped(self):
+        assert set(_STRINGS) == {"uk"}
 
     def test_site_and_contact_are_injected(self):
         for lang in ("uk", "en"):
@@ -347,8 +359,8 @@ class TestLanguage:
                         f"brand is back in bot copy — found {stale}. The match "
                         "is case-insensitive, so bizcheck.md / BIZCHECK.MD / "
                         "Bizcheck.MD all trip it; email addresses are masked "
-                        "out first, so the still-live office@bizcheck.md "
-                        "mailbox is NOT what failed here. Telegram users read "
+                        "out first, so a support mailbox is NOT what failed "
+                        "here. Telegram users read "
                         "this text verbatim and the site is bizcheck.com.ua."
                     )
                 assert "crowe-tm.md" not in value.lower(), (
@@ -384,7 +396,7 @@ class TestEmailCallback:
 
         assert update.callback_query.answered
         assert context.user_data["flow"] == "email"
-        assert context.user_data["lng"] == "en"
+        assert context.user_data["lng"] == "uk"
         assert context.user_data["tok"] == TOKEN
         assert update.callback_query.message.last_reply == _t("en", "email_prompt")
 
@@ -503,6 +515,18 @@ class TestPhoneShare:
         assert posts[0]["json"] == {"phone": "+380671234567"}
         assert update.message.last_reply == _t("uk", "phone_saved")
 
+    @pytest.mark.parametrize("contact_user_id", [7, None])
+    async def test_other_or_unverified_contact_is_never_saved(self, http, contact_user_id):
+        context = FakeContext()
+        context.user_data.update({"ctok": TOKEN, "clng": "uk"})
+        update = FakeUpdate(contact=FakeContact("+380671234567", user_id=contact_user_id))
+
+        await handlers.on_contact(update, context)
+
+        assert http.calls == []
+        assert update.message.last_reply == _t("uk", "phone_not_yours")
+        assert context.user_data["ctok"] == TOKEN
+
     async def test_later_button_dismisses_the_keyboard(self, http):
         context = FakeContext()
         context.user_data.update({"ctok": TOKEN, "clng": "uk"})
@@ -527,12 +551,12 @@ class TestFeedback:
         assert posts[0]["json"]["lang"] == "uk"
         assert posts[0]["json"]["token"] == "TOK"
 
-    async def test_open_respects_an_english_client(self, http):
+    async def test_open_uses_ukrainian_for_an_english_client(self, http):
         update = FakeUpdate(user=FakeUser(language_code="en-GB"))
 
         await handlers.cmd_start(update, FakeContext(args=["fb_TOK"]))
 
-        assert http.calls_to("/tg/feedback/open")[0]["json"]["lang"] == "en"
+        assert http.calls_to("/tg/feedback/open")[0]["json"]["lang"] == "uk"
 
     async def test_open_failure_is_reported_to_the_user(self, http):
         http.post_result = FakeResponse(404, {})
@@ -551,13 +575,80 @@ class TestFeedback:
         assert update.message.replies == []
         assert len(http.calls_to("/tg/feedback/reply", method="POST")) == 1
 
-    async def test_matched_reply_relays_the_ack(self, http):
-        http.post_result = FakeResponse(200, {"matched": True, "ack": "Дякуємо!"})
+    async def test_matched_reply_uses_source_controlled_ukrainian_ack(self, http):
+        http.post_result = FakeResponse(200, {"matched": True, "ack": "Thank you!"})
         update = FakeUpdate(text="все добре")
 
         await handlers.on_text(update, FakeContext())
 
-        assert update.message.last_reply == "Дякуємо!"
+        assert update.message.last_reply == _t("uk", "feedback_ack")
+
+
+class TestPrivateReportSecurity:
+
+    @pytest.mark.parametrize("chat_type", ["group", "supergroup", "channel"])
+    async def test_start_in_shared_chat_never_fetches_or_delivers_report(self, http, chat_type):
+        update = FakeUpdate(chat=FakeChat(id=-10042, type=chat_type))
+        await handlers.cmd_start(update, FakeContext(args=[TOKEN]))
+        assert http.calls == []
+        assert update.effective_chat.messages == []
+        assert update.effective_chat.documents == []
+
+    @pytest.mark.parametrize("handler_name", ["cmd_help", "on_text", "on_contact",
+                                                "on_email_button", "on_lead_button"])
+    async def test_other_handlers_ignore_shared_chats(self, http, handler_name):
+        update = FakeUpdate(chat=FakeChat(id=-10042, type="supergroup"),
+                            text="private feedback", contact=FakeContact(),
+                            callback_data=f"eml:uk:{TOKEN}")
+        context = FakeContext()
+        context.user_data.update({"ctok": TOKEN, "flow": "email", "tok": TOKEN})
+        await getattr(handlers, handler_name)(update, context)
+        assert http.calls == []
+        assert update.message.replies == []
+        assert update.callback_query.message.replies == []
+
+    @pytest.mark.parametrize("token", ["../group/register", "abc?x=1", "abc#fragment",
+                                        "x" * 65, "fb_../open"])
+    async def test_invalid_deeplink_cannot_inject_a_backend_path(self, http, token):
+        update = FakeUpdate()
+        await handlers.cmd_start(update, FakeContext(args=[token]))
+        assert http.calls == []
+        assert update.message.last_reply == _t("uk", "expired")
+
+    async def test_callbacks_cannot_inject_a_backend_path(self, http):
+        context = FakeContext()
+        update = FakeUpdate(callback_data="eml:uk:../other")
+        await handlers.on_email_button(update, context)
+        assert context.user_data == {}
+        assert http.calls == []
+
+    async def test_all_report_calls_include_the_verified_private_chat(self, http):
+        http.report_result = FakeResponse(200, _report_payload(language="en"))
+        update, context = FakeUpdate(user=FakeUser(language_code="en")), FakeContext(args=[TOKEN])
+        await handlers.cmd_start(update, context)
+        for call in http.calls:
+            assert call["headers"]["X-Telegram-Chat-ID"] == "42"
+            assert call["headers"]["X-Bot-Secret"] == "test-secret"
+        assert http.calls[0]["method"] == "POST"
+        assert "Звіт" in update.effective_chat.texts[1]
+        assert context.user_data["clng"] == "uk"
+        buttons = update.effective_chat.messages[-1]["reply_markup"].inline_keyboard
+        assert buttons[0][0].text == "📧 Отримати звіт на пошту"
+        assert buttons[0][0].callback_data == f"eml:uk:{TOKEN}"
+
+    async def test_error_url_tokens_never_reach_handler_or_retry_logs(self, http, caplog):
+        token = "sensitive_report_link_token"
+        http.report_result = httpx.ConnectError(f"failed URL https://backend/report/{token}")
+        with caplog.at_level("WARNING"):
+            await handlers.cmd_start(FakeUpdate(), FakeContext(args=[token]))
+        assert token not in caplog.text
+        assert "ConnectError" in caplog.text
+
+    @pytest.mark.parametrize("chat_id", [None, 0, -10042, True, "42"])
+    async def test_backend_refuses_unverified_chat_ids(self, http, chat_id):
+        with pytest.raises(ValueError):
+            await backend.get_report(TOKEN, chat_id=chat_id)
+        assert http.calls == []
 
 
 # ===========================================================================

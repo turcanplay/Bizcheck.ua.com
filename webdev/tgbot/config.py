@@ -10,6 +10,7 @@ import re
 import logging
 
 from dotenv import load_dotenv
+from bot_profile import CONTACT_EMAIL, SITE_NAME
 
 load_dotenv()
 
@@ -35,29 +36,23 @@ logger = logging.getLogger("bizcheck-bot")
 
 # --- Environment ------------------------------------------------------------
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:4001")
-BOT_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+BOT_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "").strip().lstrip("@")
 # Shared secret for the bot-only feedback endpoints. Must match BOT_SHARED_SECRET
-# on the backend. When empty, the backend allows the calls ungated (dev only).
-BOT_SHARED_SECRET = os.getenv("BOT_SHARED_SECRET", "")
+# on the backend. Empty or invalid secrets are rejected by the backend.
+BOT_SHARED_SECRET = os.getenv("BOT_SHARED_SECRET", "").strip()
 
 # Common prefix for every backend endpoint the bot talks to.
 API_PREFIX = "/api_crowe_bizcheck/tg"
 
 
 def bot_headers() -> dict:
-    """Auth header for the bot-only backend endpoints (empty when ungated)."""
+    """Auth header for bot-only endpoints; missing configuration fails closed."""
     return {"X-Bot-Secret": BOT_SHARED_SECRET} if BOT_SHARED_SECRET else {}
 
 
-# --- Branding / contact -----------------------------------------------------
-# Single source of truth for the public brand + support address. Every string in
-# strings.py interpolates {site} / {contact} instead of hardcoding them, so a
-# market change is a two-value edit (or an env-var override).
-# TODO: confirmă contactul pentru piața UA — adresa de mai jos e cutia poștală
-# reală și funcțională a firmei; nu există încă un echivalent pe
-# bizcheck.com.ua. Păstreaz-o până primești adresa UA confirmată.
-SITE_NAME     = os.getenv("SITE_NAME", "Bizcheck.com.ua")
-CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "office@bizcheck.md")
+# Branding/contact are imported from bot_profile.py. Runtime overrides are
+# deliberately unsupported: changing public copy requires editing the source.
 
 
 # --- Backend retry policy ---------------------------------------------------
@@ -71,7 +66,7 @@ RETRY_JITTER     = 0.25   # ± fraction of the delay, to de-synchronise retries
 
 
 # --- Supported UI languages -------------------------------------------------
-LANGUAGES    = ("uk", "en")
+LANGUAGES    = ("uk",)
 DEFAULT_LANG = "uk"
 
 

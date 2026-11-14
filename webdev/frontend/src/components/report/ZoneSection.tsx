@@ -58,8 +58,7 @@ export default function ZoneSection({ zone, blocks }: ZoneSectionProps) {
                 color={color}
                 size={88}
                 strokeWidth={8}
-                animated={true}
-                delay={200}
+                animated={false}
                 labelSize={20}
               />
             </div>

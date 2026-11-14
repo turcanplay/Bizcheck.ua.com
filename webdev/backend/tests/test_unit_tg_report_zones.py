@@ -1,4 +1,4 @@
-"""GET /tg/report/<token> must publish the test's scoring zones.
+"""POST /tg/report/<token> must publish the test's scoring zones.
 
 The client bot (webdev/tgbot) prints the score's zone next to the percentage.
 It used to decide that zone with its own hard-coded 80/70/65 ladder — a third
@@ -36,8 +36,8 @@ def tg_report(monkeypatch):
         state["sql"].append(" ".join(sql.split()))
         return state["row"]
 
-    monkeypatch.setattr(tg, "query", fake_query)
-    monkeypatch.setattr(tg, "execute", lambda *a, **k: None)
+    monkeypatch.setattr(tg, "execute", fake_query)
+    monkeypatch.setenv("BOT_SHARED_SECRET", "test-bot-secret")
     # PII columns are Fernet-encrypted in production; the fixture stores plain
     # strings, which decrypt_value() already passes through unchanged.
 
@@ -59,7 +59,9 @@ def tg_report(monkeypatch):
 
 
 def _get(client):
-    r = client.get(f"/api_crowe_bizcheck/tg/report/{TOKEN}")
+    r = client.post(f"/api_crowe_bizcheck/tg/report/{TOKEN}", headers={
+        "X-Bot-Secret": "test-bot-secret", "X-Telegram-Chat-ID": "123",
+    })
     assert r.status_code == 200
     return json.loads(r.data)
 
@@ -106,5 +108,7 @@ class TestReportPayloadZones:
     def test_unknown_token_is_still_404(self, tg_report):
         client, _, state = tg_report
         state["row"] = None
-        r = client.get(f"/api_crowe_bizcheck/tg/report/{TOKEN}")
+        r = client.post(f"/api_crowe_bizcheck/tg/report/{TOKEN}", headers={
+            "X-Bot-Secret": "test-bot-secret", "X-Telegram-Chat-ID": "123",
+        })
         assert r.status_code == 404

@@ -6,8 +6,9 @@
 - `calculateTotalScore(blockScores)` → % : average of block percentages, rounded.
 - `getZone(percentage)` → `Zone` : `safe` ≥80, `developing` 70–79, `warning` 65–69, `risk` <65.
 - `getZoneColor(zone)` → hex : safe `#16A34A`, developing `#EAB308`, warning `#F97316`, risk `#DC2626`.
-- `buildReport(blocks, answers, userInfo)` → `ReportData` : orchestrates the above; adds
-  `distanceFromPerfect` (100 − total) and a formatted date.
+- `buildReport(blocks, answers, userInfo, zones?, lang='uk')` → `ReportData` : orchestrates
+  the above; adds `distanceFromPerfect` (100 − total) and a date formatted explicitly
+  with `uk-UA` or `en-GB`, independently of the browser locale.
 
 > Zone thresholds here mirror the backend `tests.scoring_zones` defaults. Keep them consistent.
 
@@ -61,6 +62,19 @@
 **Critical gotcha:** The default parameters (`scale=3`, `jpegQuality=0.95`) exist in the function 
 signature but are **never actually used** in production. The sole caller, `pages/CtaPage.tsx`, passes 
 `scale: 2, jpegQuality: 0.85`. Changing the defaults here has zero effect on the actual PDF output.
+
+**Current report and delivery:** In the completed quiz, `QuizContext` derives the report from
+the current contact, answers, translated blocks and language. `CtaPage` serializes PDF capture
+and upload through one worker. Every report revision invalidates readiness; an older capture
+or upload cannot mark the current report ready. Delivery waits for the latest PDF, including
+contact edits committed immediately before opening Telegram. Regression tests cover language
+changes during capture/upload, switching back to the original language, and editing the name
+before delivery.
+
+**Printable charts:** All report charts use `animated={false}`. Their labels and SVG arcs read
+the current score directly, so capture never waits for an animation to reach its final value.
+Long risk badges wrap within their column. Each report element still fits onto one A4 page;
+dense detail pages can therefore require zoom for comfortable reading.
 
 ## Cookies + third-party consent (`src/utils/cookieConsent.ts`)
 - Cookie `bizcheck_cookie_consent` (1-year): `{necessary:true, analytics, marketing, version, timestamp}`.

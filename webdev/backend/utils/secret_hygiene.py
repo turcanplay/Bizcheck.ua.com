@@ -29,6 +29,10 @@ _BOT_TOKEN_RE = re.compile(r"bot\d+:[A-Za-z0-9_-]{20,}")
 _QUERY_SECRET_RE = re.compile(
     r"([?&](?:t|token|key|api_key|apikey|secret)=)[^&\s\"'#]+", re.IGNORECASE
 )
+_TG_PATH_TOKEN_RE = re.compile(
+    r"(/tg/(?:report|contact|email|lead)/)[A-Za-z0-9_-]{1,64}(?=[/?\s\"'#]|$)",
+    re.IGNORECASE,
+)
 _URLSAFE_TOKEN_RE = re.compile(
     r"(?<![A-Za-z0-9_-])([A-Za-z0-9_-]{6})[A-Za-z0-9_-]{37}(?![A-Za-z0-9_-])"
 )
@@ -38,6 +42,7 @@ def redact(text: str) -> str:
     """Mask bot tokens, credential query values and token_urlsafe(32) values."""
     text = _BOT_TOKEN_RE.sub("bot" + REDACTED, text)
     text = _QUERY_SECRET_RE.sub(r"\1" + REDACTED, text)
+    text = _TG_PATH_TOKEN_RE.sub(r"\1" + REDACTED, text)
     return _URLSAFE_TOKEN_RE.sub(r"\1…" + REDACTED, text)
 
 

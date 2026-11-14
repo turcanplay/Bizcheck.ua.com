@@ -32,7 +32,7 @@ ZONE_NAME_BY_KEY = {
     "risk": "risk",
 }
 
-# Zone name -> what the bot actually prints. Labels stay in strings.py (uk/en);
+# Zone name -> what the bot actually prints. Ukrainian labels stay in strings.py;
 # only the emoji is presentation local to this module.
 ZONE_EMOJI = {
     "safe": "🟢",

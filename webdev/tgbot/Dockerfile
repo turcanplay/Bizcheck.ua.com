@@ -7,5 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy every bot module (bot.py entrypoint + config/strings/backend/helpers/handlers).
 COPY *.py .
+COPY assets/ ./assets/
 
 CMD ["python", "bot.py"]

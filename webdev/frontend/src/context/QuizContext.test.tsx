@@ -2,7 +2,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { LanguageProvider } from '@/context/LanguageContext';
+import { LanguageProvider, useLang } from '@/context/LanguageContext';
 import { QuizProvider, useQuiz } from '@/context/QuizContext';
 import type { ApiBlock } from '@/utils/quizContent';
 
@@ -92,12 +92,12 @@ function Probe() {
   );
 }
 
-function renderProvider() {
+function renderProvider(probe = <Probe />) {
   return render(
     <MemoryRouter initialEntries={['/uk/test/demo']}>
       <LanguageProvider>
         <QuizProvider>
-          <Probe />
+          {probe}
         </QuizProvider>
       </LanguageProvider>
     </MemoryRouter>,
@@ -123,6 +123,39 @@ beforeEach(() => {
       : { tests: [{ id: 1, slug: 'demo', name_uk: 'Демо', name_en: 'Demo', description_uk: '', description_en: '' }] };
     return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response);
   }));
+});
+
+function ReportProbe() {
+  const { report, userInfo, setUserInfo, loading } = useQuiz();
+  const { setLang } = useLang();
+  return (
+    <>
+      <div data-testid="probe">{loading ? 'loading' : 'ready'}</div>
+      <output data-testid="report-name">{report?.userInfo.firstName} {report?.userInfo.lastName}</output>
+      <output data-testid="report-block">{report?.blockScores[0]?.title}</output>
+      <output data-testid="report-score">{report?.totalScore}</output>
+      <button onClick={() => setUserInfo({ ...userInfo, firstName: 'Олена', lastName: 'Приклад' })}>contact</button>
+      <button onClick={() => setLang('en')}>english</button>
+    </>
+  );
+}
+
+describe('completed report freshness', () => {
+  it('personalizes the completed snapshot and translates block titles without changing answers', async () => {
+    seedSession({ phase: 'cta', answers: { q1: 0 } });
+    renderProvider(<ReportProbe />);
+    await settle();
+    expect(screen.getByTestId('report-name')).toHaveTextContent('');
+    expect(screen.getByTestId('report-block')).toHaveTextContent('Блок 1');
+    const score = screen.getByTestId('report-score').textContent;
+
+    await userEvent.click(screen.getByRole('button', { name: 'contact' }));
+    expect(screen.getByTestId('report-name')).toHaveTextContent('Олена Приклад');
+    await userEvent.click(screen.getByRole('button', { name: 'english' }));
+    await waitFor(() => expect(screen.getByTestId('report-block')).toHaveTextContent('Block 1'));
+    expect(screen.getByTestId('report-name')).toHaveTextContent('Олена Приклад');
+    expect(screen.getByTestId('report-score')).toHaveTextContent(score ?? '');
+  });
 });
 
 afterEach(() => {

@@ -90,14 +90,31 @@ Cleanup is a `sweep()` that runs inline on create/status/download; TTLs are env-
 (see [`../deployment.md`](../deployment.md)). Excel exports stay synchronous by design.
 
 ## `telegram.py` — web-flow bot endpoints · prefix `/tg`
-Token = the 24h deep-link token (`tg_token`), not the submission token.
+
+Token = the 24h deep-link token (`tg_token`), distinct from the submission-owner token.
+New tokens use `secrets.token_urlsafe(32)`; an unexpired token is reused atomically.
+
 | Method | Path | Auth | Does |
 |---|---|---|---|
-| POST | `/tg/link/<sub_id>` | owner/admin | Mint one-time deep-link token (24h); returns `{token, url, pdf_ready}` |
-| GET | `/tg/report/<token>` | token | Report JSON + base64 PDF (bot fetches this) |
-| POST | `/tg/contact/<token>` | token | Save Telegram contact; may notify sales |
-| POST | `/tg/email/<token>` | token | User asked for email delivery → store email, queue send |
-| POST | `/tg/lead/<token>` | token | Save lead (email+phone) from Telegram; may notify sales |
+| POST | `/tg/link/<sub_id>` | owner/admin | Return `{token, url, pdf_ready}`; requires configured bot username. |
+| POST | `/tg/report/<token>` | bot secret + positive private chat ID | Atomically claim the token for the first chat and return report JSON + base64 PDF; same chat can retry. |
+| POST | `/tg/contact/<token>` | bot secret + token-bound chat | Save Telegram identity; JSON `tg_chat_id` must match header; may notify sales. |
+| POST | `/tg/email/<token>` | bot secret + token-bound chat | Store email and send report; `409` when PDF is pending. |
+| POST | `/tg/lead/<token>` | bot secret + token-bound chat | Save email/phone; may notify sales. |
+| POST | `/tg/report/<token>/failed` | bot secret + private chat | Alert sales for an existing token unclaimed or claimed by this chat, including expired tokens; uniform 200 after auth for known/unknown tokens. |
+
+`X-Bot-Secret` must match a nonempty `BOT_SHARED_SECRET` or access fails closed with 403.
+Report routes also require `X-Telegram-Chat-ID`: a positive private Telegram recipient asserted
+by the trusted bot, otherwise 400. Bot handlers verify private chat type and `chat.id == user.id`.
+The recipient binding lives in `submissions.tg_token_chat_id`; contact history in `tg_chat_id`
+does not authorize a new token. Claimed tokens used by another chat return the same 404 as
+expired/unknown tokens. Token format is URL-safe, 1–64 characters; JSON bodies must be objects.
+All `/tg/*` responses in this blueprint are `Cache-Control: no-store`.
+
+The old GET report API is removed; deploy backend + `tgbot` together. The client bot UI is
+Ukrainian only, while report PDFs keep the language selected on the website. Profile/copy/logo
+are source-controlled; business feedback questions remain separately editable. See
+[`../telegram/01-bot-user.md`](../telegram/01-bot-user.md).
 
 ## `tests.py` — public `tests_bp` `/tests` + admin `admin_tests_bp` `/admin/tests`
 | Method | Path | Auth | Does | Service |
