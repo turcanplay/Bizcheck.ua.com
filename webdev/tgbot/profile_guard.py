@@ -24,11 +24,22 @@ def command_list():
     return [BotCommand(command, description) for command, description in profile.COMMANDS]
 
 
+PRIMARY_LANGUAGES = ("", "uk", "en")
+TIERS = ("fast", "profile", "full_sweep")
+TASKS_KEY = "profile_guard_tasks"
+
+
 class ProfileGuard:
     def __init__(self, bot):
         self.bot = bot
         self._photo_fingerprint = None
+        self._photo_retry_at = 0.0
         self._retry_languages = set()
+        self._poked = asyncio.Event()
+
+    def poke(self):
+        """Request an immediate FAST check (webhook first)."""
+        self._poked.set()
 
     async def _languages(self, languages):
         changes = []
@@ -108,20 +119,35 @@ class ProfileGuard:
             raise RuntimeError("Telegram profile photo verification failed")
         return True
 
-    async def enforce(self, *, languages=("", "uk", "en")):
-        changes = await self._languages(languages)
-        # A failed locale or one failed setting must not prevent checking the
-        # webhook, menu, administrator rights or avatar in the same cycle.
-        for section, operation in (("menu", self._menu), ("webhook", self._webhook),
+    @staticmethod
+    def _report(changes):
+        if changes:
+            # Field names only, never the changed text, URLs or identities.
+            logger.warning("Bot profile restored from source: %s", ", ".join(changes))
+
+    async def _fast(self):
+        changes = []
+        # Webhook first: a foreign one steals /start deep-link tokens. One
+        # failed setting must not prevent checking the others in this cycle.
+        for section, operation in (("webhook", self._webhook), ("menu", self._menu),
                                    ("default_admin_rights", self._rights), ("photo", self._photo)):
+            if section == "photo" and time.monotonic() < self._photo_retry_at:
+                continue
             try:
                 if await operation():
                     changes.append(section)
             except Exception as exc:
+                if section == "photo":
+                    # A rejected upload is a write; do not repeat it every FAST tick.
+                    self._photo_retry_at = time.monotonic() + profile.PROFILE_CHECK_SECONDS
                 logger.warning("Bot profile check failed: %s (%s)", section, type(exc).__name__)
-        if changes:
-            # Field names only, never the changed text, URLs or identities.
-            logger.warning("Bot profile restored from source: %s", ", ".join(changes))
+        return changes
+
+    async def enforce(self, *, languages=PRIMARY_LANGUAGES):
+        """One complete pass over the given languages and every FAST setting."""
+        changes = await self._languages(languages)
+        changes += await self._fast()
+        self._report(changes)
         return changes
 
     async def _menu(self):
@@ -145,32 +171,89 @@ class ProfileGuard:
                 changed = True
         return changed
 
-    async def run(self):
-        last_full = None
+    async def _pause(self, seconds):
+        """Sleep up to `seconds`; poke() wakes it early."""
+        try:
+            await asyncio.wait_for(self._poked.wait(), timeout=seconds)
+        except asyncio.TimeoutError:
+            pass
+
+    async def run_fast(self):
         while True:
-            full = last_full is None or time.monotonic() - last_full >= profile.FULL_SWEEP_SECONDS
+            # Clear before checking: a poke during the check forces another one.
+            self._poked.clear()
             try:
-                # Restore the public fallback first; sweep stale localizations
-                # in the background while the bot continues handling reports.
-                await self.enforce(languages=tuple(dict.fromkeys(
-                    ("", "uk", "en", *sorted(self._retry_languages)))))
-                if full:
-                    await self._languages(lang for lang in profile.PROFILE_LANGUAGES
-                                          if lang not in ("", "uk", "en"))
-                    last_full = time.monotonic()
-                    logger.info("Ukrainian bot profile localization sweep complete")
-            except asyncio.CancelledError:
-                raise
+                self._report(await self._fast())
+            except Exception as exc:
+                logger.warning("Bot profile fast check failed (%s); will retry", type(exc).__name__)
+            await asyncio.sleep(profile.FORCED_CHECK_MIN_GAP_SECONDS)
+            await self._pause(max(0, profile.FAST_CHECK_SECONDS
+                                  - profile.FORCED_CHECK_MIN_GAP_SECONDS))
+
+    async def run_profile(self):
+        while True:
+            try:
+                self._report(await self._languages(tuple(dict.fromkeys(
+                    (*PRIMARY_LANGUAGES, *sorted(self._retry_languages))))))
             except Exception as exc:
                 logger.warning("Bot profile check failed (%s); will retry", type(exc).__name__)
-            await asyncio.sleep(profile.CHECK_SECONDS)
+            await asyncio.sleep(profile.PROFILE_CHECK_SECONDS)
+
+    async def run_full_sweep(self):
+        # Separate task: the ~190-language sweep takes minutes and must never
+        # delay the FAST webhook check. Failed locales are retried by PROFILE.
+        while True:
+            try:
+                self._report(await self._languages(
+                    lang for lang in profile.PROFILE_LANGUAGES if lang not in PRIMARY_LANGUAGES))
+                logger.info("Ukrainian bot profile localization sweep complete")
+            except Exception as exc:
+                logger.warning("Bot profile sweep failed (%s); will retry", type(exc).__name__)
+            await asyncio.sleep(profile.FULL_SWEEP_SECONDS)
+
+
+async def _delayed(seconds, factory):
+    await asyncio.sleep(seconds)
+    await factory()
+
+
+def _spawn(app, guard, tasks, tier, delay=0):
+    factory = getattr(guard, f"run_{tier}")
+    coro = _delayed(delay, factory) if delay else factory()
+    task = asyncio.create_task(coro, name=f"profile_guard_{tier}")
+    tasks[tier] = task
+    task.add_done_callback(lambda done: _watchdog(app, guard, tasks, tier, done))
+
+
+def _watchdog(app, guard, tasks, tier, task):
+    """Restart a guard tier that died; stay quiet on cancellation/shutdown."""
+    if task.cancelled():
+        return
+    # Retrieve the exception first so asyncio never reports it as unretrieved.
+    exc = task.exception()
+    if app.bot_data.get(TASKS_KEY) is not tasks or tasks.get(tier) is not task:
+        return  # stop_guard already ran, or this task was replaced
+    logger.error("Bot profile guard %s tier stopped (%s); restarting",
+                 tier, type(exc).__name__ if exc else "returned")
+    _spawn(app, guard, tasks, tier, delay=profile.GUARD_RESTART_SECONDS)
+
+
+def start_guard(app, guard):
+    """Start every guard tier as its own watched task."""
+    tasks = {}
+    app.bot_data["profile_guard"] = guard
+    app.bot_data[TASKS_KEY] = tasks
+    for tier in TIERS:
+        _spawn(app, guard, tasks, tier)
+    return tasks
 
 
 async def stop_guard(app):
-    task = app.bot_data.pop("profile_guard_task", None)
-    if task:
+    app.bot_data.pop("profile_guard", None)
+    # Removing the dict first disables the watchdog before anything is cancelled.
+    tasks = app.bot_data.pop(TASKS_KEY, None) or {}
+    pending = list(tasks.values())
+    for task in pending:
         task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
+    # Shutdown must not fail because a tier crashed while being cancelled.
+    await asyncio.gather(*pending, return_exceptions=True)

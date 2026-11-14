@@ -28,8 +28,18 @@ COMMANDS = (
 PHOTO_PATH = Path(__file__).resolve().parent / "assets" / "profile.jpg"
 
 # Source-controlled intervals; the profile has no runtime editing switches.
-CHECK_SECONDS = 120
+# FAST: webhook, menu button, default admin rights, avatar (reads only unless
+# drift is found). A foreign webhook steals every update until it is deleted.
+FAST_CHECK_SECONDS = 15
+# PROFILE: name/description/short description/commands for "", uk, en.
+PROFILE_CHECK_SECONDS = 60
+# FULL: every localized override; runs in its own task, never blocks FAST.
 FULL_SWEEP_SECONDS = 6 * 3600
+# Minimum gap between FAST checks, so forced checks (getUpdates conflicts)
+# cannot hammer the Bot API.
+FORCED_CHECK_MIN_GAP_SECONDS = 3
+# Pause before the watchdog restarts a crashed guard tier.
+GUARD_RESTART_SECONDS = 5
 
 # These are cleanup targets, not supported bot UI languages. Clear old
 # localized overrides so every Telegram client falls back to Ukrainian.

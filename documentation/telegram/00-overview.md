@@ -79,8 +79,9 @@ păstrează limba generării. Numele, descrierile, comenzile și marca/contactul
 `webdev/tgbot/bot_profile.py`, mesajele în `strings.py`, avatarul în `assets/profile.jpg`.
 Nu există editor admin, comandă de bot sau override env pentru acest profil.
 
-`ProfileGuard` restabilește profilul la startup, apoi cu pauze de 120 s între cicluri;
-verificarea completă a localizărilor se repetă la 6 ore. Telegram/BotFather nu permite
+`ProfileGuard` restabilește profilul la startup, apoi în trei niveluri supravegheate: rapid la ~15 s
+(webhook, meniu, drepturi admin, avatar; forțat imediat la conflict `getUpdates`), profil la 60 s,
+verificarea completă a localizărilor la 6 ore. Telegram/BotFather nu permite
 un profil absolut imuabil: proprietarul sau deținătorul tokenului poate modifica starea
 externă; gardul o repară când rulează și API-ul răspunde. Întrebările de feedback/quiz
 rămân conținut editabil separat, intenționat. Detalii: [botul user](01-bot-user.md).

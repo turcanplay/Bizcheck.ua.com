@@ -30,7 +30,7 @@ Context necesar înainte de a depana:
 | Botul nu răspunde în grup/canal | Handlers acceptă exclusiv chat privat cu `chat.id == user.id` | Deschide botul în conversație privată |
 | Contactul partajat este refuzat | `Contact.user_id` aparține altei persoane sau lipsește | Folosește butonul pentru propriul număr |
 | Descrierea/logo-ul se schimbă înapoi | Gardul restabilește sursele aplicației | Editează `bot_profile.py` / `assets/profile.jpg` / `strings.py`, apoi redeploy; `.env` sau admin nu editează profilul |
-| Botul are încă o localizare veche | Verificarea completă rulează la startup/la 6h; API-ul poate eșua parțial | Verifică logurile gardului și accesul Telegram; verificarea de bază are pauză 120 s între cicluri |
+| Botul are încă o localizare veche | Verificarea completă rulează la startup/la 6h; API-ul poate eșua parțial | Verifică logurile gardului și accesul Telegram; verificarea de bază rulează la 60 s, cea rapidă (webhook/meniu/avatar) la ~15 s |
 | Profil modificat prin BotFather nu e reparat imediat | Telegram nu are profil imuabil, iar botul e oprit, în verificare sau API-ul nu răspunde | Pornește serviciul și verifică rețeaua; gardul este best-effort, fără garanție de restaurare instantanee |
 | UI e ucraineană, dar PDF-ul e englez | PDF-ul păstrează limba în care a fost generat pe site | Pentru PDF ucrainean, generează raportul în versiunea `uk` a site-ului |
 | O întrebare de feedback poate fi editată din admin | Conținutul de business este separat de profilul fix | Comportament intenționat; editarea întrebării nu schimbă numele, descrierile sau logo-ul |

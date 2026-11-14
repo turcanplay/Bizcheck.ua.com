@@ -26,6 +26,8 @@ import re
 REDACTED = "<redacted>"
 
 _BOT_TOKEN_RE = re.compile(r"bot\d+:[A-Za-z0-9_-]{20,}")
+# Bare token (no `bot` prefix), e.g. in a config dump or an exception message.
+_BARE_BOT_TOKEN_RE = re.compile(r"(?<!\d)\d{8,10}:[A-Za-z0-9_-]{35}(?![A-Za-z0-9_-])")
 _QUERY_SECRET_RE = re.compile(
     r"([?&](?:t|token|key|api_key|apikey|secret)=)[^&\s\"'#]+", re.IGNORECASE
 )
@@ -41,6 +43,7 @@ _URLSAFE_TOKEN_RE = re.compile(
 def redact(text: str) -> str:
     """Mask bot tokens, credential query values and token_urlsafe(32) values."""
     text = _BOT_TOKEN_RE.sub("bot" + REDACTED, text)
+    text = _BARE_BOT_TOKEN_RE.sub(REDACTED, text)
     text = _QUERY_SECRET_RE.sub(r"\1" + REDACTED, text)
     text = _TG_PATH_TOKEN_RE.sub(r"\1" + REDACTED, text)
     return _URLSAFE_TOKEN_RE.sub(r"\1…" + REDACTED, text)
@@ -59,7 +62,12 @@ class RedactingFormatter(logging.Formatter):
 
 def install_redaction(logger: logging.Logger | None = None) -> None:
     """Swap the formatter of every handler on ``logger`` (root by default)."""
-    logger = logger or logging.getLogger()
+    if logger is None:
+        # gunicorn's own loggers keep separate handlers (propagate=False), so
+        # they are not covered by the root handlers; redact them as well.
+        for name in ("gunicorn.error", "gunicorn.access"):
+            install_redaction(logging.getLogger(name))
+        logger = logging.getLogger()
     for handler in logger.handlers:
         fmt = handler.formatter._fmt if handler.formatter else None
         datefmt = handler.formatter.datefmt if handler.formatter else None

@@ -63,10 +63,11 @@ față de `TELEGRAM_BOT_USERNAME` și refuză botul MD `CROWE_BIZCHECK_bot`. Ast
 configurație UA greșită nu aplică accidental profilul peste referința MD.
 
 Gardul pornește odată cu botul: repară fallback-ul public, localizările `uk`/`en`, meniul,
-webhook-ul incompatibil cu polling-ul, drepturile admin implicite și avatarul. Repetă
-verificarea după fiecare ciclu cu pauză de **120 s**; o verificare completă a localizărilor
-pornește la startup și apoi la **6 ore**. Eșecurile sunt reluate, fără blocarea livrării rapoartelor.
-Intervalul nu reprezintă o garanție de restaurare în 120 s când Telegram este indisponibil.
+webhook-ul incompatibil cu polling-ul, drepturile admin implicite și avatarul. Nivelul rapid
+(webhook, meniu, drepturi, avatar) rulează la **~15 s** și imediat la un conflict `getUpdates`;
+numele/descrierile/comenzile `""`/`uk`/`en` la **60 s**; verificarea completă a localizărilor
+rulează ca task separat, la startup și apoi la **6 ore**. Un nivel căzut e repornit automat. Eșecurile sunt reluate, fără blocarea livrării rapoartelor.
+Intervalul nu reprezintă o garanție de restaurare în 15–60 s când Telegram este indisponibil.
 
 **Limita platformei:** Telegram nu oferă blocare absolută a profilului. Proprietarul BotFather
 sau cine deține tokenul poate modifica profilul în afara aplicației; gardul repară diferențele

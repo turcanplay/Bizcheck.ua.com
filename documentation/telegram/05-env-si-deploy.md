@@ -87,8 +87,9 @@ cu polling-ul și păstrează actualizările în așteptare.
 
 Profilul, marca, contactul și mesajele nu se configurează din `.env`: editează
 `webdev/tgbot/bot_profile.py`, `strings.py` și `assets/profile.jpg`, apoi reconstruiește botul.
-Gardul pornește odată cu serviciul, verifică profilul cu pauze de 120 s și repetă verificarea
-completă a localizărilor la 6 ore. Telegram nu oferă blocare absolută; BotFather sau tokenul
+Gardul pornește odată cu serviciul, verifică webhook-ul, meniul, drepturile admin și avatarul la ~15 s
+(imediat la un conflict `getUpdates`), numele/descrierile/comenzile `uk`/`en` la 60 s, iar
+verificarea completă a localizărilor rulează separat, la 6 ore. Telegram nu oferă blocare absolută; BotFather sau tokenul
 pot modifica profilul extern, pe care serviciul încearcă apoi să-l restabilească.
 
 După deploy, verifică într-un chat privat de test: meniu/descrieri ucraineană, avatar MD,

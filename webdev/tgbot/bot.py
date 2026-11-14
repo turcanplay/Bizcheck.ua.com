@@ -18,8 +18,6 @@ Package layout:
   bot.py       (this file) handler wiring + entry point
 """
 
-import asyncio
-
 from telegram import Update
 from telegram.error import Conflict, NetworkError, TimedOut
 from telegram.ext import (
@@ -29,7 +27,7 @@ from telegram.ext import (
 
 from config import logger, BOT_TOKEN, BOT_USERNAME, BOT_SHARED_SECRET
 from bot_profile import REFERENCE_BOT_USERNAME
-from profile_guard import ProfileGuard, command_list, stop_guard
+from profile_guard import ProfileGuard, command_list, start_guard, stop_guard
 from handlers import (
     cmd_start, cmd_help, on_email_button, on_lead_button, on_contact, on_text,
 )
@@ -57,7 +55,7 @@ async def _post_init(app: Application) -> None:
     except Exception as exc:
         # Never let a menu hiccup stop the bot from polling.
         logger.warning("Could not publish the command menu (%s)", type(exc).__name__)
-    app.bot_data["profile_guard_task"] = asyncio.create_task(ProfileGuard(app.bot).run())
+    start_guard(app, ProfileGuard(app.bot))
 
 
 # ---------------------------------------------------------------------------
@@ -69,11 +67,13 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     err = context.error
 
     if isinstance(err, Conflict):
-        logger.warning(
-            "Telegram getUpdates conflict — another instance is polling with the same token. "
-            "Backing off 15s. Make sure no other bot process / webhook is active."
-        )
-        await asyncio.sleep(15)
+        # A foreign webhook or poller using our token. PTB's polling loop
+        # already backs off (up to 30s); the guard enforces a minimum gap
+        # between forced checks, so repeated conflicts cannot hammer the API.
+        logger.warning("getUpdates conflict — possible foreign webhook/poller; forcing guard check")
+        guard = context.bot_data.get("profile_guard")
+        if guard is not None:
+            guard.poke()
         return
 
     if isinstance(err, (NetworkError, TimedOut)):

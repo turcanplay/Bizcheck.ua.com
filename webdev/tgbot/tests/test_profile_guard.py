@@ -7,7 +7,7 @@ import logging
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from telegram import BotCommand
@@ -266,36 +266,261 @@ async def test_missing_photo_asset_makes_no_telegram_upload(monkeypatch, tmp_pat
     guard._fingerprint.assert_not_awaited()
 
 
+def idle_guard(calls=None):
+    """Fake guard whose tiers count their starts and then wait forever."""
+    calls = calls if calls is not None else []
+
+    def tier(name):
+        async def run():
+            calls.append(name)
+            await asyncio.Event().wait()
+        return run
+
+    return SimpleNamespace(**{f"run_{name}": tier(name) for name in profile_guard.TIERS},
+                           poke=lambda: None)
+
+
+async def until(predicate, timeout=1.0):
+    async def poll():
+        while not predicate():
+            await asyncio.sleep(0.005)
+    await asyncio.wait_for(poll(), timeout)
+
+
 async def test_startup_publishes_ukrainian_menu_and_guard_stops_cleanly(monkeypatch):
     monkeypatch.setattr(bot, "BOT_USERNAME", "UA_BizCheck_bot")
     app = SimpleNamespace(bot=fake_bot(), bot_data={})
-    started = asyncio.Event()
-
-    async def run():
-        started.set()
-        await asyncio.Event().wait()
-
-    monkeypatch.setattr(bot, "ProfileGuard", lambda telegram_bot: SimpleNamespace(run=run))
+    calls = []
+    monkeypatch.setattr(bot, "ProfileGuard", lambda telegram_bot: idle_guard(calls))
     await bot._post_init(app)
-    await asyncio.wait_for(started.wait(), timeout=1)
-    task = app.bot_data["profile_guard_task"]
+    await until(lambda: len(calls) == 3)
+    assert sorted(calls) == sorted(profile_guard.TIERS)
+    tasks = dict(app.bot_data[profile_guard.TASKS_KEY])
     app.bot.set_my_commands.assert_awaited_once_with(profile_guard.command_list())
     await profile_guard.stop_guard(app)
-    assert task.cancelled()
-    assert "profile_guard_task" not in app.bot_data
+    assert all(task.cancelled() for task in tasks.values())
+    assert profile_guard.TASKS_KEY not in app.bot_data
+    assert "profile_guard" not in app.bot_data
 
 
 async def test_startup_menu_error_keeps_guard_running_without_logging_token(monkeypatch, caplog):
     monkeypatch.setattr(bot, "BOT_USERNAME", "UA_BizCheck_bot")
     app = SimpleNamespace(bot=fake_bot(), bot_data={})
     app.bot.set_my_commands.side_effect = RuntimeError(app.bot.token)
-    monkeypatch.setattr(bot, "ProfileGuard", lambda telegram_bot: SimpleNamespace(run=AsyncMock()))
+    calls = []
+    monkeypatch.setattr(bot, "ProfileGuard", lambda telegram_bot: idle_guard(calls))
     with caplog.at_level(logging.WARNING):
         await bot._post_init(app)
-        await app.bot_data["profile_guard_task"]
+        await until(lambda: len(calls) == 3)
     assert app.bot.token not in caplog.text
     assert "RuntimeError" in caplog.text
     await profile_guard.stop_guard(app)
+
+
+def test_guard_intervals_are_source_constants():
+    assert profile.FAST_CHECK_SECONDS == 15
+    assert profile.PROFILE_CHECK_SECONDS == 60
+    assert profile.FULL_SWEEP_SECONDS == 6 * 3600
+    assert 0 < profile.FORCED_CHECK_MIN_GAP_SECONDS < profile.FAST_CHECK_SECONDS
+    assert profile.GUARD_RESTART_SECONDS > 0
+
+
+class _Stop(BaseException):
+    """Escapes the tiers' `except Exception` to end one loop iteration."""
+
+
+def record_sleeps(monkeypatch):
+    slept = []
+
+    async def sleep(seconds):
+        slept.append(seconds)
+        if seconds != 0.1:  # per-language pacing inside _languages
+            raise _Stop
+
+    monkeypatch.setattr(profile_guard.asyncio, "sleep", sleep)
+    return slept
+
+
+async def test_fast_tier_waits_min_gap_then_rest_of_interval(monkeypatch):
+    guard = profile_guard.ProfileGuard(fake_bot())
+    guard._fast = AsyncMock(return_value=[])
+    paused = []
+
+    async def pause(seconds):
+        paused.append(seconds)
+        raise _Stop
+
+    guard._pause = pause
+    slept = []
+
+    async def sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setattr(profile_guard.asyncio, "sleep", sleep)
+    with pytest.raises(_Stop):
+        await guard.run_fast()
+    guard._fast.assert_awaited_once()
+    assert slept == [profile.FORCED_CHECK_MIN_GAP_SECONDS]
+    assert paused == [profile.FAST_CHECK_SECONDS - profile.FORCED_CHECK_MIN_GAP_SECONDS]
+
+
+async def test_profile_tier_checks_primary_and_failed_languages_every_minute(monkeypatch):
+    guard = profile_guard.ProfileGuard(fake_bot())
+    guard._retry_languages = {"de"}
+    guard._languages = AsyncMock(return_value=[])
+    slept = record_sleeps(monkeypatch)
+    with pytest.raises(_Stop):
+        await guard.run_profile()
+    guard._languages.assert_awaited_once_with(("", "uk", "en", "de"))
+    assert slept == [profile.PROFILE_CHECK_SECONDS]
+
+
+async def test_full_sweep_covers_other_languages_every_six_hours(monkeypatch):
+    guard = profile_guard.ProfileGuard(fake_bot())
+    seen = []
+
+    async def languages(langs):
+        seen.extend(langs)
+        return []
+
+    guard._languages = languages
+    slept = record_sleeps(monkeypatch)
+    with pytest.raises(_Stop):
+        await guard.run_full_sweep()
+    assert slept == [profile.FULL_SWEEP_SECONDS]
+    assert set(seen) == set(profile.PROFILE_LANGUAGES) - {"", "uk", "en"}
+
+
+async def test_fast_tier_is_read_only_when_nothing_changed():
+    telegram_bot = fake_bot()
+    telegram_bot.get_chat_menu_button.return_value = SimpleNamespace(type="commands")
+    telegram_bot.get_webhook_info.return_value = SimpleNamespace(url="")
+    telegram_bot.get_my_default_administrator_rights.return_value = SimpleNamespace(
+        to_dict=lambda: {"can_delete_messages": False})
+    telegram_bot.get_user_profile_photos.return_value = SimpleNamespace(
+        photos=[[SimpleNamespace(file_unique_id="ours")]])
+    guard = profile_guard.ProfileGuard(telegram_bot)
+    guard._photo_fingerprint = ("ours",)
+    assert await guard._fast() == []
+    for name in ("set_my_name", "set_my_description", "set_my_short_description",
+                 "set_my_commands", "delete_my_commands", "set_chat_menu_button",
+                 "delete_webhook", "set_my_default_administrator_rights"):
+        getattr(telegram_bot, name).assert_not_awaited()
+    telegram_bot.get_my_name.assert_not_awaited()
+
+
+async def test_rejected_photo_upload_is_not_retried_every_fast_tick(caplog):
+    telegram_bot = fake_bot()
+    guard = profile_guard.ProfileGuard(telegram_bot)
+    guard._photo = AsyncMock(side_effect=RuntimeError(telegram_bot.token))
+    with caplog.at_level(logging.WARNING):
+        assert "webhook" in await guard._fast()
+        await guard._fast()
+    guard._photo.assert_awaited_once()
+    assert telegram_bot.get_webhook_info.await_count == 2
+    assert telegram_bot.token not in caplog.text
+
+
+async def test_full_sweep_never_blocks_the_fast_check(monkeypatch):
+    monkeypatch.setattr(profile, "FAST_CHECK_SECONDS", 0.01)
+    monkeypatch.setattr(profile, "FORCED_CHECK_MIN_GAP_SECONDS", 0)
+    guard = profile_guard.ProfileGuard(fake_bot())
+    guard._fast = AsyncMock(return_value=[])
+    sweep_started = asyncio.Event()
+
+    async def endless_sweep(langs):
+        sweep_started.set()
+        await asyncio.Event().wait()
+
+    guard._languages = endless_sweep
+    app = SimpleNamespace(bot=guard.bot, bot_data={})
+    tasks = profile_guard.start_guard(app, guard)
+    await asyncio.wait_for(sweep_started.wait(), 1)
+    await until(lambda: guard._fast.await_count >= 3)
+    assert not tasks["full_sweep"].done()
+    await profile_guard.stop_guard(app)
+    assert all(task.cancelled() for task in tasks.values())
+
+
+async def test_poke_forces_an_immediate_fast_check(monkeypatch):
+    monkeypatch.setattr(profile, "FAST_CHECK_SECONDS", 3600)
+    monkeypatch.setattr(profile, "FORCED_CHECK_MIN_GAP_SECONDS", 0)
+    guard = profile_guard.ProfileGuard(fake_bot())
+    guard._fast = AsyncMock(return_value=["webhook"])
+    task = asyncio.create_task(guard.run_fast())
+    await until(lambda: guard._fast.await_count == 1)
+    await asyncio.sleep(0.02)
+    assert guard._fast.await_count == 1  # waiting on the hour-long interval
+    guard.poke()
+    await until(lambda: guard._fast.await_count == 2)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+
+async def test_getupdates_conflict_forces_guard_check_without_logging_token(caplog):
+    from telegram.error import Conflict
+    guard = SimpleNamespace(poke=Mock())
+    token = fake_bot().token
+    context = SimpleNamespace(error=Conflict(f"terminated by other getUpdates {token}"),
+                              bot_data={"profile_guard": guard})
+    with caplog.at_level(logging.WARNING):
+        await bot.error_handler(None, context)
+    guard.poke.assert_called_once_with()
+    assert "possible foreign webhook/poller; forcing guard check" in caplog.text
+    assert token not in caplog.text
+    # Before the guard starts (or after it stops) the handler must not fail.
+    await bot.error_handler(None, SimpleNamespace(error=Conflict("x"), bot_data={}))
+
+
+async def test_watchdog_restarts_a_crashed_tier(monkeypatch, caplog):
+    monkeypatch.setattr(profile, "GUARD_RESTART_SECONDS", 0.01)
+    guard = idle_guard()
+    runs = []
+    token = fake_bot().token
+
+    async def crashing_fast():
+        runs.append(1)
+        if len(runs) == 1:
+            raise RuntimeError(token)
+        await asyncio.Event().wait()
+
+    guard.run_fast = crashing_fast
+    app = SimpleNamespace(bot=fake_bot(), bot_data={})
+    with caplog.at_level(logging.ERROR):
+        tasks = profile_guard.start_guard(app, guard)
+        first = tasks["fast"]
+        await until(lambda: len(runs) == 2)
+    assert tasks["fast"] is not first and not tasks["fast"].done()
+    assert "fast tier stopped (RuntimeError); restarting" in caplog.text
+    assert token not in caplog.text
+    await profile_guard.stop_guard(app)
+    assert all(task.cancelled() for task in tasks.values())
+
+
+async def test_watchdog_does_not_restart_during_shutdown(monkeypatch, caplog):
+    monkeypatch.setattr(profile, "GUARD_RESTART_SECONDS", 0)
+    guard = idle_guard()
+    runs = []
+
+    async def crashes_when_cancelled():
+        runs.append(1)
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            raise RuntimeError("crash during shutdown")
+
+    guard.run_fast = crashes_when_cancelled
+    app = SimpleNamespace(bot=fake_bot(), bot_data={})
+    tasks = profile_guard.start_guard(app, guard)
+    await until(lambda: len(runs) == 1)
+    with caplog.at_level(logging.ERROR):
+        await profile_guard.stop_guard(app)
+        await asyncio.sleep(0.02)
+    assert len(runs) == 1
+    assert "restarting" not in caplog.text
+    assert profile_guard.TASKS_KEY not in app.bot_data
+    assert all(task.done() for task in tasks.values())
 
 
 @pytest.mark.parametrize("configured,actual", [
